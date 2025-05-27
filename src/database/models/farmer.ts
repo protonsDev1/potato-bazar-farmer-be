@@ -64,6 +64,16 @@ Farmer.init({
 
   price_decision_factors: DataTypes.ARRAY(DataTypes.STRING),
   selling_challenges: DataTypes.ARRAY(DataTypes.STRING),
+  onBoardedBy: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'users', 
+      key: 'id',
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL',
+  },
 
   createdAt: {
     type: DataTypes.DATE,

@@ -1,6 +1,9 @@
 import User from "../database/models/user";
 import Agent from '../database/models/agent';
 import { generateAgentId, generateRandomPassword } from '../utils/generate';
+import Farmer from "../database/models/farmer";
+import ColdStorage from "../database/models/coldStorage";
+import { Op } from 'sequelize';
 
 
 export const createUserInDB = async (userModuleData: any) => {
@@ -71,3 +74,110 @@ export const findAgentWithUser = async (agentId: string) => {
     include: [{ model: User, as: 'user' }],
   });
 };
+
+
+
+const getDateRange = () => {
+  const now = new Date();
+  const oneWeekAgo = new Date(now);
+  oneWeekAgo.setDate(now.getDate() - 7);
+
+  const oneMonthAgo = new Date(now);
+  oneMonthAgo.setMonth(now.getMonth() - 1);
+
+  return { oneWeekAgo, oneMonthAgo };
+};
+
+
+
+export const getDashboardCounts = async () => {
+  const { oneWeekAgo, oneMonthAgo } = getDateRange();
+
+  // Agents counts
+  const [totalAgents, agentsLastWeek, agentsLastMonth] = await Promise.all([
+    User.count({ where: { role: 'agent' } }),
+    User.count({ where: { role: 'agent', createdAt: { [Op.gte]: oneWeekAgo } } }),
+    User.count({ where: { role: 'agent', createdAt: { [Op.gte]: oneMonthAgo } } }),
+  ]);
+
+  // Get agent and admin user IDs
+  const [agentUsers, adminUsers] = await Promise.all([
+    User.findAll({ where: { role: 'agent' }, attributes: ['id'] }),
+    User.findAll({ where: { role: 'admin' }, attributes: ['id'] }),
+  ]);
+  const agentIds = agentUsers.map(u => u.id);
+  const adminIds = adminUsers.map(u => u.id);
+
+  // Farmers counts
+  const [
+    totalFarmers,
+    farmersLastWeek,
+    farmersLastMonth,
+    farmersByAgents,
+    farmersByAdmins,
+  ] = await Promise.all([
+    Farmer.count(),
+    Farmer.count({ where: { createdAt: { [Op.gte]: oneWeekAgo } } }),
+    Farmer.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } }),
+    Farmer.count({ where: { onBoardedBy: { [Op.in]: agentIds } } }),
+    Farmer.count({ where: { onBoardedBy: { [Op.in]: adminIds } } }),
+  ]);
+
+  // ColdStorages counts
+  const [
+    totalColdStorages,
+    coldStoragesLastWeek,
+    coldStoragesLastMonth,
+    coldStoragesByAgents,
+    coldStoragesByAdmins,
+  ] = await Promise.all([
+    ColdStorage.count(),
+    ColdStorage.count({ where: { createdAt: { [Op.gte]: oneWeekAgo } } }),
+    ColdStorage.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } }),
+    ColdStorage.count({ where: { onBoardedBy: { [Op.in]: agentIds } } }),
+    ColdStorage.count({ where: { onBoardedBy: { [Op.in]: adminIds } } }),
+  ]);
+
+  // Calculate percentages helper
+  const calcPercent = (count: number, total: number) =>
+    total > 0 ? Math.round((count / total) * 100) : 0;
+
+  // Construct onboarding ratio stats for Farmer
+  const farmerAgentPercent = calcPercent(farmersByAgents, totalFarmers);
+  const farmerAdminPercent = calcPercent(farmersByAdmins, totalFarmers);
+
+  // Construct onboarding ratio stats for Cold Storage
+  const coldStorageAgentPercent = calcPercent(coldStoragesByAgents, totalColdStorages);
+  const coldStorageAdminPercent = calcPercent(coldStoragesByAdmins, totalColdStorages);
+
+  return {
+    agents: {
+      total: totalAgents,
+      lastWeek: agentsLastWeek,
+      lastMonth: agentsLastMonth,
+    },
+    farmers: {
+      total: totalFarmers,
+      lastWeek: farmersLastWeek,
+      lastMonth: farmersLastMonth,
+      byAgents: farmersByAgents,
+      byAdmins: farmersByAdmins,
+      onboardingRatio: {
+        agentOnboarded: `${farmersByAgents} (${farmerAgentPercent}%)`,
+        selfOnboarded: `${farmersByAdmins} (${farmerAdminPercent}%)`,
+      },
+    },
+    coldStorages: {
+      total: totalColdStorages,
+      lastWeek: coldStoragesLastWeek,
+      lastMonth: coldStoragesLastMonth,
+      byAgents: coldStoragesByAgents,
+      byAdmins: coldStoragesByAdmins,
+      onboardingRatio: {
+        agentOnboarded: `${coldStoragesByAgents} (${coldStorageAgentPercent}%)`,
+        selfOnboarded: `${coldStoragesByAdmins} (${coldStorageAdminPercent}%)`,
+      },
+    },
+  };
+};
+

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail } from '../services/userServices';
+import { createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, getDashboardCounts } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
@@ -154,6 +154,15 @@ export const verifyOtp = async (req, res) => {
     return res.status(200).json({ message: 'OTP verified' });
   } catch (err: any) {
     return res.status(500).json({ message: err.message || 'OTP verification failed' });
+  }
+};
+
+export const getDashboardStats = async (req, res) => {
+  try {
+    const counts = await getDashboardCounts();
+    return res.status(200).json({ message: 'Success', data: counts });
+  } catch (err: any) {
+    return res.status(500).json({ message: err.message || 'Failed to fetch dashboard stats' });
   }
 };
 
