@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, getDashboardCounts } from '../services/userServices';
+import { checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, getDashboardCounts, registerInitialUser, updateRegistrationTypes } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
@@ -150,8 +150,14 @@ export const verifyOtp = async (req, res) => {
     if (!isValid) {
       return res.status(401).json({ message: 'Invalid or expired OTP' });
     }
+    const existingUser = await checkExistingUser(mobile);
+    if (existingUser) {
+      return res.status(200).json({ message: 'OTP verified. User already exists.', user: existingUser });
+    };
 
-    return res.status(200).json({ message: 'OTP verified' });
+    const createUser = await registerInitialUser(mobile);
+
+    return res.status(200).json({ message: 'OTP verified',createUser });
   } catch (err: any) {
     return res.status(500).json({ message: err.message || 'OTP verification failed' });
   }
@@ -163,6 +169,26 @@ export const getDashboardStats = async (req, res) => {
     return res.status(200).json({ message: 'Success', data: counts });
   } catch (err: any) {
     return res.status(500).json({ message: err.message || 'Failed to fetch dashboard stats' });
+  }
+};
+
+export const updateUserRegistrationTypes = async (req, res) => {
+  try {
+    const { mobile, registration_types } = req.body;
+
+    if (!mobile || !Array.isArray(registration_types)) {
+      return res.status(400).json({ message: 'mobile and registration_types[] are required' });
+    }
+
+    const updatedUser = await updateRegistrationTypes(mobile, registration_types);
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({ message: 'Registration types updated', user: updatedUser });
+  } catch (err: any) {
+    return res.status(500).json({ message: err.message || 'Failed to update registration types' });
   }
 };
 

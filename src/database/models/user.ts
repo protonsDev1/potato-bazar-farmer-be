@@ -15,6 +15,8 @@ import {
     declare password?: string; // virtual
     declare password_hash: string;
     declare role: string;
+    declare mobile: string;
+    declare registration_types: string[] | null;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
   
@@ -54,6 +56,17 @@ import {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
       },
+      mobile: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: true, 
+      },
+      registration_types: {
+        type: DataTypes.JSON, // Or DataTypes.ARRAY(DataTypes.STRING) for PostgreSQL
+        allowNull: true,
+      },
+      
+      
     },
     {
       sequelize,

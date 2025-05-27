@@ -61,3 +61,21 @@ export const otpVerifySchema = Joi.object({
   mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
   otp: Joi.string().required().length(4),
 });
+
+export const registrationTypesSchema = Joi.object({
+  mobile: Joi.string()
+    .required()
+    .messages({
+      'any.required': 'Mobile is required',
+    }),
+
+  registration_types: Joi.array()
+    .items(Joi.string().valid('farmer', 'cold_storage', 'trader'))
+    .min(1)
+    .required()
+    .messages({
+      'array.includes': 'registration_types must contain only valid values',
+      'any.required': 'registration_types is required',
+      'array.min': 'At least one registration type is required',
+    }),
+});

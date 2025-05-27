@@ -1,78 +1,103 @@
 import Joi from 'joi';
 
-export const farmerSchema = Joi.object({
+
+export const onboardFarmerSchema = Joi.object({
   name: Joi.string().required(),
-  age: Joi.number().required(),
-  gender: Joi.string().valid('Male', 'Female', 'Other').required(),
+  userId:Joi.number().required(),
+  age: Joi.number().integer().min(1).required(),
+  gender: Joi.string().valid('male', 'female', 'other').required(),
+  optionalNumber: Joi.string().optional().allow(null, ''),
+  caste: Joi.string().optional().allow(null, ''),
+  subCaste: Joi.string().optional().allow(null, ''),
+  village: Joi.string().optional().allow(null, ''),
+  taluka: Joi.string().optional().allow(null, ''),
+  district: Joi.string().optional().allow(null, ''),
+  state: Joi.string().optional().allow(null, ''),
+  getLocation: Joi.string().optional().allow(null, ''),
+  isAadhaarCard: Joi.boolean().optional(),
+  aadhaarNumber: Joi.string()
+    .pattern(/^\d{12}$/)
+    .when('isAadhaarCard', { is: true, then: Joi.required(), otherwise: Joi.optional().allow(null, '') }),
+  isBankAccount: Joi.boolean().optional(),
 
-  mobile: Joi.string().pattern(/^[6-9]\d{9}$/).required(),
-  whatsapp: Joi.string().pattern(/^[6-9]\d{9}$/).allow('', null),
-
-  village: Joi.string().required(),
-  taluka: Joi.string().required(),
-  district: Joi.string().required(),
-  state: Joi.string().default('Gujarat'),
-
-  hasAadhaar: Joi.boolean().default(false),
-  hasBankAccount: Joi.boolean().default(false),
-
-  land_owned_acres: Joi.number().min(0).required(),
-  land_leased_acres: Joi.number().min(0).required(),
-  potato_cultivation_acres: Joi.number().min(0).required(),
-
-  farming_type: Joi.string().valid('Own Land', 'Lease', 'Both').required(),
-
-  irrigation_sources: Joi.array().items(
-    Joi.string().valid('Canal', 'Borewell', 'Rainfed', 'Drip', 'Sprinkler')
-  ).required(),
-
-  soil_type: Joi.string().valid('Sandy', 'Clayey', 'Loamy').required(),
-
-  potato_variety: Joi.array().items(
-    Joi.string().valid('Table', 'Chips', 'French Fry')
-  ).required(),
-
-  sowing_month: Joi.string().required(),
-  harvest_month: Joi.string().required(),
-
-  equipment_used: Joi.array().items(
-    Joi.string().valid(
-      'Sowing Machine',
-      'Pesticide Sprayer',
-      'Potato Seed Cutter',
-      'Harvester',
-      'Third Party Application'
+  landDetails: Joi.array()
+    .items(
+      Joi.object({
+        // define the fields inside landDetails as per your model (example below)
+        landType: Joi.string().required(),
+        landArea: Joi.number().required(),
+        irrigationFacility: Joi.boolean().optional(),
+      })
     )
-  ).optional(),
+    .optional(),
 
-  sale_percent: Joi.number().min(0).max(100).optional(),
-  storage_percent: Joi.number().min(0).max(100).optional(),
-
-  uses_storage: Joi.boolean().default(false),
-
-  selling_place: Joi.string().valid(
-    'Local Mandi',
-    'Cold Storage Buyer',
-    'Contract Farming',
-    'Direct to Trader',
-    'Any Other'
-  ).required(),
-
-  distance_to_market: Joi.string().required(),
-
-  does_grading: Joi.boolean().default(false),
-
-  price_decision_factors: Joi.array().items(
-    Joi.string().valid('Mandi Rates', 'Neighbouring Farmers', 'Trader\'s Offer', 'Any Other')
-  ).optional(),
-
-  selling_challenges: Joi.array().items(
-    Joi.string().valid(
-      'Price Fluctuation',
-      'Storage',
-      'Lack of Direct Buyers',
-      'Transport Cost',
-      'Any Other'
+  irrigationSources: Joi.array()
+    .items(
+      Joi.object({
+        method: Joi.string().required(),
+      })
     )
-  ).optional()
+    .optional(),
+
+  potatoVarieties: Joi.array()
+    .items(
+      Joi.object({
+        variety: Joi.string().required(),
+        subVariety: Joi.string().optional().allow(null, ''),
+      })
+    )
+    .optional(),
+
+  farmEquipment: Joi.array()
+    .items(
+      Joi.object({
+        machine: Joi.string().required(),
+        brand: Joi.string().optional().allow(null, ''),
+        model: Joi.string().optional().allow(null, ''),
+      })
+    )
+    .optional(),
+
+  technologyUsed: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().required(),
+      })
+    )
+    .optional(),
+
+  sellingChannels: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().required(),
+      })
+    )
+    .optional(),
+
+  sellingChallenges: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().required(),
+      })
+    )
+    .optional(),
+
+  majorSellingChallenges: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().required(),
+      })
+    )
+    .optional(),
+
+  priceDiscoveryMethods: Joi.array()
+    .items(
+      Joi.object({
+        method: Joi.string().required(),
+      })
+    )
+    .optional(),
+
+  onBoardedBy: Joi.number().integer().optional(),
 });
+

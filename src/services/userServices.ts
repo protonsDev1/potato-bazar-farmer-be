@@ -181,3 +181,43 @@ export const getDashboardCounts = async () => {
   };
 };
 
+export const checkExistingUser = async (mobile) =>{
+  return await User.findOne({ where: { mobile } });
+};
+
+export const registerInitialUser = async (mobile) =>{
+  return await User.create({
+    name: 'Guest',
+    mobile,
+    role:'user',
+  });
+};
+
+export const updateRegistrationTypes = async (
+  mobile,
+  newTypes
+) => {
+  const user = await User.findOne({ where: { mobile } });
+  if (!user) return null;
+
+  const currentTypes = user.registration_types || [];
+  const updatedTypes = Array.from(new Set([...currentTypes, ...newTypes])); 
+
+  user.registration_types = updatedTypes;
+  await user.save();
+
+  return user;
+};
+
+export const updateUserInDB = async (userId: number, updateData: any) => {
+  try {
+   return  await User.update(updateData, {
+      where: { id: userId },
+    });
+
+  } catch (error) {
+    throw error;
+  }
+};
+
+
