@@ -1,9 +1,8 @@
 import Joi from 'joi';
 
-
 export const onboardFarmerSchema = Joi.object({
   name: Joi.string().required(),
-  userId:Joi.number().required(),
+  userId: Joi.number().required(),
   age: Joi.number().integer().min(1).required(),
   gender: Joi.string().valid('male', 'female', 'other').required(),
   optionalNumber: Joi.string().optional().allow(null, ''),
@@ -13,7 +12,7 @@ export const onboardFarmerSchema = Joi.object({
   taluka: Joi.string().optional().allow(null, ''),
   district: Joi.string().optional().allow(null, ''),
   state: Joi.string().optional().allow(null, ''),
-  getLocation: Joi.string().optional().allow(null, ''),
+  getLocation: Joi.string().optional(),
   isAadhaarCard: Joi.boolean().optional(),
   aadhaarNumber: Joi.string()
     .pattern(/^\d{12}$/)
@@ -23,10 +22,32 @@ export const onboardFarmerSchema = Joi.object({
   landDetails: Joi.array()
     .items(
       Joi.object({
-        // define the fields inside landDetails as per your model (example below)
-        landType: Joi.string().required(),
-        landArea: Joi.number().required(),
-        irrigationFacility: Joi.boolean().optional(),
+        landOwnedAcres: Joi.number().required(),
+        landLeasedAcres: Joi.number().required(),
+        potatoCultivationAcres: Joi.number().optional(),
+        irrigationEquipmentBrand: Joi.string().optional().allow(null, ''),
+        soilType: Joi.string().optional().allow(null, ''),
+        averageYieldPerAcre: Joi.number().optional(),
+        sowingMonth: Joi.string().optional().allow(null, ''),
+        sowingMethod: Joi.string().optional().allow(null, ''),
+        storageFacilityAtFarm: Joi.boolean().optional(),
+        primarySalesPoint: Joi.string().optional().allow(null, ''),
+        distanceToNearestMandi: Joi.string().optional().allow(null, ''),
+        isGradingMachineAtFarm: Joi.boolean().optional(),
+        isShadeAtFarmGate: Joi.boolean().optional(),
+        isUnderContractFarming: Joi.boolean().optional(),
+        contractPercent: Joi.number().optional(),
+        spotPercent: Joi.number().optional(),
+        contractPartnerName: Joi.string().optional().allow(null, ''),
+        newSeedsPurchasedAnnually: Joi.boolean().optional(),
+        reusedSeedsPercent: Joi.number().optional(),
+        trustedSeedCompany: Joi.string().optional().allow(null, ''),
+        reasonForTrust: Joi.string().optional().allow(null, ''),
+        preference: Joi.string().optional().allow(null, ''),
+        contractFarmingPercent: Joi.number().optional(),
+        soldInSpotMarketPercent: Joi.number().optional(),
+        interestedInDigitalTrading: Joi.boolean().optional(),
+        usesWhatsappForBusiness: Joi.boolean().optional(),
       })
     )
     .optional(),
@@ -98,6 +119,5 @@ export const onboardFarmerSchema = Joi.object({
     )
     .optional(),
 
-  onBoardedBy: Joi.number().integer().optional(),
+  onBoardedBy: Joi.string().uuid().optional(),
 });
-

@@ -70,6 +70,7 @@ export async function onboardFarmer(payload: Payload) {
     );
 
     if (payload.landDetails) {
+      console.log("asuuasduia")
       for (const landDetail of payload.landDetails) {
         await LandDetail.create(
           {
