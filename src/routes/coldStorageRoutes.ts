@@ -9,6 +9,7 @@ const validator = createValidator({});
 
 router.post(
   '/create',
+  validator.body(coldStorageSchema),
   authMiddleware,
   createColdStorage
 );

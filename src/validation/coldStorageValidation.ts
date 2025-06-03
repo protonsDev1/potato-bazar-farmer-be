@@ -2,34 +2,61 @@ import Joi from 'joi';
 
 export const coldStorageSchema = Joi.object({
   name: Joi.string().required(),
-  owner_name: Joi.string().required(),
-  contact_number: Joi.string().pattern(/^[6-9]\d{9}$/).required(),
-  whatsapp_number: Joi.string().pattern(/^[6-9]\d{9}$/).allow('', null),
-
-  village: Joi.string().required(),
+  type: Joi.string().required(),
+  userId: Joi.number().integer().required(),
+  capacity: Joi.number().integer().min(0).required(),
+  address: Joi.string().required(),
+  city: Joi.string().required(),
   district: Joi.string().required(),
-  state: Joi.string().default('Gujarat'),
+  state: Joi.string().required(),
+  phone: Joi.string().pattern(/^[0-9]{10,15}$/).required(),
+  email: Joi.string().email().required(),
+  contactPerson: Joi.string().required(),
+  licenseNumber: Joi.string().required(),
+  yearOfEstablishment: Joi.number().integer().min(1900).max(new Date().getFullYear()).required(),
+  refrigerationType: Joi.string().required(),
+  powerBackup: Joi.boolean().required(),
+  shedType: Joi.string().required(),
+  numberOfChambers: Joi.number().integer().min(0).required(),
+  computerized: Joi.boolean().required(),
+  onBoardedBy: Joi.string().required(),
 
-  gst_available: Joi.boolean().default(false),
-  gst_number: Joi.string().when('gst_available', {
-    is: true,
-    then: Joi.string().required(),
-    otherwise: Joi.string().optional()
-  }),
+  storageTypes: Joi.array().items(
+    Joi.object({
+      type: Joi.string().required(),
+    })
+  ).required(),
 
-  total_capacity_mt: Joi.number().min(0).required(),
-  storage_meant_for: Joi.array().items(Joi.string().valid('Seed', 'Table', 'Process')).required(),
-  storage_type: Joi.array().items(Joi.string().valid('Bag', 'Bulk', 'Box')).required(),
-  built_year: Joi.number().optional(),
-  construction_type: Joi.string().optional(),
+  usageTypes: Joi.array().items(
+    Joi.object({
+      usage: Joi.string().required(),
+    })
+  ).required(),
 
-  temperature_control: Joi.boolean().default(false),
-  humidity_control: Joi.boolean().default(false),
-  power_backup: Joi.boolean().default(false),
-  internet_connectivity: Joi.boolean().default(false),
-  video_surveillance: Joi.boolean().default(false),
+  operationalChallenges: Joi.array().items(
+    Joi.object({
+      name: Joi.string().required(),
+    })
+  ).required(),
 
-  transport_available: Joi.boolean().default(false),
-  market_distance_km: Joi.number().min(0).required(),
-  market_linkage: Joi.string().optional(),
+  elevatorsAndStuffing: Joi.array().items(
+    Joi.object({
+      elevatorCount: Joi.number().integer().min(0).required(),
+      stuffingType: Joi.string().required(),
+    })
+  ).required(),
+
+  chamberCapacities: Joi.array().items(
+    Joi.object({
+      chamberName: Joi.string().required(),
+      capacity: Joi.number().integer().min(0).required(),
+    })
+  ).required(),
+
+  sheds: Joi.array().items(
+    Joi.object({
+      type: Joi.string().required(),
+      capacity: Joi.number().integer().min(0).required(),
+    })
+  ).required(),
 });
