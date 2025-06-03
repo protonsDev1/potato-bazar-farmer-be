@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, getDashboardCounts, registerInitialUser, updateRegistrationTypes } from '../services/userServices';
+import { adminGetAgentsList, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, getDashboardCounts, registerInitialUser, updateRegistrationTypes } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
@@ -35,7 +35,7 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
     try {
       const { email, password } = req.body;
-  
+      console.log("secretOrPrivateKey");
       // Validate input using the Joi schema
     
   
@@ -192,5 +192,14 @@ export const updateUserRegistrationTypes = async (req, res) => {
   }
 };
 
-
+export const getAgentsList = async (req, res) => {
+  try {
+    const page =  req.query.page? req.query.page: 1;
+    const limit =  req.query.limit? req.query.limit: 10;
+    const agents = await adminGetAgentsList(page, limit);
+    return res.status(200).json({ message: 'Get Agent List', data: agents });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Failed to get agent list' });
+  }
+}
 
