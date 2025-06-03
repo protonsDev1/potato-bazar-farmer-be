@@ -11,6 +11,8 @@ class LandDetail extends Model<InferAttributes<LandDetail>, InferCreationAttribu
   declare soilType: string | null;
   declare averageYieldPerAcre: number | null;
   declare sowingMonth: string | null;
+  declare harvestMonth: string | null;
+  declare equipmentSource: string | null;
   declare sowingMethod: string | null;
   declare storageFacilityAtFarm: boolean | null;
   declare primarySalesPoint: string | null;
@@ -28,6 +30,7 @@ class LandDetail extends Model<InferAttributes<LandDetail>, InferCreationAttribu
   declare preference: string | null;
   declare contractFarmingPercent: number | null;
   declare soldInSpotMarketPercent: number | null;
+  declare storedInColdStoragePercent: number| null;
   declare interestedInDigitalTrading: boolean | null;
   declare usesWhatsappForBusiness: boolean | null;
   declare createdAt: CreationOptional<Date>;
@@ -50,6 +53,8 @@ LandDetail.init(
     soilType: { type: DataTypes.STRING, allowNull: true },
     averageYieldPerAcre: { type: DataTypes.FLOAT, allowNull: true },
     sowingMonth: { type: DataTypes.STRING, allowNull: true },
+    harvestMonth: {type: DataTypes.STRING, allowNull: true},
+    equipmentSource: {type:DataTypes.STRING,allowNull:true},
     sowingMethod: { type: DataTypes.STRING, allowNull: true },
     storageFacilityAtFarm: { type: DataTypes.BOOLEAN, allowNull: true },
     primarySalesPoint: { type: DataTypes.STRING, allowNull: true },
@@ -67,6 +72,7 @@ LandDetail.init(
     preference: { type: DataTypes.TEXT, allowNull: true },
     contractFarmingPercent: { type: DataTypes.FLOAT, allowNull: true },
     soldInSpotMarketPercent: { type: DataTypes.FLOAT, allowNull: true },
+    storedInColdStoragePercent: {type:DataTypes.FLOAT,allowNull:true},
     interestedInDigitalTrading: { type: DataTypes.BOOLEAN, allowNull: true },
     usesWhatsappForBusiness: { type: DataTypes.BOOLEAN, allowNull: true },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },

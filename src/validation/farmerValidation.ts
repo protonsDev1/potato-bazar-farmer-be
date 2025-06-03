@@ -29,8 +29,10 @@ export const onboardFarmerSchema = Joi.object({
         soilType: Joi.string().optional().allow(null, ''),
         averageYieldPerAcre: Joi.number().optional(),
         sowingMonth: Joi.string().optional().allow(null, ''),
+        harvestMonth: Joi.string().optional().allow(null, ''),
         sowingMethod: Joi.string().optional().allow(null, ''),
         storageFacilityAtFarm: Joi.boolean().optional(),
+        equipmentSource: Joi.string().optional().allow(null, ''),
         primarySalesPoint: Joi.string().optional().allow(null, ''),
         distanceToNearestMandi: Joi.string().optional().allow(null, ''),
         isGradingMachineAtFarm: Joi.boolean().optional(),
@@ -46,6 +48,7 @@ export const onboardFarmerSchema = Joi.object({
         preference: Joi.string().optional().allow(null, ''),
         contractFarmingPercent: Joi.number().optional(),
         soldInSpotMarketPercent: Joi.number().optional(),
+        storedInColdStoragePercent: Joi.number().optional(),
         interestedInDigitalTrading: Joi.boolean().optional(),
         usesWhatsappForBusiness: Joi.boolean().optional(),
       })
