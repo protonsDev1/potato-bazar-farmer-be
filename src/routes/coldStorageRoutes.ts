@@ -1,8 +1,8 @@
 import express from 'express';
 import { createValidator } from 'express-joi-validation';
-import { authMiddleware } from '../utils/userAuth';
+import { adminMiddleware, authMiddleware } from '../utils/userAuth';
 import { coldStorageSchema } from '../validation/coldStorageValidation';
-import { createColdStorage } from '../controller/coldStorage';
+import { createColdStorage, getColdStorageList } from '../controller/coldStorage';
 
 const router = express.Router();
 const validator = createValidator({});
@@ -13,5 +13,10 @@ router.post(
   authMiddleware,
   createColdStorage
 );
+router.get(
+  '/get-cold-storage-list',
+  adminMiddleware,
+  getColdStorageList,
+)
 
 export default router;

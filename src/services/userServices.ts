@@ -3,7 +3,7 @@ import Agent from '../database/models/agent';
 import { generateAgentId, generateRandomPassword } from '../utils/generate';
 import Farmer from "../database/models/farmer";
 import ColdStorage from "../database/models/coldStorage";
-import { Op } from 'sequelize';
+import { Op, where } from 'sequelize';
 
 
 export const createUserInDB = async (userModuleData: any) => {
@@ -220,4 +220,22 @@ export const updateUserInDB = async (userId: number, updateData: any) => {
   }
 };
 
-
+export const adminGetAgentsList = async (page, limit) => {
+  try {
+    const offset = (page - 1) * limit;
+      const agents = await User.findAll({
+        where:{role:'agent'},
+        include:[
+          {
+            model: Agent,
+            as: 'agentProfile'
+          }
+        ],
+        limit,
+        offset,
+        order: [["createdAt", "DESC"]]});
+      return agents;
+  } catch (error) {
+    throw error;
+  }
+}

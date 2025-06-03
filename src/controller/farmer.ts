@@ -1,4 +1,4 @@
-import { onboardFarmer } from '../services/farmerServices';
+import { getFarmerListByAdmin, onboardFarmer } from '../services/farmerServices';
 import { updateUserInDB } from '../services/userServices';
 
 export const createFarmer = async (req, res) => {
@@ -13,4 +13,19 @@ export const createFarmer = async (req, res) => {
   }
 };
 
+export const getFarmerList = async (req, res) => {
+  try{
+    const page =  req.query.page? req.query.page: 1;
+    const limit =  req.query.limit? req.query.limit: 10;
+    const farmerList = await getFarmerListByAdmin(page, limit);
+    res.status(200).json({
+      message: "Get Farmer List",
+      data: farmerList
+    });
+  }
+  catch (error) {
+    console.error("Controller Error:", error);
+    res.status(500).json({ message: "Failed to get Farmer List" });
+  }
+}
 
