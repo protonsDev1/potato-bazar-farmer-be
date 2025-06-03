@@ -29,9 +29,10 @@ module.exports = {
 
     await queryInterface.createTable('LandDetails', {
       id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
-        defaultValue: Sequelize.literal('uuid_generate_v4()'),
+        allowNull: false
       },
       farmerId: {
         type: Sequelize.UUID,
@@ -70,9 +71,10 @@ module.exports = {
 
     await queryInterface.createTable('IrrigationSources', {
       id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
-        defaultValue: Sequelize.literal('uuid_generate_v4()'),
+        allowNull: false
       },
       farmerId: {
         type: Sequelize.UUID,
@@ -84,9 +86,10 @@ module.exports = {
 
     await queryInterface.createTable('PotatoVarietyGrown', {
       id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
-        defaultValue: Sequelize.literal('uuid_generate_v4()'),
+        allowNull: false
       },
       farmerId: {
         type: Sequelize.UUID,
@@ -99,9 +102,10 @@ module.exports = {
 
     await queryInterface.createTable('FarmEquipment', {
       id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
-        defaultValue: Sequelize.literal('uuid_generate_v4()'),
+        allowNull: false
       },
       farmerId: {
         type: Sequelize.UUID,
@@ -115,9 +119,10 @@ module.exports = {
 
     await queryInterface.createTable('TechnologyUsed', {
       id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
-        defaultValue: Sequelize.literal('uuid_generate_v4()'),
+        allowNull: false
       },
       farmerId: {
         type: Sequelize.UUID,
@@ -143,9 +148,10 @@ module.exports = {
 
     await queryInterface.createTable('SellingChallenges', {
       id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
-        defaultValue: Sequelize.literal('uuid_generate_v4()'),
+        allowNull: false
       },
       farmerId: {
         type: Sequelize.UUID,
@@ -157,9 +163,10 @@ module.exports = {
 
     await queryInterface.createTable('MajorSellingChallenges', {
       id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
-        defaultValue: Sequelize.literal('uuid_generate_v4()'),
+        allowNull: false
       },
       farmerId: {
         type: Sequelize.UUID,
@@ -171,9 +178,10 @@ module.exports = {
 
     await queryInterface.createTable('PriceDiscoveryMethods', {
       id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
-        defaultValue: Sequelize.literal('uuid_generate_v4()'),
+        allowNull: false
       },
       farmerId: {
         type: Sequelize.UUID,
