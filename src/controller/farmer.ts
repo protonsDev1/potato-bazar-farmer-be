@@ -1,5 +1,5 @@
 import Farmer from '../database/models/farmer';
-import { onboardFarmer, retrieveFarmerProfile} from '../services/farmerServices';
+import { onboardFarmer, retrieveFarmerProfile, getFarmerListByAdmin} from '../services/farmerServices';
 import { updateUserInDB } from '../services/userServices';
 
 export const createFarmer = async (req, res) => {
@@ -40,3 +40,19 @@ export const getProfileOverview = async (req, res) => {
       .json({ message: err.message || "Failed to retrieve profile of farmer" });
   }
 };
+
+export const getFarmerList = async (req, res) => {
+  try{
+    const page =  req.query.page? req.query.page: 1;
+    const limit =  req.query.limit? req.query.limit: 10;
+    const farmerList = await getFarmerListByAdmin(page, limit);
+    res.status(200).json({
+      message: "Get Farmer List",
+      data: farmerList
+    });
+  }
+  catch (error) {
+    console.error("Controller Error:", error);
+    res.status(500).json({ message: "Failed to get Farmer List" });
+  }
+}
