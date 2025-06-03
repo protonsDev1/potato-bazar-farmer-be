@@ -35,7 +35,7 @@ module.exports = {
         allowNull: false
       },
       farmerId: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         references: { model: 'Farmers', key: 'id' },
         onDelete: 'CASCADE',
       },
@@ -77,7 +77,7 @@ module.exports = {
         allowNull: false
       },
       farmerId: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         references: { model: 'Farmers', key: 'id' },
         onDelete: 'CASCADE',
       },
@@ -92,7 +92,7 @@ module.exports = {
         allowNull: false
       },
       farmerId: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         references: { model: 'Farmers', key: 'id' },
         onDelete: 'CASCADE',
       },
@@ -108,7 +108,7 @@ module.exports = {
         allowNull: false
       },
       farmerId: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         references: { model: 'Farmers', key: 'id' },
         onDelete: 'CASCADE',
       },
@@ -125,7 +125,7 @@ module.exports = {
         allowNull: false
       },
       farmerId: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         references: { model: 'Farmers', key: 'id' },
         onDelete: 'CASCADE',
       },
@@ -134,12 +134,13 @@ module.exports = {
 
     await queryInterface.createTable('SellingChannels', {
       id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
+        autoIncrement: true,
         primaryKey: true,
-        defaultValue: Sequelize.literal('uuid_generate_v4()'),
+        allowNull: false
       },
       farmerId: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         references: { model: 'Farmers', key: 'id' },
         onDelete: 'CASCADE',
       },
@@ -154,7 +155,7 @@ module.exports = {
         allowNull: false
       },
       farmerId: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         references: { model: 'Farmers', key: 'id' },
         onDelete: 'CASCADE',
       },
@@ -169,7 +170,7 @@ module.exports = {
         allowNull: false
       },
       farmerId: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         references: { model: 'Farmers', key: 'id' },
         onDelete: 'CASCADE',
       },
@@ -184,7 +185,7 @@ module.exports = {
         allowNull: false
       },
       farmerId: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         references: { model: 'Farmers', key: 'id' },
         onDelete: 'CASCADE',
       },
