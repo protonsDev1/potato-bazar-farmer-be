@@ -171,32 +171,3 @@ export async function onboardFarmer(payload: Payload) {
   throw err;
  }
 }
-
-export const retriveAllFarmers = async () => {
-  try {
-    const response = await Farmer.findAll();
-    return {
-      response,
-    };
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-};
-
-export const retrieveFarmersUnderAgent = async (agentId: string) => {
-  try {
-    const response = await Farmer.findAll({
-      where: { onBoardedBy: agentId },
-      order: [["createdAt", "DESC"]],
-    });
-
-    return {
-      response,
-    };
-  } catch (error) {
-    console.log(error);
-    throw error;
-  }
-};
-
