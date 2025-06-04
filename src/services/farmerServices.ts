@@ -171,5 +171,3 @@ export async function onboardFarmer(payload: Payload) {
   throw err;
  }
 }
-
-

@@ -10,5 +10,4 @@ const validator = createValidator({});
 
 router.post('/create',authMiddleware, validator.body(onboardFarmerSchema),createFarmer);
 
-
 export default router;
