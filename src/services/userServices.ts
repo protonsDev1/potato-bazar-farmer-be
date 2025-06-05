@@ -239,3 +239,79 @@ export const adminGetAgentsList = async (page, limit) => {
     throw error;
   }
 }
+
+export const deleteAgentById = async (id) =>{
+  try {
+    const agent = await Agent.findByPk(id);
+
+    if (!agent || agent.isDeleted) {
+      return false;
+    }
+
+    agent.isDeleted = true;
+    await agent.save();
+
+    return true;
+  } catch (error) {
+    console.error('Soft delete failed:', error);
+    return false;
+  }
+}
+
+export const changeAgentStatus = async(id)=>{
+  try {
+    const agent = await Agent.findByPk(id);
+    agent.is_active= !agent.is_active;
+    await agent.save();
+    return agent;
+  } catch (error) {
+    console.error('Agent status update failed:', error);
+    return null;
+  }
+}
+
+export const getAgentByIdFromDB = async (id) => {
+  try {
+    const getAgentAllDetails = await Agent.findOne({
+      where: { id },
+      include: [
+        { 
+          model: User, 
+          as: 'user' 
+        },
+      ],
+    });
+    return getAgentAllDetails;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const updateAgentById = async (id, updateData) => {
+  try{
+    const agent = await Agent.findByPk(id, { include: [{ model: User, as: 'user' }] });
+    if (!agent || agent.isDeleted) {
+      return null;
+    }
+    // Update Agent fields
+    if (updateData.phone !== undefined) agent.phone = updateData.phone;
+    if (updateData.district !== undefined) agent.district = updateData.district;
+    if (updateData.address !== undefined) agent.address = updateData.address;
+    if (updateData.note !== undefined) agent.note = updateData.note;
+    if (updateData.is_active !== undefined) agent.is_active = updateData.is_active;
+    // Update User (name, email)
+    const user = await User.findByPk(agent.userId);
+    if (user) {
+      if (updateData.name !== undefined) user.name = updateData.name;
+      if (updateData.email !== undefined) user.email = updateData.email;
+      await user.save();
+    }
+    console.log("agent---------->",updateData)
+    await agent.save();
+    return agent;
+  }
+  catch (error) {
+    throw error;
+  }
+}
+updateAgentById

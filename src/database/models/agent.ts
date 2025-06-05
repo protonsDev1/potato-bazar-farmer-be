@@ -1,8 +1,16 @@
-import { Model, DataTypes } from "sequelize";
+import { Model, DataTypes, Identifier } from "sequelize";
 import sequelize from "./db";
 import User from "./user";
 
-class Agent extends Model {}
+class Agent extends Model {
+  isDeleted: boolean;
+  is_active: boolean;
+  phone: any;
+  district: any;
+  address: any;
+  note: any;
+  userId: Identifier;
+}
 
 Agent.init(
   {
@@ -43,6 +51,10 @@ Agent.init(
     agentId: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,
