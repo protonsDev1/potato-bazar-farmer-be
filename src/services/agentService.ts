@@ -2,6 +2,10 @@ import ColdStorage from "../database/models/coldStorage";
 import Farmer from "../database/models/farmer";
 import { formatDate } from "../utils/dateFormat";
 
+import { Op, fn, col, literal } from "sequelize";
+import dayjs from "dayjs";
+import Agent from "../database/models/agent";
+
 export const retriveAllUsers = async (
   agentId: string,
   page = 1,
@@ -10,7 +14,7 @@ export const retriveAllUsers = async (
   try {
     const offset = (page - 1) * limit;
 
-   const [farmers, coldStorages] = await Promise.all([
+    const [farmers, coldStorages] = await Promise.all([
       Farmer.findAll({
         where: { onBoardedBy: agentId },
         order: [["createdAt", "DESC"]],
@@ -21,7 +25,6 @@ export const retriveAllUsers = async (
       }),
     ]);
 
-    // Combine both
     const combined = [...farmers, ...coldStorages].map((item: any) => ({
       id: item.id,
       name: item.name,
@@ -35,7 +38,8 @@ export const retriveAllUsers = async (
 
     // Sort by date descending
     combined.sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
     const paginated = combined.slice(offset, offset + limit);
@@ -91,6 +95,145 @@ export const retrieveRecentRegistered = async (agentId) => {
     return { data: result };
   } catch (error) {
     console.log(error);
+    throw error;
+  }
+};
+
+export const retrieveAgentPerformance = async (agentId) => {
+  try {
+    const monthsBack = 12;
+    const fromDate = dayjs()
+      .subtract(monthsBack, "month")
+      .startOf("month")
+      .toDate();
+
+    const farmerData: any = await Farmer.findAll({
+      attributes: [
+        [fn("TO_CHAR", col("createdAt"), "Mon"), "month"],
+        [fn("COUNT", "*"), "count"],
+      ],
+      where: {
+        createdAt: { [Op.gte]: fromDate },
+        onBoardedBy: agentId,
+      },
+      group: [fn("TO_CHAR", col("createdAt"), "Mon")],
+      raw: true,
+    });
+
+    const coldStorageData: any = await ColdStorage.findAll({
+      attributes: [
+        [fn("TO_CHAR", col("createdAt"), "Mon"), "month"],
+        [fn("COUNT", "*"), "count"],
+      ],
+      where: {
+        createdAt: { [Op.gte]: fromDate },
+        onBoardedBy: agentId,
+      },
+      group: [fn("TO_CHAR", col("createdAt"), "Mon")],
+      raw: true,
+    });
+
+    const dataMap: any = {};
+
+    farmerData.forEach((row) => {
+      if (!dataMap[row.month]) dataMap[row.month] = 0;
+      dataMap[row.month] += parseInt(row.count);
+    });
+
+    coldStorageData.forEach((row) => {
+      if (!dataMap[row.month]) dataMap[row.month] = 0;
+      dataMap[row.month] += parseInt(row.count);
+    });
+
+    const monthlyRegistrations = Object.entries(dataMap)
+      .map(([month, total]) => ({ month, total }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+
+    const startOfMonth = dayjs().startOf("month").toDate();
+    const endOfMonth = dayjs().endOf("month").toDate();
+
+    const [currentFarmerCount, currentColdStorageCount] = await Promise.all([
+      Farmer.count({
+        where: {
+          onBoardedBy: agentId,
+          createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+        },
+      }),
+      ColdStorage.count({
+        where: {
+          onBoardedBy: agentId,
+          createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+        },
+      }),
+    ]);
+
+    const currentMonthRegistrations =
+      currentFarmerCount + currentColdStorageCount;
+
+    const completionOfMonthlyTargetPercentage =
+      (currentMonthRegistrations / 50) * 100;
+
+    return {
+      monthlyRegistrations,
+      currentMonthRegistrations,
+      monthlyTarget: 50,
+      completionOfMonthlyTargetPercentage,
+    };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const retrieveAgentDashboardStats = async (agentId) => {
+  try {
+    const startOfWeek = dayjs().startOf("week").toDate();
+    const endOfWeek = dayjs().endOf("week").toDate();
+
+    const agent = await Agent.findOne({ where: { userId: agentId } });
+    if (!agent) {
+      throw new Error("Agent not found");
+    }
+
+    const [
+      farmerCount,
+      coldStorageCount,
+      weeklyNewFarmers,
+      weeklyNewColdStorages,
+    ] = await Promise.all([
+      Farmer.count({
+        where: { onBoardedBy: agentId },
+      }),
+      ColdStorage.count({
+        where: { onBoardedBy: agentId },
+      }),
+      Farmer.count({
+        where: {
+          onBoardedBy: agentId,
+          createdAt: {
+            [Op.between]: [startOfWeek, endOfWeek],
+          },
+        },
+      }),
+      ColdStorage.count({
+        where: {
+          onBoardedBy: agentId,
+          createdAt: {
+            [Op.between]: [startOfWeek, endOfWeek],
+          },
+        },
+      }),
+    ]);
+
+    return {
+      agentId: agent.agentId,
+      countOfFarmers: farmerCount,
+      countOfColdStorage: coldStorageCount,
+      weeklyNewFarmers,
+      weeklyNewColdStorages,
+    };
+  } catch (error) {
+    console.error(error);
     throw error;
   }
 };
