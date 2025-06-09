@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, getDashboardCounts, registerInitialUser, updateRegistrationTypes } from '../services/userServices';
+import { adminGetAgentsList, changeAgentStatus, checkExistingUser, createUserInDB, createUserWithAgent, deleteAgentById, findAgentWithUser, findUserByEmail, getAgentByIdFromDB, getDashboardCounts, registerInitialUser, updateAgentById, updateRegistrationTypes } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
@@ -35,7 +35,7 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
     try {
       const { email, password } = req.body;
-  
+      console.log("secretOrPrivateKey");
       // Validate input using the Joi schema
     
   
@@ -192,5 +192,71 @@ export const updateUserRegistrationTypes = async (req, res) => {
   }
 };
 
+export const getAgentsList = async (req, res) => {
+  try {
+    const page =  req.query.page? req.query.page: 1;
+    const limit =  req.query.limit? req.query.limit: 10;
+    const agents = await adminGetAgentsList(page, limit);
+    return res.status(200).json({ message: 'Get Agent List', data: agents });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Failed to get agent list' });
+  }
+}
 
+export const deleteAgent = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const agentDelete = await deleteAgentById(id);
+    res.status(200).json({
+      message:"Agent Successfully deleted"
+    });
+  } catch (error) {
+    console.error("Controller Error:", error);
+    res.status(500).json({message: "Failed to agent delete"})
+  }
+}
 
+export const agentStatusChange = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const agentStatus = await changeAgentStatus(id);
+    res.status(200).json({
+      message:"Agent Status Successfully changed"
+    });
+  } catch (error) {
+    console.error("Controller Error:", error);
+    res.status(500).json({message: "Failed to agent status change"})
+  }
+}
+
+export const getAgentById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const agent = await getAgentByIdFromDB(id);
+    res.status(200).json({
+      message:"Agent Successfully fetched",
+      data: agent
+    });
+  } catch (error) {
+    console.error("Controller Error:", error);
+    res.status(500).json({message: "Failed to get agent"})
+  }
+}
+
+export const updateAgent = async (req, res) => {
+  try {
+    const agentId = req.params.id;
+    const updateData = req.body;
+
+    const updatedAgent = await updateAgentById(agentId, updateData);
+
+    if (!updatedAgent) {
+      return res.status(404).json({ message: 'Agent not found' });
+    }
+
+    res.status(200).json({ message: 'Agent updated successfully', data: updatedAgent });
+  } catch (error) {
+    console.error('Error updating agent:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

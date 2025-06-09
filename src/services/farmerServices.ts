@@ -172,4 +172,18 @@ export async function onboardFarmer(payload: Payload) {
  }
 }
 
+export async function getFarmerListByAdmin(page, limit){
+  try {
+    const offset = (page - 1) * limit;
+    const response = await Farmer.findAll({
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]]});
+    return response;
+  }
+  catch (err) {
+    console.error("Error in get farmer list:", err);
+    throw err;
+  }
+}
 

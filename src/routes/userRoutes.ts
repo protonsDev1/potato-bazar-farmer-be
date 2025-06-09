@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
 import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema } from "../validation/userValidator";
-import { agentLogin, createAgent, getDashboardStats, login, sendOtp, signup, updateUserRegistrationTypes, verifyOtp } from "../controller/user";
+import { agentLogin, agentStatusChange, createAgent, deleteAgent, getAgentById, getAgentsList, getDashboardStats, login, sendOtp, signup, updateUserRegistrationTypes, verifyOtp, updateAgent } from "../controller/user";
 import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 
 const router = express.Router();
@@ -24,6 +24,14 @@ router.post('/get-dash-stats', adminMiddleware,  getDashboardStats);
 
 router.put('/registration-types',authMiddleware,validator.body(registrationTypesSchema), updateUserRegistrationTypes);
 
+router.get('/get-agents-list', adminMiddleware, getAgentsList);
 
+router.delete('/delete-agent/:id',adminMiddleware, deleteAgent);
+
+router.patch('/agents/:id/active-or-inactive', adminMiddleware, agentStatusChange );
+
+router.get('/get-agent-by-id/:id', adminMiddleware, getAgentById);
+
+router.put('/update-agent/:id', adminMiddleware, updateAgent);
 export default router;
 

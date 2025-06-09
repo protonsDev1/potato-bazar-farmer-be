@@ -104,3 +104,18 @@ export async function onboardColdStorage(payload: any) {
     throw err;
   }
 }
+
+export async function getColdStorage(page, limit){
+  try {
+    const offset = (page - 1) * limit;
+    const response = await ColdStorage.findAll({
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]]});
+    return response;
+  }
+  catch (err) {
+    console.error("Error in get cold storage list:", err);
+    throw err;
+  }
+}
