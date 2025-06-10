@@ -5,6 +5,9 @@ import farmerRoutes from "./src/routes/farmerRoutes";
 import coldStorageRoutes from './src/routes/coldStorageRoutes';
 import agentRoutes from "./src/routes/agentRoutes";
 import locationRoutes from "./src/routes/locationRoutes";
+import adminIrrigationRoutes from "./src/routes/adminIrrigationRoutes";
+import adminSoilTypeRoutes from "./src/routes/adminSoilTypeRoutes";
+
 
 const cors = require("cors");
 
@@ -18,6 +21,9 @@ app.use("/api/farmers", farmerRoutes);
 app.use("/api/cold-storage", coldStorageRoutes);
 app.use("/api/agent",agentRoutes);
 app.use("/api/locations", locationRoutes);
+app.use("/api/admin/irrigation_source", adminIrrigationRoutes);
+app.use("/api/admin/soil_type", adminSoilTypeRoutes);
+
 
 const PORT = 8000;
 const startServer = async () => {
