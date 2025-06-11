@@ -2,7 +2,9 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "./db";
 import User from "./user";
 
-class Agent extends Model {}
+class Agent extends Model {
+  public agentId!: string;
+}
 
 Agent.init(
   {
