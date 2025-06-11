@@ -6,25 +6,23 @@ import {
   CreationOptional,
 } from "sequelize";
 
-import sequelize from "./db";
+import sequelize from "../db";
 
-class AdminIrrigationSource extends Model<
-  InferAttributes<AdminIrrigationSource>,
-  InferCreationAttributes<AdminIrrigationSource>
+class AdminFarmEquipmentUsed extends Model<
+  InferAttributes<AdminFarmEquipmentUsed>,
+  InferCreationAttributes<AdminFarmEquipmentUsed>
 > {
   declare id: CreationOptional<number>;
-  declare name_en: string;
-  declare name_hi: string;
-  declare icon: string | null;
+  declare name: string;
+  declare icon: string;
   declare isActive: boolean;
   declare position: number;
 }
 
-AdminIrrigationSource.init(
+AdminFarmEquipmentUsed.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-    name_en: { type: DataTypes.STRING, allowNull: false },
-    name_hi: { type: DataTypes.STRING, allowNull: false },
+    name: { type: DataTypes.STRING, allowNull: false },
     icon: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -40,10 +38,10 @@ AdminIrrigationSource.init(
   },
   {
     sequelize,
-    modelName: "AdminIrrigationSource",
-    tableName: "AdminIrrigationSource",
+    modelName: "AdminFarmEquipmentUsed",
+    tableName: "adminFarmEquipmentsUsed",
     timestamps: true,
   }
 );
 
-export default AdminIrrigationSource;
+export default AdminFarmEquipmentUsed;

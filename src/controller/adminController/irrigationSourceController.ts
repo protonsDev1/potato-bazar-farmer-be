@@ -3,7 +3,7 @@ import {
   deleteIrrigationSourceService,
   getIrrigationSourceService,
   updateIrrigationSourceService,
-} from "../../services/adminService/IrrigationSourceService";
+} from "../../services/adminService/irrigationSourceService";
 
 export const addIrrigationSource = async (req, res) => {
   try {

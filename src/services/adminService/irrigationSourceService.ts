@@ -1,15 +1,13 @@
-import AdminIrrigationSource from "../../database/models/adminIrrigationSource";
+import AdminIrrigationSource from "../../database/models/adminModels/adminIrrigationSource";
 
 interface IrrigationSource {
-  name_en: string;
-  name_hi: string;
+  name: string;
   position?: number;
   icon?: string;
 }
 
 interface UpdateIrigationSource {
-  name_en?: string;
-  name_hi?: string;
+  name?: string;
   position?: number;
   icon?: string;
 }

@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("adminIrrigationSources", {
+    await queryInterface.createTable("adminPotatoVarietiesGrown", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -11,10 +11,6 @@ module.exports = {
       name: {
         type: Sequelize.STRING,
         allowNull: false,
-      },
-      icon: {
-        type: Sequelize.STRING,
-        allowNull: true,
       },
       isActive: {
         type: Sequelize.BOOLEAN,
@@ -25,19 +21,19 @@ module.exports = {
         allowNull: true,
       },
       createdAt: {
-        type: Sequelize.DATE,
         allowNull: false,
+        type: Sequelize.DATE,
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
       updatedAt: {
-        type: Sequelize.DATE,
         allowNull: false,
+        type: Sequelize.DATE,
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
     });
   },
 
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("adminIrrigationSources");
+  down: async (queryInterface) => {
+    await queryInterface.dropTable("adminPotatoVarietiesGrown");
   },
 };
