@@ -6,15 +6,14 @@ import {
   CreationOptional,
 } from "sequelize";
 
-import sequelize from "./db";
+import sequelize from "../db";
 
 class AdminSoilType extends Model<
   InferAttributes<AdminSoilType>,
   InferCreationAttributes<AdminSoilType>
 > {
   declare id: CreationOptional<number>;
-  declare name_en: string;
-  declare name_hi: string;
+  declare name: string;
   declare icon: string | null;
   declare isActive: boolean;
   declare position: number;
@@ -23,8 +22,7 @@ class AdminSoilType extends Model<
 AdminSoilType.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-    name_en: { type: DataTypes.STRING, allowNull: false },
-    name_hi: { type: DataTypes.STRING, allowNull: false },
+    name: { type: DataTypes.STRING, allowNull: false },
     icon: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -41,7 +39,7 @@ AdminSoilType.init(
   {
     sequelize,
     modelName: "AdminSoilType",
-    tableName: "AdminSoilType",
+    tableName: "adminSoilTypes",
     timestamps: true,
   }
 );

@@ -1,14 +1,14 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
 
-import { authMiddleware } from "../utils/userAuth";
-import { irrigationSourceSchema } from "../validation/adminValidation";
+import { authMiddleware } from "../../utils/userAuth";
+import { irrigationSourceSchema } from "../../validation/adminValidation";
 import {
   addIrrigationSource,
   deleteIrrigationSource,
   getIrrigationSource,
   updateIrrigationSource,
-} from "../controller/adminController/irrigationSource";
+} from "../../controller/adminController/irrigationSourceController";
 
 const router = express.Router();
 const validator = createValidator({});

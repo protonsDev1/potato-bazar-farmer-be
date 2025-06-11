@@ -3,7 +3,7 @@ import {
   deleteSoilTypeService,
   getSoilTypeService,
   updateSoilTypeService,
-} from "../../services/adminService/SoilTypeService";
+} from "../../services/adminService/soilTypeService";
 
 export const addSoilType = async (req, res) => {
   try {

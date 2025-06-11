@@ -1,18 +1,14 @@
-'use strict';
+"use strict";
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('AdminSoilType', {
+    await queryInterface.createTable("adminSoilTypes", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
-      name_en: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      name_hi: {
+      name: {
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -31,17 +27,17 @@ module.exports = {
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
     });
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('AdminSoilType');
+    await queryInterface.dropTable("adminSoilTypes");
   },
 };

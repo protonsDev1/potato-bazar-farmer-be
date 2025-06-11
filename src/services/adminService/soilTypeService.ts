@@ -1,15 +1,13 @@
-import AdminSoilType from "../../database/models/adminSoilType";
+import AdminSoilType from "../../database/models/adminModels/adminSoilType";
 
 interface SoilType {
-  name_en: string;
-  name_hi: string;
+  name: string;
   position?: number;
   icon?: string;
 }
 
 interface UpdateSoilType {
-  name_en?: string;
-  name_hi?: string;
+  name?: string;
   position?: number;
   icon?: string;
 }
