@@ -2,7 +2,9 @@ import { onboardColdStorage } from '../services/coldStorageService';
 
 export const createColdStorage = async (req, res) => {
   try {
-    const onBoardedBy = req.body.id;
+    const onBoardedBy = req.user.id;
+    req.body.onBoardedBy=onBoardedBy;
+
     const coldStorage = await onboardColdStorage(req.body);
     res.status(201).json({
       message: "Cold Storage onboarded successfully",

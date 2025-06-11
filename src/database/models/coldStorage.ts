@@ -61,6 +61,7 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare additionalComments: string;
   declare onBoardedBy: number | null;
   declare userId: number | null;
+  declare state: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -123,6 +124,7 @@ ColdStorage.init({
   transportProvided: DataTypes.BOOLEAN,
   willingOnlineAuction: DataTypes.BOOLEAN,
   additionalComments: DataTypes.TEXT,
+  state: DataTypes.STRING,
   onBoardedBy: {
     type: DataTypes.INTEGER,
     allowNull: true,
