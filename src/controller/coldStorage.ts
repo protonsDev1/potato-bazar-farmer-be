@@ -1,4 +1,5 @@
-import { onboardColdStorage } from '../services/coldStorageService';
+import ColdStorage from '../database/models/coldStorage';
+import { onboardColdStorage, retrieveColdStorageProfile } from '../services/coldStorageService';
 
 export const createColdStorage = async (req, res) => {
   try {
@@ -13,3 +14,30 @@ export const createColdStorage = async (req, res) => {
     res.status(500).json({ message: "Failed to onboard cold storage" });
   }
 };
+
+export const getColdStorageProfile = async (req, res) => {
+  try {
+    const coldStorageId = req.params.id;
+
+    const { role, id } = req.user;
+
+    const coldStorage = await ColdStorage.findOne({
+      where: { id: coldStorageId },
+    });
+
+    if (role !== "admin" && coldStorage.onBoardedBy !== id)
+      return res.status(403).json({
+        message:
+          "Only Agents those register the coldStorage or an Admin are authorized to view coldStorage's profile.",
+      });
+
+    const profileDetails = await retrieveColdStorageProfile(coldStorageId);
+
+    return res.status(200).json({ message: profileDetails });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve cold storage profile." });
+  }
+};
+

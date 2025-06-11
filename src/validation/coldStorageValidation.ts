@@ -19,7 +19,6 @@ export const coldStorageSchema = Joi.object({
   shedType: Joi.string().required(),
   numberOfChambers: Joi.number().integer().min(0).required(),
   computerized: Joi.boolean().required(),
-  onBoardedBy: Joi.string().required(),
 
   storageTypes: Joi.array().items(
     Joi.object({

@@ -104,3 +104,54 @@ export async function onboardColdStorage(payload: any) {
     throw err;
   }
 }
+
+export const retrieveColdStorageProfile = async (coldStorageId) => {
+  try {
+    const coldStoragePersonalInfo = await ColdStorage.findOne({
+      where: { id: coldStorageId },
+    });
+
+    const chamberCapacity = await ChamberCapacity.findAll({
+      attributes: ["chamberNumber", "capacityMt"],
+      where: { coldStorageId },
+    });
+
+    const elevatorAndStuffing = await ElevatorAndStuffing.findAll({
+      attributes: ["name"],
+      where: { coldStorageId },
+    });
+
+    const operationalChallenge = await OperationalChallenge.findAll({
+      attributes: ["challenge"],
+      where: { coldStorageId },
+    });
+
+    const shed = await Shed.findAll({
+      attributes: ["sizeSqMtr"],
+      where: { coldStorageId },
+    });
+
+    const storageType = await StorageType.findAll({
+      attributes: ["storageType"],
+      where: { coldStorageId },
+    });
+
+    const usageType = await UsageType.findAll({
+      attributes: ["type"],
+      where: { coldStorageId },
+    });
+
+    return {
+      coldStoragePersonalInfo,
+      chamberCapacity,
+      elevatorAndStuffing,
+      operationalChallenge,
+      shed,
+      storageType,
+      usageType,
+    };
+  } catch (err) {
+    console.error("Error in retrieving cold storage profile", err);
+    throw err;
+  }
+};

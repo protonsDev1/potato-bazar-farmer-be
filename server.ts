@@ -3,6 +3,7 @@ import sequelize from "./src/database/models/db";
 import userRoutes from './src/routes/userRoutes';
 import farmerRoutes from "./src/routes/farmerRoutes";
 import coldStorageRoutes from './src/routes/coldStorageRoutes';
+import agentRoutes from "./src/routes/agentRoutes";
 const cors = require('cors');
 
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/farmers", farmerRoutes);
 app.use("/api/cold-storage", coldStorageRoutes);
+app.use("/api/agent",agentRoutes);
 
 
 const PORT = 8000;
