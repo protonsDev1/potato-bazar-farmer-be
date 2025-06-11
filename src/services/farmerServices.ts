@@ -172,4 +172,71 @@ export async function onboardFarmer(payload: Payload) {
  }
 }
 
+export const retrieveFarmerProfile = async (farmerId: string) => {
+  try {
+    const farmerPersonalInfo = await Farmer.findOne({
+      where: { id: farmerId },
+    });
+
+    const landDetails = await LandDetail.findOne({
+      where: { farmerId },
+    });
+
+    const irrigationDetails = await IrrigationSource.findAll({
+      attributes: ["method"],
+      where: { farmerId },
+    });
+
+    const farmEquipments = await FarmEquipment.findAll({
+      attributes: ["machine", "brand", "model"],
+      where: { farmerId },
+    });
+
+    const potatoVariety = await PotatoVarietyGrown.findAll({
+      attributes: ["variety", "subVariety"],
+      where: { farmerId },
+    });
+
+    const priceDiscoveryMethods = await PriceDiscoveryMethod.findAll({
+      attributes: ["method"],
+      where: { farmerId },
+    });
+
+    const majorSellingChallenge = await MajorSellingChallenge.findAll({
+      attributes: ["name"],
+      where: { farmerId },
+    });
+
+    const sellingChallenges = await SellingChallenge.findAll({
+      attributes: ["name"],
+      where: { farmerId },
+    });
+
+    const sellingChannels = await SellingChannel.findAll({
+      attributes: ["name"],
+      where: { farmerId },
+    });
+
+    const technologyUsed = await TechnologyUsed.findAll({
+      attributes: ["name"],
+      where: { farmerId },
+    });
+
+    return {
+      farmerPersonalInfo,
+      landDetails,
+      irrigationDetails,
+      farmEquipments,
+      potatoVariety,
+      priceDiscoveryMethods,
+      majorSellingChallenge,
+      sellingChallenges,
+      sellingChannels,
+      technologyUsed,
+    };
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
 

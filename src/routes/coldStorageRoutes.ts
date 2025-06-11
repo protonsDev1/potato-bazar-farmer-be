@@ -2,7 +2,7 @@ import express from 'express';
 import { createValidator } from 'express-joi-validation';
 import { authMiddleware } from '../utils/userAuth';
 import { coldStorageSchema } from '../validation/coldStorageValidation';
-import { createColdStorage } from '../controller/coldStorage';
+import { createColdStorage, getColdStorageProfile } from '../controller/coldStorage';
 
 const router = express.Router();
 const validator = createValidator({});
@@ -13,5 +13,6 @@ router.post(
   authMiddleware,
   createColdStorage
 );
+router.get("/profile/:id",getColdStorageProfile);
 
 export default router;
