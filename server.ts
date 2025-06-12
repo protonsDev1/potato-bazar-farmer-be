@@ -5,15 +5,15 @@ import farmerRoutes from "./src/routes/farmerRoutes";
 import coldStorageRoutes from './src/routes/coldStorageRoutes';
 import agentRoutes from "./src/routes/agentRoutes";
 import locationRoutes from "./src/routes/locationRoutes";
-import adminIrrigationRoutes from "./src/routes/adminRoutes/adminIrrigationRoutes";
-import adminSoilTypeRoutes from "./src/routes/adminRoutes/adminSoilTypeRoutes";
-import adminPotatoVarietyRoutes from "./src/routes/adminRoutes/adminPotatoVarietyRoutes";
-import adminPotatoSubVarietyRoutes from "./src/routes/adminRoutes/adminPotatoSubVarietyRoutes";
-import adminSowingMethodRoutes from "./src/routes/adminRoutes/adminSowingMethodRoutes";
-import adminFarmEquipmentRoutes from "./src/routes/adminRoutes/adminFarmEquipmentUsedRoutes";
-import adminTechnologyUsedRoutes from "./src/routes/adminRoutes/adminTechnologyUsedRoutes";
-import adminPriceDiscoveryRoutes from "./src/routes/adminRoutes/adminPriceDiscoveryRoutes";
-import adminBiggestChallengeInSellingRoutes from "./src/routes/adminRoutes/adminBiggestChallengeInSellingRoutes"
+import adminIrrigationRoutes from "./src/routes/adminRoutes/farmer/adminIrrigationRoutes";
+import adminSoilTypeRoutes from "./src/routes/adminRoutes/farmer/adminSoilTypeRoutes";
+import adminPotatoVarietyRoutes from "./src/routes/adminRoutes/farmer/adminPotatoVarietyRoutes";
+import adminPotatoSubVarietyRoutes from "./src/routes/adminRoutes/farmer/adminPotatoSubVarietyRoutes";
+import adminSowingMethodRoutes from "./src/routes/adminRoutes/farmer/adminSowingMethodRoutes";
+import adminFarmEquipmentRoutes from "./src/routes/adminRoutes/farmer/adminFarmEquipmentUsedRoutes";
+import adminTechnologyUsedRoutes from "./src/routes/adminRoutes/farmer/adminTechnologyUsedRoutes";
+import adminPriceDiscoveryRoutes from "./src/routes/adminRoutes/farmer/adminPriceDiscoveryRoutes";
+import adminBiggestChallengeInSellingRoutes from "./src/routes/adminRoutes/farmer/adminBiggestChallengeInSellingRoutes"
 
 const cors = require("cors");
 
