@@ -2,7 +2,7 @@ import express from "express";
 import sequelize from "./src/database/models/db";
 import userRoutes from "./src/routes/userRoutes";
 import farmerRoutes from "./src/routes/farmerRoutes";
-import coldStorageRoutes from './src/routes/coldStorageRoutes';
+import coldStorageRoutes from "./src/routes/coldStorageRoutes";
 import agentRoutes from "./src/routes/agentRoutes";
 import locationRoutes from "./src/routes/locationRoutes";
 import adminIrrigationRoutes from "./src/routes/adminRoutes/farmer/adminIrrigationRoutes";
@@ -13,7 +13,11 @@ import adminSowingMethodRoutes from "./src/routes/adminRoutes/farmer/adminSowing
 import adminFarmEquipmentRoutes from "./src/routes/adminRoutes/farmer/adminFarmEquipmentUsedRoutes";
 import adminTechnologyUsedRoutes from "./src/routes/adminRoutes/farmer/adminTechnologyUsedRoutes";
 import adminPriceDiscoveryRoutes from "./src/routes/adminRoutes/farmer/adminPriceDiscoveryRoutes";
-import adminBiggestChallengeInSellingRoutes from "./src/routes/adminRoutes/farmer/adminBiggestChallengeInSellingRoutes"
+import adminBiggestChallengeInSellingRoutes from "./src/routes/adminRoutes/farmer/adminBiggestChallengeInSellingRoutes";
+import adminCropTradedRoutes from "./src/routes/adminRoutes/trader/adminCropTradedRoutes";
+import adminTraderInterestRoutes from "./src/routes/adminRoutes/trader/adminTraderInterestRoutes";
+import adminTraderTypeRoutes from "./src/routes/adminRoutes/trader/adminTraderTypeRoutes";
+import adminTraderVarietyRoutes from "./src/routes/adminRoutes/trader/adminTraderVarietyRoutes";
 
 const cors = require("cors");
 
@@ -25,7 +29,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/farmers", farmerRoutes);
 app.use("/api/cold-storage", coldStorageRoutes);
-app.use("/api/agent",agentRoutes);
+app.use("/api/agent", agentRoutes);
 app.use("/api/locations", locationRoutes);
 app.use("/api/admin/irrigation_source", adminIrrigationRoutes);
 app.use("/api/admin/soil_type", adminSoilTypeRoutes);
@@ -35,7 +39,14 @@ app.use("/api/admin/sowing_method", adminSowingMethodRoutes);
 app.use("/api/admin/farm_equipment", adminFarmEquipmentRoutes);
 app.use("/api/admin/technology_used", adminTechnologyUsedRoutes);
 app.use("/api/admin/price_discovery", adminPriceDiscoveryRoutes);
-app.use("/api/admin/challenge_in_selling", adminBiggestChallengeInSellingRoutes);
+app.use(
+  "/api/admin/challenge_in_selling",
+  adminBiggestChallengeInSellingRoutes
+);
+app.use("/api/admin/crop_traded", adminCropTradedRoutes);
+app.use("/api/admin/trader_interest", adminTraderInterestRoutes);
+app.use("/api/admin/trader_type", adminTraderTypeRoutes);
+app.use("/api/admin/trader_variety", adminTraderVarietyRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
