@@ -6,6 +6,7 @@ import { potatoVarietySchema } from "../../../validation/adminValidation";
 import {
   addPotatoVarietyGrown,
   deletePotatoVariety,
+  getActivePotatoVarietyGrown,
   getPotatoVarietyGrown,
   updatePotatoVariety,
 } from "../../../controller/adminController/farmer/potatoVarietyController";
@@ -21,6 +22,8 @@ router.post(
 );
 
 router.get("/", getPotatoVarietyGrown);
+
+router.get("/active", getActivePotatoVarietyGrown);
 
 router.put("/:id", authMiddleware, updatePotatoVariety);
 

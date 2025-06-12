@@ -6,6 +6,7 @@ import { sowingMethodSchema } from "../../../validation/adminValidation";
 import {
   addSowingMethod,
   deleteSowingMethod,
+  getActiveSowingMethod,
   getSowingMethod,
   updateSowingMethod,
 } from "../../../controller/adminController/farmer/sowingMethodController";
@@ -21,6 +22,8 @@ router.post(
 );
 
 router.get("/", getSowingMethod);
+
+router.get("/active", getActiveSowingMethod);
 
 router.put("/:id", authMiddleware, updateSowingMethod);
 

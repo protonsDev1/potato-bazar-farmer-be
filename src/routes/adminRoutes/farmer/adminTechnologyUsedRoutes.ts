@@ -6,6 +6,7 @@ import { technologyUsedSchema } from "../../../validation/adminValidation";
 import {
   addTechnologyUsed,
   deleteTechnologyUsed,
+  getActiveTechnologyUsed,
   getTechnologyUsed,
   updateTechnologyUsed,
 } from "../../../controller/adminController/farmer/technologyUsedController";
@@ -21,6 +22,8 @@ router.post(
 );
 
 router.get("/", getTechnologyUsed);
+
+router.get("/active", getActiveTechnologyUsed);
 
 router.put("/:id", authMiddleware, updateTechnologyUsed);
 

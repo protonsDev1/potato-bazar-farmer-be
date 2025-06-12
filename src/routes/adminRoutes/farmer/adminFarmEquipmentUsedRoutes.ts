@@ -6,8 +6,9 @@ import { farmEquipmentUsedSchema } from "../../../validation/adminValidation";
 import {
   addFarmEquipment,
   deleteFarmEquipment,
+  getActiveFarmEquipment,
   getFarmEquipment,
-  UpdateFarmEquipment,
+  updateFarmEquipment,
 } from "../../../controller/adminController/farmer/farmEquipmentUsed";
 
 const router = express.Router();
@@ -22,7 +23,9 @@ router.post(
 
 router.get("/", getFarmEquipment);
 
-router.put("/:id", authMiddleware, UpdateFarmEquipment);
+router.get("/active", getActiveFarmEquipment);
+
+router.put("/:id", authMiddleware, updateFarmEquipment);
 
 router.delete("/:id", authMiddleware, deleteFarmEquipment);
 

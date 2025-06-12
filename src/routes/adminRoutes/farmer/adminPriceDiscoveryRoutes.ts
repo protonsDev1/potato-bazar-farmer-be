@@ -6,6 +6,7 @@ import { priceDiscoverySchema } from "../../../validation/adminValidation";
 import {
   addPriceDiscovery,
   deletePriceDiscovery,
+  getActivePriceDiscovery,
   getPriceDiscovery,
   updatePriceDiscovery,
 } from "../../../controller/adminController/farmer/priceDiscovery";
@@ -21,6 +22,8 @@ router.post(
 );
 
 router.get("/", getPriceDiscovery);
+
+router.get("/active", getActivePriceDiscovery);
 
 router.put("/:id", authMiddleware, updatePriceDiscovery);
 

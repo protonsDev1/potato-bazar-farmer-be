@@ -1,30 +1,35 @@
+import AdminBiggestChallengeInSelling from "../../../database/models/adminModels/farmer/adminBiggestChallengeInSelling";
 import {
-  addBiggestChallengeInSellingService,
-  deleteBiggestChallengeInSellingService,
-  getBiggestChallengeInSellingService,
-  updateBiggestChallengeInSellingService,
-} from "../../../services/adminServices/farmer/biggestChallengeInSelling";
+  createRecord,
+  deleteRecord,
+  getActiveRecords,
+  getAllRecords,
+  updateRecord,
+} from "../../../services/adminServices/crudOperationService";
 
 export const addBiggestChallengeInSelling = async (req, res) => {
   try {
     const { role } = req.user;
-
     const biggestChallenge = req.body;
 
     if (role !== "admin")
       return res.status(403).json({
         message:
-          "Only Admin are authorized to add Biggest Challenge in Selling.",
+          "Only Admins are authorized to add Biggest Challenge in Selling.",
       });
 
-    const response = await addBiggestChallengeInSellingService(
+    const response = await createRecord(
+      AdminBiggestChallengeInSelling,
       biggestChallenge
     );
 
-    if (response.success)
-      return res.status(200).json({
-        message: "New Biggest Challenge in Selling added Successfully.",
+    if (response?.success)
+      return res.status(201).json({
+        message: "New Biggest Challenge in Selling added successfully.",
+        data: response.data,
       });
+
+    return res.status(400).json({ message: "Failed to add record." });
   } catch (error) {
     return res.status(500).json({
       message: error.message || "Failed to add Biggest Challenge in Selling.",
@@ -34,10 +39,15 @@ export const addBiggestChallengeInSelling = async (req, res) => {
 
 export const getBiggestChallengeInSelling = async (req, res) => {
   try {
-    const response = await getBiggestChallengeInSellingService();
+    const response = await getAllRecords(AdminBiggestChallengeInSelling);
 
-    if (response.success)
-      return res.status(200).json({ message: response.data });
+    if (response?.success)
+      return res.status(200).json({
+        message: "Biggest Challenges in Selling fetched successfully.",
+        data: response.data,
+      });
+
+    return res.status(404).json({ message: "No records found." });
   } catch (error) {
     return res.status(500).json({
       message:
@@ -46,25 +56,54 @@ export const getBiggestChallengeInSelling = async (req, res) => {
   }
 };
 
+export const getActiveBiggestChallengeInSelling = async (req, res) => {
+  try {
+    const response = await getActiveRecords(AdminBiggestChallengeInSelling);
+
+    if (response?.success)
+      return res.status(200).json({
+        message: "Active Biggest Challenges in Selling fetched successfully.",
+        data: response.data,
+      });
+
+    return res.status(404).json({ message: "No active records found." });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        error.message ||
+        "Failed to retrieve Active Biggest Challenge in Selling.",
+    });
+  }
+};
+
 export const updateBiggestChallengeInSelling = async (req, res) => {
   try {
-    const data = req.body;
-    const id = req.params.id;
-
     const { role } = req.user;
+    const id = req.params.id;
+    const data = req.body;
 
     if (role !== "admin")
       return res.status(403).json({
         message:
-          "Only Admin are authorized to update Biggest Challenge in Selling.",
+          "Only Admins are authorized to update Biggest Challenge in Selling.",
       });
 
-    const response = await updateBiggestChallengeInSellingService(data, id);
+    const response = await updateRecord(
+      AdminBiggestChallengeInSelling,
+      id,
+      data
+    );
 
-    if (response.success)
-      return res.status(200).json({
-        message: "Biggest Challenge in Selling updated Successfully.",
+    if (!response || response.success === false) {
+      return res.status(404).json({
+        message: response?.error || "Record not found.",
       });
+    }
+
+    return res.status(200).json({
+      message: "Biggest Challenge in Selling updated successfully.",
+      data: response.data,
+    });
   } catch (error) {
     return res.status(500).json({
       message:
@@ -75,21 +114,25 @@ export const updateBiggestChallengeInSelling = async (req, res) => {
 
 export const deleteBiggestChallengeInSelling = async (req, res) => {
   try {
-    const id = req.params.id;
-
     const { role } = req.user;
+    const id = req.params.id;
 
     if (role !== "admin")
       return res.status(403).json({
         message:
-          "Only Admin are authorized to delete Biggest Challenge in Selling.",
+          "Only Admins are authorized to delete Biggest Challenge in Selling.",
       });
 
-    const response = await deleteBiggestChallengeInSellingService(id);
-    if (response.success)
-      return res.status(200).json({
-        message: "Biggest Challenge in Selling deleted Successfully.",
+    const response = await deleteRecord(AdminBiggestChallengeInSelling, id);
+
+    if (!response || response.success === false)
+      return res.status(404).json({
+        message: response?.error || "Record not found.",
       });
+
+    return res.status(200).json({
+      message: "Biggest Challenge in Selling deleted successfully.",
+    });
   } catch (error) {
     return res.status(500).json({
       message:
