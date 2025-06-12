@@ -4,23 +4,18 @@ const updateModelFields = async (modelInstance, data) => {
       modelInstance.set(key, data[key]);
     }
   });
-
   await modelInstance.save();
   return modelInstance;
 };
-
 export const updateRecord = async (modelClass, id, data) => {
   try {
     const instance = await modelClass.findByPk(id);
-
     if (!instance)
       return {
         success: false,
-        error: `Record with id ${id} not found`,
+        error: `Record not found with ID: ${id}.`,
       };
-
     const updatedInstance = await updateModelFields(instance, data);
-
     return {
       success: true,
       data: updatedInstance,
@@ -33,11 +28,9 @@ export const updateRecord = async (modelClass, id, data) => {
     };
   }
 };
-
 export const createRecord = async (model, data) => {
   try {
     const result = await model.create(data);
-
     return {
       success: true,
       data: result,
@@ -50,11 +43,12 @@ export const createRecord = async (model, data) => {
     };
   }
 };
-
 export const getActiveRecords = async (model) => {
   try {
-    const result = await model.findAll({ where: { isActive: true } });
-
+    const result = await model.findAll({
+      where: { isActive: true },
+      order: [["position", "ASC"]],
+    });
     return {
       success: true,
       data: result,
@@ -67,11 +61,9 @@ export const getActiveRecords = async (model) => {
     };
   }
 };
-
 export const getAllRecords = async (model) => {
   try {
     const result = await model.findAll();
-
     return {
       success: true,
       data: result,
@@ -84,18 +76,36 @@ export const getAllRecords = async (model) => {
     };
   }
 };
-
+export const getRecordById = async (model, id) => {
+  try {
+    const result = await model.findByPk(id);
+    if (!result) {
+      return {
+        success: false,
+        error: `Record not found with ID: ${id}.`,
+      };
+    }
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      error: error.message || "Error retrieving record by ID",
+    };
+  }
+};
 export const deleteRecord = async (model, id) => {
   try {
     const result = await model.findByPk(id);
     if (!result)
       return {
         success: false,
-        error: `Record with id ${id} not found`,
+        error: `Record not found with ID: ${id}.`,
       };
-
     await model.destroy({ where: { id } });
-
     return {
       success: true,
     };
