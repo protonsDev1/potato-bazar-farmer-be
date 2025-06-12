@@ -5,6 +5,15 @@ import farmerRoutes from "./src/routes/farmerRoutes";
 import coldStorageRoutes from './src/routes/coldStorageRoutes';
 import agentRoutes from "./src/routes/agentRoutes";
 import locationRoutes from "./src/routes/locationRoutes";
+import adminIrrigationRoutes from "./src/routes/adminRoutes/farmer/adminIrrigationRoutes";
+import adminSoilTypeRoutes from "./src/routes/adminRoutes/farmer/adminSoilTypeRoutes";
+import adminPotatoVarietyRoutes from "./src/routes/adminRoutes/farmer/adminPotatoVarietyRoutes";
+import adminPotatoSubVarietyRoutes from "./src/routes/adminRoutes/farmer/adminPotatoSubVarietyRoutes";
+import adminSowingMethodRoutes from "./src/routes/adminRoutes/farmer/adminSowingMethodRoutes";
+import adminFarmEquipmentRoutes from "./src/routes/adminRoutes/farmer/adminFarmEquipmentUsedRoutes";
+import adminTechnologyUsedRoutes from "./src/routes/adminRoutes/farmer/adminTechnologyUsedRoutes";
+import adminPriceDiscoveryRoutes from "./src/routes/adminRoutes/farmer/adminPriceDiscoveryRoutes";
+import adminBiggestChallengeInSellingRoutes from "./src/routes/adminRoutes/farmer/adminBiggestChallengeInSellingRoutes"
 
 const cors = require("cors");
 
@@ -18,6 +27,15 @@ app.use("/api/farmers", farmerRoutes);
 app.use("/api/cold-storage", coldStorageRoutes);
 app.use("/api/agent",agentRoutes);
 app.use("/api/locations", locationRoutes);
+app.use("/api/admin/irrigation_source", adminIrrigationRoutes);
+app.use("/api/admin/soil_type", adminSoilTypeRoutes);
+app.use("/api/admin/potato_variety", adminPotatoVarietyRoutes);
+app.use("/api/admin/potato_sub_variety", adminPotatoSubVarietyRoutes);
+app.use("/api/admin/sowing_method", adminSowingMethodRoutes);
+app.use("/api/admin/farm_equipment", adminFarmEquipmentRoutes);
+app.use("/api/admin/technology_used", adminTechnologyUsedRoutes);
+app.use("/api/admin/price_discovery", adminPriceDiscoveryRoutes);
+app.use("/api/admin/challenge_in_selling", adminBiggestChallengeInSellingRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
