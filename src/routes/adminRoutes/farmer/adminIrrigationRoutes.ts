@@ -6,6 +6,7 @@ import { irrigationSourceSchema } from "../../../validation/adminValidation";
 import {
   addIrrigationSource,
   deleteIrrigationSource,
+  getActiveIrrigationSource,
   getIrrigationSource,
   updateIrrigationSource,
 } from "../../../controller/adminController/farmer/irrigationSourceController";
@@ -21,6 +22,8 @@ router.post(
 );
 
 router.get("/", getIrrigationSource);
+
+router.get("/active", getActiveIrrigationSource);
 
 router.put("/:id", authMiddleware, updateIrrigationSource);
 

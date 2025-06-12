@@ -6,6 +6,7 @@ import { biggestChallengeInSellingSchema } from "../../../validation/adminValida
 import {
   addBiggestChallengeInSelling,
   deleteBiggestChallengeInSelling,
+  getActiveBiggestChallengeInSelling,
   getBiggestChallengeInSelling,
   updateBiggestChallengeInSelling,
 } from "../../../controller/adminController/farmer/biggestChallengeInSelling";
@@ -21,6 +22,8 @@ router.post(
 );
 
 router.get("/", getBiggestChallengeInSelling);
+
+router.get("/active", getActiveBiggestChallengeInSelling);
 
 router.put("/:id", authMiddleware, updateBiggestChallengeInSelling);
 

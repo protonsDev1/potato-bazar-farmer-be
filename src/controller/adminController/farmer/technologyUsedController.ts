@@ -1,91 +1,134 @@
+import AdminTechnologyUsed from "../../../database/models/adminModels/farmer/adminTechnologyUsed";
 import {
-  addTechnologyUsedService,
-  deleteTechnologyUsedService,
-  getTechnologyUsedService,
-  updateTechnologyUsedService,
-} from "../../../services/adminServices/farmer/technologyUsedService";
+  createRecord,
+  getAllRecords,
+  updateRecord,
+  deleteRecord,
+  getActiveRecords,
+} from "../../../services/adminServices/crudOperationService";
 
 export const addTechnologyUsed = async (req, res) => {
   try {
     const { role } = req.user;
+    const data = req.body;
 
-    const technologyUsed = req.body;
-
-    if (role !== "admin")
+    if (role !== "admin") {
       return res.status(403).json({
-        message: "Only Admin are authorized to add Technology.",
+        message: "Only Admins are authorized to add Technology.",
       });
+    }
 
-    const response = await addTechnologyUsedService(technologyUsed);
+    const response = await createRecord(AdminTechnologyUsed, data);
 
-    if (response.success)
-      return res
-        .status(200)
-        .json({ message: "New Technology added Successfully." });
+    if (response?.success) {
+      return res.status(201).json({
+        message: "New Technology added successfully.",
+        data: response.data,
+      });
+    }
+
+    return res.status(400).json({ message: "Failed to add Technology." });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: error.message || "Failed to add Technology." });
+    return res.status(500).json({
+      message: error.message || "Failed to add Technology.",
+    });
   }
 };
 
 export const getTechnologyUsed = async (req, res) => {
   try {
-    const response = await getTechnologyUsedService();
+    const response = await getAllRecords(AdminTechnologyUsed);
 
-    if (response.success)
-      return res.status(200).json({ message: response.data });
+    if (response?.success) {
+      return res.status(200).json({
+        message: "Technologies fetched successfully.",
+        data: response.data,
+      });
+    }
+
+    return res.status(404).json({ message: "No Technology found." });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: error.message || "Failed to retrieve Technology." });
+    return res.status(500).json({
+      message: error.message || "Failed to retrieve Technology.",
+    });
+  }
+};
+
+export const getActiveTechnologyUsed = async (req, res) => {
+  try {
+    const response = await getActiveRecords(AdminTechnologyUsed);
+
+    if (response?.success) {
+      return res.status(200).json({
+        message: "Technologies fetched successfully.",
+        data: response.data,
+      });
+    }
+
+    return res.status(404).json({ message: "No Technology found." });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to retrieve Technology.",
+    });
   }
 };
 
 export const updateTechnologyUsed = async (req, res) => {
   try {
-    const data = req.body;
-    const id = req.params.id;
-
     const { role } = req.user;
+    const id = req.params.id;
+    const data = req.body;
 
-    if (role !== "admin")
+    if (role !== "admin") {
       return res.status(403).json({
-        message: "Only Admin are authorized to update Technology.",
+        message: "Only Admins are authorized to update Technology.",
       });
+    }
 
-    const response = await updateTechnologyUsedService(data, id);
+    const response = await updateRecord(AdminTechnologyUsed, id, data);
 
-    if (response.success)
-      return res
-        .status(200)
-        .json({ message: " Technology updated Successfully." });
+    if (!response?.success) {
+      return res.status(404).json({
+        message: response?.error || "Technology not found.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Technology updated successfully.",
+      data: response.data,
+    });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: error.message || "Failed to update Technology." });
+    return res.status(500).json({
+      message: error.message || "Failed to update Technology.",
+    });
   }
 };
 
 export const deleteTechnologyUsed = async (req, res) => {
   try {
+    const { role } = req.user;
     const id = req.params.id;
 
-    const { role } = req.user;
-
-    if (role !== "admin")
+    if (role !== "admin") {
       return res.status(403).json({
-        message: "Only Admin are authorized to delete Technology.",
+        message: "Only Admins are authorized to delete Technology.",
       });
+    }
 
-    const response = await deleteTechnologyUsedService(id);
-    if (response.success)
-      return res
-        .status(200)
-        .json({ message: "Technology deleted Successfully." });
+    const response = await deleteRecord(AdminTechnologyUsed, id);
+
+    if (!response?.success) {
+      return res.status(404).json({
+        message: response?.error || "Technology not found.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Technology deleted successfully.",
+    });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: error.message || "Failed to delete Technology." });
+    return res.status(500).json({
+      message: error.message || "Failed to delete Technology.",
+    });
   }
 };
