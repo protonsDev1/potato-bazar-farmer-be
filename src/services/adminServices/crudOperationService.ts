@@ -7,6 +7,7 @@ const updateModelFields = async (modelInstance, data) => {
   await modelInstance.save();
   return modelInstance;
 };
+
 export const updateRecord = async (modelClass, id, data) => {
   try {
     const instance = await modelClass.findByPk(id);
@@ -28,6 +29,7 @@ export const updateRecord = async (modelClass, id, data) => {
     };
   }
 };
+
 export const createRecord = async (model, data) => {
   try {
     const result = await model.create(data);
@@ -43,6 +45,7 @@ export const createRecord = async (model, data) => {
     };
   }
 };
+
 export const getActiveRecords = async (model) => {
   try {
     const result = await model.findAll({
@@ -61,6 +64,7 @@ export const getActiveRecords = async (model) => {
     };
   }
 };
+
 export const getAllRecords = async (model) => {
   try {
     const result = await model.findAll();
@@ -76,6 +80,7 @@ export const getAllRecords = async (model) => {
     };
   }
 };
+
 export const getRecordById = async (model, id) => {
   try {
     const result = await model.findByPk(id);
@@ -85,6 +90,7 @@ export const getRecordById = async (model, id) => {
         error: `Record not found with ID: ${id}.`,
       };
     }
+
     return {
       success: true,
       data: result,
@@ -97,6 +103,7 @@ export const getRecordById = async (model, id) => {
     };
   }
 };
+
 export const deleteRecord = async (model, id) => {
   try {
     const result = await model.findByPk(id);
