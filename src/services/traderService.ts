@@ -1,8 +1,5 @@
-import AdminCropTraded from "../database/models/adminModels/trader/adminCropTraded";
-import AdminTraderInterest from "../database/models/adminModels/trader/adminTraderInterest";
-import AdminTraderType from "../database/models/adminModels/trader/adminTraderType";
-import AdminTraderVariety from "../database/models/adminModels/trader/adminTraderVariety";
 import sequelize from "../database/models/db";
+
 import BankDetail from "../database/models/trader/bankDetail";
 import CropTraded from "../database/models/trader/cropTraded";
 import MandiDetail from "../database/models/trader/mandiDetail";
@@ -119,3 +116,53 @@ export async function onboardTrader(payload) {
     throw err;
   }
 }
+
+export const retrieveTraderProfile = async (traderId: string) => {
+  try {
+    const [
+      personalInfo,
+      bankDetails,
+      mandiDetails,
+      traderDocuments,
+      interests,
+      types,
+      varieties,
+      cropsTraded,
+    ] = await Promise.all([
+      Trader.findOne({ where: { id: traderId } }),
+      BankDetail.findOne({ where: { traderId } }),
+      MandiDetail.findOne({ where: { traderId } }),
+      TraderDocument.findOne({ where: { traderId } }),
+      TraderInterest.findAll({
+        attributes: ["interest"],
+        where: { traderId },
+      }),
+      TraderType.findAll({
+        attributes: ["type"],
+        where: { traderId },
+      }),
+      TraderVariety.findAll({
+        attributes: ["variety"],
+        where: { traderId },
+      }),
+      CropTraded.findAll({
+        attributes: ["cropName"],
+        where: { traderId },
+      }),
+    ]);
+
+    return {
+      personalInfo,
+      bankDetails,
+      mandiDetails,
+      traderDocuments,
+      interests,
+      types,
+      varieties,
+      cropsTraded,
+    };
+  } catch (err) {
+    console.error("Error in retrieveTraderProfile:", err);
+    throw err;
+  }
+};
