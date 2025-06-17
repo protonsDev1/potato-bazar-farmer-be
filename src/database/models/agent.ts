@@ -4,6 +4,7 @@ import User from "./user";
 
 class Agent extends Model {
   public agentId!: string;
+  public user?: User
 }
 
 Agent.init(
