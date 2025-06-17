@@ -53,9 +53,9 @@ export const login = async (req, res) => {
   
       // Generate the JWT token
       const token = jwt.sign(
-        { id: user.id, email: user.email, role: user.role },
+        { id: user.id },
         JWT_SECRET,
-        { expiresIn: '1h' } // Token expires in 1 hour
+        { expiresIn: "24h" } // Token expires in 1 day
       );
   
       // Return the success response with the token
@@ -94,40 +94,32 @@ export const createAgent = async (req, res) => {
 
 export const agentLogin = async (req, res) => {
   try {
-   
-
     const { agentId, password } = req.body;
     const agent = await findAgentWithUser(agentId);
-    // @ts-ignore 
-    if (!agent || !agent.user) {
-      return res.status(404).json({ message: 'Agent not found' });
-    }
-    // @ts-ignore 
 
-    if (agent.user.role !== 'agent') {
-      return res.status(403).json({ message: 'Access denied. Not an agent.' });
+    if (!agent || !agent.user) {
+      return res.status(404).json({ message: "Agent not found" });
     }
-    // @ts-ignore 
+
+    if (agent.user.role !== "agent") {
+      return res.status(403).json({ message: "Access denied. Not an agent." });
+    }
 
     const isPasswordValid = await agent.user.validatePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid password' });
+      return res.status(401).json({ message: "Invalid password" });
     }
 
-    const token = jwt.sign(
-          // @ts-ignore 
-
-      { id: agent.user.id, role: agent.user.role },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    const token = jwt.sign({ id: agent.user.id }, JWT_SECRET, {
+      expiresIn: "24h",
+    });
 
     return res.status(200).json({
-      message: 'Login successful',
+      message: "Login successful",
       token,
     });
   } catch (err: any) {
-    return res.status(500).json({ message: err.message || 'Login error' });
+    return res.status(500).json({ message: err.message || "Login error" });
   }
 };
 
