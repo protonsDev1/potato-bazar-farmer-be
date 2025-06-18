@@ -1,8 +1,11 @@
 import { Request, Response } from 'express';
-import { checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, getDashboardCounts, getUserProfileDB, registerInitialUser, updateRegistrationTypes } from '../services/userServices';
+import { checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, forgotPasswordService, getDashboardCounts, getUserProfileDB, registerInitialUser, resetPasswordService, updateRegistrationTypes } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
+import User from '../database/models/user';
+
+
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const signup = async (req, res) => {
@@ -194,6 +197,71 @@ export const getUserProfile = async (req, res) => {
   }
 }
 
+export const forgotPassword = async (req, res) => {
+  try {
+    const { mobile } = req.body;
 
+    const response = await forgotPasswordService(mobile);
 
+    if (!response.success)
+      return res.status(400).json({ message: response.error });
+
+    return res.status(200).json({
+      message:
+        "Otp has been sent successfully.Please contact support team if you have not received the otp.",
+    });
+  } catch (error) {
+    console.error("Error in forgot password:", error);
+    return res
+      .status(500)
+      .json({ message: "Error in forgot password", error: error.message });
+  }
+};
+
+export const verifyForgotPasswordOtp = async (req, res) => {
+  try {
+    const { otp, mobile } = req.body;
+
+    const isValid = await verifyOtpFromDB(mobile, otp);
+
+    if (!isValid) {
+      return res.status(401).json({ message: "Invalid or expired OTP" });
+    }
+
+    await User.update({ otpVerified: true }, { where: { mobile } });
+
+    return res.status(200).json({ message: "Otp verified successfully." });
+  } catch (error) {
+    console.error("Error in verifying otp:", error);
+    return res
+      .status(500)
+      .json({ message: "Error in verifying otp", error: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { mobile, password, confirmPassword } = req.body;
+
+    const response = await resetPasswordService(
+      mobile,
+      password,
+      confirmPassword
+    );
+
+    if (!response.success)
+      return res.status(400).json({ message: response.error });
+
+    return res
+      .status(200)
+      .json({ message: "Password has been reset successfully!" });
+  } catch (error) {
+    console.error("Error reseting password:", error);
+
+    return res.status(500).json({
+      message: "Error reseting user's password",
+      error: error.message,
+    });
+  }
+};
 
