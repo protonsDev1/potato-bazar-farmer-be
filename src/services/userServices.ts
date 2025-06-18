@@ -220,4 +220,10 @@ export const updateUserInDB = async (userId: number, updateData: any) => {
   }
 };
 
+export const getUserProfileDB = async (id) => {
+  return await User.findOne({
+    where: { id },
+    attributes: { exclude: ['password_hash'] }
+  });
+};
 

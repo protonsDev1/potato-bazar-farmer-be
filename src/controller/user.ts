@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, getDashboardCounts, registerInitialUser, updateRegistrationTypes } from '../services/userServices';
+import { checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, getDashboardCounts, getUserProfileDB, registerInitialUser, updateRegistrationTypes } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
@@ -183,6 +183,17 @@ export const updateUserRegistrationTypes = async (req, res) => {
     return res.status(500).json({ message: err.message || 'Failed to update registration types' });
   }
 };
+
+export const getUserProfile = async (req, res) => {
+  try{
+    const userId = req.user.id;
+    const userData = await getUserProfileDB(userId);
+    return res.status(200).json({ message: 'User Profile', userData });
+  }catch(err){
+    return res.status(500).json({ message: err.message || 'Failed to update registration types' });
+  }
+}
+
 
 
 
