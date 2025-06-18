@@ -3,7 +3,10 @@ import Agent from '../database/models/agent';
 import { generateAgentId, generateRandomPassword } from '../utils/generate';
 import Farmer from "../database/models/farmer";
 import ColdStorage from "../database/models/coldStorage";
+import { createOtp } from "./otpServices";
+
 import { Op } from 'sequelize';
+import bcrypt from 'bcrypt';
 
 
 export const createUserInDB = async (userModuleData: any) => {
@@ -44,6 +47,7 @@ export const createUserWithAgent = async ({
   const user = await User.create({
     name,
     email,
+    mobile:phone,
     password,
     role: 'agent',
   });
@@ -190,6 +194,7 @@ export const registerInitialUser = async (mobile) =>{
     name: 'Guest',
     mobile,
     role:'user',
+    otpVerified:true,
   });
 };
 
@@ -227,3 +232,66 @@ export const getUserProfileDB = async (id) => {
   });
 };
 
+export const forgotPasswordService = async (mobile: string) => {
+  try {
+    const userResponse = await User.findOne({ where: { mobile } });
+
+    if (!userResponse) {
+      return {
+        success: false,
+        error: "User not found.",
+      };
+    }
+
+    await createOtp(mobile);
+
+    await User.update({ otpVerified: false }, { where: { mobile } });
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    throw new Error(`Error in forgot password : ${error.message}`);
+  }
+};
+
+export const resetPasswordService = async (
+  mobile: string,
+  password: string,
+  confirmPassword: string
+) => {
+  try {
+    if (password !== confirmPassword)
+      return {
+        success: false,
+        error: "Password and Confirm Password should be same.",
+      };
+
+    const userResponse = await User.findOne({ where: { mobile } });
+
+    if (!userResponse) {
+      return {
+        success: false,
+        error: "User not found.",
+      };
+    }
+
+    if (!userResponse.otpVerified) {
+      return {
+        success: false,
+        error: "Otp verification is required before resetting the password.",
+      };
+    }
+
+    await User.update({ otpVerified: false }, { where: { mobile } });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await User.update({ password_hash: hashedPassword }, { where: { mobile } });
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    throw new Error("Error in resetting password.");
+  }
+};

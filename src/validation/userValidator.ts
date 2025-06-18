@@ -79,3 +79,18 @@ export const registrationTypesSchema = Joi.object({
       'array.min': 'At least one registration type is required',
     }),
 });
+
+export const forgotPasswordSchema= Joi.object({
+  mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
+});
+
+export const verifyOtpSchema= Joi.object({
+  mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
+  otp: Joi.string().required().length(4),
+})
+
+export const resetPasswordSchema = Joi.object({
+  mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
+  password: Joi.string().required(),
+  confirmPassword: Joi.string().required(),
+});
