@@ -96,14 +96,10 @@ export const adminMiddleware = async (req, res, next) => {
 export const checkOtpVerified = async (req, res, next) => {
   const { mobile } = req.body;
 
-  const lastOtp = await Otp.findOne({
-    where: { mobile, isUsed: true },
-    order: [['createdAt', 'DESC']],
-  });
+  const user= await User.findOne({where:{mobile}});
 
-  if (!lastOtp) {
-    return res.status(401).json({ message: 'OTP not verified' });
-  }
+  if(!user.otpVerified)
+    return res.status(401).json({message:"Otp not verified."});
 
   next();
 };

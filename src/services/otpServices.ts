@@ -8,11 +8,10 @@ export const createOtp = async (mobile: string) => {
 };
 
 export const verifyOtpFromDB = async (mobile: string, otp: string): Promise<boolean> => {
-  const record = await Otp.findOne({ where: { mobile, otp, isUsed: false } });
-
+  const record = await Otp.findOne({ where: { mobile, otp},order: [['createdAt', 'DESC']], });
   if (!record || record.expiresAt < new Date()) return false;
 
-  record.isUsed = true;
-  await record.save();
+  await Otp.destroy({ where: {mobile} });
+
   return true;
 };
