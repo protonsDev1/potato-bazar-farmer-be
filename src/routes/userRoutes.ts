@@ -1,8 +1,9 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema } from "../validation/userValidator";
-import { agentLogin, createAgent, getDashboardStats, login, sendOtp, signup, updateUserRegistrationTypes, verifyOtp ,getUserProfile} from "../controller/user";
+import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema } from "../validation/userValidator";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile } from "../controller/user";
 import { adminMiddleware, authMiddleware } from "../utils/userAuth";
+import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 
 const router = express.Router();
 const validator = createValidator({});  
@@ -25,6 +26,12 @@ router.post('/get-dash-stats', adminMiddleware,  getDashboardStats);
 router.put('/registration-types',authMiddleware,validator.body(registrationTypesSchema), updateUserRegistrationTypes);
 
 router.get('/user-profile', adminMiddleware,  getUserProfile);
+
+router.post('/forgot_password',validator.body(forgotPasswordSchema),limitOtpMiddleware,forgotPassword);
+
+router.post('/forgot_password/verify_otp',validator.body(verifyOtpSchema),verifyForgotPasswordOtp);
+
+router.post("/reset_password",validator.body(resetPasswordSchema),resetPassword);
 
 export default router;
 

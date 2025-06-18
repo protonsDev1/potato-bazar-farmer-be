@@ -17,6 +17,7 @@ import {
     declare role: string;
     declare mobile: string;
     declare registration_types: string[] | null;
+    declare otpVerified: boolean;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
   
@@ -65,7 +66,10 @@ import {
         type: DataTypes.JSON, // Or DataTypes.ARRAY(DataTypes.STRING) for PostgreSQL
         allowNull: true,
       },
-      
+      otpVerified:{
+        type: DataTypes.BOOLEAN,
+        defaultValue :false,
+      }
       
     },
     {
