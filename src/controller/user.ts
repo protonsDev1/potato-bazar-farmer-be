@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, forgotPasswordService, getDashboardCounts, getUserProfileDB, registerInitialUser, resetPasswordService, updateRegistrationTypes } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getUserProfileDB, registerInitialUser, resetPasswordService, updateProfileService, updateRegistrationTypes } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
@@ -265,3 +265,56 @@ export const resetPassword = async (req, res) => {
   }
 };
 
+export const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword,confirmNewPassword } = req.body;
+    const { id } = req.user;
+
+    const response = await changePasswordService(
+      oldPassword,
+      newPassword,
+      confirmNewPassword,
+       id
+    );
+
+    if (!response.success)
+      return res.status(400).json({ message: response.error });
+
+    return res.status(200).json({ message: "Password changed successfully." });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    return res.status(500).json({
+      message: "Error changing user's password",
+      error: error.message,
+    });
+  }
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { id, role } = req.user;
+
+    const data = req.body;
+
+    if (role === "agent" || role=== "user")
+      return res
+        .status(400)
+        .json({
+          message:
+            "Only Admin are authorized to update profile here.",
+        });
+
+    const updateResponse = await updateProfileService(data, id);
+
+    if (!updateResponse.success)
+      return res.status(400).json({ message: updateResponse.error });
+
+    return res.status(200).json({ message: "Profile updated successfully." });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return res.status(500).json({
+      message: "Error updating profile",
+      error: error.message,
+    });
+  }
+};
