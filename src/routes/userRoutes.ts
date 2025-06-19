@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile } from "../controller/user";
+import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema } from "../validation/userValidator";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile } from "../controller/user";
 import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 
@@ -32,6 +32,10 @@ router.post('/forgot_password',validator.body(forgotPasswordSchema),limitOtpMidd
 router.post('/forgot_password/verify_otp',validator.body(verifyOtpSchema),verifyForgotPasswordOtp);
 
 router.post("/reset_password",validator.body(resetPasswordSchema),resetPassword);
+
+router.put("/change_password",authMiddleware,validator.body(changePasswordSchema),changePassword);
+
+router.put("/update_profile",authMiddleware,validator.body(updateProfileSchema),updateProfile);  // only for admin 
 
 export default router;
 
