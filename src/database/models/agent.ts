@@ -4,7 +4,13 @@ import User from "./user";
 
 class Agent extends Model {
   public agentId!: string;
-  public user?: User
+  public user?: User;
+  public phone: string;
+  public address: string;
+  public district: string;
+  public note: string;
+  public isActive: boolean;
+  public isDeleted: boolean;
 }
 
 Agent.init(
@@ -35,7 +41,7 @@ Agent.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    is_active: {
+    isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
@@ -46,6 +52,11 @@ Agent.init(
     agentId: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -61,6 +72,7 @@ Agent.init(
     modelName: "Agent",
     tableName: "agents",
     timestamps: true,
+    indexes: [{ fields: ["isDeleted"] }],
   }
 );
 
