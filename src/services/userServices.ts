@@ -47,7 +47,7 @@ export const createUserWithAgent = async ({
   const user = await User.create({
     name,
     email,
-    mobile:phone,
+    mobile: phone,
     password,
     role: 'agent',
   });
@@ -228,7 +228,14 @@ export const updateUserInDB = async (userId: number, updateData: any) => {
 export const getUserProfileDB = async (id) => {
   return await User.findOne({
     where: { id },
-    attributes: { exclude: ['password_hash'] }
+    include: [
+      {
+        model: Agent,
+        as: "agentProfile",
+        attributes: ["id", "phone", "address", "district", "note", "agentId"],
+      },
+    ],
+    attributes: { exclude: ["password_hash"] },
   });
 };
 

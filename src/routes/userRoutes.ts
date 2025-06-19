@@ -25,7 +25,7 @@ router.post('/get-dash-stats', adminMiddleware,  getDashboardStats);
 
 router.put('/registration-types',authMiddleware,validator.body(registrationTypesSchema), updateUserRegistrationTypes);
 
-router.get('/user-profile', adminMiddleware,  getUserProfile);
+router.get('/user-profile', authMiddleware,  getUserProfile);
 
 router.post('/forgot_password',validator.body(forgotPasswordSchema),limitOtpMiddleware,forgotPassword);
 
