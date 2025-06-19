@@ -5,6 +5,8 @@ import { formatDate } from "../utils/dateFormat";
 import { Op, fn, col, literal } from "sequelize";
 import dayjs from "dayjs";
 import Agent from "../database/models/agent";
+import User from "../database/models/user";
+import { generateRandomPassword } from "../utils/generate";
 
 export const retriveAllUsers = async (
   agentId: string,
@@ -236,4 +238,144 @@ export const retrieveAgentDashboardStats = async (agentId) => {
     console.error(error);
     throw error;
   }
+};
+
+export const getPaginatedAgents = async (page: number, limit: number) => {
+  const offset = (page - 1) * limit;
+
+  const { rows: agents, count: total } = await Agent.findAndCountAll({
+    where: {
+      isDeleted: false,
+    },
+    attributes: { exclude: ["userId", "isDeleted"] },
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "name", "email"],
+      },
+    ],
+    limit,
+    offset,
+    order: [["createdAt", "DESC"]],
+  });
+
+  return {
+    agents,
+    pagination: {
+      total,
+      page,
+      perPage: limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+export const updateAgentById = async (agentId: number, updateData: any) => {
+  const agent = await Agent.findOne({
+    where: {
+      id: agentId,
+      isDeleted: false,
+    },
+    attributes: { exclude: ["userId", "isDeleted"] },
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "name", "email"],
+      },
+    ],
+  });
+
+  if (!agent) {
+    return { success: false, status: 404, message: "Agent not found" };
+  }
+
+  const { name, email, phone, address, district, note, isActive } = updateData;
+
+  // Update user fields
+  if (agent.user) {
+    if (name !== undefined) agent.user.name = name;
+    if (email !== undefined) agent.user.email = email;
+    if (phone !== undefined) agent.user.mobile = phone;
+
+    await agent.user.save();
+  }
+
+  // Update agent fields
+  if (phone !== undefined) agent.phone = phone;
+  if (address !== undefined) agent.address = address;
+  if (district !== undefined) agent.district = district;
+  if (note !== undefined) agent.note = note;
+  if (isActive != undefined) agent.isActive = isActive;
+
+  await agent.save();
+
+  return { success: true, data: agent };
+};
+
+export const getAgentDetailsById = async (agentId: number) => {
+  const agent = await Agent.findOne({
+    where: {
+      id: agentId,
+      isDeleted: false,
+    },
+    attributes: { exclude: ["userId", "isDeleted"] },
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "name", "email"],
+      },
+    ],
+  });
+
+  if (!agent) {
+    return { success: false, status: 404, message: "Agent not found" };
+  }
+
+  return { success: true, data: agent };
+};
+
+export const softDeleteAgentById = async (agentId: number) => {
+  const agent = await Agent.findByPk(agentId);
+
+  if (!agent || agent.isDeleted) {
+    return { success: false, status: 404, message: "Agent not found" };
+  }
+
+  agent.isDeleted = true;
+  await agent.save();
+
+  return { success: true, data: agent };
+};
+
+export const resetAgentPassword = async (agentId: number) => {
+  const agent = await Agent.findOne({
+    where: {
+      id: agentId,
+      isDeleted: false,
+    },
+    include: [
+      {
+        model: User,
+        as: "user",
+      },
+    ],
+  });
+
+  if (!agent || !agent.user) {
+    return { success: false, status: 404, message: "Agent not found" };
+  }
+
+  const newPassword = generateRandomPassword();
+
+  agent.user.password = newPassword;
+  await agent.user.save();
+
+  return {
+    success: true,
+    password: newPassword,
+    agentId: agent.agentId,
+  };
 };
