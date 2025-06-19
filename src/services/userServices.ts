@@ -302,3 +302,85 @@ export const resetPasswordService = async (
     throw new Error("Error in resetting password.");
   }
 };
+
+export const findUserByPkInDB = async (id: number) => {
+  try {
+    const user = await User.findByPk(id);
+
+    if (!user)
+      return {
+        success: false,
+        error: "User not found.",
+      };
+
+    return {
+      success: true,
+      data: user,
+    };
+  } catch (error) {
+    throw new Error("Error in finding user by primary key in db.");
+  }
+};
+
+export const changePasswordService = async (
+  oldPassword,
+  newPassword,
+  confirmNewPassword,
+  id
+) => {
+  try {
+
+    const userData= await findUserByPkInDB(id);
+
+    if(!userData.success)return {success:false,error:userData.error};
+
+   const isMatch=await userData.data.validatePassword(oldPassword);
+
+    if (!isMatch)
+    return {
+        success: false,
+        error: "Old Password does not match.",
+      };
+
+    if (newPassword !== confirmNewPassword)
+    return {success:false,error:"New Password and Confirm New Password should be same."}
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await User.update({ password_hash: hashedPassword }, { where: {id} });
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    throw new Error(`Error in changing password: ${error.message}`);
+  }
+};
+
+export const updateProfileService = async (data, id) => {
+  try {
+    const { email, mobile } = data;
+
+    if (email) {
+      const user = await findUserByEmail(email);
+      if (user && user.id !== id)
+        return {
+          success: false,
+          error: "Email already exist.",
+        };
+    }
+
+    if (mobile) {
+      const user = await checkExistingUser(mobile);
+      if (user && user.id !== id)
+        return { success: false, error: "Mobile number already exist." };
+    }
+
+    await User.update({ ...data }, { where: { id } });
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    throw new Error(`Error in updating profile: ${error.message}`);
+  }
+};
