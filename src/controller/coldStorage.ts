@@ -1,5 +1,6 @@
 import ColdStorage from '../database/models/coldStorage';
 import { onboardColdStorage, retrieveColdStorageProfile,getColdStorage } from '../services/coldStorageService';
+import { parseFilters } from '../utils/parseQuery';
 
 export const createColdStorage = async (req, res) => {
   try {
@@ -44,17 +45,18 @@ export const getColdStorageProfile = async (req, res) => {
 };
 
 export const getColdStorageList = async (req, res) => {
-  try{
-    const page =  req.query.page? req.query.page: 1;
-    const limit =  req.query.limit? req.query.limit: 10;
-    const coldStorage = await getColdStorage(page, limit);
-    res.status(200).json({
-      message: "Get Cold storage list",
-      data: coldStorage
+  try {
+    const { page, perPage: limit, search } = req.query;
+
+    const filters = parseFilters(req.query);
+
+    const coldStorage = await getColdStorage(page, limit, filters,search);
+
+    return res.status(200).json({
+      message: "Cold storage list",
+      data: coldStorage,
     });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to retrieve cold storage list" });
   }
-  catch (error) {
-    console.error("Controller Error:", error);
-    res.status(500).json({ message: "Failed to get cold storage list" });
-  }
-}
+};

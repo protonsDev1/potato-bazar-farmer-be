@@ -6,6 +6,10 @@ import {
   CreationOptional,
 } from 'sequelize';
 import sequelize from './db';
+import PotatoVarietyGrown from './potatoVarietyGrown';
+import User from './user';
+import LandDetail from './landDetails';
+import IrrigationSource from './irrigationSource';
 
 class Farmer extends Model<InferAttributes<Farmer>, InferCreationAttributes<Farmer>> {
   declare id: CreationOptional<number>;
@@ -76,5 +80,35 @@ Farmer.init(
     timestamps: true,
   }
 );
+
+Farmer.hasMany(PotatoVarietyGrown, {
+  foreignKey: 'farmerId',
+  as: 'PotatoVarietyGrown',
+});
+
+PotatoVarietyGrown.belongsTo(Farmer, {
+  foreignKey: 'farmerId',
+});
+
+Farmer.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user',
+});
+
+Farmer.hasMany(LandDetail,{
+  foreignKey:'farmerId'
+});
+
+LandDetail.belongsTo(Farmer,{
+  foreignKey:'farmerId'
+});
+
+Farmer.hasMany(IrrigationSource,{
+  foreignKey:'farmerId'
+});
+
+IrrigationSource.belongsTo(Farmer,{
+  foreignKey:'farmerId'
+});
 
 export default Farmer;

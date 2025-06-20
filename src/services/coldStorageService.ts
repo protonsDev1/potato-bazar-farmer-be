@@ -1,3 +1,4 @@
+import { literal, NUMBER, Op } from "sequelize";
 import ChamberCapacity from "../database/models/chamberCapacity";
 import ColdStorage from "../database/models/coldStorage";
 import sequelize from '../database/models/db';
@@ -6,6 +7,14 @@ import OperationalChallenge from "../database/models/operationalChallenge";
 import Shed from "../database/models/shed";
 import StorageType from "../database/models/storageType";
 import UsageType from "../database/models/usageType";
+import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
+
+
+const STORAGE_SIZE_RANGES = {
+  small: { min: 0, max: 999 },
+  medium: { min: 1000, max: 5000 },
+  large: { min: 5001, max: Number.MAX_SAFE_INTEGER }, 
+};
 
 export async function onboardColdStorage(payload: any) {
   try {
@@ -193,17 +202,136 @@ export const retrieveColdStorageProfile = async (coldStorageId) => {
     throw err;
   }
 };
-export async function getColdStorage(page, limit){
+
+export async function getColdStorage(
+  page: number = 1,
+  limit: number = 10,
+  filters,
+  search
+) {
   try {
     const offset = (page - 1) * limit;
-    const response = await ColdStorage.findAll({
+    const whereCondition: any = {};
+
+    const {
+      district,
+      agentId,
+      storageType,
+      storageSize,
+      capacityRange,
+      registrationDate,
+    } = filters;
+
+    if (agentId && agentId.toLowerCase() !== "all") {
+      whereCondition.onBoardedBy = agentId;
+    }
+
+    if (district) {
+      whereCondition.district = { [Op.iLike]: district };
+    }
+
+    const normalizedType = (storageType || "").toLowerCase();
+    if (storageType && normalizedType !== "all") {
+      whereCondition.id = {
+        [Op.in]: literal(`(
+      SELECT "coldStorageId"
+      FROM "storageTypes"
+       WHERE LOWER("storageType") = LOWER('${storageType}')
+    )`),
+      };
+    }
+
+    if (capacityRange && capacityRange.length === 2) {
+      const [min, max] = capacityRange;
+      if (min && max) {
+        whereCondition.totalCapacityMt = {
+          [Op.between]: [Number(min), Number(max)],
+        };
+      }
+    }
+
+    if (storageSize && storageSize !== "all") {
+      const sizeRange = STORAGE_SIZE_RANGES[storageSize.toLowerCase()];
+      if (sizeRange) {
+        whereCondition[Op.and] = [
+          literal(
+            `CAST("shedSize" AS INTEGER) BETWEEN ${sizeRange.min} AND ${sizeRange.max}`
+          ),
+        ];
+      }
+    }
+
+    if (registrationDate && registrationDate.length === 2) {
+      const [startDate, endDate] = registrationDate;
+
+      if (startDate && endDate) {
+        const { startUTC, endUTC } = convertISTDateRangeToUTC(
+          startDate,
+          endDate
+        );
+        whereCondition.createdAt = {
+          [Op.between]: [new Date(startUTC), new Date(endUTC)],
+        };
+      }
+    }
+
+     if (search?.trim()) {
+      const searchTerm = `%${search.trim()}%`;
+      whereCondition[Op.or] = [
+        { id: isNaN(Number(search)) ? -1 : Number(search) },
+        { name: { [Op.iLike]: searchTerm } },
+        { mobileNumber: { [Op.iLike]: searchTerm } },
+      ];
+    }
+
+    const { count, rows }: any = await ColdStorage.findAndCountAll({
+      attributes: [
+        "id",
+        "name",
+        "ownerName",
+        "mobileNumber",
+        "district",
+        "totalCapacityMt",
+        "createdAt",
+        "onBoardedBy",
+        "shedSize",
+      ],
+      where: whereCondition,
+      include: [
+        {
+          model: StorageType,
+          as: "storageTypes",
+          attributes: ["id", "storageType"],
+        },
+      ],
+      distinct: true,
       limit,
       offset,
-      order: [["createdAt", "DESC"]]});
-    return response;
-  }
-  catch (err) {
-    console.error("Error in get cold storage list:", err);
+      order: [["createdAt", "DESC"]],
+    });
+
+    const data = rows.map((item) => ({
+      id: item.id,
+      coldStorageName: item.name,
+      ownerName: item.ownerName,
+      mobileNumber: item.mobileNumber,
+      district: item.district,
+      totalCapacityMt: item.totalCapacityMt,
+      registrationDate: formatDate(item.createdAt),
+      storageTypes: item.storageTypes,
+      storageSize: item.shedSize,
+      onBoardedBy: item.onBoardedBy,
+    }));
+
+    return {
+      data,
+      currentPage: page,
+      perPage: limit,
+      totalItems: count,
+      totalPages: Math.ceil(count / limit),
+    };
+  } catch (err) {
+    console.error("Error in retrieving cold storage:", err);
     throw err;
   }
-}
+};
