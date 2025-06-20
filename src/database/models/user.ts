@@ -7,6 +7,7 @@ import {
   } from 'sequelize';
   import bcrypt from 'bcrypt';
   import sequelize from './db'; 
+import Agent from './agent';
   
   class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
     declare id: string;
@@ -18,7 +19,10 @@ import {
     declare mobile: string;
     declare registration_types: string[] | null;
     declare otpVerified: boolean;
+    declare agentProfile?: Agent
+    declare lastLogin: CreationOptional<Date>;
     declare createdAt: CreationOptional<Date>;
+    declare passwordUpdatedAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
   
     async validatePassword(password: string): Promise<boolean> {
@@ -69,7 +73,15 @@ import {
       otpVerified:{
         type: DataTypes.BOOLEAN,
         defaultValue :false,
-      }
+      },
+      lastLogin: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      passwordUpdatedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
       
     },
     {
@@ -80,11 +92,13 @@ import {
         beforeCreate: async (user: User) => {
           if (user.password) {
             user.password_hash = await bcrypt.hash(user.password, 10);
+            user.passwordUpdatedAt = new Date();
           }
         },
         beforeUpdate: async (user: User) => {
           if (user.changed('password')) {
             user.password_hash = await bcrypt.hash(user.password!, 10);
+            user.passwordUpdatedAt = new Date();
           }
         },
       },
