@@ -312,38 +312,32 @@ export async function getFarmerListByAdmin(
       landDetailsWhere.harvestMonth = { [Op.iLike]: harvestMonth };
     }
 
-    //      if(landSizeRange && landSizeRange.length===2)
-    //     {
-    //       const [min,max]=landSizeRange;
-    //       if(min && max)
-    //       {
-    //            landDetailsWhere[Op.and] = landDetailsWhere[Op.and] || [];
-
-    //   landDetailsWhere[Op.and].push(
-    //   Sequelize.where(
-    //     Sequelize.literal(
-    //       `COALESCE("LandDetails"."landOwnedAcres", 0) + COALESCE("LandDetails"."landLeasedAcres", 0)`
-    //     ),
-    //     {
-    //       [Op.between]: [min, max],
-    //     }
-    //   )
-    // );
-    //         };
-    //       }
+    if (landSizeRange && landSizeRange.length === 2) {
+      const [min, max] = landSizeRange;
+      if (min && max) {
+        landDetailsWhere.landOwnedAcres = {
+          [Op.between]: [Number(min), Number(max)],
+        };
+      }
+    }
 
     if (farmingType && farmingType.toLowerCase() !== "all") {
       const type = farmingType.toLowerCase();
+      
       if (type === "own land") {
-        landDetailsWhere.landOwnedAcres = { [Op.not]: null };
-      } else if (type === "lease") {
-        landDetailsWhere.landLeasedAcres = { [Op.not]: null };
-      } else if (type === "both") {
-        landDetailsWhere[Op.and] = [
-          { landOwnedAcres: { [Op.not]: null } },
-          { landLeasedAcres: { [Op.not]: null } },
-        ];
-      }
+    landDetailsWhere[Op.and] = [
+      Sequelize.literal(`"LandDetails"."landOwnedAcres" > 0`)
+    ];
+  } else if (type === "lease") {
+    landDetailsWhere[Op.and] = [
+      Sequelize.literal(`"LandDetails"."landLeasedAcres" > 0`)
+    ];
+  } else if (type === "both") {
+    landDetailsWhere[Op.and] = [
+      Sequelize.literal(`"LandDetails"."landOwnedAcres" > 0`),
+      Sequelize.literal(`"LandDetails"."landLeasedAcres" > 0`)
+    ];
+  }
     }
 
     if (
