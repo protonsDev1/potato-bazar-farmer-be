@@ -32,6 +32,8 @@ export const userSchema = Joi.object({
       "string.base": "Role should be a type of string",
       "any.only": "Role must be one of [agent, admin, user]",
     }),
+
+  location: Joi.string().optional(),
 });
 
 export const loginSchema = Joi.object({
@@ -105,4 +107,5 @@ export const updateProfileSchema= Joi.object({
   name: Joi.string().optional(),
   email: Joi.string().optional(),
   mobile: Joi.string().optional(),
+  location: Joi.string().optional(),
 })

@@ -21,6 +21,7 @@ import Agent from './agent';
     declare otpVerified: boolean;
     declare agentProfile?: Agent
     declare lastLogin: CreationOptional<Date>;
+    declare location: string;
     declare createdAt: CreationOptional<Date>;
     declare passwordUpdatedAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
@@ -83,6 +84,10 @@ import Agent from './agent';
         allowNull: true,
       },
       
+      location:{
+       type: DataTypes.STRING,
+       allowNull:true,
+      }
     },
     {
       sequelize,
