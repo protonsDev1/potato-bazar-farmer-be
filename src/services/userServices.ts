@@ -49,6 +49,7 @@ export const createUserWithAgent = async ({
     mobile: phone,
     password,
     role: 'agent',
+    location: address
   });
 
   const agent = await Agent.create({
