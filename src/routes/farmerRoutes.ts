@@ -10,6 +10,6 @@ const validator = createValidator({});
 
 router.post('/create',authMiddleware, validator.body(onboardFarmerSchema),createFarmer);
 router.get("/profile/:farmerId",authMiddleware,getProfileOverview);
-router.get('/get-farmer-list',adminMiddleware,getFarmerList);
+router.get('/',adminMiddleware,getFarmerList);
 
 export default router;

@@ -14,10 +14,6 @@ router.post(
   createColdStorage
 );
 router.get("/profile/:id",getColdStorageProfile);
-router.get(
-  '/get-cold-storage-list',
-  adminMiddleware,
-  getColdStorageList,
-)
+router.get("/", adminMiddleware, getColdStorageList);
 
 export default router;
