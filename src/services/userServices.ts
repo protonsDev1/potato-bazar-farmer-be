@@ -8,7 +8,6 @@ import { createOtp } from "./otpServices";
 import { Op } from 'sequelize';
 import bcrypt from 'bcrypt';
 
-
 export const createUserInDB = async (userModuleData: any) => {
   try {
     return await User.create(userModuleData);
@@ -79,8 +78,6 @@ export const findAgentWithUser = async (agentId: string) => {
   });
 };
 
-
-
 const getDateRange = () => {
   const now = new Date();
   const oneWeekAgo = new Date(now);
@@ -91,8 +88,6 @@ const getDateRange = () => {
 
   return { oneWeekAgo, oneMonthAgo };
 };
-
-
 
 export const getDashboardCounts = async () => {
   const { oneWeekAgo, oneMonthAgo } = getDateRange();
@@ -226,7 +221,7 @@ export const updateUserInDB = async (userId: number, updateData: any) => {
 };
 
 export const getUserProfileDB = async (id) => {
-  return await User.findOne({
+  const user = await User.findOne({
     where: { id },
     include: [
       {
@@ -235,8 +230,29 @@ export const getUserProfileDB = async (id) => {
         attributes: ["id", "phone", "address", "district", "note", "agentId"],
       },
     ],
-    attributes: { exclude: ["password_hash"] },
+    attributes: {
+      exclude: ["password_hash"],
+      include: ["lastLogin", "passwordUpdatedAt"],
+    },
   });
+  if (!user) return null;
+
+  const result: any = user.toJSON();
+
+  if (user.agentProfile) {
+    const agentId = user.agentProfile.id;
+
+    const [farmerCount, coldStorageCount] = await Promise.all([
+      Farmer.count({ where: { onBoardedBy: agentId } }),
+      ColdStorage.count({ where: { onBoardedBy: agentId } }),
+    ]);
+
+    result.onboardingStats = {
+      farmerCount,
+      coldStorageCount,
+    };
+  }
+  return result;
 };
 
 export const forgotPasswordService = async (mobile: string) => {

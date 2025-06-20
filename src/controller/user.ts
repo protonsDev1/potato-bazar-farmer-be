@@ -113,6 +113,9 @@ export const agentLogin = async (req, res) => {
       return res.status(401).json({ message: "Invalid password" });
     }
 
+    agent.user.lastLogin = new Date();
+    await agent.user.save();
+    
     const token = jwt.sign({ id: agent.user.id }, JWT_SECRET, {
       expiresIn: "24h",
     });
