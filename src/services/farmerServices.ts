@@ -323,21 +323,20 @@ export async function getFarmerListByAdmin(
 
     if (farmingType && farmingType.toLowerCase() !== "all") {
       const type = farmingType.toLowerCase();
-      
       if (type === "own land") {
-    landDetailsWhere[Op.and] = [
-      Sequelize.literal(`"LandDetails"."landOwnedAcres" > 0`)
-    ];
-  } else if (type === "lease") {
-    landDetailsWhere[Op.and] = [
-      Sequelize.literal(`"LandDetails"."landLeasedAcres" > 0`)
-    ];
-  } else if (type === "both") {
-    landDetailsWhere[Op.and] = [
-      Sequelize.literal(`"LandDetails"."landOwnedAcres" > 0`),
-      Sequelize.literal(`"LandDetails"."landLeasedAcres" > 0`)
-    ];
-  }
+        landDetailsWhere.landOwnedAcres = {
+          [Op.gt]: 0,
+        };
+      } else if (type === "lease") {
+        landDetailsWhere.landLeasedAcres = {
+          [Op.gt]: 0,
+        };
+      } else if (type === "both") {
+        landDetailsWhere[Op.and] = [
+          { landOwnedAcres: { [Op.gt]: 0 } },
+          { landLeasedAcres: { [Op.gt]: 0 } },
+        ];
+      }
     }
 
     if (
@@ -463,4 +462,5 @@ export async function getFarmerListByAdmin(
     console.error("Error in get farmer list:", err);
     throw err;
   }
-}
+};
+
