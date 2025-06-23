@@ -19,12 +19,17 @@ module.exports = {
       taluka: Sequelize.STRING,
       district: Sequelize.STRING,
       state: Sequelize.STRING,
-      geoLocation: Sequelize.BOOLEAN,
+      geoLocation: Sequelize.STRING,
       isAadhaarCard: Sequelize.BOOLEAN,
       aadhaarNumber: Sequelize.STRING,
       isBankAccount: Sequelize.BOOLEAN,
       createdAt: Sequelize.DATE,
       updatedAt: Sequelize.DATE,
+      userId: {
+        type: Sequelize.INTEGER,
+        references: { model: 'users', key: 'id' },
+        onDelete: 'CASCADE',
+      },
       onBoardedBy: {
         type: Sequelize.INTEGER,
         references: { model: 'users', key: 'id' },
