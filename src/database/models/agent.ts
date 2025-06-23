@@ -3,6 +3,7 @@ import sequelize from "./db";
 import User from "./user";
 
 class Agent extends Model {
+  public id: number;
   public agentId!: string;
   public user?: User;
   public phone: string;
