@@ -75,6 +75,9 @@ module.exports = {
       soldInSpotMarketPercent: Sequelize.FLOAT,
       interestedInDigitalTrading: Sequelize.BOOLEAN,
       usesWhatsappForBusiness: Sequelize.BOOLEAN,
+      harvestMonth: Sequelize.STRING,
+      equipmentSource: Sequelize.STRING,
+      storedInColdStoragePercent: Sequelize.FLOAT,
       createdAt: Sequelize.DATE,
       updatedAt: Sequelize.DATE,
     }, {
