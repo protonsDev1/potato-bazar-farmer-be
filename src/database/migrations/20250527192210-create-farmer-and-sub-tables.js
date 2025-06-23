@@ -27,7 +27,7 @@ module.exports = {
       updatedAt: Sequelize.DATE,
       onBoardedBy: {
         type: Sequelize.INTEGER,
-        references: { model: 'Farmers', key: 'id' },
+        references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
     });
