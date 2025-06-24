@@ -4,7 +4,9 @@ import {
   resetAgentPassword,
   retrieveAgentDashboardStats,
   retrieveAgentPerformance,
+  retrieveAllAgentPerformance,
   retrieveRecentRegistered,
+  retrieveTopAgents,
   retriveAllUsers,
   softDeleteAgentById,
   updateAgentById,
@@ -196,6 +198,34 @@ export const resetPasswordForAgent = async (req, res) => {
     console.error("Password reset failed:", error);
     return res.status(500).json({
       message: error.message || "Failed to reset password",
+    });
+  }
+};
+
+export const getAllAgentPerformance = async (req, res) => {
+  try {
+    const result = await retrieveAllAgentPerformance();
+
+    return res
+      .status(200)
+      .json({ message: "All agent performance:", data: result });
+  } catch (error) {
+    console.error("Failed in retrieving all agent performance", error);
+    return res.status(500).json({
+      message: error.message || "Failed in retrieving all agent performance",
+    });
+  }
+};
+
+export const getTopAgents = async (req, res) => {
+  try {
+    const result = await retrieveTopAgents();
+
+    return res.status(200).json({ message: "All top agents:", data: result });
+  } catch (error) {
+    console.error("Failed in retrieving all top agents", error);
+    return res.status(500).json({
+      message: error.message || "Failed in retrieving all top agents",
     });
   }
 };
