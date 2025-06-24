@@ -177,7 +177,7 @@ Trader.init(
     },
     panNumber: {
       type: DataTypes.STRING(10),
-      allowNull: false,
+      allowNull: true,
     },
     gstNumber: {
       type: DataTypes.STRING(30),
