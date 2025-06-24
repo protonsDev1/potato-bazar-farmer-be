@@ -7,8 +7,10 @@ import {
   getAgentDashboardStats,
   getAgentDetails,
   getAgentPerformance,
+  getAllAgentPerformance,
   getAllRegisteredUsers,
   getRecentRegisteredUsers,
+  getTopAgents,
   listAgents,
   resetPasswordForAgent,
   updateAgent,
@@ -32,5 +34,7 @@ router.put(
 );
 router.delete("/delete/:id", adminMiddleware, deleteAgent);
 router.post("/:id/reset_password", adminMiddleware, resetPasswordForAgent);
+router.get("/all_agent_performance", adminMiddleware, getAllAgentPerformance);
+router.get("/top_performing_agents", adminMiddleware, getTopAgents);
 
 export default router;
