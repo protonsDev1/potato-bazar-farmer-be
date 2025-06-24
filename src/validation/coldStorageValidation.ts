@@ -50,7 +50,7 @@ export const coldStorageSchema = Joi.object({
   solarPowerCapacityKw: Joi.number().allow(null),
   backupPowerCapacityKw: Joi.number().allow(null),
   uniqueFeatures: Joi.string().allow('', null),
-  // tradeMode: Joi.string().valid('yesTradeOnly', 'noRentalOnly', 'bothTradeAndRent').required(),
+  tradeMode: Joi.string().valid('yesTradeOnly', 'noRentalOnly', 'bothTradeAndRent').required(),
   isContractFarming: Joi.boolean().required(),
   contractFarmingDetails: Joi.string().allow('', null),
   transportProvided: Joi.boolean().required(),
