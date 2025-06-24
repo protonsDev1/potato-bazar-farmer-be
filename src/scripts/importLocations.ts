@@ -1,84 +1,116 @@
 import fs from "fs";
 import path from "path";
 import csv from "csv-parser";
-
 import sequelize from "../database/models/db";
 import State from "../database/models/state";
 import City from "../database/models/city";
 import District from "../database/models/district";
+
 const filePath = path.resolve(process.cwd(), "data/locations.csv");
 
 const importLocations = async () => {
   try {
-    // Authenticate DB connection
     await sequelize.authenticate();
     console.log("DB connection established");
 
-    const stateMap = new Map();
-    const cityMap = new Map();
-    const districtMap = new Map();
+    const stateCount = await State.count();
+    const cityCount = await City.count();
+    const districtCount = await District.count();
+
+    if (stateCount > 0 || cityCount > 0 || districtCount > 0) {
+      console.log("Skipping import — location data already exists.");
+      process.exit(0);
+    }
 
     const rows: any[] = [];
+    const stateSet = new Set<string>();
+    const citySet = new Set<string>();
+    const districtSet = new Set<string>();
 
-    // Read CSV rows
+    // Step 1: Read CSV
     await new Promise<void>((resolve, reject) => {
       fs.createReadStream(filePath)
         .pipe(csv())
-        .on("data", (row) => rows.push(row))
+        .on("data", (row) => {
+          const stateName = row.State.trim();
+          const cityName = row.City.trim();
+          const districtName = row.District.trim();
+
+          rows.push({ stateName, cityName, districtName });
+          stateSet.add(stateName);
+        })
         .on("end", resolve)
         .on("error", reject);
     });
 
-    // start transaction
-    const transaction = await sequelize.transaction();
+    // Step 2: Insert unique States
+    const statesToInsert = Array.from(stateSet).map((name) => ({ name }));
+    const insertedStates = await State.bulkCreate(statesToInsert, {
+      ignoreDuplicates: true,
+    });
 
-    try {
-      for (const row of rows) {
-        const stateName = row.State.trim();
-        const cityName = row.City.trim();
-        const districtName = row.District.trim();
+    const stateMap = new Map(
+      (await State.findAll()).map((s) => [s.name, s.id])
+    );
 
-        // Insert State
-        let stateId = stateMap.get(stateName);
-        if (!stateId) {
-          const [state] = await State.findOrCreate({
-            where: { name: stateName },
-            transaction,
-          });
-          stateMap.set(stateName, state.id);
-          stateId = state.id;
-        }
-
-        // Insert City
-        const cityKey = `${cityName}_${stateId}`;
-        let cityId = cityMap.get(cityKey);
-        if (!cityId) {
-          const [city] = await City.findOrCreate({
-            where: { name: cityName, stateId },
-            transaction,
-          });
-          cityMap.set(cityKey, city.id);
-          cityId = city.id;
-        }
-
-        // Insert District
-        const districtKey = `${districtName}_${cityId}`;
-        if (!districtMap.has(districtKey)) {
-          const [district] = await District.findOrCreate({
-            where: { name: districtName, cityId },
-            transaction,
-          });
-          districtMap.set(districtKey, district.id);
-        }
-      }
-
-      await transaction.commit();
-      console.log("Location data imported successfully!");
-    } catch (err) {
-      await transaction.rollback();
-      throw err;
+    // Step 3: Insert unique Cities
+    for (const { stateName, cityName } of rows) {
+      citySet.add(`${cityName}__${stateName}`);
     }
 
+    const citiesToInsert = Array.from(citySet).map((key) => {
+      const [cityName, stateName] = key.split("__");
+      return {
+        name: cityName,
+        stateId: stateMap.get(stateName),
+      };
+    });
+    const insertedCities = await City.bulkCreate(citiesToInsert, {
+      ignoreDuplicates: true,
+    });
+
+    const cityMap = new Map();
+    const citiesFromDb = await City.findAll();
+    for (const city of citiesFromDb) {
+      cityMap.set(`${city.name}__${city.stateId}`, city.id);
+    }
+
+    // Step 4: Insert unique Districts
+    for (const { stateName, cityName, districtName } of rows) {
+      const cityId = cityMap.get(`${cityName}__${stateMap.get(stateName)}`);
+      if (cityId) {
+        districtSet.add(`${districtName}__${cityId}`);
+      }
+    }
+
+    const districtsToInsert = Array.from(districtSet).map((key) => {
+      const [districtName, cityIdStr] = key.split("__");
+      return {
+        name: districtName,
+        cityId: Number(cityIdStr),
+      };
+    });
+    const insertedDistricts = await District.bulkCreate(districtsToInsert, {
+      ignoreDuplicates: true,
+    });
+
+    console.log(
+      `States: Attempted = ${statesToInsert.length}, Inserted = ${
+        insertedStates.length
+      }, Skipped = ${statesToInsert.length - insertedStates.length}`
+    );
+    console.log(
+      `Cities: Attempted = ${citiesToInsert.length}, Inserted = ${
+        insertedCities.length
+      }, Skipped = ${citiesToInsert.length - insertedCities.length}`
+    );
+    console.log(
+      `Districts: Attempted = ${districtsToInsert.length}, Inserted = ${
+        insertedDistricts.length
+      }, Skipped = ${districtsToInsert.length - insertedDistricts.length}`
+    );
+
+    console.log("Location data imported successfully!");
     process.exit(0);
   } catch (error) {
     console.error("Error importing locations:", error);
