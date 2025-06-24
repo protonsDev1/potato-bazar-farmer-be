@@ -121,6 +121,4 @@ export const onboardFarmerSchema = Joi.object({
       })
     )
     .optional(),
-
-  onBoardedBy: Joi.string().uuid().optional(),
 });

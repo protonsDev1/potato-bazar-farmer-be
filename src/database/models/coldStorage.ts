@@ -1,5 +1,6 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
 import sequelize from './db';
+import StorageType from './storageType';
 
 class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttributes<ColdStorage>> {
   declare id: CreationOptional<number>;
@@ -154,5 +155,15 @@ ColdStorage.init({
   tableName: 'coldStorages',
   timestamps: true
 });
+
+ColdStorage.hasMany(StorageType, {
+  foreignKey: 'coldStorageId',
+  as: 'storageTypes',
+});
+
+StorageType.belongsTo(ColdStorage, {
+  foreignKey: 'coldStorageId',
+});
+
 
 export default ColdStorage;
