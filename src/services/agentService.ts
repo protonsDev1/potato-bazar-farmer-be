@@ -7,6 +7,8 @@ import dayjs from "dayjs";
 import Agent from "../database/models/agent";
 import User from "../database/models/user";
 import { generateRandomPassword } from "../utils/generate";
+import { getMonthWiseRegistrations } from "../utils/getMonthWiseRegistration";
+import Trader from "../database/models/trader/trader";
 
 export const retriveAllUsers = async (
   agentId: string,
@@ -16,7 +18,7 @@ export const retriveAllUsers = async (
   try {
     const offset = (page - 1) * limit;
 
-    const [farmers, coldStorages] = await Promise.all([
+    const [farmers, coldStorages, traders] = await Promise.all([
       Farmer.findAll({
         where: { onBoardedBy: agentId },
         order: [["createdAt", "DESC"]],
@@ -25,18 +27,29 @@ export const retriveAllUsers = async (
         where: { onBoardedBy: agentId },
         order: [["createdAt", "DESC"]],
       }),
+      Trader.findAll({
+        where: { onBoardedBy: agentId },
+        order: [["createdAt", "DESC"]],
+      }),
     ]);
 
-    const combined = [...farmers, ...coldStorages].map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      village: item.village,
-      district: item.district,
-      createdAt: item.createdAt,
-      date: formatDate(item.createdAt),
-      type: item instanceof Farmer ? "farmer" : "cold storage",
-      status: "complete",
-    }));
+    const combined = [...farmers, ...coldStorages, ...traders].map(
+      (item: any) => ({
+        id: item.id,
+        name: item.name,
+        village: item.village,
+        district: item.district,
+        createdAt: item.createdAt,
+        date: formatDate(item.createdAt),
+        type:
+          item instanceof Farmer
+            ? "farmer"
+            : item instanceof ColdStorage
+            ? "cold storage"
+            : "trader",
+        status: "complete",
+      })
+    );
 
     // Sort by date descending
     combined.sort(
@@ -62,7 +75,7 @@ export const retriveAllUsers = async (
 
 export const retrieveRecentRegistered = async (agentId) => {
   try {
-    const [farmers, coldStorages] = await Promise.all([
+    const [farmers, coldStorages, traders] = await Promise.all([
       Farmer.findAll({
         where: { onBoardedBy: agentId },
         order: [["createdAt", "DESC"]],
@@ -71,18 +84,29 @@ export const retrieveRecentRegistered = async (agentId) => {
         where: { onBoardedBy: agentId },
         order: [["createdAt", "DESC"]],
       }),
+      Trader.findAll({
+        where: { onBoardedBy: agentId },
+        order: [["createdAt", "DESC"]],
+      }),
     ]);
 
-    const combined = [...farmers, ...coldStorages].map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      village: item.village,
-      district: item.district,
-      date: formatDate(item.createdAt),
-      createdAt: item.createdAt,
-      type: item instanceof Farmer ? "farmer" : "cold storage",
-      status: "complete",
-    }));
+    const combined = [...farmers, ...coldStorages, ...traders].map(
+      (item: any) => ({
+        id: item.id,
+        name: item.name,
+        village: item.village,
+        district: item.district,
+        date: formatDate(item.createdAt),
+        createdAt: item.createdAt,
+        type:
+          item instanceof Farmer
+            ? "farmer"
+            : item instanceof ColdStorage
+            ? "cold storage"
+            : "trader",
+        status: "complete",
+      })
+    );
 
     combined.sort(
       (a, b) =>
@@ -109,68 +133,58 @@ export const retrieveAgentPerformance = async (agentId) => {
       .startOf("month")
       .toDate();
 
-    const farmerData: any = await Farmer.findAll({
-      attributes: [
-        [fn("TO_CHAR", col("createdAt"), "Mon"), "month"],
-        [fn("COUNT", "*"), "count"],
-      ],
-      where: {
-        createdAt: { [Op.gte]: fromDate },
+    const [farmerMap, coldStorageMap, traderMap] = await Promise.all([
+      getMonthWiseRegistrations(Farmer, fromDate, { onBoardedBy: agentId }),
+      getMonthWiseRegistrations(ColdStorage, fromDate, {
         onBoardedBy: agentId,
-      },
-      group: [fn("TO_CHAR", col("createdAt"), "Mon")],
-      raw: true,
-    });
+      }),
+      getMonthWiseRegistrations(Trader, fromDate, { onBoardedBy: agentId }),
+    ]);
 
-    const coldStorageData: any = await ColdStorage.findAll({
-      attributes: [
-        [fn("TO_CHAR", col("createdAt"), "Mon"), "month"],
-        [fn("COUNT", "*"), "count"],
-      ],
-      where: {
-        createdAt: { [Op.gte]: fromDate },
-        onBoardedBy: agentId,
-      },
-      group: [fn("TO_CHAR", col("createdAt"), "Mon")],
-      raw: true,
-    });
+    const allMonths = new Set([
+      ...Object.keys(farmerMap),
+      ...Object.keys(coldStorageMap),
+      ...Object.keys(traderMap),
+    ]);
+    const monthlyRegistrations = Array.from(allMonths).map((month) => ({
+      month,
+      total:
+        (farmerMap[month] || 0) +
+        (coldStorageMap[month] || 0) +
+        (traderMap[month] || 0),
+    }));
 
-    const dataMap: any = {};
-
-    farmerData.forEach((row) => {
-      if (!dataMap[row.month]) dataMap[row.month] = 0;
-      dataMap[row.month] += parseInt(row.count);
-    });
-
-    coldStorageData.forEach((row) => {
-      if (!dataMap[row.month]) dataMap[row.month] = 0;
-      dataMap[row.month] += parseInt(row.count);
-    });
-
-    const monthlyRegistrations = Object.entries(dataMap)
-      .map(([month, total]) => ({ month, total }))
-      .sort((a, b) => a.month.localeCompare(b.month));
+    monthlyRegistrations.sort(
+      (a, b) => dayjs(a.month, "MMM").month() - dayjs(b.month, "MMM").month()
+    );
 
     const startOfMonth = dayjs().startOf("month").toDate();
     const endOfMonth = dayjs().endOf("month").toDate();
 
-    const [currentFarmerCount, currentColdStorageCount] = await Promise.all([
-      Farmer.count({
-        where: {
-          onBoardedBy: agentId,
-          createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
-        },
-      }),
-      ColdStorage.count({
-        where: {
-          onBoardedBy: agentId,
-          createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
-        },
-      }),
-    ]);
+    const [currentFarmerCount, currentColdStorageCount, currentTraderCount] =
+      await Promise.all([
+        Farmer.count({
+          where: {
+            onBoardedBy: agentId,
+            createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+          },
+        }),
+        ColdStorage.count({
+          where: {
+            onBoardedBy: agentId,
+            createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+          },
+        }),
+        Trader.count({
+          where: {
+            onBoardedBy: agentId,
+            createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+          },
+        }),
+      ]);
 
     const currentMonthRegistrations =
-      currentFarmerCount + currentColdStorageCount;
+      currentFarmerCount + currentColdStorageCount + currentTraderCount;
 
     const completionOfMonthlyTargetPercentage =
       (currentMonthRegistrations / 50) * 100;
@@ -200,13 +214,18 @@ export const retrieveAgentDashboardStats = async (agentId) => {
     const [
       farmerCount,
       coldStorageCount,
+      traderCount,
       weeklyNewFarmers,
       weeklyNewColdStorages,
+      weeklyNewTraders,
     ] = await Promise.all([
       Farmer.count({
         where: { onBoardedBy: agentId },
       }),
       ColdStorage.count({
+        where: { onBoardedBy: agentId },
+      }),
+      Trader.count({
         where: { onBoardedBy: agentId },
       }),
       Farmer.count({
@@ -218,6 +237,14 @@ export const retrieveAgentDashboardStats = async (agentId) => {
         },
       }),
       ColdStorage.count({
+        where: {
+          onBoardedBy: agentId,
+          createdAt: {
+            [Op.between]: [startOfWeek, endOfWeek],
+          },
+        },
+      }),
+      Trader.count({
         where: {
           onBoardedBy: agentId,
           createdAt: {
@@ -231,8 +258,10 @@ export const retrieveAgentDashboardStats = async (agentId) => {
       agentId: agent.agentId,
       countOfFarmers: farmerCount,
       countOfColdStorage: coldStorageCount,
+      countOfTraders: traderCount,
       weeklyNewFarmers,
       weeklyNewColdStorages,
+      weeklyNewTraders,
     };
   } catch (error) {
     console.error(error);
@@ -378,4 +407,93 @@ export const resetAgentPassword = async (agentId: number) => {
     password: newPassword,
     agentId: agent.agentId,
   };
+};
+
+export const retrieveAllAgentPerformance = async () => {
+  const monthsBack = 12;
+  const fromDate = dayjs()
+    .subtract(monthsBack, "month")
+    .startOf("month")
+    .toDate();
+
+  const [farmerMap, coldStorageMap, traderMap] = await Promise.all([
+    getMonthWiseRegistrations(Farmer, fromDate),
+    getMonthWiseRegistrations(ColdStorage, fromDate),
+    getMonthWiseRegistrations(Trader, fromDate),
+  ]);
+
+  const allMonths = new Set([
+    ...Object.keys(farmerMap),
+    ...Object.keys(coldStorageMap),
+    ...Object.keys(traderMap),
+  ]);
+  const monthlyRegistrations = Array.from(allMonths).map((month) => ({
+    month,
+    total:
+      (farmerMap[month] || 0) +
+      (coldStorageMap[month] || 0) +
+      (traderMap[month] || 0),
+  }));
+
+  monthlyRegistrations.sort(
+    (a, b) => dayjs(a.month, "MMM").month() - dayjs(b.month, "MMM").month()
+  );
+
+  const [farmerCount, coldStorageCount, traderCount] = await Promise.all([
+    Farmer.count({}),
+    ColdStorage.count({}),
+    Trader.count({}),
+  ]);
+
+  const totalRegistrations = farmerCount + coldStorageCount + traderCount;
+  const farmerPercentage = (farmerCount / totalRegistrations) * 100;
+  const coldStoragePercentage = (coldStorageCount / totalRegistrations) * 100;
+  const traderPercentage = (traderCount / totalRegistrations) * 100;
+
+  return {
+    monthlyRegistrations,
+    farmerPercentage,
+    coldStoragePercentage,
+    traderPercentage,
+  };
+};
+
+export const retrieveTopAgents = async () => {
+  const agents = await Agent.findAll({
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["name", "id"],
+      },
+    ],
+    raw: true,
+    nest: true,
+  });
+
+  const result = await Promise.all(
+    agents.map(async (agent) => {
+      const agentId = agent.user.id;
+
+      const [farmerCount, coldStorageCount, traderCount] = await Promise.all([
+        Farmer.count({ where: { onBoardedBy: agentId } }),
+        ColdStorage.count({ where: { onBoardedBy: agentId } }),
+        Trader.count({ where: { onBoardedBy: agentId } }),
+      ]);
+
+      const totalSubmissions = farmerCount + coldStorageCount + traderCount;
+
+      return {
+        agentId,
+        agentName: `${agent.user.name}`,
+        totalSubmissions,
+      };
+    })
+  );
+
+  const topAgents = result
+    .sort((a, b) => b.totalSubmissions - a.totalSubmissions)
+    .slice(0, 5);
+
+  return topAgents;
 };
