@@ -3,17 +3,23 @@ import path from "path";
 import csv from "csv-parser";
 import sequelize from "../database/models/db";
 import State from "../database/models/state";
-import City from "../database/models/city";
 import District from "../database/models/district";
+import City from "../database/models/city";
 
-const filePath = path.resolve(process.cwd(), "data/locations.csv");
+const filePath = path.resolve(process.cwd(), "data/states_and_districts.csv");
 
-const importLocations = async () => {
+const cleanStateName = (rawName: string) =>
+  rawName
+    .replace(/\(State\)/gi, "")
+    .replace(/State/gi, "")
+    .trim();
+
+const importStatesAndDistricts = async () => {
   try {
     await sequelize.authenticate();
     console.log("DB connection established");
 
-    console.log("Clearing existing location data...");
+    console.log("Clearing existing state and district data...");
 
     await District.destroy({
       where: {},
@@ -36,11 +42,10 @@ const importLocations = async () => {
       restartIdentity: true,
     });
 
-    console.log("Old location data cleared.");
+    console.log("Old state and district data cleared.");
 
-    const rows: any[] = [];
+    const rows: { stateName: string; districtName: string }[] = [];
     const stateSet = new Set<string>();
-    const citySet = new Set<string>();
     const districtSet = new Set<string>();
 
     // Step 1: Read CSV
@@ -48,12 +53,14 @@ const importLocations = async () => {
       fs.createReadStream(filePath)
         .pipe(csv())
         .on("data", (row) => {
-          const stateName = row.State.trim();
-          const cityName = row.City.trim();
-          const districtName = row.District.trim();
+          const rawState = row.StateName?.trim() || "";
+          const stateName = cleanStateName(rawState);
+          const districtName = row.DistrictName?.trim();
 
-          rows.push({ stateName, cityName, districtName });
-          stateSet.add(stateName);
+          if (stateName && districtName) {
+            rows.push({ stateName, districtName });
+            stateSet.add(stateName);
+          }
         })
         .on("end", resolve)
         .on("error", reject);
@@ -69,42 +76,18 @@ const importLocations = async () => {
       (await State.findAll()).map((s) => [s.name, s.id])
     );
 
-    // Step 3: Insert unique Cities
-    for (const { stateName, cityName } of rows) {
-      citySet.add(`${cityName}__${stateName}`);
-    }
-
-    const citiesToInsert = Array.from(citySet).map((key) => {
-      const [cityName, stateName] = key.split("__");
-      return {
-        name: cityName,
-        stateId: stateMap.get(stateName),
-      };
-    });
-    const insertedCities = await City.bulkCreate(citiesToInsert, {
-      ignoreDuplicates: true,
-    });
-
-    const cityMap = new Map();
-    const citiesFromDb = await City.findAll();
-    for (const city of citiesFromDb) {
-      cityMap.set(`${city.name}__${city.stateId}`, city.id);
-    }
-
-    // Step 4: Insert unique Districts
-    for (const { stateName, cityName, districtName } of rows) {
+    // Step 3: Insert unique Districts
+    for (const { stateName, districtName } of rows) {
       const stateId = stateMap.get(stateName);
-      const cityId = cityMap.get(`${cityName}__${stateId}`);
-      if (cityId) {
-        districtSet.add(`${districtName}__${cityId}__${stateId}`);
+      if (stateId) {
+        districtSet.add(`${districtName}__${stateId}`);
       }
     }
 
     const districtsToInsert = Array.from(districtSet).map((key) => {
-      const [districtName, cityIdStr, stateIdStr] = key.split("__");
+      const [districtName, stateIdStr] = key.split("__");
       return {
         name: districtName,
-        cityId: Number(cityIdStr),
         stateId: Number(stateIdStr),
       };
     });
@@ -119,22 +102,17 @@ const importLocations = async () => {
       }, Skipped = ${statesToInsert.length - insertedStates.length}`
     );
     console.log(
-      `Cities: Attempted = ${citiesToInsert.length}, Inserted = ${
-        insertedCities.length
-      }, Skipped = ${citiesToInsert.length - insertedCities.length}`
-    );
-    console.log(
       `Districts: Attempted = ${districtsToInsert.length}, Inserted = ${
         insertedDistricts.length
       }, Skipped = ${districtsToInsert.length - insertedDistricts.length}`
     );
 
-    console.log("Location data imported successfully!");
+    console.log("State & District data imported successfully!");
     process.exit(0);
   } catch (error) {
-    console.error("Error importing locations:", error);
+    console.error("Error importing data:", error);
     process.exit(1);
   }
 };
 
-importLocations();
+importStatesAndDistricts();
