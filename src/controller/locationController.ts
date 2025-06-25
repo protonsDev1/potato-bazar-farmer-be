@@ -1,37 +1,16 @@
-import { Op } from "sequelize";
-
 import State from "../database/models/state";
 import City from "../database/models/city";
 import District from "../database/models/district";
 
-const getPagination = (page = 1, limit = 10) => {
-  const offset = (page - 1) * limit;
-  return { limit, offset };
-};
-
 export const listStates = async (req, res) => {
   try {
-    const { search = "", page = 1, limit = 10 } = req.query;
-    const { limit: pageLimit, offset } = getPagination(+page, +limit);
-
-    const whereClause = search
-      ? { name: { [Op.iLike]: `%${search}%` } }
-      : undefined;
-
-    const { count, rows: states } = await State.findAndCountAll({
-      where: whereClause,
+    const states = await State.findAll({
+      attributes: ["id", "name"],
       order: [["position", "ASC"]],
-      limit: pageLimit,
-      offset,
     });
 
     return res.json({
       message: "States fetched successfully",
-      pagination: {
-        totalItems: count,
-        totalPages: Math.ceil(count / pageLimit),
-        currentPage: +page,
-      },
       states,
     });
   } catch (error) {
@@ -42,29 +21,31 @@ export const listStates = async (req, res) => {
 
 export const listCities = async (req, res) => {
   try {
-    const { search = "", stateId, page = 1, limit = 10 } = req.query;
-    const { limit: pageLimit, offset } = getPagination(+page, +limit);
+    const { stateId } = req.query;
 
-    const whereClause = {
-      ...(stateId && { stateId }),
-      ...(search && { name: { [Op.iLike]: `%${search}%` } }),
-    };
+    const whereClause: any = {};
+    if (stateId) whereClause.stateId = stateId;
 
-    const { count, rows: cities } = await City.findAndCountAll({
+    const cities = await City.findAll({
       where: whereClause,
+      attributes: ["id", "name"],
       order: [["name", "ASC"]],
-      limit: pageLimit,
-      offset,
     });
+
+    // Deduplicate by city name (case-insensitive)
+    const uniqueMap = new Map();
+    for (const city of cities) {
+      const key = city.name.toLowerCase();
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, city);
+      }
+    }
+
+    const uniqueCities = Array.from(uniqueMap.values());
 
     return res.json({
       message: "Cities fetched successfully",
-      pagination: {
-        totalItems: count,
-        totalPages: Math.ceil(count / pageLimit),
-        currentPage: +page,
-      },
-      cities,
+      cities: uniqueCities,
     });
   } catch (error) {
     console.error("Error fetching cities:", error);
@@ -76,29 +57,32 @@ export const listCities = async (req, res) => {
 
 export const listDistricts = async (req, res) => {
   try {
-    const { search = "", cityId, page = 1, limit = 10 } = req.query;
-    const { limit: pageLimit, offset } = getPagination(+page, +limit);
+    const { stateId, cityId } = req.query;
 
-    const whereClause = {
-      ...(cityId && { cityId }),
-      ...(search && { name: { [Op.iLike]: `%${search}%` } }),
-    };
+    const whereClause: any = {};
+    if (stateId) whereClause.stateId = stateId;
+    if (cityId) whereClause.cityId = cityId;
 
-    const { count, rows: districts } = await District.findAndCountAll({
+    const districts = await District.findAll({
       where: whereClause,
+      attributes: ["id", "name"],
       order: [["name", "ASC"]],
-      limit: pageLimit,
-      offset,
     });
+
+    // Deduplicate by city name (case-insensitive)
+    const uniqueMap = new Map();
+    for (const district of districts) {
+      const key = district.name.toLowerCase();
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, district);
+      }
+    }
+
+    const uniqueDistricts = Array.from(uniqueMap.values());
 
     return res.json({
       message: "Districts fetched successfully",
-      pagination: {
-        totalItems: count,
-        totalPages: Math.ceil(count / pageLimit),
-        currentPage: +page,
-      },
-      districts,
+      districts: uniqueDistricts,
     });
   } catch (error) {
     return res.status(500).json({

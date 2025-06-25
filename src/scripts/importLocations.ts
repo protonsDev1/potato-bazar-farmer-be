@@ -13,14 +13,30 @@ const importLocations = async () => {
     await sequelize.authenticate();
     console.log("DB connection established");
 
-    const stateCount = await State.count();
-    const cityCount = await City.count();
-    const districtCount = await District.count();
+    console.log("Clearing existing location data...");
 
-    if (stateCount > 0 || cityCount > 0 || districtCount > 0) {
-      console.log("Skipping import — location data already exists.");
-      process.exit(0);
-    }
+    await District.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+    });
+
+    await City.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+    });
+
+    await State.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+    });
+
+    console.log("Old location data cleared.");
 
     const rows: any[] = [];
     const stateSet = new Set<string>();
@@ -77,19 +93,22 @@ const importLocations = async () => {
 
     // Step 4: Insert unique Districts
     for (const { stateName, cityName, districtName } of rows) {
-      const cityId = cityMap.get(`${cityName}__${stateMap.get(stateName)}`);
+      const stateId = stateMap.get(stateName);
+      const cityId = cityMap.get(`${cityName}__${stateId}`);
       if (cityId) {
-        districtSet.add(`${districtName}__${cityId}`);
+        districtSet.add(`${districtName}__${cityId}__${stateId}`);
       }
     }
 
     const districtsToInsert = Array.from(districtSet).map((key) => {
-      const [districtName, cityIdStr] = key.split("__");
+      const [districtName, cityIdStr, stateIdStr] = key.split("__");
       return {
         name: districtName,
         cityId: Number(cityIdStr),
+        stateId: Number(stateIdStr),
       };
     });
+
     const insertedDistricts = await District.bulkCreate(districtsToInsert, {
       ignoreDuplicates: true,
     });
