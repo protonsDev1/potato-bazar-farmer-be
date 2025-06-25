@@ -17,6 +17,7 @@ class Farmer extends Model<InferAttributes<Farmer>, InferCreationAttributes<Farm
   declare age: number;
   declare gender: string;
   declare optionalNumber: string | null;
+  declare whatsappNumber: string | null;
   declare caste: string | null;
   declare subCaste: string | null;
   declare village: string | null;
@@ -26,6 +27,7 @@ class Farmer extends Model<InferAttributes<Farmer>, InferCreationAttributes<Farm
   declare geoLocation: string | null;
   declare isAadhaarCard: boolean | null;
   declare aadhaarNumber: string | null;
+  declare digiPin : string | null;
   declare isBankAccount: boolean | null;
   declare onBoardedBy: number | null;
   declare userId: number | null;
@@ -40,6 +42,7 @@ Farmer.init(
     age: { type: DataTypes.INTEGER, allowNull: false },
     gender: { type: DataTypes.STRING, allowNull: false },
     optionalNumber: { type: DataTypes.STRING, allowNull: true },
+    whatsappNumber: {type: DataTypes.STRING, allowNull: true},
     caste: { type: DataTypes.STRING, allowNull: true },
     subCaste: { type: DataTypes.STRING, allowNull: true },
     village: { type: DataTypes.STRING, allowNull: true },
@@ -49,6 +52,7 @@ Farmer.init(
     geoLocation: { type: DataTypes.STRING, allowNull: true },
     isAadhaarCard: { type: DataTypes.BOOLEAN, allowNull: true },
     aadhaarNumber: { type: DataTypes.STRING, allowNull: true },
+    digiPin: {type: DataTypes.STRING, allowNull: true},
     isBankAccount: { type: DataTypes.BOOLEAN, allowNull: true },
     onBoardedBy: {
       type: DataTypes.INTEGER,
