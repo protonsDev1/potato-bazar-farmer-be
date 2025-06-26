@@ -16,6 +16,7 @@ import {
   updateAgent,
 } from "../controller/agent";
 import { updateAgentSchema } from "../validation/agentValidation";
+import { validateRequest } from "../middlewares/validationMiddleware";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -29,7 +30,7 @@ router.get("/details/:id", adminMiddleware, getAgentDetails);
 router.put(
   "/update/:id",
   adminMiddleware,
-  validator.body(updateAgentSchema),
+  validateRequest(updateAgentSchema),
   updateAgent
 );
 router.delete("/delete/:id", adminMiddleware, deleteAgent);
