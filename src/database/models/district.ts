@@ -18,8 +18,6 @@ class District extends Model<
 > {
   declare id: CreationOptional<number>;
   declare name: string;
-  declare cityId: ForeignKey<City["id"]>;
-  declare city?: NonAttribute<City>;
   declare stateId: ForeignKey<State["id"]>;
   declare state?: NonAttribute<State>;
   declare createdAt: CreationOptional<Date>;
@@ -36,15 +34,6 @@ District.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-    },
-    cityId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "cities",
-        key: "id",
-      },
-      onDelete: "CASCADE",
     },
     stateId: {
       type: DataTypes.INTEGER,
@@ -71,14 +60,11 @@ District.init(
     indexes: [
       {
         unique: true,
-        fields: ["name", "cityId"],
+        fields: ["name", "stateId"],
       },
     ],
   }
 );
-
-City.hasMany(District, { foreignKey: "cityId", as: "districts" });
-District.belongsTo(City, { foreignKey: "cityId", as: "city" });
 
 State.hasMany(District, { foreignKey: "stateId", as: "districts" });
 District.belongsTo(State, { foreignKey: "stateId", as: "state" });

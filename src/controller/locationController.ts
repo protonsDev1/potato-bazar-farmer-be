@@ -57,11 +57,10 @@ export const listCities = async (req, res) => {
 
 export const listDistricts = async (req, res) => {
   try {
-    const { stateId, cityId } = req.query;
+    const { stateId } = req.query;
 
     const whereClause: any = {};
     if (stateId) whereClause.stateId = stateId;
-    if (cityId) whereClause.cityId = cityId;
 
     const districts = await District.findAll({
       where: whereClause,
@@ -69,20 +68,9 @@ export const listDistricts = async (req, res) => {
       order: [["name", "ASC"]],
     });
 
-    // Deduplicate by city name (case-insensitive)
-    const uniqueMap = new Map();
-    for (const district of districts) {
-      const key = district.name.toLowerCase();
-      if (!uniqueMap.has(key)) {
-        uniqueMap.set(key, district);
-      }
-    }
-
-    const uniqueDistricts = Array.from(uniqueMap.values());
-
     return res.json({
       message: "Districts fetched successfully",
-      districts: uniqueDistricts,
+      districts,
     });
   } catch (error) {
     return res.status(500).json({
