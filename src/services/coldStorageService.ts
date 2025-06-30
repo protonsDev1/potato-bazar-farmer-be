@@ -159,7 +159,7 @@ export const retrieveColdStorageProfile = async (coldStorageId) => {
     });
 
     const chamberCapacity = await ChamberCapacity.findAll({
-      attributes: ["chamberNumber", "capacityMt"],
+      attributes: [ "capacityMt"],
       where: { coldStorageId },
     });
 

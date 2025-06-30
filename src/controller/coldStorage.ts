@@ -14,7 +14,7 @@ export const createColdStorage = async (req, res) => {
     });
   } catch (error) {
     console.error("Controller Error:", error);
-    res.status(500).json({ message: "Failed to onboard cold storage" });
+    res.status(500).json({ message: error.message || "Failed to onboard cold storage"});
   }
 };
 
@@ -40,7 +40,9 @@ export const getColdStorageProfile = async (req, res) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Failed to retrieve cold storage profile." });
+      .json({
+        message: error.message || "Failed to retrieve cold storage profile.",
+      });
   }
 };
 
@@ -50,13 +52,17 @@ export const getColdStorageList = async (req, res) => {
 
     const filters = parseFilters(req.query);
 
-    const coldStorage = await getColdStorage(page, limit, filters,search);
+    const coldStorage = await getColdStorage(page, limit, filters, search);
 
     return res.status(200).json({
       message: "Cold storage list",
       data: coldStorage,
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to retrieve cold storage list" });
+    res
+      .status(500)
+      .json({
+        message: error.message || "Failed to retrieve cold storage list",
+      });
   }
 };

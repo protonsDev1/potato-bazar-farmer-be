@@ -13,7 +13,9 @@ router.post(
   authMiddleware,
   createColdStorage
 );
-router.get("/profile/:id",getColdStorageProfile);
+
+router.get("/profile/:id", authMiddleware, getColdStorageProfile);
+
 router.get("/", adminMiddleware, getColdStorageList);
 
 export default router;
