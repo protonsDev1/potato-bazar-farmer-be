@@ -13,6 +13,11 @@ import adminSowingMethodRoutes from "./src/routes/adminRoutes/farmer/adminSowing
 import adminFarmEquipmentRoutes from "./src/routes/adminRoutes/farmer/adminFarmEquipmentUsedRoutes";
 import adminTechnologyUsedRoutes from "./src/routes/adminRoutes/farmer/adminTechnologyUsedRoutes";
 import adminPriceDiscoveryRoutes from "./src/routes/adminRoutes/farmer/adminPriceDiscoveryRoutes";
+import adminBrandPreferenceReasonRoutes from "./src/routes/adminRoutes/farmer/adminBrandPreferenceReasonRoutes";
+import adminSeedBrandRoutes from "./src/routes/adminRoutes/farmer/adminSeedBrandRoutes";
+import adminSellingChannelRoutes from "./src/routes/adminRoutes/farmer/adminSellingChannelRoutes";
+import adminSellingPlaceRoutes from "./src/routes/adminRoutes/farmer/adminSellingPlaceRoutes";
+import adminSellingPriceRoutes from "./src/routes/adminRoutes/farmer/adminSellingPriceRoutes";
 import adminBiggestChallengeInSellingRoutes from "./src/routes/adminRoutes/farmer/adminBiggestChallengeInSellingRoutes";
 import adminCropTradedRoutes from "./src/routes/adminRoutes/trader/adminCropTradedRoutes";
 import adminTraderInterestRoutes from "./src/routes/adminRoutes/trader/adminTraderInterestRoutes";
@@ -21,6 +26,7 @@ import adminTraderVarietyRoutes from "./src/routes/adminRoutes/trader/adminTrade
 import adminStorageTypeRoutes from "./src/routes/adminRoutes/coldStorage/adminStorageTypeRoutes";
 import adminUsageTypeRoutes from "./src/routes/adminRoutes/coldStorage/adminUsageTypeRoutes";
 import adminOperationalChallengeRoutes from "./src/routes/adminRoutes/coldStorage/adminOperationalChallengeRoutes";
+import adminIrrigationMethodRoutes from "./src/routes/adminRoutes/farmer/adminIrrigationMethodRoutes";
 import traderRoutes from "./src/routes/traderRoutes";
 import uploadRoutes from "./src/routes/uploadRoutes";
 
@@ -54,6 +60,12 @@ app.use(
 );
 app.use("/api/admin/storage_type", adminStorageTypeRoutes);
 app.use("/api/admin/usage_type", adminUsageTypeRoutes);
+app.use("/api/admin/brand_preference_reason", adminBrandPreferenceReasonRoutes);
+app.use("/api/admin/seed_brand", adminSeedBrandRoutes);
+app.use("/api/admin/selling_channel", adminSellingChannelRoutes);
+app.use("/api/admin/selling_place", adminSellingPlaceRoutes);
+app.use("/api/admin/selling_price", adminSellingPriceRoutes);
+app.use("/api/admin/irrigation_method", adminIrrigationMethodRoutes);
 app.use("/api/admin/operational_challenge", adminOperationalChallengeRoutes);
 app.use("/api/traders", traderRoutes);
 app.use("/api", uploadRoutes);
