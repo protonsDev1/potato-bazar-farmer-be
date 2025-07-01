@@ -373,13 +373,13 @@ export const changePasswordService = async (
   }
 };
 
-export const updateProfileService = async (data, id) => {
+export const updateProfileService = async (data, userId, role) => {
   try {
-    const { email, mobile } = data;
+    const { email, mobile, location } = data;
 
     if (email) {
       const user = await findUserByEmail(email);
-      if (user && user.id !== id)
+      if (user && user.id !== userId)
         return {
           success: false,
           error: "Email already exist.",
@@ -388,11 +388,25 @@ export const updateProfileService = async (data, id) => {
 
     if (mobile) {
       const user = await checkExistingUser(mobile);
-      if (user && user.id !== id)
+      if (user && user.id !== userId)
         return { success: false, error: "Mobile number already exist." };
     }
 
-    await User.update({ ...data }, { where: { id } });
+    await User.update({ ...data }, { where: { id: userId } });
+
+    // Update Agent
+    if (role === "agent") {
+      const existingAgent = await Agent.findOne({ where: { userId } });
+      if (existingAgent) {
+        await Agent.update(
+          {
+            ...(mobile && { phone: mobile }),
+            ...(location && { address: location }),
+          },
+          { where: { userId } }
+        );
+      }
+    }
 
     return {
       success: true,
