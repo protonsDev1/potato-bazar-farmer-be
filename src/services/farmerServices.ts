@@ -13,6 +13,11 @@ import PriceDiscoveryMethod from "../database/models/priceDiscoveryMethod";
 import { literal, Op, Sequelize } from "sequelize";
 import User from "../database/models/user";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
+import BrandPreferenceReason from "../database/models/brandPreferenceReason";
+import SellingPrice from "../database/models/sellingPrice";
+import SellingPlace from "../database/models/sellingPlace";
+import OtherCropGrown from "../database/models/otherCropGrown";
+import IrrigationMethod from "../database/models/irrigationMethod";
 
 interface Payload {
   name: string;
@@ -32,6 +37,7 @@ interface Payload {
 
   landDetails?: Array<Record<string, any>>;
   irrigationSources?: Array<{ method: string }>;
+  irrigationMethods?: Array<{ method: string }>;
   potatoVarieties?: Array<{ variety: string; subVariety?: string }>;
   farmEquipment?: Array<{ machine: string; brand?: string; model?: string }>;
   technologyUsed?: Array<{ name: string }>;
@@ -39,6 +45,14 @@ interface Payload {
   sellingChallenges?: Array<{ name: string }>;
   majorSellingChallenges?: Array<{ name: string }>;
   priceDiscoveryMethods?: Array<{ method: string }>;
+  brandPreferenceReasons?: Array<{ reason: string }>;
+  sellingPrices?: Array<{ price: string }>;
+  sellingPlaces?: Array<{ place: string }>;
+  otherCropsGrown?: Array<{
+    cropName: string;
+    sowingMonth: string;
+    harvestingMonth: string;
+  }>;
 
   onBoardedBy?: number;
   userId?: number;
@@ -47,6 +61,15 @@ interface Payload {
 export async function onboardFarmer(payload: Payload) {
   try {
     return await sequelize.transaction(async (t) => {
+      const existingFarmer = await Farmer.findOne({
+        where: { userId: payload.userId },
+        transaction: t,
+      });
+
+      if (existingFarmer) {
+        throw new Error("Farmer already registered for this user.");
+      }
+
       const farmer = await Farmer.create(
         {
           name: payload.name,
@@ -84,6 +107,15 @@ export async function onboardFarmer(payload: Payload) {
       if (payload.irrigationSources) {
         for (const irrigation of payload.irrigationSources) {
           await IrrigationSource.create(
+            { farmerId: farmer.id, method: irrigation.method },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (payload.irrigationMethods) {
+        for (const irrigation of payload.irrigationMethods) {
+          await IrrigationMethod.create(
             { farmerId: farmer.id, method: irrigation.method },
             { transaction: t }
           );
@@ -153,6 +185,47 @@ export async function onboardFarmer(payload: Payload) {
         }
       }
 
+      if (payload.brandPreferenceReasons) {
+        for (const brandPreference of payload.brandPreferenceReasons) {
+          await BrandPreferenceReason.create(
+            { farmerId: farmer.id, reason: brandPreference.reason },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (payload.sellingPrices) {
+        for (const sellingPrice of payload.sellingPrices) {
+          await SellingPrice.create(
+            { farmerId: farmer.id, price: sellingPrice.price },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (payload.sellingPlaces) {
+        for (const sellingPlace of payload.sellingPlaces) {
+          await SellingPlace.create(
+            { farmerId: farmer.id, place: sellingPlace.place },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (payload.otherCropsGrown) {
+        for (const crop of payload.otherCropsGrown) {
+          await OtherCropGrown.create(
+            {
+              farmerId: farmer.id,
+              cropName: crop.cropName,
+              sowingMonth: crop.sowingMonth,
+              harvestingMonth: crop.harvestingMonth,
+            },
+            { transaction: t }
+          );
+        }
+      }
+
       if (payload.priceDiscoveryMethods) {
         for (const method of payload.priceDiscoveryMethods) {
           await PriceDiscoveryMethod.create(
@@ -180,7 +253,12 @@ export const retrieveFarmerProfile = async (farmerId: string) => {
       where: { farmerId },
     });
 
-    const irrigationDetails = await IrrigationSource.findAll({
+    const irrigationSources = await IrrigationSource.findAll({
+      attributes: ["method"],
+      where: { farmerId },
+    });
+
+    const irrigationMethods = await IrrigationMethod.findAll({
       attributes: ["method"],
       where: { farmerId },
     });
@@ -220,10 +298,31 @@ export const retrieveFarmerProfile = async (farmerId: string) => {
       where: { farmerId },
     });
 
+    const brandPreferenceReasons = await BrandPreferenceReason.findAll({
+      attributes: ["reason"],
+      where: { farmerId },
+    });
+
+    const sellingPrice = await SellingPrice.findAll({
+      attributes: ["price"],
+      where: { farmerId },
+    });
+
+    const sellingPlace = await SellingPlace.findAll({
+      attributes: ["place"],
+      where: { farmerId },
+    });
+
+    const otherCropsGrown = await OtherCropGrown.findAll({
+      attributes: ["cropName", "sowingMonth", "harvestingMonth"],
+      where: { farmerId },
+    });
+
     return {
       farmerPersonalInfo,
       landDetails,
-      irrigationDetails,
+      irrigationSources,
+      irrigationMethods,
       farmEquipments,
       potatoVariety,
       priceDiscoveryMethods,
@@ -231,6 +330,10 @@ export const retrieveFarmerProfile = async (farmerId: string) => {
       sellingChallenges,
       sellingChannels,
       technologyUsed,
+      brandPreferenceReasons,
+      sellingPrice,
+      sellingPlace,
+      otherCropsGrown,
     };
   } catch (err) {
     console.log(err);
@@ -462,5 +565,4 @@ export async function getFarmerListByAdmin(
     console.error("Error in get farmer list:", err);
     throw err;
   }
-};
-
+}
