@@ -6,8 +6,14 @@ class LandDetail extends Model<InferAttributes<LandDetail>, InferCreationAttribu
   declare farmerId: number;
   declare landOwnedAcres: number | null;
   declare landLeasedAcres: number | null;
-  declare potatoCultivationAcres: number | null;
+  declare totalLandUnderCultivation: number | null;
+  declare landForPotatoFarming: number | null;
   declare irrigationEquipmentBrand: string | null;
+  declare irrigationEquipmentModel: number | null;
+  declare seedProcurementType: 'new' | 'reused' | 'both' | null;
+  declare newSeedPercent: number | null;
+  declare reusedSeedPercent: number | null;
+  declare seedBrandName: string | null;
   declare soilType: string | null;
   declare averageYieldPerAcre: number | null;
   declare sowingMonth: string | null;
@@ -23,9 +29,6 @@ class LandDetail extends Model<InferAttributes<LandDetail>, InferCreationAttribu
   declare contractPercent: number | null;
   declare spotPercent: number | null;
   declare contractPartnerName: string | null;
-  declare newSeedsPurchasedAnnually: boolean | null;
-  declare reusedSeedsPercent: number | null;
-  declare trustedSeedCompany: string | null;
   declare reasonForTrust: string | null;
   declare preference: string | null;
   declare contractFarmingPercent: number | null;
@@ -48,8 +51,23 @@ LandDetail.init(
     },
     landOwnedAcres: { type: DataTypes.FLOAT, allowNull: true },
     landLeasedAcres: { type: DataTypes.FLOAT, allowNull: true },
-    potatoCultivationAcres: { type: DataTypes.FLOAT, allowNull: true },
+    totalLandUnderCultivation: { type: DataTypes.FLOAT, allowNull: true },
+    landForPotatoFarming: { type: DataTypes.FLOAT, allowNull: true },
     irrigationEquipmentBrand: { type: DataTypes.STRING, allowNull: true },
+    irrigationEquipmentModel: { type: DataTypes.STRING, allowNull: true },
+    seedProcurementType: {
+      type: DataTypes.ENUM('new', 'reused', 'both'),
+      allowNull: true,
+    },
+    newSeedPercent: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    reusedSeedPercent: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    seedBrandName: { type: DataTypes.STRING, allowNull: true },
     soilType: { type: DataTypes.STRING, allowNull: true },
     averageYieldPerAcre: { type: DataTypes.FLOAT, allowNull: true },
     sowingMonth: { type: DataTypes.STRING, allowNull: true },
@@ -65,9 +83,6 @@ LandDetail.init(
     contractPercent: { type: DataTypes.FLOAT, allowNull: true },
     spotPercent: { type: DataTypes.FLOAT, allowNull: true },
     contractPartnerName: { type: DataTypes.STRING, allowNull: true },
-    newSeedsPurchasedAnnually: { type: DataTypes.BOOLEAN, allowNull: true },
-    reusedSeedsPercent: { type: DataTypes.FLOAT, allowNull: true },
-    trustedSeedCompany: { type: DataTypes.STRING, allowNull: true },
     reasonForTrust: { type: DataTypes.TEXT, allowNull: true },
     preference: { type: DataTypes.TEXT, allowNull: true },
     contractFarmingPercent: { type: DataTypes.FLOAT, allowNull: true },
