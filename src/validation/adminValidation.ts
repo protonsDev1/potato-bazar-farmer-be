@@ -75,3 +75,75 @@ export const operationalChallengeSchema = Joi.object({
   position: Joi.number().optional(),
   isActive: Joi.boolean().optional(),
 });
+
+export const brandPreferenceReasonCreateSchema = Joi.object({
+  name: Joi.string().required(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const seedBrandCreateSchema = Joi.object({
+  name: Joi.string().required(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const sellingChannelCreateSchema = Joi.object({
+  name: Joi.string().required(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const sellingPlaceCreateSchema = Joi.object({
+  name: Joi.string().required(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const sellingPriceCreateSchema = Joi.object({
+  name: Joi.string().required(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const brandPreferenceReasonUpdateSchema = Joi.object({
+  name: Joi.string().optional(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const seedBrandUpdateSchema = Joi.object({
+  name: Joi.string().optional(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const sellingChannelUpdateSchema = Joi.object({
+  name: Joi.string().optional(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const sellingPlaceUpdateSchema = Joi.object({
+  name: Joi.string().optional(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const sellingPriceUpdateSchema = Joi.object({
+  name: Joi.string().optional(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const irrigationMethodCreateSchema = Joi.object({
+  name: Joi.string().required(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const irrigationMethodUpdateSchema = Joi.object({
+  name: Joi.string().optional(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
