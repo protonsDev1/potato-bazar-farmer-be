@@ -298,15 +298,15 @@ export const updateProfile = async (req, res) => {
 
     const data = req.body;
 
-    if (role === "agent" || role=== "user")
+    if (role !== "admin" && role !== "agent") {
       return res
-        .status(400)
+        .status(403)
         .json({
           message:
-            "Only Admin are authorized to update profile here.",
+            "Only admins and agents are allowed to update the profile.",
         });
-
-    const updateResponse = await updateProfileService(data, id);
+    }
+    const updateResponse = await updateProfileService(data, id, role);
 
     if (!updateResponse.success)
       return res.status(400).json({ message: updateResponse.error });

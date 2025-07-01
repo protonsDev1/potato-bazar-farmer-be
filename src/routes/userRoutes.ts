@@ -35,7 +35,7 @@ router.post("/reset_password",validator.body(resetPasswordSchema),resetPassword)
 
 router.put("/change_password",authMiddleware,validator.body(changePasswordSchema),changePassword);
 
-router.put("/update_profile",authMiddleware,validator.body(updateProfileSchema),updateProfile);  // only for admin 
+router.put("/update_profile",authMiddleware,validator.body(updateProfileSchema),updateProfile);  // only for admin and agent
 
 export default router;
 

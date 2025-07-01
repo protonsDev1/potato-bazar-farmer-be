@@ -6,6 +6,7 @@ class Agent extends Model {
   public id: number;
   public agentId!: string;
   public user?: User;
+  public userId: number;
   public phone: string;
   public address: string;
   public district: string;
@@ -22,7 +23,7 @@ Agent.init(
       primaryKey: true,
     },
     userId: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: User,
