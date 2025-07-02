@@ -1,11 +1,19 @@
 import ColdStorage from '../database/models/coldStorage';
 import { onboardColdStorage, retrieveColdStorageProfile,getColdStorage } from '../services/coldStorageService';
+import { findUserByPkInDB, updateUserInDB } from '../services/userServices';
 import { parseFilters } from '../utils/parseQuery';
 
 export const createColdStorage = async (req, res) => {
   try {
     const onBoardedBy = req.user.id;
     req.body.onBoardedBy=onBoardedBy;
+
+    const user = await findUserByPkInDB(onBoardedBy);
+    if (!user.success) {
+      return res.status(400).json({ message: user.error});
+    }
+
+    await updateUserInDB(req.body.userId,{ownerName:req.body.ownerName});
 
     const coldStorage = await onboardColdStorage(req.body);
     res.status(201).json({
@@ -66,3 +74,31 @@ export const getColdStorageList = async (req, res) => {
       });
   }
 };
+
+export const selfOnboardColdStorage=async(req,res)=>{
+  try{
+  const onBoardedBy = req.body.userId
+    req.body.onBoardedBy=onBoardedBy;
+
+    const user = await findUserByPkInDB(onBoardedBy);
+    if (!user.success) {
+      return res.status(400).json({ message: user.error});
+    }
+
+    await updateUserInDB(req.body.userId,{ownerName:req.body.ownerName});
+
+    const selfOnboard = await onboardColdStorage(req.body);
+    res.status(201).json({
+      message: "Cold Storage self onboarded successfully",
+      data: selfOnboard,
+    });
+  }
+  catch(error)
+  {
+     res
+      .status(500)
+      .json({
+        message: error.message || "Failed to self onboard cold storage",
+      });
+  }
+}

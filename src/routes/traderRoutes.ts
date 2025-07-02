@@ -4,6 +4,7 @@ import { authMiddleware } from "../utils/userAuth";
 import {
   createTrader,
   getTraderProfileOverview,
+  selfOnboardedTrader,
 } from "../controller/traderController";
 import { onboardTraderSchema } from "../validation/traderValidation";
 
@@ -16,6 +17,13 @@ router.post(
   validator.body(onboardTraderSchema),
   createTrader
 );
+
+router.post(
+  "/self_onboard",
+  validator.body(onboardTraderSchema),
+  selfOnboardedTrader
+);
+
 router.get("/profile/:traderId", authMiddleware, getTraderProfileOverview);
 
 export default router;
