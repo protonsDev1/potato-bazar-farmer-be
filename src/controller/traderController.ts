@@ -3,12 +3,17 @@ import {
   onboardTrader,
   retrieveTraderProfile,
 } from "../services/traderService";
-import { updateUserInDB } from "../services/userServices";
+import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 
 export const createTrader = async (req, res) => {
   try {
     const userId = req.user.id;
     req.body.onBoardedBy = userId;
+
+     const user = await findUserByPkInDB(userId);
+     if (!user.success) {
+       return res.status(400).json({ message: user.error});
+     }
 
     await updateUserInDB(req.body.userId, { name: req.body.fullName });
 
@@ -49,5 +54,29 @@ export const getTraderProfileOverview = async (req, res) => {
     return res
       .status(500)
       .json({ message: err.message || "Failed to retrieve trader profile." });
+  }
+};
+
+export const selfOnboardedTrader = async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    req.body.onBoardedBy = userId;
+
+    const user = await findUserByPkInDB(userId);
+     if (!user.success) {
+       return res.status(400).json({ message: user.error});
+     }
+
+    await updateUserInDB(req.body.userId, { name: req.body.fullName });
+
+    const trader = await onboardTrader(req.body);
+
+    return res
+      .status(201)
+      .json({ message: "Trader self onboarded successfully.", trader });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to self onboard trader",
+    });
   }
 };
