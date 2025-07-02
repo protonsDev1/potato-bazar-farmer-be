@@ -1,12 +1,17 @@
 import Farmer from '../database/models/farmer';
 import { onboardFarmer, retrieveFarmerProfile, getFarmerListByAdmin} from '../services/farmerServices';
-import { updateUserInDB } from '../services/userServices';
+import { findUserByPkInDB, updateUserInDB } from '../services/userServices';
 import { parseFilters } from '../utils/parseQuery';
 
 export const createFarmer = async (req, res) => {
   try {
      const userId = req.user.id;
     req.body.onBoardedBy = userId;
+
+    const user = await findUserByPkInDB(userId);
+    if (!user.success) {
+      return res.status(400).json({ message: user.error});
+    }
     
     await updateUserInDB(req.body.userId,{name:req.body.name})
     const farmer = await onboardFarmer(req.body);
@@ -56,6 +61,31 @@ export const getFarmerList = async (req, res) => {
     });
   } catch (error) {
     console.error("Controller Error:", error);
-    res.status(500).json({ message: "Failed to get Farmer List" });
+    res.status(500).json({ message: error.message || "Failed to get Farmer List" });
+  }
+};
+
+export const selfOnboardFarmer = async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    req.body.onBoardedBy = userId;
+
+    const user = await findUserByPkInDB(userId);
+    if (!user) {
+      return res.status(400).json({ error: "User not found." });
+    }
+
+    await updateUserInDB(req.body.userId, { name: req.body.name });
+
+    const farmer = await onboardFarmer(req.body);
+
+    return res
+      .status(201)
+      .json({ message: "Farmer self onboarded successfully.", farmer });
+  } catch (error) {
+    console.error("Controller Error:", error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to self onboard farmer." });
   }
 };
