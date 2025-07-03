@@ -23,6 +23,8 @@ class Trader extends Model<
   declare district: string;
   declare cityOrVillage: string;
   declare pinCode: string;
+  declare digiPin: string;
+  declare geoLocation: string;
   declare languagePreference: string;
   declare companyRegisteredVendor: boolean;
   declare mainCompany: string | null;
@@ -95,6 +97,8 @@ Trader.init(
       type: DataTypes.STRING(10),
       allowNull: false,
     },
+    digiPin: { type: DataTypes.STRING, allowNull: true },
+    geoLocation: { type: DataTypes.STRING, allowNull: true },
     languagePreference: {
       type: DataTypes.STRING(50),
       allowNull: false,
