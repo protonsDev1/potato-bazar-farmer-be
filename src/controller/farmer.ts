@@ -29,6 +29,10 @@ export const getProfileOverview = async (req, res) => {
 
     const farmer = await Farmer.findOne({ where: { id: farmerId } });
 
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+    
     if (role !== "admin" && farmer.onBoardedBy !== id)
       return res
         .status(403)

@@ -18,6 +18,7 @@ import SellingPrice from "../database/models/sellingPrice";
 import SellingPlace from "../database/models/sellingPlace";
 import OtherCropGrown from "../database/models/otherCropGrown";
 import IrrigationMethod from "../database/models/irrigationMethod";
+import PotatoType from "../database/models/potatoType";
 
 interface Payload {
   name: string;
@@ -48,6 +49,7 @@ interface Payload {
   brandPreferenceReasons?: Array<{ reason: string }>;
   sellingPrices?: Array<{ price: string }>;
   sellingPlaces?: Array<{ place: string }>;
+  potatoTypes?: Array<{ type: string }>;
   otherCropsGrown?: Array<{
     cropName: string;
     sowingMonth: string;
@@ -212,6 +214,15 @@ export async function onboardFarmer(payload: Payload) {
         }
       }
 
+      if (payload.potatoTypes) {
+        for (const potatoType of payload.potatoTypes) {
+          await PotatoType.create(
+            { farmerId: farmer.id, type: potatoType.type },
+            { transaction: t }
+          );
+        }
+      }
+
       if (payload.otherCropsGrown) {
         for (const crop of payload.otherCropsGrown) {
           await OtherCropGrown.create(
@@ -303,13 +314,18 @@ export const retrieveFarmerProfile = async (farmerId: string) => {
       where: { farmerId },
     });
 
-    const sellingPrice = await SellingPrice.findAll({
+    const sellingPrices = await SellingPrice.findAll({
       attributes: ["price"],
       where: { farmerId },
     });
 
-    const sellingPlace = await SellingPlace.findAll({
+    const sellingPlaces = await SellingPlace.findAll({
       attributes: ["place"],
+      where: { farmerId },
+    });
+
+    const potatoTypes = await PotatoType.findAll({
+      attributes: ["type"],
       where: { farmerId },
     });
 
@@ -331,8 +347,9 @@ export const retrieveFarmerProfile = async (farmerId: string) => {
       sellingChannels,
       technologyUsed,
       brandPreferenceReasons,
-      sellingPrice,
-      sellingPlace,
+      sellingPrices,
+      sellingPlaces,
+      potatoTypes,
       otherCropsGrown,
     };
   } catch (err) {

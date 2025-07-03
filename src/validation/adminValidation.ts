@@ -147,3 +147,15 @@ export const irrigationMethodUpdateSchema = Joi.object({
   position: Joi.number().optional(),
   isActive: Joi.boolean().optional(),
 });
+
+export const potatoTypeCreateSchema = Joi.object({
+  name: Joi.string().required(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
+
+export const potatoTypeUpdateSchema = Joi.object({
+  name: Joi.string().optional(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});
