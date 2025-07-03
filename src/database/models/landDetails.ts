@@ -8,6 +8,8 @@ class LandDetail extends Model<InferAttributes<LandDetail>, InferCreationAttribu
   declare landLeasedAcres: number | null;
   declare totalLandUnderCultivation: number | null;
   declare landForPotatoFarming: number | null;
+  declare areaUnderDrip: number | null;
+  declare storageCapacityAtFarm: number | null;
   declare irrigationEquipmentBrand: string | null;
   declare irrigationEquipmentModel: number | null;
   declare seedProcurementType: 'new' | 'reused' | 'both' | null;
@@ -53,6 +55,8 @@ LandDetail.init(
     landLeasedAcres: { type: DataTypes.FLOAT, allowNull: true },
     totalLandUnderCultivation: { type: DataTypes.FLOAT, allowNull: true },
     landForPotatoFarming: { type: DataTypes.FLOAT, allowNull: true },
+    areaUnderDrip: { type: DataTypes.FLOAT, allowNull: true },
+    storageCapacityAtFarm: { type: DataTypes.FLOAT, allowNull: true },
     irrigationEquipmentBrand: { type: DataTypes.STRING, allowNull: true },
     irrigationEquipmentModel: { type: DataTypes.STRING, allowNull: true },
     seedProcurementType: {

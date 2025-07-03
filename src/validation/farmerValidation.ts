@@ -26,6 +26,8 @@ export const onboardFarmerSchema = Joi.object({
         landLeasedAcres: Joi.number().required(),
         totalLandUnderCultivation: Joi.number().optional(),
         landForPotatoFarming: Joi.number().optional(),
+        areaUnderDrip: Joi.number().optional(),
+        storageCapacityAtFarm: Joi.number().optional(),
         irrigationEquipmentModel: Joi.string().optional(),
         irrigationEquipmentBrand: Joi.string().optional().allow(null, ''),
         seedProcurementType: Joi.string().valid('new', 'reused', 'both').optional(),
@@ -177,4 +179,11 @@ export const onboardFarmerSchema = Joi.object({
     )
     .optional(),  
 
+  potatoTypes: Joi.array()
+  .items(
+    Joi.object({
+      type: Joi.string().required(),
+    })
+  )
+  .optional(),
 });
