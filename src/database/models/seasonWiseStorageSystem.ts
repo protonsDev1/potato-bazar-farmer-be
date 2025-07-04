@@ -7,17 +7,17 @@ import {
 } from "sequelize";
 import sequelize from "./db";
 
-class UsageType extends Model<
-  InferAttributes<UsageType>,
-  InferCreationAttributes<UsageType>
+class SeasonWiseBookingSystem extends Model<
+  InferAttributes<SeasonWiseBookingSystem>,
+  InferCreationAttributes<SeasonWiseBookingSystem>
 > {
   declare id: CreationOptional<number>;
   declare coldStorageId: number;
-  declare type: string | null;
-  declare capacity: number | null;
+  declare season: string | null;
+  declare quantityInKg: number | null;
 }
 
-UsageType.init(
+SeasonWiseBookingSystem.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     coldStorageId: {
@@ -26,15 +26,15 @@ UsageType.init(
       references: { model: "coldStorages", key: "id" },
       onDelete: "CASCADE",
     },
-    type: { type: DataTypes.STRING, allowNull: true },
-    capacity: {type: DataTypes.INTEGER, allowNull: true},
+    season: { type: DataTypes.STRING, allowNull: true },
+    quantityInKg: { type: DataTypes.DECIMAL, allowNull: true },
   },
   {
     sequelize,
-    modelName: "UsageType",
-    tableName: "usageTypes",
+    modelName: "SeasonWiseBookingSystem",
+    tableName: "seasonWiseBookingSystems",
     timestamps: true,
   }
 );
 
-export default UsageType;
+export default SeasonWiseBookingSystem;

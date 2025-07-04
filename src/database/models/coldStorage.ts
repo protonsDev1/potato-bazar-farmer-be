@@ -8,8 +8,12 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare ownerName: string;
   declare mobileNumber: string;
   declare optionalNumber: string;
+  declare whatsappNumber: string;
   declare village: string;
   declare district: string;
+  declare taluka: string;
+  declare pinCode: string;
+  declare digiPin: string;
   declare geoLocation: string;
   declare hasGstCertificate: boolean;
   declare gstOrCertificateNumber: string;
@@ -27,14 +31,21 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare hasAirCutter: boolean;
   declare hasInsectTrap: boolean;
   declare gradingBookingAvailable: boolean;
+  declare gradingAreaAvailable: boolean;
+  declare gradingAreaSqft: number;
   declare gradingMachineMake: string;
+  declare gradingMachineAvailable:boolean;
   declare gradingMachineTph: number;
+  declare manualGradingAreaAvailable: boolean;
+  declare numberOfKattas:number;
   declare dryingFloorCapacityKatta: number;
   declare bookingMode: string;
   declare coldStorageType: string;
   declare co2Controller: string;
   declare humidityController: string;
   declare temperatureController: string;
+  declare monitoringLogAvailable: boolean;
+  declare realTimeAlertSystem: boolean;
   declare refrigerationType: string;
   declare refrigerationMake: string;
   declare machineCount: number;
@@ -45,11 +56,14 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare hasWebCamera: boolean;
   declare hasGuestStay: boolean;
   declare hasGuestMeals: boolean;
+  declare weighBridge: boolean;
   declare weighbridgeCapacityLength: string;
   declare hasLorryShades: boolean;
   declare lorryShadeCapacity: number;
+  declare numberOfTrucks: number;
   declare accessibility: string;
   declare hasLabourForGrading: boolean;
+  declare noOfLabourInPeakSeason: number;
   declare potatoDisposalMethod: string;
   declare solarPowerCapacityKw: number;
   declare backupPowerCapacityKw: number;
@@ -60,6 +74,9 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare transportProvided: boolean;
   declare willingOnlineAuction: boolean;
   declare additionalComments: string;
+  declare isSlabWiseDiscount: boolean;
+  declare awardOrCertificate: string;
+  declare photos: string;
   declare onBoardedBy: number | null;
   declare userId: number | null;
   declare state: string;
@@ -73,8 +90,12 @@ ColdStorage.init({
   ownerName: DataTypes.STRING,
   mobileNumber: DataTypes.STRING,
   optionalNumber: DataTypes.STRING,
+  whatsappNumber: DataTypes.STRING,
   village: DataTypes.STRING,
   district: DataTypes.STRING,
+  taluka: DataTypes.STRING,
+  pinCode:{type: DataTypes.STRING, allowNull: true},
+  digiPin: {type: DataTypes.STRING, allowNull: true},
   geoLocation: DataTypes.STRING,
   hasGstCertificate: DataTypes.BOOLEAN,
   gstOrCertificateNumber: DataTypes.STRING,
@@ -92,14 +113,21 @@ ColdStorage.init({
   hasAirCutter: DataTypes.BOOLEAN,
   hasInsectTrap: DataTypes.BOOLEAN,
   gradingBookingAvailable: DataTypes.BOOLEAN,
+  gradingAreaAvailable: DataTypes.BOOLEAN,
+  gradingAreaSqft: DataTypes.DECIMAL,
   gradingMachineMake: DataTypes.STRING,
+  gradingMachineAvailable:DataTypes.BOOLEAN,
   gradingMachineTph: DataTypes.DECIMAL,
+  manualGradingAreaAvailable: DataTypes.BOOLEAN,
+  numberOfKattas: DataTypes.INTEGER,
   dryingFloorCapacityKatta: DataTypes.INTEGER,
   bookingMode: DataTypes.STRING,
   coldStorageType: DataTypes.STRING,
   co2Controller: DataTypes.STRING,
   humidityController: DataTypes.STRING,
   temperatureController: DataTypes.STRING,
+  monitoringLogAvailable: DataTypes.BOOLEAN,
+  realTimeAlertSystem: DataTypes.BOOLEAN,
   refrigerationType: DataTypes.STRING,
   refrigerationMake: DataTypes.STRING,
   machineCount: DataTypes.INTEGER,
@@ -110,11 +138,14 @@ ColdStorage.init({
   hasWebCamera: DataTypes.BOOLEAN,
   hasGuestStay: DataTypes.BOOLEAN,
   hasGuestMeals: DataTypes.BOOLEAN,
+  weighBridge: DataTypes.BOOLEAN,
   weighbridgeCapacityLength: DataTypes.STRING,
   hasLorryShades: DataTypes.BOOLEAN,
   lorryShadeCapacity: DataTypes.INTEGER,
+  numberOfTrucks: DataTypes.INTEGER,
   accessibility: DataTypes.TEXT,
   hasLabourForGrading: DataTypes.BOOLEAN,
+  noOfLabourInPeakSeason: DataTypes.INTEGER,
   potatoDisposalMethod: DataTypes.TEXT,
   solarPowerCapacityKw: DataTypes.DECIMAL,
   backupPowerCapacityKw: DataTypes.DECIMAL,
@@ -126,6 +157,9 @@ ColdStorage.init({
   willingOnlineAuction: DataTypes.BOOLEAN,
   additionalComments: DataTypes.TEXT,
   state: DataTypes.STRING,
+  isSlabWiseDiscount: DataTypes.BOOLEAN,
+  awardOrCertificate: {type: DataTypes.STRING, allowNull:true},
+  photos: {type: DataTypes.STRING, allowNull:true},
   onBoardedBy: {
     type: DataTypes.INTEGER,
     allowNull: true,
