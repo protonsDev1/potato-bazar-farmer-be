@@ -11,6 +11,8 @@ export const onboardTraderSchema = Joi.object({
   district: Joi.string().required(),
   cityOrVillage: Joi.string().required(),
   pinCode: Joi.string().max(10).required(),
+  digiPin: Joi.string().optional().allow(null, ""),
+  geoLocation: Joi.string().optional().allow(null, ""),
   languagePreference: Joi.string().required(),
 
   companyRegisteredVendor: Joi.boolean().optional(),
@@ -77,6 +79,14 @@ export const onboardTraderSchema = Joi.object({
     )
     .min(1)
     .required(),
+
+  marketCoverages: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().required(),
+      })
+    )
+    .optional(),
 
   // bankDetails: Joi.object({
   //   bankName: Joi.string().required(),

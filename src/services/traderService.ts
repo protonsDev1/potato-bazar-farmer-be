@@ -3,6 +3,7 @@ import sequelize from "../database/models/db";
 import BankDetail from "../database/models/trader/bankDetail";
 import CropTraded from "../database/models/trader/cropTraded";
 import MandiDetail from "../database/models/trader/mandiDetail";
+import MarketCoverage from "../database/models/trader/marketCoverage";
 import Trader from "../database/models/trader/trader";
 import TraderDocument from "../database/models/trader/traderDocument";
 import TraderInterest from "../database/models/trader/traderInterest";
@@ -23,6 +24,8 @@ export async function onboardTrader(payload) {
           district: payload.district,
           cityOrVillage: payload.cityOrVillage,
           pinCode: payload.pinCode,
+          digiPin: payload.digiPin,
+          geoLocation: payload.geoLocation,
           languagePreference: payload.languagePreference,
           companyRegisteredVendor: payload.companyRegisteredVendor,
           mainCompany: payload.mainCompany,
@@ -88,6 +91,15 @@ export async function onboardTrader(payload) {
         }
       }
 
+      if (payload.marketCoverages) {
+        for (const { name } of payload.marketCoverages) {
+          await MarketCoverage.create(
+            { traderId: trader.id, name },
+            { transaction: t }
+          );
+        }
+      }
+
       if (payload.bankDetails) {
         await BankDetail.create(
           { traderId: trader.id, ...payload.bankDetails },
@@ -125,6 +137,7 @@ export const retrieveTraderProfile = async (traderId: string) => {
       mandiDetails,
       traderDocuments,
       interests,
+      marketCoverages,
       types,
       varieties,
       cropsTraded,
@@ -135,6 +148,10 @@ export const retrieveTraderProfile = async (traderId: string) => {
       TraderDocument.findOne({ where: { traderId } }),
       TraderInterest.findAll({
         attributes: ["interest"],
+        where: { traderId },
+      }),
+      MarketCoverage.findAll({
+        attributes: ["name"],
         where: { traderId },
       }),
       TraderType.findAll({
@@ -157,6 +174,7 @@ export const retrieveTraderProfile = async (traderId: string) => {
       mandiDetails,
       traderDocuments,
       interests,
+      marketCoverages,
       types,
       varieties,
       cropsTraded,

@@ -13,6 +13,8 @@ export const onboardFarmerSchema = Joi.object({
   district: Joi.string().optional().allow(null, ''),
   state: Joi.string().optional().allow(null, ''),
   geoLocation: Joi.string().optional(),
+  digiPin: Joi.string().optional().allow(null, ''),
+  whatsappNumber: Joi.string().optional().allow(null, ''),
   isAadhaarCard: Joi.boolean().optional(),
   aadhaarNumber: Joi.string()
     .pattern(/^\d{12}$/)

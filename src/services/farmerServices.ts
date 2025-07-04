@@ -32,6 +32,8 @@ interface Payload {
   district?: string;
   state?: string;
   geoLocation?: string;
+  digiPin?: string;
+  whatsappNumber?: string;
   isAadhaarCard?: boolean;
   aadhaarNumber?: string;
   isBankAccount?: boolean;
@@ -85,6 +87,8 @@ export async function onboardFarmer(payload: Payload) {
           district: payload.district,
           state: payload.state,
           geoLocation: payload.geoLocation,
+          digiPin: payload.digiPin,
+          whatsappNumber: payload.whatsappNumber,
           isAadhaarCard: payload.isAadhaarCard,
           aadhaarNumber: payload.aadhaarNumber,
           isBankAccount: payload.isBankAccount,
