@@ -7,17 +7,17 @@ import {
 } from "sequelize";
 import sequelize from "./db";
 
-class UsageType extends Model<
-  InferAttributes<UsageType>,
-  InferCreationAttributes<UsageType>
+class SlabWiseDiscount extends Model<
+  InferAttributes<SlabWiseDiscount>,
+  InferCreationAttributes<SlabWiseDiscount>
 > {
   declare id: CreationOptional<number>;
   declare coldStorageId: number;
-  declare type: string | null;
-  declare capacity: number | null;
+  declare quantityInMt: number | null;
+  declare discount: number | null;
 }
 
-UsageType.init(
+SlabWiseDiscount.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     coldStorageId: {
@@ -26,15 +26,15 @@ UsageType.init(
       references: { model: "coldStorages", key: "id" },
       onDelete: "CASCADE",
     },
-    type: { type: DataTypes.STRING, allowNull: true },
-    capacity: {type: DataTypes.INTEGER, allowNull: true},
+    quantityInMt: { type: DataTypes.DECIMAL, allowNull: true },
+    discount: { type: DataTypes.DECIMAL, allowNull: true },
   },
   {
     sequelize,
-    modelName: "UsageType",
-    tableName: "usageTypes",
+    modelName: "SlabWiseDiscount",
+    tableName: "slabWiseDiscounts",
     timestamps: true,
   }
 );
 
-export default UsageType;
+export default SlabWiseDiscount;

@@ -7,17 +7,16 @@ import {
 } from "sequelize";
 import sequelize from "./db";
 
-class UsageType extends Model<
-  InferAttributes<UsageType>,
-  InferCreationAttributes<UsageType>
+class PotatoDisposalSystem extends Model<
+  InferAttributes<PotatoDisposalSystem>,
+  InferCreationAttributes<PotatoDisposalSystem>
 > {
   declare id: CreationOptional<number>;
   declare coldStorageId: number;
-  declare type: string | null;
-  declare capacity: number | null;
+  declare disposalSystem: string | null;
 }
 
-UsageType.init(
+PotatoDisposalSystem.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     coldStorageId: {
@@ -26,15 +25,14 @@ UsageType.init(
       references: { model: "coldStorages", key: "id" },
       onDelete: "CASCADE",
     },
-    type: { type: DataTypes.STRING, allowNull: true },
-    capacity: {type: DataTypes.INTEGER, allowNull: true},
+    disposalSystem: { type: DataTypes.STRING, allowNull: true },
   },
   {
     sequelize,
-    modelName: "UsageType",
-    tableName: "usageTypes",
+    modelName: "PotatoDisposalSystem",
+    tableName: "potatoDisposalSystems",
     timestamps: true,
   }
 );
 
-export default UsageType;
+export default PotatoDisposalSystem;
