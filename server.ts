@@ -23,6 +23,7 @@ import adminCropTradedRoutes from "./src/routes/adminRoutes/trader/adminCropTrad
 import adminTraderInterestRoutes from "./src/routes/adminRoutes/trader/adminTraderInterestRoutes";
 import adminTraderTypeRoutes from "./src/routes/adminRoutes/trader/adminTraderTypeRoutes";
 import adminTraderVarietyRoutes from "./src/routes/adminRoutes/trader/adminTraderVarietyRoutes";
+import adminMarketCoverageRoutes from "./src/routes/adminRoutes/trader/adminMarketCoverageRoutes";
 import adminStorageTypeRoutes from "./src/routes/adminRoutes/coldStorage/adminStorageTypeRoutes";
 import adminUsageTypeRoutes from "./src/routes/adminRoutes/coldStorage/adminUsageTypeRoutes";
 import adminOperationalChallengeRoutes from "./src/routes/adminRoutes/coldStorage/adminOperationalChallengeRoutes";
@@ -54,6 +55,7 @@ app.use("/api/admin/crop_traded", adminCropTradedRoutes);
 app.use("/api/admin/trader_interest", adminTraderInterestRoutes);
 app.use("/api/admin/trader_type", adminTraderTypeRoutes);
 app.use("/api/admin/trader_variety", adminTraderVarietyRoutes);
+app.use("/api/admin/market_coverage", adminMarketCoverageRoutes);
 app.use(
   "/api/admin/challenge_in_selling",
   adminBiggestChallengeInSellingRoutes
