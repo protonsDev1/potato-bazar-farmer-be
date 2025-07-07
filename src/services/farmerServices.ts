@@ -10,7 +10,7 @@ import SellingChallenge from "../database/models/sellingChallenge";
 import MajorSellingChallenge from "../database/models/majorSellingChallenge";
 import PriceDiscoveryMethod from "../database/models/priceDiscoveryMethod";
 
-import { literal, Op, Sequelize } from "sequelize";
+import { literal, Model, ModelStatic, Op, Sequelize } from "sequelize";
 import User from "../database/models/user";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
 import BrandPreferenceReason from "../database/models/brandPreferenceReason";
@@ -257,6 +257,82 @@ export async function onboardFarmer(payload: Payload) {
     throw err;
   }
 }
+
+export const updateFarmerDetails = async (
+  farmerId: number,
+  payload: Payload
+) => {
+  return await sequelize.transaction(async (t) => {
+    const farmer = await Farmer.findByPk(farmerId, { transaction: t });
+    if (!farmer) throw new Error("Farmer not found");
+
+    const updatableFields = [
+      "name",
+      "age",
+      "gender",
+      "optionalNumber",
+      "caste",
+      "subCaste",
+      "village",
+      "taluka",
+      "district",
+      "state",
+      "geoLocation",
+      "digiPin",
+      "whatsappNumber",
+      "isAadhaarCard",
+      "aadhaarNumber",
+      "isBankAccount",
+    ];
+
+    const updateData = {};
+    for (const key of updatableFields) {
+      if (key in payload) updateData[key] = payload[key];
+    }
+
+    await Farmer.update(updateData, {
+      where: { id: farmerId },
+      transaction: t,
+    });
+
+    const relationMap: Record<string, ModelStatic<Model>> = {
+      landDetails: LandDetail,
+      irrigationSources: IrrigationSource,
+      irrigationMethods: IrrigationMethod,
+      potatoVarieties: PotatoVarietyGrown,
+      farmEquipment: FarmEquipment,
+      technologyUsed: TechnologyUsed,
+      sellingChannels: SellingChannel,
+      sellingChallenges: SellingChallenge,
+      majorSellingChallenges: MajorSellingChallenge,
+      brandPreferenceReasons: BrandPreferenceReason,
+      sellingPrices: SellingPrice,
+      sellingPlaces: SellingPlace,
+      potatoTypes: PotatoType,
+      otherCropsGrown: OtherCropGrown,
+      priceDiscoveryMethods: PriceDiscoveryMethod,
+    };
+
+    for (const [key, Model] of Object.entries(relationMap)) {
+      if (payload[key]) {
+        // Delete existing only if new data is sent
+        await Model.destroy({ where: { farmerId }, transaction: t });
+
+        const newRecords = payload[key].map((item) => ({
+          farmerId,
+          ...item,
+        }));
+
+        if (newRecords.length) {
+          await Model.bulkCreate(newRecords, { transaction: t });
+        }
+      }
+    }
+
+    const updatedFarmer = await Farmer.findByPk(farmerId, { transaction: t });
+    return updatedFarmer;
+  });
+};
 
 export const retrieveFarmerProfile = async (farmerId: string) => {
   try {
