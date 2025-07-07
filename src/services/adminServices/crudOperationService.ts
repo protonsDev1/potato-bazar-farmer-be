@@ -67,7 +67,9 @@ export const getActiveRecords = async (model) => {
 
 export const getAllRecords = async (model) => {
   try {
-    const result = await model.findAll();
+    const result = await model.findAll({
+      order: [["position", "ASC"]],
+    });
     return {
       success: true,
       data: result,

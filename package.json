@@ -9,7 +9,8 @@
     "dev": "nodemon --exec ts-node server.ts",
     "db:create": "sequelize-cli db:create",
     "db:migrate": "sequelize-cli db:migrate",
-    "import:locations": "ts-node src/scripts/importLocations.ts"
+    "import:locations": "ts-node src/scripts/importLocations.ts",
+    "seed": "ts-node src/scripts/seed.ts"
   },
   "author": "",
   "license": "ISC",

@@ -1,4 +1,4 @@
-import { literal, NUMBER, Op } from "sequelize";
+import { literal, Op } from "sequelize";
 import ChamberCapacity from "../database/models/chamberCapacity";
 import ColdStorage from "../database/models/coldStorage";
 import sequelize from '../database/models/db';
@@ -8,6 +8,18 @@ import Shed from "../database/models/shed";
 import StorageType from "../database/models/storageType";
 import UsageType from "../database/models/usageType";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
+import DryingFacilityDetail from "../database/models/dryingFacilityDetail";
+import FeatureOfStorage from "../database/models/featureOfStorage";
+import MonitoringFacility from "../database/models/monitoringFacility";
+import OtherFacility from "../database/models/otherFacility";
+import PotatoDisposalSystem from "../database/models/potatoDisposalSystem";
+import PowerFacility from "../database/models/powerFacility";
+import ColdStorageType from "../database/models/coldStorageType";
+import ConstructionType from "../database/models/constructionType";
+import RoofType from "../database/models/roofType";
+import SeasonWiseBookingSystem from "../database/models/seasonWiseStorageSystem";
+import SlabWiseDiscount from "../database/models/slabWiseDiscount";
+import StorageBookingSystem from "../database/models/storageBookingSystem";
 
 
 const STORAGE_SIZE_RANGES = {
@@ -23,10 +35,15 @@ export async function onboardColdStorage(payload: any) {
     return await sequelize.transaction(async (t) => {
       const coldStorage = await ColdStorage.create({
         name: payload.name,
+        ownerName: payload.ownerName,
         mobileNumber: payload.mobileNumber,
         optionalNumber: payload.optionalNumber,
+        whatsappNumber: payload.whatsappNumber,
         village: payload.village,
         district: payload.district,
+        taluka: payload.taluka,
+        pinCode: payload.pinCode,
+        digiPin: payload.digiPin,
         geoLocation: payload.geoLocation,
         hasGstCertificate: payload.hasGstCertificate,
         gstOrCertificateNumber: payload.gstOrCertificateNumber,
@@ -44,14 +61,21 @@ export async function onboardColdStorage(payload: any) {
         hasAirCutter: payload.hasAirCutter,
         hasInsectTrap: payload.hasInsectTrap,
         gradingBookingAvailable: payload.gradingBookingAvailable,
+        gradingAreaAvailable: payload.gradingAreaAvailable,
+        gradingAreaSqft: payload.gradingAreaSqft,
         gradingMachineMake: payload.gradingMachineMake,
+        gradingMachineAvailable: payload.gradingMachineAvailable,
         gradingMachineTph: payload.gradingMachineTph,
+        manualGradingAreaAvailable: payload.manualGradingAreaAvailable,
+        numberOfKattas: payload.numberOfKattas,
         dryingFloorCapacityKatta: payload.dryingFloorCapacityKatta,
         bookingMode: payload.bookingMode,
         coldStorageType: payload.coldStorageType,
         co2Controller: payload.co2Controller,
         humidityController: payload.humidityController,
         temperatureController: payload.temperatureController,
+        monitoringLogAvailable: payload.monitoringLogAvailable,
+        realTimeAlertSystem: payload.realTimeAlertSystem,
         refrigerationType: payload.refrigerationType,
         refrigerationMake: payload.refrigerationMake,
         machineCount: payload.machineCount,
@@ -62,11 +86,14 @@ export async function onboardColdStorage(payload: any) {
         hasWebCamera: payload.hasWebCamera,
         hasGuestStay: payload.hasGuestStay,
         hasGuestMeals: payload.hasGuestMeals,
+        weighBridge: payload.weighBridge,
         weighbridgeCapacityLength: payload.weighbridgeCapacityLength,
         hasLorryShades: payload.hasLorryShades,
         lorryShadeCapacity: payload.lorryShadeCapacity,
+        numberOfTrucks: payload.numberOfTrucks,
         accessibility: payload.accessibility,
         hasLabourForGrading: payload.hasLabourForGrading,
+        noOfLabourInPeakSeason: payload.noOfLabourInPeakSeason,
         potatoDisposalMethod: payload.potatoDisposalMethod,
         solarPowerCapacityKw: payload.solarPowerCapacityKw,
         backupPowerCapacityKw: payload.backupPowerCapacityKw,
@@ -77,6 +104,9 @@ export async function onboardColdStorage(payload: any) {
         transportProvided: payload.transportProvided,
         willingOnlineAuction: payload.willingOnlineAuction,
         additionalComments: payload.additionalComments,
+        isSlabWiseDiscount: payload.isSlabWiseDiscount,
+        awardOrCertificate: payload.awardOrCertificate,
+        photos: payload.photos,
         userId: payload.userId,
         onBoardedBy: payload.onBoardedBy,
         state: payload.state
@@ -98,6 +128,7 @@ export async function onboardColdStorage(payload: any) {
             coldStorageId: coldStorage.id,
                         //@ts-ignore
                         type: usage.type,
+                        capacity: usage.capacity,
           }, { transaction: t });
         }
       }
@@ -124,23 +155,185 @@ export async function onboardColdStorage(payload: any) {
       }
 
       if (Array.isArray(payload.chamberCapacities)) {
+        if (payload.chamberCapacities.length !== payload.numberOfChambers) {
+          throw new Error(
+            `Expected ${payload.numberOfChambers} chambers, but got ${payload.chamberCapacities.length}`
+          );
+        }
+
         for (const chamber of payload.chamberCapacities) {
-          await ChamberCapacity.create({
-            coldStorageId: coldStorage.id,
-                        //@ts-ignore
-                        chamberNumber: chamber.chamberNumber,
-                        capacityMt: chamber.capacityMt,
-          }, { transaction: t });
+          await ChamberCapacity.create(
+            {
+              coldStorageId: coldStorage.id,
+              //@ts-ignore
+              capacityMt: chamber.capacityMt,
+              noOfFloors: chamber?.noOfFloors,
+              sizePerChamberSqft: chamber.sizePerChamberSqft,
+              description: chamber?.description,
+            },
+            { transaction: t }
+          );
         }
       }
 
       if (Array.isArray(payload.sheds)) {
+        if (payload.sheds.length !== payload.numberOfSheds) {
+          throw new Error(
+            `Expected ${payload.numberOfSheds} chambers, but got ${payload.sheds.length}`
+          );
+        }
+
         for (const shed of payload.sheds) {
-          await Shed.create({
+          await Shed.create(
+            {
+              coldStorageId: coldStorage.id,
+              //@ts-ignore
+              shedType: shed?.shedType,
+              sizeSqMtr: shed.sizeSqMtr,
+            },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (Array.isArray(payload.coldStorageTypes)) {
+        for (const type of payload.coldStorageTypes) {
+          await ColdStorageType.create(
+            {
+              coldStorageId: coldStorage.id,
+              coldStorageType: type.coldStorageType,
+            },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (Array.isArray(payload.dryingFacilityDetails)) {
+        for (const dryingFacility of payload.dryingFacilityDetails) {
+          await DryingFacilityDetail.create(
+            {
+              coldStorageId: coldStorage.id,
+              facility: dryingFacility.facility,
+            },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (Array.isArray(payload.constructionTypes)) {
+        for (const type of payload.constructionTypes) {
+          await ConstructionType.create(
+            {
+              coldStorageId: coldStorage.id,
+              constructionType: type.constructionType,
+            },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (Array.isArray(payload.featuresOfStorage)) {
+        for (const storage of payload.featuresOfStorage) {
+          await FeatureOfStorage.create(
+            {
+              coldStorageId: coldStorage.id,
+              feature: storage.feature,
+            },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (Array.isArray(payload.monitoringFacilities)) {
+        for (const facility of payload.monitoringFacilities) {
+          await MonitoringFacility.create({
             coldStorageId: coldStorage.id,
-                        //@ts-ignore
-                        sizeSqMtr: shed.sizeSqMtr,
-          }, { transaction: t });
+            facility: facility.facility,
+          },
+          { transaction: t }
+        );
+        }
+      }
+
+      if (Array.isArray(payload.otherFacilities)) {
+        for (const facility of payload.otherFacilities) {
+          await OtherFacility.create({
+            coldStorageId: coldStorage.id,
+            facility: facility.facility,
+          },
+          { transaction: t }
+        );
+        }
+      }
+
+      if (Array.isArray(payload.potatoDisposalSystems)) {
+        for (const system of payload.potatoDisposalSystems) {
+          await PotatoDisposalSystem.create({
+            coldStorageId: coldStorage.id,
+            disposalSystem: system.disposalSystem,
+          },
+          { transaction: t }
+        );
+        }
+      }
+
+      if (Array.isArray(payload.powerFacilities)) {
+        for (const facility of payload.powerFacilities) {
+          await PowerFacility.create({
+            coldStorageId: coldStorage.id,
+            facility: facility.facility,
+            capacityInKw: facility?.capacityInKw,
+            backupInHrs: facility?.backupInHrs,
+            make: facility?.make,
+          },
+          { transaction: t }
+        );
+        }
+      }
+
+      if (Array.isArray(payload.roofTypes)) {
+        for (const type of payload.roofTypes) {
+          await RoofType.create({
+            coldStorageId: coldStorage.id,
+            roofType: type.roofType,
+          },
+          { transaction: t }
+        );
+        }
+      }
+
+      if (Array.isArray(payload.seasonWiseStorageSystems)) {
+        for (const system of payload.seasonWiseStorageSystems) {
+          await SeasonWiseBookingSystem.create({
+            coldStorageId: coldStorage.id,
+            season: system.season,
+            quantityInKg: system.quantityInKg,
+          },
+          { transaction: t }
+        );
+        }
+      }
+
+      if (Array.isArray(payload.slabwiseDiscounts)) {
+        for (const discount of payload.slabwiseDiscounts) {
+          await SlabWiseDiscount.create({
+            coldStorageId: coldStorage.id,
+            quantityInMt: discount.quantityInMt,
+            discount: discount.discount,
+          },
+          { transaction: t }
+        );
+        }
+      }
+
+      if (Array.isArray(payload.storageBookingSystems)) {
+        for (const system of payload.storageBookingSystems) {
+          await StorageBookingSystem.create({
+            coldStorageId: coldStorage.id,
+            bookingSystem: system.bookingSystem,
+          },
+          { transaction: t }
+        );
         }
       }
 
