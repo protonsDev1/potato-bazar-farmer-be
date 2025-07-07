@@ -2,6 +2,7 @@ import Trader from "../database/models/trader/trader";
 import {
   onboardTrader,
   retrieveTraderProfile,
+  updateTraderService,
 } from "../services/traderService";
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 
@@ -10,10 +11,10 @@ export const createTrader = async (req, res) => {
     const userId = req.user.id;
     req.body.onBoardedBy = userId;
 
-     const user = await findUserByPkInDB(userId);
-     if (!user.success) {
-       return res.status(400).json({ message: user.error});
-     }
+    const user = await findUserByPkInDB(userId);
+    if (!user.success) {
+      return res.status(400).json({ message: user.error });
+    }
 
     await updateUserInDB(req.body.userId, { name: req.body.fullName });
 
@@ -24,6 +25,52 @@ export const createTrader = async (req, res) => {
     return res.status(500).json({
       message: err.message || "Failed to create trader",
     });
+  }
+};
+
+export const updateTrader = async (req, res) => {
+  try {
+    const { traderId } = req.params;
+    const payload = req.body;
+    const { role, id } = req.user;
+
+    const trader = await Trader.findByPk(traderId);
+    if (!trader) return res.status(404).json({ message: "Trader not found" });
+
+    if (role !== "admin" && role !== "agent") {
+      return res.status(403).json({
+        message:
+          "Only Admins and Agents are authorized to update trader profiles.",
+      });
+    }
+
+    if (role === "agent") {
+      const isOnboardedByAgent = trader.onBoardedBy === id;
+      const isWithin24Hours =
+        Date.now() - new Date(trader.createdAt).getTime() <=
+        24 * 60 * 60 * 1000;
+
+      if (!isOnboardedByAgent || !isWithin24Hours) {
+        return res.status(403).json({
+          message:
+            "Only Admins or the Agent who onboarded the trader within the last 24 hours can update the profile.",
+        });
+      }
+    }
+
+    if (payload.fullName) {
+      await updateUserInDB(trader.userId, { name: payload.fullName });
+    }
+
+    const updatedTrader = await updateTraderService(traderId, payload);
+
+    return res
+      .status(200)
+      .json({ message: "Trader updated successfully", trader: updatedTrader });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to update trader" });
   }
 };
 
@@ -63,9 +110,9 @@ export const selfOnboardedTrader = async (req, res) => {
     req.body.onBoardedBy = userId;
 
     const user = await findUserByPkInDB(userId);
-     if (!user.success) {
-       return res.status(400).json({ message: user.error});
-     }
+    if (!user.success) {
+      return res.status(400).json({ message: user.error });
+    }
 
     await updateUserInDB(req.body.userId, { name: req.body.fullName });
 

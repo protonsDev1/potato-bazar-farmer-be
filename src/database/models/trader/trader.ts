@@ -48,7 +48,7 @@ class Trader extends Model<
   declare panNumber: string;
   declare gstNumber: string | null;
   declare fssaiNumber: string | null;
-  declare userId: ForeignKey<User["id"]> | null;
+  declare userId: number | null;
   declare onBoardedBy: ForeignKey<User["id"]> | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;

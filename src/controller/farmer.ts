@@ -1,5 +1,5 @@
 import Farmer from '../database/models/farmer';
-import { onboardFarmer, retrieveFarmerProfile, getFarmerListByAdmin} from '../services/farmerServices';
+import { onboardFarmer, retrieveFarmerProfile, getFarmerListByAdmin, updateFarmerDetails} from '../services/farmerServices';
 import { findUserByPkInDB, updateUserInDB } from '../services/userServices';
 import { parseFilters } from '../utils/parseQuery';
 
@@ -48,6 +48,46 @@ export const getProfileOverview = async (req, res) => {
     return res
       .status(500)
       .json({ message: err.message || "Failed to retrieve profile of farmer" });
+  }
+};
+
+export const updateFarmer = async (req, res) => {
+  try {
+    const { farmerId } = req.params;
+    const { role, id } = req.user;
+    const payload = req.body;
+
+    const farmer = await Farmer.findByPk(farmerId);
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+
+    if (role !== "admin" && role !== "agent") {
+      return res.status(403).json({
+        message: "Only Admins and Agents are authorized to update farmer profiles.",
+      });
+    }
+
+    if (role === "agent") {
+      const isOnboardedByAgent = farmer.onBoardedBy === id;
+      const isWithin24Hours =
+        Date.now() - new Date(farmer.createdAt).getTime() <= 24 * 60 * 60 * 1000;
+
+      if (!isOnboardedByAgent || !isWithin24Hours) {
+        return res.status(403).json({
+          message:
+            "Only Admins or the Agent who onboarded the farmer within the last 24 hours can update the profile.",
+        });
+      }
+    }
+        
+    await updateUserInDB(farmer.userId, { name: payload.name });
+
+    const updatedFarmer = await updateFarmerDetails(farmerId, payload);
+    return res.status(200).json({ message: "Farmer updated successfully", farmer: updatedFarmer });
+  } catch (err) {
+    console.error("Update Farmer Error:", err);
+    return res.status(500).json({ message: err.message || "Failed to update farmer" });
   }
 };
 
