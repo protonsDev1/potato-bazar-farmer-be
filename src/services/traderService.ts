@@ -1,3 +1,4 @@
+import { Model, ModelStatic } from "sequelize";
 import sequelize from "../database/models/db";
 
 import BankDetail from "../database/models/trader/bankDetail";
@@ -129,6 +130,89 @@ export async function onboardTrader(payload) {
   }
 }
 
+export async function updateTraderService(traderId, payload) {
+  return await sequelize.transaction(async (t) => {
+    const updatableFields = [
+      "fullName",
+      "businessName",
+      "mobileNumber",
+      "whatsappNumber",
+      "email",
+      "state",
+      "district",
+      "cityOrVillage",
+      "pinCode",
+      "digiPin",
+      "geoLocation",
+      "languagePreference",
+      "companyRegisteredVendor",
+      "mainCompany",
+      "numberOfEmployees",
+      "ownPotatoFarming",
+      "acres",
+      "yearlyPurchaseVolumeTons",
+      "mainProcurementRegion",
+      "geographicalMarketCovered",
+      "contractFarming",
+      "spotBuying",
+      "seedsSales",
+      "ownColdStorage",
+      "yearsInTrading",
+      "averageDailySalesKatta",
+      "salesOwnPotatoes",
+      "onlineAuctionInterest",
+      "bankLoanFacility",
+      "coldStorageAccess",
+      "acceptsOnlinePayments",
+    ];
+
+    const updateData = {};
+    for (const key of updatableFields) {
+      if (key in payload) updateData[key] = payload[key];
+    }
+
+    await Trader.update(updateData, {
+      where: { id: traderId },
+      transaction: t,
+    });
+
+    const trader = await Trader.findByPk(traderId, { transaction: t });
+
+    const relationMap: Record<string, ModelStatic<Model>> = {
+      traderInterests: TraderInterest,
+      traderTypes: TraderType,
+      traderVarieties: TraderVariety,
+      cropsTraded: CropTraded,
+      marketCoverages: MarketCoverage,
+    };
+
+    for (const [key, Model] of Object.entries(relationMap)) {
+      if (payload[key]) {
+        await Model.destroy({ where: { traderId }, transaction: t });
+        const records = payload[key].map((item) => ({
+          traderId,
+          ...item,
+        }));
+        await Model.bulkCreate(records, { transaction: t });
+      }
+    }
+
+    if (payload.bankDetails) {
+      await safeUpsert(BankDetail, traderId, payload.bankDetails, t);
+    }
+
+    if (payload.mandiDetails) {
+      await safeUpsert(MandiDetail, traderId, payload.mandiDetails, t);
+    }
+
+    if (payload.traderDocuments) {
+      await safeUpsert(TraderDocument, traderId, payload.traderDocuments, t);
+    }
+
+    return trader;
+  });
+}
+
 export const retrieveTraderProfile = async (traderId: string) => {
   try {
     const [
@@ -182,5 +266,14 @@ export const retrieveTraderProfile = async (traderId: string) => {
   } catch (err) {
     console.error("Error in retrieveTraderProfile:", err);
     throw err;
+  }
+};
+
+const safeUpsert = async (model, traderId, data, transaction) => {
+  const existing = await model.findOne({ where: { traderId }, transaction });
+  if (existing) {
+    return model.update(data, { where: { traderId }, transaction });
+  } else {
+    return model.create({ traderId, ...data }, { transaction });
   }
 };

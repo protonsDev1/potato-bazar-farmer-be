@@ -110,3 +110,108 @@ export const onboardTraderSchema = Joi.object({
     recentInvoiceUrl: Joi.string().uri().optional().allow(null, ""),
   }).optional(),
 });
+
+export const updateTraderSchema = Joi.object({
+  fullName: Joi.string().optional(),
+  businessName: Joi.string().optional(),
+  mobileNumber: Joi.string().max(15).optional(),
+  whatsappNumber: Joi.string().max(15).allow(null, ""),
+  email: Joi.string().email().allow(null, ""),
+
+  state: Joi.string().optional(),
+  district: Joi.string().optional(),
+  cityOrVillage: Joi.string().optional(),
+  pinCode: Joi.string().max(10).optional(),
+  digiPin: Joi.string().optional().allow(null, ""),
+  geoLocation: Joi.string().optional().allow(null, ""),
+  languagePreference: Joi.string().optional(),
+
+  companyRegisteredVendor: Joi.boolean().optional(),
+  mainCompany: Joi.string().allow(null, ""),
+
+  numberOfEmployees: Joi.string().optional(),
+  ownPotatoFarming: Joi.boolean().optional(),
+  acres: Joi.number().allow(null).optional(),
+  yearlyPurchaseVolumeTons: Joi.number().optional(),
+  mainProcurementRegion: Joi.string().optional(),
+  geographicalMarketCovered: Joi.string().optional(),
+
+  contractFarming: Joi.boolean().optional(),
+  spotBuying: Joi.boolean().optional(),
+  seedsSales: Joi.boolean().optional(),
+  ownColdStorage: Joi.boolean().optional(),
+  yearsInTrading: Joi.string().optional(),
+  averageDailySalesKatta: Joi.number().optional(),
+  salesOwnPotatoes: Joi.boolean().optional(),
+  onlineAuctionInterest: Joi.boolean().optional(),
+  bankLoanFacility: Joi.boolean().optional(),
+  coldStorageAccess: Joi.boolean().optional(),
+  acceptsOnlinePayments: Joi.boolean().optional(),
+
+  // panNumber: Joi.string().length(10).optional(),
+  // gstNumber: Joi.string().max(30).allow(null, ""),
+  // fssaiNumber: Joi.string().max(50).allow(null, ""),
+
+  // arrays of objects
+  traderInterests: Joi.array()
+    .items(
+      Joi.object({
+        interest: Joi.string().required(),
+      })
+    )
+    .optional(),
+
+  traderTypes: Joi.array()
+    .items(
+      Joi.object({
+        type: Joi.string().required(),
+      })
+    )
+    .optional(),
+
+  traderVarieties: Joi.array()
+    .items(
+      Joi.object({
+        variety: Joi.string().required(),
+      })
+    )
+    .optional(),
+
+  cropsTraded: Joi.array()
+    .items(
+      Joi.object({
+        cropName: Joi.string().required(),
+      })
+    )
+    .optional(),
+
+  marketCoverages: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().required(),
+      })
+    )
+    .optional(),
+
+  // bankDetails: Joi.object({
+  //   bankName: Joi.string().required(),
+  //   accountHolderName: Joi.string().required(),
+  //   accountNumber: Joi.string().required(),
+  //   ifscCode: Joi.string().required(),
+  //   branch: Joi.string().required(),
+  // }).required(),
+
+  mandiDetails: Joi.object({
+    mandiName: Joi.string().optional(),
+    state: Joi.string().optional(),
+    cityOrVillage: Joi.string().optional(),
+    shopNumber: Joi.string().optional(),
+  }).optional(),
+
+  traderDocuments: Joi.object({
+    panCardUrl: Joi.string().uri().optional().allow(null, ""),
+    businessCardUrl: Joi.string().uri().optional().allow(null, ""),
+    tradeLicenseUrl: Joi.string().uri().optional().allow(null, ""),
+    recentInvoiceUrl: Joi.string().uri().optional().allow(null, ""),
+  }).optional(),
+});
