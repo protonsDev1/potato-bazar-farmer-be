@@ -32,9 +32,31 @@ export const updateTrader = async (req, res) => {
   try {
     const { traderId } = req.params;
     const payload = req.body;
+    const { role, id } = req.user;
 
     const trader = await Trader.findByPk(traderId);
     if (!trader) return res.status(404).json({ message: "Trader not found" });
+
+    if (role !== "admin" && role !== "agent") {
+      return res.status(403).json({
+        message:
+          "Only Admins and Agents are authorized to update trader profiles.",
+      });
+    }
+
+    if (role === "agent") {
+      const isOnboardedByAgent = trader.onBoardedBy === id;
+      const isWithin24Hours =
+        Date.now() - new Date(trader.createdAt).getTime() <=
+        24 * 60 * 60 * 1000;
+
+      if (!isOnboardedByAgent || !isWithin24Hours) {
+        return res.status(403).json({
+          message:
+            "Only Admins or the Agent who onboarded the trader within the last 24 hours can update the profile.",
+        });
+      }
+    }
 
     if (payload.fullName) {
       await updateUserInDB(trader.userId, { name: payload.fullName });
