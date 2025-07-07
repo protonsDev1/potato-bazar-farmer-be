@@ -2,6 +2,7 @@ import Trader from "../database/models/trader/trader";
 import {
   onboardTrader,
   retrieveTraderProfile,
+  updateTraderService,
 } from "../services/traderService";
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 
@@ -10,10 +11,10 @@ export const createTrader = async (req, res) => {
     const userId = req.user.id;
     req.body.onBoardedBy = userId;
 
-     const user = await findUserByPkInDB(userId);
-     if (!user.success) {
-       return res.status(400).json({ message: user.error});
-     }
+    const user = await findUserByPkInDB(userId);
+    if (!user.success) {
+      return res.status(400).json({ message: user.error });
+    }
 
     await updateUserInDB(req.body.userId, { name: req.body.fullName });
 
@@ -24,6 +25,30 @@ export const createTrader = async (req, res) => {
     return res.status(500).json({
       message: err.message || "Failed to create trader",
     });
+  }
+};
+
+export const updateTrader = async (req, res) => {
+  try {
+    const { traderId } = req.params;
+    const payload = req.body;
+
+    const trader = await Trader.findByPk(traderId);
+    if (!trader) return res.status(404).json({ message: "Trader not found" });
+
+    if (payload.fullName) {
+      await updateUserInDB(trader.userId, { name: payload.fullName });
+    }
+
+    const updatedTrader = await updateTraderService(traderId, payload);
+
+    return res
+      .status(200)
+      .json({ message: "Trader updated successfully", trader: updatedTrader });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to update trader" });
   }
 };
 
@@ -63,9 +88,9 @@ export const selfOnboardedTrader = async (req, res) => {
     req.body.onBoardedBy = userId;
 
     const user = await findUserByPkInDB(userId);
-     if (!user.success) {
-       return res.status(400).json({ message: user.error});
-     }
+    if (!user.success) {
+      return res.status(400).json({ message: user.error });
+    }
 
     await updateUserInDB(req.body.userId, { name: req.body.fullName });
 

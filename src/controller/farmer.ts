@@ -1,5 +1,5 @@
 import Farmer from '../database/models/farmer';
-import { onboardFarmer, retrieveFarmerProfile, getFarmerListByAdmin} from '../services/farmerServices';
+import { onboardFarmer, retrieveFarmerProfile, getFarmerListByAdmin, updateFarmerDetails} from '../services/farmerServices';
 import { findUserByPkInDB, updateUserInDB } from '../services/userServices';
 import { parseFilters } from '../utils/parseQuery';
 
@@ -48,6 +48,26 @@ export const getProfileOverview = async (req, res) => {
     return res
       .status(500)
       .json({ message: err.message || "Failed to retrieve profile of farmer" });
+  }
+};
+
+export const updateFarmer = async (req, res) => {
+  try {
+    const { farmerId } = req.params;
+    const payload = req.body;
+
+    const farmer = await Farmer.findByPk(farmerId);
+    if (!farmer) {
+      return res.status(404).json({ message: "Farmer not found" });
+    }
+
+    await updateUserInDB(farmer.userId, { name: payload.name });
+
+    const updatedFarmer = await updateFarmerDetails(farmerId, payload);
+    return res.status(200).json({ message: "Farmer updated successfully", farmer: updatedFarmer });
+  } catch (err) {
+    console.error("Update Farmer Error:", err);
+    return res.status(500).json({ message: err.message || "Failed to update farmer" });
   }
 };
 

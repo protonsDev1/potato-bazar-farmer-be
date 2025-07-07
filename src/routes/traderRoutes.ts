@@ -5,8 +5,12 @@ import {
   createTrader,
   getTraderProfileOverview,
   selfOnboardedTrader,
+  updateTrader,
 } from "../controller/traderController";
-import { onboardTraderSchema } from "../validation/traderValidation";
+import {
+  onboardTraderSchema,
+  updateTraderSchema,
+} from "../validation/traderValidation";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -22,6 +26,13 @@ router.post(
   "/self_onboard",
   validator.body(onboardTraderSchema),
   selfOnboardedTrader
+);
+
+router.put(
+  "/update/:traderId",
+  authMiddleware,
+  validator.body(updateTraderSchema),
+  updateTrader
 );
 
 router.get("/profile/:traderId", authMiddleware, getTraderProfileOverview);
