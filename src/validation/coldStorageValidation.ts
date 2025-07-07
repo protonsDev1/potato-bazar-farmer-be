@@ -76,6 +76,7 @@ export const coldStorageSchema = Joi.object({
   // transportProvided: Joi.boolean().required(),
   // willingOnlineAuction: Joi.boolean().required(),
   // additionalComments: Joi.string().allow('', null),
+  isSlabWiseDiscount: Joi.boolean().required(),
   userId: Joi.number().integer().allow(null),
   awardOrCertificate: Joi.string().optional(),
   photos: Joi.string().optional(),
