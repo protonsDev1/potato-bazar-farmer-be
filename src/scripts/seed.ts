@@ -13,6 +13,11 @@ import AdminStorageBookingSystem from "../database/models/adminModels/coldStorag
 import AdminStorageFeature from "../database/models/adminModels/coldStorage/adminStorageFeature";
 import AdminStorageType from "../database/models/adminModels/coldStorage/adminStorageType";
 import AdminUsageType from "../database/models/adminModels/coldStorage/adminUsageType";
+import AdminCropTraded from "../database/models/adminModels/trader/adminCropTraded";
+import AdminMarketCoverage from "../database/models/adminModels/trader/adminMarketCoverage";
+import AdminTraderInterest from "../database/models/adminModels/trader/adminTraderInterest";
+import AdminTraderType from "../database/models/adminModels/trader/adminTraderType";
+import AdminTraderVariety from "../database/models/adminModels/trader/adminTraderVariety";
 import {
   coldStorageTypeList,
   constructionTypeList,
@@ -30,6 +35,13 @@ import {
   storageTypeList,
   usageTypeList,
 } from "../utils/constants/coldStorageSeedList";
+import {
+  cropTradedList,
+  marketCoverageList,
+  traderInterestList,
+  traderTypeList,
+  traderVarietyList,
+} from "../utils/constants/traderSeedList";
 import { seedData } from "./seedHelper";
 
 const seedDatabase = async () => {
@@ -91,6 +103,16 @@ const seedDatabase = async () => {
       storageBookingSystemList,
       "Storage Booking Systems"
     );
+
+    await seedData(AdminCropTraded, cropTradedList, "Crops Traded");
+
+    await seedData(AdminMarketCoverage, marketCoverageList, "Market Coverages");
+
+    await seedData(AdminTraderInterest, traderInterestList, "Trader Interests");
+
+    await seedData(AdminTraderType, traderTypeList, "Trader Types");
+
+    await seedData(AdminTraderVariety, traderVarietyList, "Trader Varities");
 
     process.exit(0);
   } catch (error) {
