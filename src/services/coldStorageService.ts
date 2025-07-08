@@ -1,4 +1,4 @@
-import { literal, Op } from "sequelize";
+import { literal, Model, ModelStatic, Op } from "sequelize";
 import ChamberCapacity from "../database/models/chamberCapacity";
 import ColdStorage from "../database/models/coldStorage";
 import sequelize from '../database/models/db';
@@ -344,6 +344,66 @@ export async function onboardColdStorage(payload: any) {
     throw err;
   }
 }
+
+
+export const updateColdStorageService = async (coldStorageId, payload) => {
+  return await sequelize.transaction(async (t) => {
+    const updateData = {};
+    const editableFields = [
+      "name", "ownerName", "mobileNumber", "optionalNumber", "whatsappNumber", "village", "district", "state",
+      "taluka", "pinCode", "digiPin", "geoLocation", "hasGstCertificate", "gstOrCertificateNumber", "totalCapacityMt",
+      "builtYear", "numberOfChambers", "numberOfSheds", "hasAirCutter", "hasInsectTrap", "gradingAreaAvailable",
+      "gradingMachineAvailable", "gradingMachineTph", "manualGradingAreaAvailable", "numberOfKattas", "co2Controller",
+      "humidityController", "temperatureController", "monitoringLogAvailable", "realTimeAlertSystem",
+      "refrigerationType", "refrigerationMake", "machineCount", "machineCapacity", "weighBridge",
+      "weighbridgeCapacityLength", "hasLorryShades", "lorryShadeCapacity", "numberOfTrucks", "hasLabourForGrading",
+      "noOfLabourInPeakSeason", "uniqueFeatures", "isSlabWiseDiscount", "awardOrCertificate", "photos"
+    ];
+
+    for (const field of editableFields) {
+      if (field in payload) {
+        updateData[field] = payload[field];
+      }
+    }
+
+    await ColdStorage.update(updateData, {
+      where: { id: coldStorageId },
+      transaction: t,
+    });
+
+    const relationMap: Record<string, ModelStatic<Model>> = {
+      storageTypes: StorageType,
+      usageTypes: UsageType,
+      operationalChallenges: OperationalChallenge,
+      elevatorsAndStuffing: ElevatorAndStuffing,
+      chamberCapacities: ChamberCapacity,
+      sheds: Shed,
+      coldStorageTypes: ColdStorageType,
+      dryingFacilityDetails: DryingFacilityDetail,
+      constructionTypes: ConstructionType,
+      featuresOfStorage: FeatureOfStorage,
+      monitoringFacilities: MonitoringFacility,
+      otherFacilities: OtherFacility,
+      potatoDisposalSystems: PotatoDisposalSystem,
+      powerFacilities: PowerFacility,
+      roofTypes: RoofType,
+      storageBookingSystems: StorageBookingSystem,
+      seasonWiseBookingSystems: SeasonWiseBookingSystem,
+      slabWiseDiscount: SlabWiseDiscount,
+    };
+
+    for (const [key, Model] of Object.entries(relationMap)) {
+      if (payload[key]) {
+        await Model.destroy({ where: { coldStorageId }, transaction: t });
+        const records = payload[key].map((item) => ({ coldStorageId, ...item }));
+        await Model.bulkCreate(records, { transaction: t });
+      }
+    }
+
+    return await ColdStorage.findByPk(coldStorageId, { transaction: t });
+  });
+};
+
 
 export const retrieveColdStorageProfile = async (coldStorageId) => {
   try {
