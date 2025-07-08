@@ -41,6 +41,9 @@ export const retriveAllUsers = async (
         district: item.district,
         createdAt: item.createdAt,
         date: formatDate(item.createdAt),
+        canAgentEdit:
+          Date.now() - new Date(item.createdAt).getTime() <=
+          24 * 60 * 60 * 1000,
         type:
           item instanceof Farmer
             ? "farmer"
@@ -98,6 +101,9 @@ export const retrieveRecentRegistered = async (agentId) => {
         district: item.district,
         date: formatDate(item.createdAt),
         createdAt: item.createdAt,
+        canAgentEdit:
+          Date.now() - new Date(item.createdAt).getTime() <=
+          24 * 60 * 60 * 1000,
         type:
           item instanceof Farmer
             ? "farmer"

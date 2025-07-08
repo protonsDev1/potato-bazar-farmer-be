@@ -334,7 +334,7 @@ export const updateFarmerDetails = async (
   });
 };
 
-export const retrieveFarmerProfile = async (farmerId: string) => {
+export const retrieveFarmerProfile = async (farmerId: string,isWithin24Hours) => {
   try {
     const farmerPersonalInfo = await Farmer.findOne({
       where: { id: farmerId },
@@ -431,6 +431,7 @@ export const retrieveFarmerProfile = async (farmerId: string) => {
       sellingPlaces,
       potatoTypes,
       otherCropsGrown,
+      canAgentEdit: isWithin24Hours
     };
   } catch (err) {
     console.log(err);
