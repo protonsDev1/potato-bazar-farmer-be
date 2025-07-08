@@ -1,5 +1,5 @@
 import ColdStorage from '../database/models/coldStorage';
-import { onboardColdStorage, retrieveColdStorageProfile,getColdStorage } from '../services/coldStorageService';
+import { onboardColdStorage, retrieveColdStorageProfile,getColdStorage, updateColdStorageService } from '../services/coldStorageService';
 import { findUserByPkInDB, updateUserInDB } from '../services/userServices';
 import { parseFilters } from '../utils/parseQuery';
 
@@ -23,6 +23,44 @@ export const createColdStorage = async (req, res) => {
   } catch (error) {
     console.error("Controller Error:", error);
     res.status(500).json({ message: error.message || "Failed to onboard cold storage"});
+  }
+};
+
+
+export const updateColdStorage = async (req, res) => {
+  try {
+    const { coldStorageId } = req.params;
+    const { role, id } = req.user;
+    const payload = req.body;
+
+    const coldStorage = await ColdStorage.findByPk(coldStorageId);
+    if (!coldStorage) {
+      return res.status(404).json({ message: 'Cold storage not found' });
+    }
+
+    if (role !== 'admin' && role !== 'agent') {
+      return res.status(403).json({ message: 'Only Admins and Agents are authorized to update cold storage profiles.' });
+    }
+
+    if (role === 'agent') {
+      const isOnboardedByAgent = coldStorage.onBoardedBy === id;
+      const isWithin24Hours = Date.now() - new Date(coldStorage.createdAt).getTime() <= 24 * 60 * 60 * 1000;
+
+      if (!isOnboardedByAgent || !isWithin24Hours) {
+        return res.status(403).json({ message: 'Only Admins or the Agent who onboarded the cold storage within the last 24 hours can update the profile.' });
+      }
+    }
+
+    if (payload.ownerName && coldStorage.userId) {
+      await updateUserInDB(coldStorage.userId, { name: payload.ownerName });
+    }
+
+    const updatedColdStorage = await updateColdStorageService(coldStorageId, payload);
+
+    return res.status(200).json({ message: 'Cold Storage updated successfully', data: updatedColdStorage });
+  } catch (err) {
+    console.error('Update Cold Storage Error:', err);
+    return res.status(500).json({ message: err.message || 'Failed to update cold storage' });
   }
 };
 
