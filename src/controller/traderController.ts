@@ -92,7 +92,15 @@ export const getTraderProfileOverview = async (req, res) => {
       });
     }
 
-    const traderData = await retrieveTraderProfile(traderId);
+    let isWithin24Hours = true;
+
+    if (role === "agent") {
+      isWithin24Hours =
+        Date.now() - new Date(trader.createdAt).getTime() <=
+        24 * 60 * 60 * 1000;
+    }
+
+    const traderData = await retrieveTraderProfile(traderId, isWithin24Hours);
 
     return res
       .status(200)

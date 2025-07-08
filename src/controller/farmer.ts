@@ -32,16 +32,22 @@ export const getProfileOverview = async (req, res) => {
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
     }
-    
-    if (role !== "admin" && farmer.onBoardedBy !== id)
-      return res
-        .status(403)
-        .json({
-          message:
-            "Only Agents those register the farmer or an Admin are authorized to view farmer's profile.",
-        });
 
-    const farmerData = await retrieveFarmerProfile(farmerId);
+    if (role !== "admin" && farmer.onBoardedBy !== id)
+      return res.status(403).json({
+        message:
+          "Only Agents those register the farmer or an Admin are authorized to view farmer's profile.",
+      });
+
+    let isWithin24Hours = true;
+
+    if (role === "agent") {
+      isWithin24Hours =
+        Date.now() - new Date(farmer.createdAt).getTime() <=
+        24 * 60 * 60 * 1000;
+    }
+
+    let farmerData = await retrieveFarmerProfile(farmerId, isWithin24Hours);
 
     return res.status(200).json({ message: farmerData });
   } catch (err: any) {
