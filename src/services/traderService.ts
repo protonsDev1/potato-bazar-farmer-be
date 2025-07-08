@@ -213,7 +213,7 @@ export async function updateTraderService(traderId, payload) {
   });
 }
 
-export const retrieveTraderProfile = async (traderId: string) => {
+export const retrieveTraderProfile = async (traderId: string,isWithin24Hours) => {
   try {
     const [
       personalInfo,
@@ -262,6 +262,7 @@ export const retrieveTraderProfile = async (traderId: string) => {
       types,
       varieties,
       cropsTraded,
+      canAgentEdit: isWithin24Hours
     };
   } catch (err) {
     console.error("Error in retrieveTraderProfile:", err);

@@ -345,7 +345,6 @@ export async function onboardColdStorage(payload: any) {
   }
 }
 
-
 export const updateColdStorageService = async (coldStorageId, payload) => {
   return await sequelize.transaction(async (t) => {
     const updateData = {};
@@ -405,7 +404,7 @@ export const updateColdStorageService = async (coldStorageId, payload) => {
 };
 
 
-export const retrieveColdStorageProfile = async (coldStorageId) => {
+export const retrieveColdStorageProfile = async (coldStorageId,isWithin24Hours) => {
   try {
     const coldStoragePersonalInfo = await ColdStorage.findOne({
       where: { id: coldStorageId },
@@ -449,6 +448,7 @@ export const retrieveColdStorageProfile = async (coldStorageId) => {
       shed,
       storageType,
       usageType,
+      canAgentEdit: isWithin24Hours
     };
   } catch (err) {
     console.error("Error in retrieving cold storage profile", err);

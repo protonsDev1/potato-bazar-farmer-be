@@ -80,15 +80,24 @@ export const getColdStorageProfile = async (req, res) => {
           "Only Agents those register the coldStorage or an Admin are authorized to view coldStorage's profile.",
       });
 
-    const profileDetails = await retrieveColdStorageProfile(coldStorageId);
+    let isWithin24Hours = true;
+
+    if (role === "agent") {
+      isWithin24Hours =
+        Date.now() - new Date(coldStorage.createdAt).getTime() <=
+        24 * 60 * 60 * 1000;
+    }
+
+    const profileDetails = await retrieveColdStorageProfile(
+      coldStorageId,
+      isWithin24Hours
+    );
 
     return res.status(200).json({ message: profileDetails });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: error.message || "Failed to retrieve cold storage profile.",
-      });
+    res.status(500).json({
+      message: error.message || "Failed to retrieve cold storage profile.",
+    });
   }
 };
 
