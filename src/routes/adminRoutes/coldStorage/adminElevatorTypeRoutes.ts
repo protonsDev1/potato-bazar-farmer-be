@@ -4,12 +4,12 @@ import express from "express";
 import { authMiddleware } from "../../../utils/userAuth";
 import { adminColdStorageSchema } from "../../../validation/adminValidation";
 import {
-  addUsageType,
-  deleteUsageType,
-  getActiveUsageType,
-  getUsageType,
-  updateUsageType,
-} from "../../../controller/adminController/coldStorage/usageTypeController";
+  addElevatorType,
+  deleteElevatorType,
+  getActiveElevatorType,
+  getElevatorType,
+  updateElevatorType,
+} from "../../../controller/adminController/coldStorage/elevatorTypeController";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -18,15 +18,15 @@ router.post(
   "/",
   authMiddleware,
   validator.body(adminColdStorageSchema),
-  addUsageType
+  addElevatorType
 );
 
-router.get("/", getUsageType);
+router.get("/", getElevatorType);
 
-router.get("/active", getActiveUsageType);
+router.get("/active", getActiveElevatorType);
 
-router.put("/:id", authMiddleware, updateUsageType);
+router.put("/:id", authMiddleware, updateElevatorType);
 
-router.delete("/:id", authMiddleware, deleteUsageType);
+router.delete("/:id", authMiddleware, deleteElevatorType);
 
 export default router;

@@ -58,19 +58,8 @@ export const biggestChallengeInSellingSchema = Joi.object({
   isActive: Joi.boolean().optional(),
 });
 
-export const storageTypeSchema = Joi.object({
-  name: Joi.string().required(),
-  position: Joi.number().optional(),
-  isActive: Joi.boolean().optional(),
-});
 
-export const usageTypeSchema = Joi.object({
-  name: Joi.string().required(),
-  position: Joi.number().optional(),
-  isActive: Joi.boolean().optional(),
-});
-
-export const operationalChallengeSchema = Joi.object({
+export const adminColdStorageSchema = Joi.object({
   name: Joi.string().required(),
   position: Joi.number().optional(),
   isActive: Joi.boolean().optional(),
