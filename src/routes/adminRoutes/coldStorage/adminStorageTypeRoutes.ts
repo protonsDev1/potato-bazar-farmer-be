@@ -2,7 +2,7 @@ import { createValidator } from "express-joi-validation";
 import express from "express";
 
 import { authMiddleware } from "../../../utils/userAuth";
-import { storageTypeSchema } from "../../../validation/adminValidation";
+import { adminColdStorageSchema } from "../../../validation/adminValidation";
 import {
   addStorageType,
   deleteStorageType,
@@ -17,7 +17,7 @@ const validator = createValidator({});
 router.post(
   "/",
   authMiddleware,
-  validator.body(storageTypeSchema),
+  validator.body(adminColdStorageSchema),
   addStorageType
 );
 
