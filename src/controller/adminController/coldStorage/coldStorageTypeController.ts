@@ -1,0 +1,138 @@
+import AdminColdStorageType from "../../../database/models/adminModels/coldStorage/adminColdStorageType";
+import {
+  createRecord,
+  getAllRecords,
+  updateRecord,
+  deleteRecord,
+  getActiveRecords,
+} from "../../../services/adminServices/crudOperationService";
+
+export const addColdStorageType = async (req, res) => {
+  try {
+    const { role } = req.user;
+    const data = req.body;
+
+    if (role !== "admin") {
+      return res.status(403).json({
+        message: "Only Admins are authorized to add Cold Storage Type.",
+      });
+    }
+
+    const response = await createRecord(AdminColdStorageType, data);
+
+    if (response?.success) {
+      return res.status(201).json({
+        message: "New Cold Storage Type added successfully.",
+        data: response.data,
+      });
+    }
+
+    return res
+      .status(400)
+      .json({ message: "Failed to add Cold Storage Type." });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to add Cold Storage Type.",
+    });
+  }
+};
+
+export const getColdStorageType = async (req, res) => {
+  try {
+    const response = await getAllRecords(AdminColdStorageType);
+
+    if (response?.success) {
+      return res.status(200).json({
+        message: "Cold Storage Type fetched successfully.",
+        data: response.data,
+      });
+    }
+
+    return res.status(404).json({ message: "No Cold Storage Type found." });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to retrieve Cold Storage Type.",
+    });
+  }
+};
+
+export const getActiveColdStorageType = async (req, res) => {
+  try {
+    const response = await getActiveRecords(AdminColdStorageType);
+
+    if (response?.success) {
+      return res.status(200).json({
+        message: "Active Cold Storage Type fetched successfully.",
+        data: response.data,
+      });
+    }
+
+    return res
+      .status(404)
+      .json({ message: "No active Cold Storage Type found." });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to retrieve active Cold Storage Type.",
+    });
+  }
+};
+
+export const updateColdStorageType = async (req, res) => {
+  try {
+    const { role } = req.user;
+    const id = req.params.id;
+    const data = req.body;
+
+    if (role !== "admin") {
+      return res.status(403).json({
+        message: "Only Admins are authorized to update Cold Storage Type.",
+      });
+    }
+
+    const response = await updateRecord(AdminColdStorageType, id, data);
+
+    if (!response || response.success === false) {
+      return res.status(404).json({
+        message: response?.error || "Cold Storage Type record not found.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Cold Storage Type updated successfully.",
+      data: response.data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to update Cold Storage Type.",
+    });
+  }
+};
+
+export const deleteColdStorageType = async (req, res) => {
+  try {
+    const { role } = req.user;
+    const id = req.params.id;
+
+    if (role !== "admin") {
+      return res.status(403).json({
+        message: "Only Admins are authorized to delete Cold Storage Type.",
+      });
+    }
+
+    const response = await deleteRecord(AdminColdStorageType, id);
+
+    if (!response || response.success === false) {
+      return res.status(404).json({
+        message: response?.error || "Cold Storage Type record not found.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Cold Storage Type deleted successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to delete Cold Storage Type.",
+    });
+  }
+};

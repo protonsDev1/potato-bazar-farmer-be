@@ -232,8 +232,8 @@ export async function onboardColdStorage(payload: any) {
         }
       }
 
-      if (Array.isArray(payload.featuresOfStorage)) {
-        for (const storage of payload.featuresOfStorage) {
+      if (Array.isArray(payload.featureOfStorage)) {
+        for (const storage of payload.featureOfStorage) {
           await FeatureOfStorage.create(
             {
               coldStorageId: coldStorage.id,
@@ -302,8 +302,8 @@ export async function onboardColdStorage(payload: any) {
         }
       }
 
-      if (Array.isArray(payload.seasonWiseStorageSystems)) {
-        for (const system of payload.seasonWiseStorageSystems) {
+      if (Array.isArray(payload.seasonWiseBookingSystems)) {
+        for (const system of payload.seasonWiseBookingSystems) {
           await SeasonWiseBookingSystem.create({
             coldStorageId: coldStorage.id,
             season: system.season,
@@ -314,8 +314,8 @@ export async function onboardColdStorage(payload: any) {
         }
       }
 
-      if (Array.isArray(payload.slabwiseDiscounts)) {
-        for (const discount of payload.slabwiseDiscounts) {
+      if (Array.isArray(payload.slabWiseDiscount)) {
+        for (const discount of payload.slabWiseDiscount) {
           await SlabWiseDiscount.create({
             coldStorageId: coldStorage.id,
             quantityInMt: discount.quantityInMt,
@@ -403,15 +403,22 @@ export const updateColdStorageService = async (coldStorageId, payload) => {
   });
 };
 
-
-export const retrieveColdStorageProfile = async (coldStorageId,isWithin24Hours) => {
+export const retrieveColdStorageProfile = async (
+  coldStorageId,
+  isWithin24Hours
+) => {
   try {
     const coldStoragePersonalInfo = await ColdStorage.findOne({
       where: { id: coldStorageId },
     });
 
     const chamberCapacity = await ChamberCapacity.findAll({
-      attributes: [ "capacityMt"],
+      attributes: [
+        "capacityMt",
+        "noOfFloors",
+        "sizePerChamberSqft",
+        "description",
+      ],
       where: { coldStorageId },
     });
 
@@ -426,7 +433,7 @@ export const retrieveColdStorageProfile = async (coldStorageId,isWithin24Hours) 
     });
 
     const shed = await Shed.findAll({
-      attributes: ["sizeSqMtr"],
+      attributes: ["sizeSqMtr", "shedType"],
       where: { coldStorageId },
     });
 
@@ -436,7 +443,67 @@ export const retrieveColdStorageProfile = async (coldStorageId,isWithin24Hours) 
     });
 
     const usageType = await UsageType.findAll({
-      attributes: ["type"],
+      attributes: ["type", "capacity"],
+      where: { coldStorageId },
+    });
+
+    const dryingFacilityDetail = await DryingFacilityDetail.findAll({
+      attributes: ["facility"],
+      where: { coldStorageId },
+    });
+
+    const featureOfStorage = await FeatureOfStorage.findAll({
+      attributes: ["feature"],
+      where: { coldStorageId },
+    });
+
+    const monitoringFacilities = await MonitoringFacility.findAll({
+      attributes: ["facility"],
+      where: { coldStorageId },
+    });
+
+    const otherFacilities = await OtherFacility.findAll({
+      attributes: ["facility"],
+      where: { coldStorageId },
+    });
+
+    const potatoDisposalSystems = await PotatoDisposalSystem.findAll({
+      attributes: ["disposalSystem"],
+      where: { coldStorageId },
+    });
+
+    const powerFacilities = await PowerFacility.findAll({
+      attributes: ["facility", "capacityInKw", "backupInHrs", "make"],
+      where: { coldStorageId },
+    });
+
+    const constructionTypes = await ConstructionType.findAll({
+      attributes: ["constructionType"],
+      where: { coldStorageId },
+    });
+
+    const coldStorageTypes = await ColdStorageType.findAll({
+      attributes: ["coldStorageType"],
+      where: { coldStorageId },
+    });
+
+    const roofTypes = await RoofType.findAll({
+      attributes: ["roofType"],
+      where: { coldStorageId },
+    });
+
+    const storageBookingSystems = await StorageBookingSystem.findAll({
+      attributes: ["bookingSystem"],
+      where: { coldStorageId },
+    });
+
+    const seasonWiseBookingSystems = await SeasonWiseBookingSystem.findAll({
+      attributes: ["season", "quantityInKg"],
+      where: { coldStorageId },
+    });
+
+    const slabWiseDiscount = await SlabWiseDiscount.findAll({
+      attributes: ["quantityInMt", "discount"],
       where: { coldStorageId },
     });
 
@@ -448,7 +515,19 @@ export const retrieveColdStorageProfile = async (coldStorageId,isWithin24Hours) 
       shed,
       storageType,
       usageType,
-      canAgentEdit: isWithin24Hours
+      dryingFacilityDetail,
+      featureOfStorage,
+      monitoringFacilities,
+      otherFacilities,
+      potatoDisposalSystems,
+      powerFacilities,
+      constructionTypes,
+      coldStorageTypes,
+      roofTypes,
+      storageBookingSystems,
+      seasonWiseBookingSystems,
+      slabWiseDiscount,
+      canAgentEdit: isWithin24Hours,
     };
   } catch (err) {
     console.error("Error in retrieving cold storage profile", err);

@@ -1,0 +1,134 @@
+import AdminPowerFacility from "../../../database/models/adminModels/coldStorage/adminPowerFacility";
+import {
+  createRecord,
+  getAllRecords,
+  updateRecord,
+  deleteRecord,
+  getActiveRecords,
+} from "../../../services/adminServices/crudOperationService";
+
+export const addPowerFacility = async (req, res) => {
+  try {
+    const { role } = req.user;
+    const data = req.body;
+
+    if (role !== "admin") {
+      return res.status(403).json({
+        message: "Only Admins are authorized to add Power Facility.",
+      });
+    }
+
+    const response = await createRecord(AdminPowerFacility, data);
+
+    if (response?.success) {
+      return res.status(201).json({
+        message: "New Power Facility added successfully.",
+        data: response.data,
+      });
+    }
+
+    return res.status(400).json({ message: "Failed to add Power Facility." });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to add Power Facility.",
+    });
+  }
+};
+
+export const getPowerFacility = async (req, res) => {
+  try {
+    const response = await getAllRecords(AdminPowerFacility);
+
+    if (response?.success) {
+      return res.status(200).json({
+        message: "Power Facility fetched successfully.",
+        data: response.data,
+      });
+    }
+
+    return res.status(404).json({ message: "No Power Facility found." });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to retrieve Power Facility.",
+    });
+  }
+};
+
+export const getActivePowerFacility = async (req, res) => {
+  try {
+    const response = await getActiveRecords(AdminPowerFacility);
+
+    if (response?.success) {
+      return res.status(200).json({
+        message: "Power Facility fetched successfully.",
+        data: response.data,
+      });
+    }
+
+    return res.status(404).json({ message: "No active Power Facility found." });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to retrieve active Power Facility.",
+    });
+  }
+};
+
+export const updatePowerFacility = async (req, res) => {
+  try {
+    const { role } = req.user;
+    const id = req.params.id;
+    const data = req.body;
+
+    if (role !== "admin") {
+      return res.status(403).json({
+        message: "Only Admins are authorized to update Power Facility.",
+      });
+    }
+
+    const response = await updateRecord(AdminPowerFacility, id, data);
+
+    if (!response || response.success === false) {
+      return res.status(404).json({
+        message: response?.error || "Power Facility record not found.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Power Facility updated successfully.",
+      data: response.data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to update Power Facility.",
+    });
+  }
+};
+
+export const deletePowerFacility = async (req, res) => {
+  try {
+    const { role } = req.user;
+    const id = req.params.id;
+
+    if (role !== "admin") {
+      return res.status(403).json({
+        message: "Only Admins are authorized to delete Power Facility.",
+      });
+    }
+
+    const response = await deleteRecord(AdminPowerFacility, id);
+
+    if (!response || response.success === false) {
+      return res.status(404).json({
+        message: response?.error || "Power Facility record not found.",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Power Facility deleted successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to delete Power Facility.",
+    });
+  }
+};

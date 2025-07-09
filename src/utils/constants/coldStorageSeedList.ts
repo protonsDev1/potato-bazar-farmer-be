@@ -295,3 +295,18 @@ export const powerFacilityList = [
     position: 3,
   },
 ];
+
+export const storageBookingSystemList = [
+  {
+    name: "First Come",
+    position: 1,
+  },
+  {
+    name: "Contracted",
+    position: 2,
+  },
+  {
+    name: "Other",
+    position: 3,
+  },
+];
