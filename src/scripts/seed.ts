@@ -9,6 +9,7 @@ import AdminPotatoDisposalSystem from "../database/models/adminModels/coldStorag
 import AdminPowerFacility from "../database/models/adminModels/coldStorage/adminPowerFacility";
 import AdminRoofType from "../database/models/adminModels/coldStorage/adminRoofType";
 import AdminShedType from "../database/models/adminModels/coldStorage/adminShedType";
+import AdminStorageBookingSystem from "../database/models/adminModels/coldStorage/adminStorageBookingSystem";
 import AdminStorageFeature from "../database/models/adminModels/coldStorage/adminStorageFeature";
 import AdminStorageType from "../database/models/adminModels/coldStorage/adminStorageType";
 import AdminUsageType from "../database/models/adminModels/coldStorage/adminUsageType";
@@ -24,6 +25,7 @@ import {
   powerFacilityList,
   roofTypeList,
   shedTypeList,
+  storageBookingSystemList,
   storageFeatureList,
   storageTypeList,
   usageTypeList,
@@ -82,6 +84,12 @@ const seedDatabase = async () => {
       AdminOperationalChallenge,
       operationalChallengeList,
       "Operational Challenges"
+    );
+
+    await seedData(
+      AdminStorageBookingSystem,
+      storageBookingSystemList,
+      "Storage Booking Systems"
     );
 
     process.exit(0);
