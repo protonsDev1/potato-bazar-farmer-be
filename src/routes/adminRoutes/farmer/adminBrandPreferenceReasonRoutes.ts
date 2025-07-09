@@ -23,7 +23,7 @@ router.post(
   addBrandPreferenceReason
 );
 router.get("/", authMiddleware, getBrandPreferenceReasons);
-router.get("/active", authMiddleware, getActiveBrandPreferenceReasons);
+router.get("/active", getActiveBrandPreferenceReasons);
 router.put(
   "/:id",
   authMiddleware,

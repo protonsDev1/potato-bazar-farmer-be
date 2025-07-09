@@ -26,7 +26,7 @@ router.post(
 
 router.get("/", authMiddleware, getMarketCoverages);
 
-router.get("/active", authMiddleware, getActiveMarketCoverages);
+router.get("/active", getActiveMarketCoverages);
 
 router.get("/:id", authMiddleware, getMarketCoverageById);
 
