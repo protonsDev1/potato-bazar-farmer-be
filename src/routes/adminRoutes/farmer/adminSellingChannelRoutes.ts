@@ -23,7 +23,7 @@ router.post(
   addSellingChannel
 );
 router.get("/", authMiddleware, getSellingChannels);
-router.get("/active", authMiddleware, getActiveSellingChannels);
+router.get("/active", getActiveSellingChannels);
 router.put(
   "/:id",
   authMiddleware,

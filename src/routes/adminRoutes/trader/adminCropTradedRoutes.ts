@@ -26,7 +26,7 @@ router.post(
 
 router.get("/", authMiddleware, getCropsTraded);
 
-router.get("/active", authMiddleware, getActiveCropsTraded);
+router.get("/active", getActiveCropsTraded);
 
 router.get("/:id", authMiddleware, getCropTradedById);
 
