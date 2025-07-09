@@ -26,7 +26,7 @@ router.post(
 
 router.get("/", authMiddleware, getTraderInterests);
 
-router.get("/active", authMiddleware, getActiveTraderInterests);
+router.get("/active", getActiveTraderInterests);
 
 router.get("/:id", authMiddleware, getTraderInterestById);
 

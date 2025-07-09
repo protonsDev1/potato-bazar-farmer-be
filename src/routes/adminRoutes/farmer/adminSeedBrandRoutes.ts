@@ -23,7 +23,7 @@ router.post(
   addSeedBrand
 );
 router.get("/", authMiddleware, getSeedBrands);
-router.get("/active", authMiddleware, getActiveSeedBrands);
+router.get("/active", getActiveSeedBrands);
 router.put(
   "/:id",
   authMiddleware,

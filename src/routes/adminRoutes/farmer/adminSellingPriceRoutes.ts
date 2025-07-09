@@ -23,7 +23,7 @@ router.post(
   addSellingPrice
 );
 router.get("/", authMiddleware, getSellingPrice);
-router.get("/active", authMiddleware, getActiveSellingPrice);
+router.get("/active", getActiveSellingPrice);
 router.put(
   "/:id",
   authMiddleware,
