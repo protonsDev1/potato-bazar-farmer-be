@@ -27,6 +27,7 @@ class Farmer extends Model<InferAttributes<Farmer>, InferCreationAttributes<Farm
   declare geoLocation: string | null;
   declare isAadhaarCard: boolean | null;
   declare aadhaarNumber: string | null;
+  declare pinCode: string | null;
   declare digiPin : string | null;
   declare isBankAccount: boolean | null;
   declare onBoardedBy: number | null;
@@ -52,6 +53,7 @@ Farmer.init(
     geoLocation: { type: DataTypes.STRING, allowNull: true },
     isAadhaarCard: { type: DataTypes.BOOLEAN, allowNull: true },
     aadhaarNumber: { type: DataTypes.STRING, allowNull: true },
+    pinCode:{type: DataTypes.STRING, allowNull: true},
     digiPin: {type: DataTypes.STRING, allowNull: true},
     isBankAccount: { type: DataTypes.BOOLEAN, allowNull: true },
     onBoardedBy: {

@@ -32,6 +32,7 @@ interface Payload {
   district?: string;
   state?: string;
   geoLocation?: string;
+  pinCode?: string;
   digiPin?: string;
   whatsappNumber?: string;
   isAadhaarCard?: boolean;
@@ -87,6 +88,7 @@ export async function onboardFarmer(payload: Payload) {
           district: payload.district,
           state: payload.state,
           geoLocation: payload.geoLocation,
+          pinCode: payload.pinCode,
           digiPin: payload.digiPin,
           whatsappNumber: payload.whatsappNumber,
           isAadhaarCard: payload.isAadhaarCard,
@@ -278,6 +280,7 @@ export const updateFarmerDetails = async (
       "district",
       "state",
       "geoLocation",
+      "pinCode",
       "digiPin",
       "whatsappNumber",
       "isAadhaarCard",
@@ -334,7 +337,10 @@ export const updateFarmerDetails = async (
   });
 };
 
-export const retrieveFarmerProfile = async (farmerId: string,isWithin24Hours) => {
+export const retrieveFarmerProfile = async (
+  farmerId: string,
+  isWithin24Hours
+) => {
   try {
     const farmerPersonalInfo = await Farmer.findOne({
       where: { id: farmerId },
@@ -431,7 +437,7 @@ export const retrieveFarmerProfile = async (farmerId: string,isWithin24Hours) =>
       sellingPlaces,
       potatoTypes,
       otherCropsGrown,
-      canAgentEdit: isWithin24Hours
+      canAgentEdit: isWithin24Hours,
     };
   } catch (err) {
     console.log(err);
