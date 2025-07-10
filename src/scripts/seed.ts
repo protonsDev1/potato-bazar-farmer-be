@@ -13,6 +13,15 @@ import AdminStorageBookingSystem from "../database/models/adminModels/coldStorag
 import AdminStorageFeature from "../database/models/adminModels/coldStorage/adminStorageFeature";
 import AdminStorageType from "../database/models/adminModels/coldStorage/adminStorageType";
 import AdminUsageType from "../database/models/adminModels/coldStorage/adminUsageType";
+import AdminBiggestChallengeInSelling from "../database/models/adminModels/farmer/adminBiggestChallengeInSelling";
+import AdminBrandPreferenceReason from "../database/models/adminModels/farmer/adminBrandPreferenceReason";
+import AdminFarmEquipmentUsed from "../database/models/adminModels/farmer/adminFarmEquipmentUsed";
+import AdminIrrigationMethod from "../database/models/adminModels/farmer/adminIrrigationMethod";
+import AdminPotatoType from "../database/models/adminModels/farmer/adminPotatoType";
+import AdminSellingChannel from "../database/models/adminModels/farmer/adminSellingChannel";
+import AdminSellingPrice from "../database/models/adminModels/farmer/adminSellingPrice";
+import AdminSoilType from "../database/models/adminModels/farmer/adminSoilType";
+import AdminTechnologyUsed from "../database/models/adminModels/farmer/adminTechnologyUsed";
 import AdminCropTraded from "../database/models/adminModels/trader/adminCropTraded";
 import AdminMarketCoverage from "../database/models/adminModels/trader/adminMarketCoverage";
 import AdminTraderInterest from "../database/models/adminModels/trader/adminTraderInterest";
@@ -35,6 +44,17 @@ import {
   storageTypeList,
   usageTypeList,
 } from "../utils/constants/coldStorageSeedList";
+import {
+  brandReasonList,
+  farmEquipmentList,
+  farmingChallengeList,
+  irrigationMethodList,
+  potatoTypeList,
+  sellingChannelList,
+  sellingPriceList,
+  soilTypeList,
+  technologyUsedList,
+} from "../utils/constants/farmerSeedList";
 import {
   cropTradedList,
   marketCoverageList,
@@ -113,6 +133,43 @@ const seedDatabase = async () => {
     await seedData(AdminTraderType, traderTypeList, "Trader Types");
 
     await seedData(AdminTraderVariety, traderVarietyList, "Trader Varities");
+
+    await seedData(
+      AdminIrrigationMethod,
+      irrigationMethodList,
+      "Irrigation Methods"
+    );
+    await seedData(AdminSoilType, soilTypeList, "Soil Types");
+
+    await seedData(AdminPotatoType, potatoTypeList, "Potato Types");
+
+    await seedData(
+      AdminFarmEquipmentUsed,
+      farmEquipmentList,
+      "Farm Equipments"
+    );
+
+    await seedData(
+      AdminTechnologyUsed,
+      technologyUsedList,
+      "Technologies Used"
+    );
+
+    await seedData(AdminSellingChannel, sellingChannelList, "Selling Channels");
+
+    await seedData(AdminSellingPrice, sellingPriceList, "Selling Prices");
+
+    await seedData(
+      AdminBiggestChallengeInSelling,
+      farmingChallengeList,
+      "Farming Biggest Challenges"
+    );
+
+    await seedData(
+      AdminBrandPreferenceReason,
+      brandReasonList,
+      "Brand Preference Reasons"
+    );
 
     process.exit(0);
   } catch (error) {
