@@ -1,5 +1,6 @@
 import Trader from "../database/models/trader/trader";
 import {
+  getTraderListByAdmin,
   onboardTrader,
   retrieveTraderProfile,
   updateTraderService,
@@ -133,5 +134,27 @@ export const selfOnboardedTrader = async (req, res) => {
     return res.status(500).json({
       message: error.message || "Failed to self onboard trader",
     });
+  }
+};
+
+export const getTraderList = async (req, res) => {
+  try {
+    const { page, perPage, search } = req.query;
+
+    const traderList = await getTraderListByAdmin(
+      Number(page),
+      Number(perPage),
+      search
+    );
+
+    return res.status(200).json({
+      message: "Trader List",
+      data: traderList,
+    });
+  } catch (error) {
+    console.error("Controller Error:", error);
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to get Trader List" });
   }
 };
