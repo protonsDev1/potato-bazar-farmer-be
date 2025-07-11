@@ -228,4 +228,7 @@ Trader.init(
   }
 );
 
+Trader.belongsTo(User, { foreignKey: "userId", as: "user" });
+Trader.belongsTo(User, { foreignKey: "onBoardedBy", as: "onBoardedByUser" });
+
 export default Trader;
