@@ -1,8 +1,9 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { authMiddleware } from "../utils/userAuth";
+import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 import {
   createTrader,
+  getTraderList,
   getTraderProfileOverview,
   selfOnboardedTrader,
   updateTrader,
@@ -36,5 +37,7 @@ router.put(
 );
 
 router.get("/profile/:traderId", authMiddleware, getTraderProfileOverview);
+
+router.get("/", adminMiddleware, getTraderList);
 
 export default router;

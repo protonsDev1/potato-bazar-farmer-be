@@ -1,4 +1,4 @@
-import { Model, ModelStatic } from "sequelize";
+import { Model, ModelStatic, Op } from "sequelize";
 import sequelize from "../database/models/db";
 
 import BankDetail from "../database/models/trader/bankDetail";
@@ -10,6 +10,7 @@ import TraderDocument from "../database/models/trader/traderDocument";
 import TraderInterest from "../database/models/trader/traderInterest";
 import TraderType from "../database/models/trader/traderType";
 import TraderVariety from "../database/models/trader/traderVariety";
+import User from "../database/models/user";
 
 export async function onboardTrader(payload) {
   try {
@@ -213,7 +214,10 @@ export async function updateTraderService(traderId, payload) {
   });
 }
 
-export const retrieveTraderProfile = async (traderId: string,isWithin24Hours) => {
+export const retrieveTraderProfile = async (
+  traderId: string,
+  isWithin24Hours
+) => {
   try {
     const [
       personalInfo,
@@ -262,7 +266,7 @@ export const retrieveTraderProfile = async (traderId: string,isWithin24Hours) =>
       types,
       varieties,
       cropsTraded,
-      canAgentEdit: isWithin24Hours
+      canAgentEdit: isWithin24Hours,
     };
   } catch (err) {
     console.error("Error in retrieveTraderProfile:", err);
@@ -276,5 +280,87 @@ const safeUpsert = async (model, traderId, data, transaction) => {
     return model.update(data, { where: { traderId }, transaction });
   } else {
     return model.create({ traderId, ...data }, { transaction });
+  }
+};
+
+export const getTraderListByAdmin = async (
+  page = 1,
+  limit = 10,
+  search?: string
+) => {
+  try {
+    const offset = (page - 1) * limit;
+    const whereCondition: any = {};
+
+    if (search?.trim()) {
+      const searchTerm = `%${search?.trim()}%`;
+      whereCondition[Op.or] = [
+        { id: isNaN(Number(search)) ? -1 : Number(search) },
+        { fullName: { [Op.iLike]: searchTerm } },
+        { mobileNumber: { [Op.iLike]: searchTerm } },
+      ];
+    }
+
+    const { count, rows }: any = await Trader.findAndCountAll({
+      where: whereCondition,
+      attributes: [
+        "id",
+        "fullName",
+        "businessName",
+        "email",
+        "mobileNumber",
+        "state",
+        "district",
+        "cityOrVillage",
+        "pinCode",
+        "digiPin",
+        "geoLocation",
+        "createdAt",
+        "onBoardedBy",
+      ],
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name", "mobile"],
+        },
+        {
+          model: User,
+          as: "onBoardedByUser",
+          attributes: ["id", "name", "email", "mobile"],
+        },
+      ],
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+      distinct: true,
+    });
+
+    const data = rows.map((trader) => ({
+      id: trader.id,
+      fullName: trader.fullName,
+      businessName: trader.businessName,
+      mobileNumber: trader.mobileNumber,
+      email: trader.email,
+      cityOrVillage: trader.cityOrVillage,
+      district: trader.district,
+      state: trader.state,
+      pinCode: trader.pinCode,
+      digiPin: trader.digiPin,
+      geoLocation: trader.geoLocation,
+      onboardingDate: trader.createdAt.toISOString().split("T")[0],
+      user: trader.user,
+      onBoardedBy: trader.onBoardedByUser,
+    }));
+
+    return {
+      traders: data,
+      page,
+      totalPages: Math.ceil(count / limit),
+      totalCount: count,
+    };
+  } catch (err) {
+    console.error("Error in get trader list:", err);
+    throw err;
   }
 };
