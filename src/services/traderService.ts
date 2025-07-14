@@ -1,4 +1,4 @@
-import { Model, ModelStatic, Op } from "sequelize";
+import { Model, ModelStatic, Op, Sequelize } from "sequelize";
 import sequelize from "../database/models/db";
 
 import BankDetail from "../database/models/trader/bankDetail";
@@ -298,6 +298,10 @@ export const getTraderListByAdmin = async (
         { id: isNaN(Number(search)) ? -1 : Number(search) },
         { fullName: { [Op.iLike]: searchTerm } },
         { mobileNumber: { [Op.iLike]: searchTerm } },
+        { email: { [Op.iLike]: searchTerm } },
+        Sequelize.where(Sequelize.col("onBoardedByUser.name"), {
+          [Op.iLike]: searchTerm,
+        }),
       ];
     }
 
