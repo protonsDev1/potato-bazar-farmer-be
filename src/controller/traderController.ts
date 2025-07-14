@@ -141,11 +141,7 @@ export const getTraderList = async (req, res) => {
   try {
     const { page, perPage, search } = req.query;
 
-    const traderList = await getTraderListByAdmin(
-      Number(page),
-      Number(perPage),
-      search
-    );
+    const traderList = await getTraderListByAdmin(page, perPage, search);
 
     return res.status(200).json({
       message: "Trader List",
