@@ -21,7 +21,7 @@ router.post('/send-otp', validator.body(otpSendSchema), sendOtp);
 
 router.post('/verify-otp', validator.body(otpVerifySchema), verifyOtp);
 
-router.post('/get-dash-stats', adminMiddleware,  getDashboardStats);
+router.get('/get-dash-stats', adminMiddleware, getDashboardStats);
 
 router.put('/registration-types',authMiddleware,validator.body(registrationTypesSchema), updateUserRegistrationTypes);
 
