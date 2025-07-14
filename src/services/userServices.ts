@@ -5,7 +5,7 @@ import Farmer from "../database/models/farmer";
 import ColdStorage from "../database/models/coldStorage";
 import { createOtp } from "./otpServices";
 
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import bcrypt from 'bcrypt';
 
 export const createUserInDB = async (userModuleData: any) => {
@@ -114,13 +114,20 @@ export const getDashboardCounts = async () => {
     farmersLastWeek,
     farmersLastMonth,
     farmersByAgents,
-    farmersByAdmins,
+    farmersSelfOnboarded,
   ] = await Promise.all([
     Farmer.count(),
     Farmer.count({ where: { createdAt: { [Op.gte]: oneWeekAgo } } }),
     Farmer.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } }),
     Farmer.count({ where: { onBoardedBy: { [Op.in]: agentIds } } }),
-    Farmer.count({ where: { onBoardedBy: { [Op.in]: adminIds } } }),
+    Farmer.count({
+      where: {
+        [Op.and]: [
+          { onBoardedBy: { [Op.not]: null } },
+          Sequelize.where(Sequelize.col("onBoardedBy"), "=", Sequelize.col("userId")),
+        ],
+      },
+    }),
   ]);
 
   // ColdStorages counts
@@ -129,13 +136,20 @@ export const getDashboardCounts = async () => {
     coldStoragesLastWeek,
     coldStoragesLastMonth,
     coldStoragesByAgents,
-    coldStoragesByAdmins,
+    coldStoragesSelfOnboarded,
   ] = await Promise.all([
     ColdStorage.count(),
     ColdStorage.count({ where: { createdAt: { [Op.gte]: oneWeekAgo } } }),
     ColdStorage.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } }),
     ColdStorage.count({ where: { onBoardedBy: { [Op.in]: agentIds } } }),
-    ColdStorage.count({ where: { onBoardedBy: { [Op.in]: adminIds } } }),
+    ColdStorage.count({
+      where: {
+        [Op.and]: [
+          { onBoardedBy: { [Op.not]: null } },
+          Sequelize.where(Sequelize.col("onBoardedBy"), "=", Sequelize.col("userId")),
+        ],
+      },
+    }),
   ]);
 
   // Calculate percentages helper
@@ -144,11 +158,11 @@ export const getDashboardCounts = async () => {
 
   // Construct onboarding ratio stats for Farmer
   const farmerAgentPercent = calcPercent(farmersByAgents, totalFarmers);
-  const farmerAdminPercent = calcPercent(farmersByAdmins, totalFarmers);
+  const selfOnboardedFarmerPercent = calcPercent(farmersSelfOnboarded, totalFarmers);
 
   // Construct onboarding ratio stats for Cold Storage
   const coldStorageAgentPercent = calcPercent(coldStoragesByAgents, totalColdStorages);
-  const coldStorageAdminPercent = calcPercent(coldStoragesByAdmins, totalColdStorages);
+  const selfOnboardedColdStoragePercent = calcPercent(coldStoragesSelfOnboarded, totalColdStorages);
 
   return {
     agents: {
@@ -161,10 +175,10 @@ export const getDashboardCounts = async () => {
       lastWeek: farmersLastWeek,
       lastMonth: farmersLastMonth,
       byAgents: farmersByAgents,
-      byAdmins: farmersByAdmins,
+      selfOnboarded: farmersSelfOnboarded,
       onboardingRatio: {
         agentOnboarded: `${farmersByAgents} (${farmerAgentPercent}%)`,
-        selfOnboarded: `${farmersByAdmins} (${farmerAdminPercent}%)`,
+        selfOnboarded: `${farmersSelfOnboarded} (${selfOnboardedFarmerPercent}%)`,
       },
     },
     coldStorages: {
@@ -172,10 +186,10 @@ export const getDashboardCounts = async () => {
       lastWeek: coldStoragesLastWeek,
       lastMonth: coldStoragesLastMonth,
       byAgents: coldStoragesByAgents,
-      byAdmins: coldStoragesByAdmins,
+      selfOnboarded: coldStoragesSelfOnboarded,
       onboardingRatio: {
         agentOnboarded: `${coldStoragesByAgents} (${coldStorageAgentPercent}%)`,
-        selfOnboarded: `${coldStoragesByAdmins} (${coldStorageAdminPercent}%)`,
+        selfOnboarded: `${coldStoragesSelfOnboarded} (${selfOnboardedColdStoragePercent}%)`,
       },
     },
   };
