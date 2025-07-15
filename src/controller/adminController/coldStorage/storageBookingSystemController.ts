@@ -20,6 +20,12 @@ export const addStorageBookingSystem = async (req, res) => {
 
     const response = await createRecord(AdminStorageBookingSystem, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Storage Booking System with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Storage Booking System added successfully.",
@@ -93,6 +99,12 @@ export const updateStorageBookingSystem = async (req, res) => {
     }
 
     const response = await updateRecord(AdminStorageBookingSystem, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Storage Booking System with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

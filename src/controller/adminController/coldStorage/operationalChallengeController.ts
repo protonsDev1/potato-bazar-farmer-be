@@ -20,6 +20,12 @@ export const addOperationalChallenge = async (req, res) => {
 
     const response = await createRecord(AdminOperationalChallenge, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Operational Challenge with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Operational Challenge added successfully.",
@@ -90,6 +96,12 @@ export const updateOperationalChallenge = async (req, res) => {
     }
 
     const response = await updateRecord(AdminOperationalChallenge, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Operational Challenge with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

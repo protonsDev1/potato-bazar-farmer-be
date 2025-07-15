@@ -20,6 +20,12 @@ export const addPotatoDisposalSystem = async (req, res) => {
 
     const response = await createRecord(AdminPotatoDisposalSystem, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Other Facility with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Potato Disposal System added successfully.",
@@ -93,6 +99,12 @@ export const updatePotatoDisposalSystem = async (req, res) => {
     }
 
     const response = await updateRecord(AdminPotatoDisposalSystem, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Potato Disposal System with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

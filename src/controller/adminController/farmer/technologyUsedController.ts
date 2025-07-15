@@ -20,6 +20,12 @@ export const addTechnologyUsed = async (req, res) => {
 
     const response = await createRecord(AdminTechnologyUsed, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Technology with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Technology added successfully.",
@@ -86,6 +92,12 @@ export const updateTechnologyUsed = async (req, res) => {
     }
 
     const response = await updateRecord(AdminTechnologyUsed, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Technology with this name already exists.",
+      });
+    }
 
     if (!response?.success) {
       return res.status(404).json({
