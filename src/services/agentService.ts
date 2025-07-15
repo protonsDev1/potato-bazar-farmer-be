@@ -326,7 +326,8 @@ export const updateAgentById = async (agentId: number, updateData: any) => {
     return { success: false, status: 404, message: "Agent not found" };
   }
 
-  const { name, email, phone, address, district, note, isActive } = updateData;
+  const { name, email, phone, address, state, district, note, isActive } =
+    updateData;
 
   // Update user fields
   if (agent.user) {
@@ -340,6 +341,7 @@ export const updateAgentById = async (agentId: number, updateData: any) => {
   // Update agent fields
   if (phone !== undefined) agent.phone = phone;
   if (address !== undefined) agent.address = address;
+  if (state !== undefined) agent.state = state;
   if (district !== undefined) agent.district = district;
   if (note !== undefined) agent.note = note;
   if (isActive != undefined) agent.isActive = isActive;
