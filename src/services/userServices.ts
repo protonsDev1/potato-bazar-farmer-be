@@ -30,6 +30,7 @@ export const createUserWithAgent = async ({
   email,
   phone,
   address,
+  state,
   district,
   note,
 }: any) => {
@@ -56,6 +57,7 @@ export const createUserWithAgent = async ({
     userId: user.id,
     phone,
     address,
+    state,
     district,
     note,
     agentId,
