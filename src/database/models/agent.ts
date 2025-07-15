@@ -9,6 +9,7 @@ class Agent extends Model {
   public userId: number;
   public phone: string;
   public address: string;
+  public state: string;
   public district: string;
   public note: string;
   public isActive: boolean;
@@ -40,6 +41,10 @@ Agent.init(
       allowNull: true,
     },
     district: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    state: {
       type: DataTypes.STRING,
       allowNull: true,
     },
