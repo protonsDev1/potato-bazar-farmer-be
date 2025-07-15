@@ -40,9 +40,9 @@ export const coldStorageSchema = Joi.object({
   gradingMachineTph: Joi.number().allow(null),
   manualGradingAreaAvailable: Joi.boolean().required(),
   numberOfKattas: Joi.number().required(),
-  // dryingFloorCapacityKatta: Joi.number().integer().allow(null),
+  dryingFloorCapacityKatta: Joi.number().integer().allow(null),
   // bookingMode: Joi.string().required(),
-  // coldStorageType: Joi.string().required(),
+  coldStorageType: Joi.string().valid("Traditional", "Controlled Atmosphere").required(),
   co2Controller: Joi.string().required(),
   humidityController: Joi.string().required(),
   temperatureController: Joi.string().required(),
@@ -78,8 +78,8 @@ export const coldStorageSchema = Joi.object({
   // additionalComments: Joi.string().allow('', null),
   isSlabWiseDiscount: Joi.boolean().required(),
   userId: Joi.number().integer().allow(null),
-  awardOrCertificate: Joi.string().optional(),
-  photos: Joi.string().optional(),
+  awardOrCertificate: Joi.string().optional().allow(""),
+  photos: Joi.string().optional().allow(""),
 
   storageTypes: Joi.array().items(
     Joi.object({
@@ -259,9 +259,9 @@ export const updateColdStorageSchema = Joi.object({
   gradingMachineTph: Joi.number().allow(null),
   manualGradingAreaAvailable: Joi.boolean().optional(),
   numberOfKattas: Joi.number().optional(),
-  // dryingFloorCapacityKatta: Joi.number().integer().allow(null),
+  dryingFloorCapacityKatta: Joi.number().integer().allow(null),
   // bookingMode: Joi.string().optional(),
-  // coldStorageType: Joi.string().optional(),
+  coldStorageType: Joi.string().valid("Traditional", "Controlled Atmosphere").required(),
   co2Controller: Joi.string().optional(),
   humidityController: Joi.string().optional(),
   temperatureController: Joi.string().optional(),
@@ -296,8 +296,8 @@ export const updateColdStorageSchema = Joi.object({
   // willingOnlineAuction: Joi.boolean().optional(),
   // additionalComments: Joi.string().allow('', null),
   isSlabWiseDiscount: Joi.boolean().optional(),
-  awardOrCertificate: Joi.string().optional(),
-  photos: Joi.string().optional(),
+  awardOrCertificate: Joi.string().optional().allow(""),
+  photos: Joi.string().optional().allow(""),
 
   storageTypes: Joi.array().items(
     Joi.object({
