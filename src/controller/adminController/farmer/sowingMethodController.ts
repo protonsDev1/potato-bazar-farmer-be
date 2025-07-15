@@ -20,6 +20,12 @@ export const addSowingMethod = async (req, res) => {
 
     const response = await createRecord(AdminSowingMethod, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Sowing Method with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Sowing Method added successfully.",
@@ -86,6 +92,12 @@ export const updateSowingMethod = async (req, res) => {
     }
 
     const response = await updateRecord(AdminSowingMethod, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Sowing Method with this name already exists.",
+      });
+    }
 
     if (!response?.success) {
       return res.status(404).json({

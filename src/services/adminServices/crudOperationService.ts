@@ -1,3 +1,5 @@
+import { Op } from "sequelize";
+
 const updateModelFields = async (modelInstance, data) => {
   Object.keys(data).forEach((key) => {
     if (data[key] !== undefined && data[key] !== null) {
@@ -8,7 +10,12 @@ const updateModelFields = async (modelInstance, data) => {
   return modelInstance;
 };
 
-export const updateRecord = async (modelClass, id, data) => {
+export const updateRecord = async (
+  modelClass,
+  id,
+  data,
+  uniqueField = "name"
+) => {
   try {
     const instance = await modelClass.findByPk(id);
     if (!instance)
@@ -16,6 +23,23 @@ export const updateRecord = async (modelClass, id, data) => {
         success: false,
         error: `Record not found with ID: ${id}.`,
       };
+
+    if (data[uniqueField]) {
+      const duplicate = await modelClass.findOne({
+        where: {
+          [uniqueField]: data[uniqueField],
+          id: { [Op.ne]: id },
+        },
+      });
+
+      if (duplicate) {
+        return {
+          success: false,
+          duplicate: true,
+          error: `${uniqueField} already exists for another record.`,
+        };
+      }
+    }
     const updatedInstance = await updateModelFields(instance, data);
     return {
       success: true,
@@ -30,8 +54,19 @@ export const updateRecord = async (modelClass, id, data) => {
   }
 };
 
-export const createRecord = async (model, data) => {
+export const createRecord = async (model, data, uniqueField = "name") => {
   try {
+    const existing = await model.findOne({
+      where: { [uniqueField]: data[uniqueField] },
+    });
+
+    if (existing) {
+      return {
+        success: false,
+        error: `${uniqueField} already exists`,
+        duplicate: true,
+      };
+    }
     const result = await model.create(data);
     return {
       success: true,

@@ -20,6 +20,12 @@ export const addStorageFeature = async (req, res) => {
 
     const response = await createRecord(AdminStorageFeature, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Storage Feature with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Storage Feature added successfully.",
@@ -88,6 +94,12 @@ export const updateStorageFeature = async (req, res) => {
     }
 
     const response = await updateRecord(AdminStorageFeature, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Storage Feature with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

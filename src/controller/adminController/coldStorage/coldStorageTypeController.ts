@@ -20,6 +20,12 @@ export const addColdStorageType = async (req, res) => {
 
     const response = await createRecord(AdminColdStorageType, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Cold Storage Type with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Cold Storage Type added successfully.",
@@ -90,6 +96,12 @@ export const updateColdStorageType = async (req, res) => {
     }
 
     const response = await updateRecord(AdminColdStorageType, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Cold Storage Type with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

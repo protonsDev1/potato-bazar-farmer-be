@@ -15,7 +15,14 @@ export const addTraderVariety = async (req, res) => {
       .json({ message: "Only admins can add trader variety." });
   }
 
-  const response = await createRecord(AdminTraderVariety, req.body);
+  const response = await createRecord(AdminTraderVariety, req.body, "variety");
+
+  if (response?.duplicate) {
+    return res.status(409).json({
+      message: "Trader Variety with this name already exists.",
+    });
+  }
+
   if (response.success) {
     return res.status(201).json({
       message: "Trader Variety created successfully",
@@ -73,8 +80,16 @@ export const updateTraderVariety = async (req, res) => {
   const response = await updateRecord(
     AdminTraderVariety,
     req.params.id,
-    req.body
+    req.body,
+    "variety"
   );
+
+  if (response?.duplicate) {
+    return res.status(409).json({
+      message: "Trader Variety with this name already exists.",
+    });
+  }
+
   if (response.success) {
     return res.status(200).json({
       message: "Trader Variety updated successfully",

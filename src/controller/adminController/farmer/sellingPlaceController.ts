@@ -20,6 +20,12 @@ export const addSellingPlace = async (req, res) => {
 
     const response = await createRecord(AdminSellingPlace, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Selling place with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "Selling place added successfully.",
@@ -86,6 +92,12 @@ export const updateSellingPlace = async (req, res) => {
     }
 
     const response = await updateRecord(AdminSellingPlace, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Selling place with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

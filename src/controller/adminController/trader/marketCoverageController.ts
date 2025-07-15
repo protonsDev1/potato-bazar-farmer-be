@@ -17,6 +17,13 @@ export const addMarketCoverage = async (req, res) => {
     }
 
     const response = await createRecord(AdminMarketCoverage, req.body);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Market Coverage with this name already exists.",
+      });
+    }
+
     if (response.success) {
       return res.status(201).json({
         message: "Market Coverage created successfully",
@@ -90,6 +97,13 @@ export const updateMarketCoverage = async (req, res) => {
       req.params.id,
       req.body
     );
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Market Coverage with this name already exists.",
+      });
+    }
+
     if (response.success) {
       return res.status(200).json({
         message: "Market Coverage updated successfully",

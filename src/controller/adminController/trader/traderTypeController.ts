@@ -15,7 +15,14 @@ export const addTraderType = async (req, res) => {
       .json({ message: "Only admins can add trader type." });
   }
 
-  const response = await createRecord(AdminTraderType, req.body);
+  const response = await createRecord(AdminTraderType, req.body, "type");
+
+  if (response?.duplicate) {
+    return res.status(409).json({
+      message: "Trader Type with this name already exists.",
+    });
+  }
+
   if (response.success) {
     return res.status(201).json({
       message: "Trader Type created successfully",
@@ -70,7 +77,19 @@ export const updateTraderType = async (req, res) => {
       .json({ message: "Only admins can update trader type." });
   }
 
-  const response = await updateRecord(AdminTraderType, req.params.id, req.body);
+  const response = await updateRecord(
+    AdminTraderType,
+    req.params.id,
+    req.body,
+    "type"
+  );
+
+  if (response?.duplicate) {
+    return res.status(409).json({
+      message: "Trader Type with this name already exists.",
+    });
+  }
+
   if (response.success) {
     return res.status(200).json({
       message: "Trader Type updated successfully",
