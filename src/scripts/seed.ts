@@ -17,7 +17,9 @@ import AdminBiggestChallengeInSelling from "../database/models/adminModels/farme
 import AdminBrandPreferenceReason from "../database/models/adminModels/farmer/adminBrandPreferenceReason";
 import AdminFarmEquipmentUsed from "../database/models/adminModels/farmer/adminFarmEquipmentUsed";
 import AdminIrrigationMethod from "../database/models/adminModels/farmer/adminIrrigationMethod";
+import AdminIrrigationSource from "../database/models/adminModels/farmer/adminIrrigationSource";
 import AdminPotatoType from "../database/models/adminModels/farmer/adminPotatoType";
+import AdminPriceDiscovery from "../database/models/adminModels/farmer/adminPriceDiscovery";
 import AdminSellingChannel from "../database/models/adminModels/farmer/adminSellingChannel";
 import AdminSellingPrice from "../database/models/adminModels/farmer/adminSellingPrice";
 import AdminSoilType from "../database/models/adminModels/farmer/adminSoilType";
@@ -49,7 +51,9 @@ import {
   farmEquipmentList,
   farmingChallengeList,
   irrigationMethodList,
+  irrigationSourceList,
   potatoTypeList,
+  priceDiscoveryList,
   sellingChannelList,
   sellingPriceList,
   soilTypeList,
@@ -139,6 +143,13 @@ const seedDatabase = async () => {
       irrigationMethodList,
       "Irrigation Methods"
     );
+
+    await seedData(
+      AdminIrrigationSource,
+      irrigationSourceList,
+      "Irrigation Sources"
+    );
+
     await seedData(AdminSoilType, soilTypeList, "Soil Types");
 
     await seedData(AdminPotatoType, potatoTypeList, "Potato Types");
@@ -158,6 +169,8 @@ const seedDatabase = async () => {
     await seedData(AdminSellingChannel, sellingChannelList, "Selling Channels");
 
     await seedData(AdminSellingPrice, sellingPriceList, "Selling Prices");
+
+    await seedData(AdminPriceDiscovery, priceDiscoveryList, "Price Discovery");
 
     await seedData(
       AdminBiggestChallengeInSelling,

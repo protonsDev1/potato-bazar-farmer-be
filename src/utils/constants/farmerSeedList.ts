@@ -7,6 +7,15 @@ export const irrigationMethodList = [
   { name: "Other", position: 6 },
 ];
 
+export const irrigationSourceList = [
+  { name: "Canal", position: 1 },
+  { name: "Borewell", position: 2 },
+  { name: "Tube well", position: 3 },
+  { name: "River", position: 4 },
+  { name: "Rain-fed", position: 5 },
+  { name: "Other", position: 6 },
+];
+
 export const soilTypeList = [
   { name: "Sandy", position: 1 },
   { name: "Loamy", position: 2 },
@@ -63,6 +72,14 @@ export const sellingPriceList = [
   { name: "Cold Storage Owner Advice", position: 4 },
   { name: "Social Media", position: 5 },
   { name: "Contract farming Rate", position: 6 },
+];
+
+export const priceDiscoveryList = [
+  { name: "Mandi Rates", position: 1 },
+  { name: "Neighbouring Farmers", position: 2 },
+  { name: "Trader's Offer", position: 3 },
+  { name: "Social Media", position: 4 },
+  { name: "Any Other", position: 5 },
 ];
 
 export const farmingChallengeList = [
