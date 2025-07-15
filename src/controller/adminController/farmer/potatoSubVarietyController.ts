@@ -20,6 +20,12 @@ export const addPotatoSubVarietyGrown = async (req, res) => {
 
     const response = await createRecord(AdminPotatoSubVarietyGrown, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Potato Sub Variety with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Potato Sub Variety added successfully.",
@@ -88,6 +94,12 @@ export const updatePotatoSubVariety = async (req, res) => {
     }
 
     const response = await updateRecord(AdminPotatoSubVarietyGrown, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Potato Sub Variety with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

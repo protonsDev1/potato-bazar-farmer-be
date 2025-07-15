@@ -20,6 +20,12 @@ export const addMonitoringFacility = async (req, res) => {
 
     const response = await createRecord(AdminMonitoringFacility, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Monitoring Facility with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Monitoring Facility added successfully.",
@@ -91,6 +97,12 @@ export const updateMonitoringFacility = async (req, res) => {
     }
 
     const response = await updateRecord(AdminMonitoringFacility, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Monitoring Facility with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

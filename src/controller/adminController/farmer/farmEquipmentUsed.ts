@@ -19,6 +19,12 @@ export const addFarmEquipment = async (req, res) => {
 
     const response = await createRecord(AdminFarmEquipmentUsed, equipmentData);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Farm Equipment with this name already exists.",
+      });
+    }
+
     if (response?.success)
       return res.status(201).json({
         message: "New Farm Equipment added successfully.",
@@ -81,6 +87,12 @@ export const updateFarmEquipment = async (req, res) => {
       });
 
     const response = await updateRecord(AdminFarmEquipmentUsed, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Farm Equipment with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

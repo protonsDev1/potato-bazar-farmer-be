@@ -17,7 +17,14 @@ export const addCropTraded = async (req, res) => {
         .json({ message: "Only admins are allowed to add crop traded." });
     }
 
-    const response = await createRecord(AdminCropTraded, req.body);
+    const response = await createRecord(AdminCropTraded, req.body, "cropName");
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Crop Traded with this name already exists.",
+      });
+    }
+
     if (response.success) {
       return res.status(201).json({
         message: "Crop Traded created successfully",
@@ -91,7 +98,17 @@ export const updateCropTraded = async (req, res) => {
     }
 
     const { id } = req.params;
-    const response = await updateRecord(AdminCropTraded, id, req.body);
+    const response = await updateRecord(
+      AdminCropTraded,
+      id,
+      req.body,
+      "cropName"
+    );
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Crop Traded with this name already exists.",
+      });
+    }
     if (response.success) {
       return res.status(200).json({
         message: "Crop Traded updated successfully",

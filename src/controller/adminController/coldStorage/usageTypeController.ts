@@ -20,6 +20,12 @@ export const addUsageType = async (req, res) => {
 
     const response = await createRecord(AdminUsageType, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Usage Type with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Usage Type added successfully.",
@@ -86,6 +92,12 @@ export const updateUsageType = async (req, res) => {
     }
 
     const response = await updateRecord(AdminUsageType, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Usage Type with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

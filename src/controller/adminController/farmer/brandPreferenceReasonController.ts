@@ -20,6 +20,12 @@ export const addBrandPreferenceReason = async (req, res) => {
 
     const response = await createRecord(AdminBrandPreferenceReason, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Brand preference with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "Brand preference reason added successfully.",
@@ -93,6 +99,12 @@ export const updateBrandPreferenceReason = async (req, res) => {
     }
 
     const response = await updateRecord(AdminBrandPreferenceReason, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Brand preference with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

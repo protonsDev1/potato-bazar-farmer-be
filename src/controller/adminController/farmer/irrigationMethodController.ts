@@ -23,6 +23,12 @@ export const addIrrigationMethod = async (req, res) => {
       irrigationMethod
     );
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Irrigation Method with this name already exists.",
+      });
+    }
+
     if (!response.success) {
       return res.status(400).json({
         message: response.error || "Failed to add irrigation method.",
@@ -93,6 +99,12 @@ export const updateIrrigationMethod = async (req, res) => {
       });
 
     const response = await updateRecord(AdminIrrigationMethod, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Irrigation Method with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({
