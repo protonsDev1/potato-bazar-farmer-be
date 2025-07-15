@@ -16,7 +16,18 @@ export const addTraderInterest = async (req, res) => {
         .json({ message: "Only admins can add trader interest." });
     }
 
-    const response = await createRecord(AdminTraderInterest, req.body);
+    const response = await createRecord(
+      AdminTraderInterest,
+      req.body,
+      "interest"
+    );
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Trader Interest with this name already exists.",
+      });
+    }
+
     if (response.success) {
       return res.status(201).json({
         message: "Trader Interest created successfully",
@@ -88,8 +99,16 @@ export const updateTraderInterest = async (req, res) => {
     const response = await updateRecord(
       AdminTraderInterest,
       req.params.id,
-      req.body
+      req.body,
+      "interest"
     );
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Trader Interest with this name already exists.",
+      });
+    }
+
     if (response.success) {
       return res.status(200).json({
         message: "Trader Interest updated successfully",

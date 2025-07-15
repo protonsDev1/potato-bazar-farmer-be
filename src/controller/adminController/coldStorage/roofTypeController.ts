@@ -20,6 +20,12 @@ export const addRoofType = async (req, res) => {
 
     const response = await createRecord(AdminRoofType, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Roof Type with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Roof Type added successfully.",
@@ -86,6 +92,12 @@ export const updateRoofType = async (req, res) => {
     }
 
     const response = await updateRecord(AdminRoofType, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Roof Type with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

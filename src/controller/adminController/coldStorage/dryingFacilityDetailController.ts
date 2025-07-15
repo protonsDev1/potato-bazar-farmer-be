@@ -20,6 +20,12 @@ export const addDryingFacilityDetail = async (req, res) => {
 
     const response = await createRecord(AdminDryingFacilityDetail, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Drying Facility Detail with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Drying Facility Detail added successfully.",
@@ -93,6 +99,12 @@ export const updateDryingFacilityDetail = async (req, res) => {
     }
 
     const response = await updateRecord(AdminDryingFacilityDetail, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Drying Facility Detail with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

@@ -20,6 +20,12 @@ export const addConstructionType = async (req, res) => {
 
     const response = await createRecord(AdminConstructionType, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Construction Type with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Construction Type added successfully.",
@@ -90,6 +96,12 @@ export const updateConstructionType = async (req, res) => {
     }
 
     const response = await updateRecord(AdminConstructionType, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Construction Type with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

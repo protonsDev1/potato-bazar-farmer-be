@@ -23,6 +23,12 @@ export const addIrrigationSource = async (req, res) => {
       irrigationSource
     );
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Irrigation Source with this name already exists.",
+      });
+    }
+
     if (!response.success) {
       return res.status(400).json({
         message: response.error || "Failed to add irrigation source.",
@@ -93,6 +99,12 @@ export const updateIrrigationSource = async (req, res) => {
       });
 
     const response = await updateRecord(AdminIrrigationSource, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Irrigation Source with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

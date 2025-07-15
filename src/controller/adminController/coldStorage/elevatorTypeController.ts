@@ -20,6 +20,12 @@ export const addElevatorType = async (req, res) => {
 
     const response = await createRecord(AdminElevatorType, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Elevator Type with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Elevator Type added successfully.",
@@ -86,6 +92,12 @@ export const updateElevatorType = async (req, res) => {
     }
 
     const response = await updateRecord(AdminElevatorType, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Elevator Type with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

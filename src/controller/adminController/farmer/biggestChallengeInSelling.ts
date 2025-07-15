@@ -23,6 +23,12 @@ export const addBiggestChallengeInSelling = async (req, res) => {
       biggestChallenge
     );
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Biggest Challenge with this name already exists.",
+      });
+    }
+
     if (response?.success)
       return res.status(201).json({
         message: "New Biggest Challenge in Selling added successfully.",
@@ -93,6 +99,12 @@ export const updateBiggestChallengeInSelling = async (req, res) => {
       id,
       data
     );
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Biggest Challenge with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({

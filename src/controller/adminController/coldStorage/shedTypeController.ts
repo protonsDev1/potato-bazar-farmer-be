@@ -20,6 +20,12 @@ export const addShedType = async (req, res) => {
 
     const response = await createRecord(AdminShedType, data);
 
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Shed Type with this name already exists.",
+      });
+    }
+
     if (response?.success) {
       return res.status(201).json({
         message: "New Shed Type added successfully.",
@@ -86,6 +92,12 @@ export const updateShedType = async (req, res) => {
     }
 
     const response = await updateRecord(AdminShedType, id, data);
+
+    if (response?.duplicate) {
+      return res.status(409).json({
+        message: "Shed Type with this name already exists.",
+      });
+    }
 
     if (!response || response.success === false) {
       return res.status(404).json({
