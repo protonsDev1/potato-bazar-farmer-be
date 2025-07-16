@@ -6,9 +6,9 @@ export const updateAgentSchema = Joi.object({
   mobile: Joi.string().optional(),
 
   phone: Joi.string().optional(),
-  address: Joi.string().optional(),
+  address: Joi.string().optional().allow(""),
   state: Joi.string().optional(),
   district: Joi.string().optional(),
-  note: Joi.string().optional(),
+  note: Joi.string().optional().allow(""),
   isActive: Joi.boolean().optional(),
 });
