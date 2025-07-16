@@ -107,6 +107,14 @@ export const agentLogin = async (req, res) => {
       return res.status(403).json({ message: "Access denied. Not an agent." });
     }
 
+    if (!agent.isActive) {
+      return res
+        .status(403)
+        .json({
+          message: "Agent account is deactivated. Please contact admin.",
+        });
+    }
+    
     const isPasswordValid = await agent.user.validatePassword(password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid password" });

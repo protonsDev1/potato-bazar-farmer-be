@@ -34,8 +34,22 @@ export const createUserWithAgent = async ({
   district,
   note,
 }: any) => {
-  const existingUser = await User.findOne({ where: { email } });
-  if (existingUser) throw new Error('User with this email already exists');
+  const existingUser = await User.findOne({
+    where: {
+      [Op.or]: [
+        { email },
+        { mobile: phone },
+      ],
+    },
+  });
+
+  if (existingUser) {
+    if (existingUser.email === email) {
+      throw new Error('User with this email already exists');
+    } else {
+      throw new Error('User with this phone number already exists');
+    }
+  }
 
   const password = generateRandomPassword();
   const agentId = generateAgentId();
