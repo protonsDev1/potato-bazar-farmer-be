@@ -329,6 +329,42 @@ export const updateAgentById = async (agentId: number, updateData: any) => {
   const { name, email, phone, address, state, district, note, isActive } =
     updateData;
 
+  // Check for duplicate email
+  if (email && email !== agent.user?.email) {
+    const existingEmail = await User.findOne({
+      where: {
+        email,
+        id: { [Op.ne]: agent.user.id },
+      },
+    });
+
+    if (existingEmail) {
+      return {
+        success: false,
+        status: 409,
+        message: "Email is already in use by another user",
+      };
+    }
+  }
+
+  // Check for duplicate phone (mobile)
+  if (phone && phone !== agent.user?.mobile) {
+    const existingPhone = await User.findOne({
+      where: {
+        mobile: phone,
+        id: { [Op.ne]: agent.user.id },
+      },
+    });
+
+    if (existingPhone) {
+      return {
+        success: false,
+        status: 409,
+        message: "Phone number is already in use by another user",
+      };
+    }
+  }
+
   // Update user fields
   if (agent.user) {
     if (name !== undefined) agent.user.name = name;
