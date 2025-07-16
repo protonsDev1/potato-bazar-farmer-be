@@ -5,14 +5,14 @@ export const coldStorageSchema = Joi.object({
   ownerName: Joi.string().required(),
   mobileNumber: Joi.string().required(),
   optionalNumber: Joi.string().allow('', null),
-  whatsappNumber: Joi.string().required(),
+  whatsappNumber: Joi.string().optional().allow('',null),
   village: Joi.string().required(),
   district: Joi.string().required(),
   state: Joi.string().required(),
   taluka: Joi.string().required(),
   pinCode: Joi.string().required(),
-  digiPin: Joi.string().required(),
-  geoLocation: Joi.string().required(),
+  digiPin: Joi.string().optional().allow('',null),
+  geoLocation: Joi.string().optional().allow('',null),
   hasGstCertificate: Joi.boolean().required(),
   gstOrCertificateNumber: Joi.string().allow('', null),
   totalCapacityMt: Joi.number().required(),
@@ -43,9 +43,9 @@ export const coldStorageSchema = Joi.object({
   dryingFloorCapacityKatta: Joi.number().integer().allow(null),
   // bookingMode: Joi.string().required(),
   coldStorageType: Joi.string().valid("Traditional", "Controlled Atmosphere").required(),
-  co2Controller: Joi.string().required(),
-  humidityController: Joi.string().required(),
-  temperatureController: Joi.string().required(),
+  co2Controller: Joi.string().optional().allow('',null),
+  humidityController: Joi.string().optional().allow('',null),
+  temperatureController: Joi.string().optional().allow('',null),
   monitoringLogAvailable: Joi.boolean().required(),
   realTimeAlertSystem: Joi.boolean().required(),
   refrigerationType: Joi.string().required(),
@@ -59,13 +59,23 @@ export const coldStorageSchema = Joi.object({
   // hasGuestStay: Joi.boolean().required(),
   // hasGuestMeals: Joi.boolean().required(),
   weighBridge: Joi.boolean().required(),
-  weighbridgeCapacityLength: Joi.string().required(),
+  weighbridgeCapacityLength: Joi.string().when('weighBridge', {
+    is: true,
+    then: Joi.required(),
+    otherwise: Joi.optional().allow('', null),
+  }),
   hasLorryShades: Joi.boolean().required(),
-  lorryShadeCapacity: Joi.number().integer().required(),
-  numberOfTrucks: Joi.number().integer().required(),
+  lorryShadeCapacity: Joi.number()
+    .integer()
+    .when('hasLorryShades', {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional().allow(null),
+    }),
+  numberOfTrucks: Joi.number().integer().optional().allow(null),
   // accessibility: Joi.string().required(),
   hasLabourForGrading: Joi.boolean().required(),
-  noOfLabourInPeakSeason: Joi.number().integer().required(),
+  noOfLabourInPeakSeason: Joi.number().integer().optional().allow(null),
   // potatoDisposalMethod: Joi.string().required(),
   // solarPowerCapacityKw: Joi.number().allow(null),
   // backupPowerCapacityKw: Joi.number().allow(null),
@@ -78,8 +88,8 @@ export const coldStorageSchema = Joi.object({
   // additionalComments: Joi.string().allow('', null),
   isSlabWiseDiscount: Joi.boolean().required(),
   userId: Joi.number().integer().allow(null),
-  awardOrCertificate: Joi.string().optional().allow(""),
-  photos: Joi.string().optional().allow(""),
+  awardOrCertificate: Joi.string().optional().allow('',null),
+  photos: Joi.string().optional().allow('',null),
 
   storageTypes: Joi.array().items(
     Joi.object({
@@ -109,20 +119,20 @@ export const coldStorageSchema = Joi.object({
   chamberCapacities: Joi.array().items(
     Joi.object({
       capacityMt: Joi.number().integer().min(0).required(),
-      noOfFloors: Joi.number().integer().optional(),
+      noOfFloors: Joi.number().integer().optional().allow(null),
       sizePerChamberSqft: Joi.number().required(),
-      description: Joi.string().optional(),
+      description: Joi.string().optional().allow('',null),
     })
   ).required(),
 
   sheds: Joi.array().items(
     Joi.object({
       sizeSqMtr: Joi.number().integer().min(0).required(),
-      shedType: Joi.string().optional(),
+      shedType: Joi.string().optional().allow('',null),
     })
   ).required(),
 
- dryingFacilityDetails: Joi.array()
+  dryingFacilityDetails: Joi.array()
     .items(
       Joi.object({
         facility: Joi.string().required(),
@@ -166,9 +176,9 @@ export const coldStorageSchema = Joi.object({
     .items(
       Joi.object({
         facility: Joi.string().required(),
-        capacityInKw: Joi.number().optional(),
-        backupInHrs: Joi.number().optional(),
-        make: Joi.string().optional(),
+        capacityInKw: Joi.number().optional().allow(null),
+        backupInHrs: Joi.number().optional().allow(null),
+        make: Joi.string().optional().allow('',null),
       })
     )
     .required(),
@@ -220,71 +230,71 @@ export const coldStorageSchema = Joi.object({
 });
 
 export const updateColdStorageSchema = Joi.object({
-  name: Joi.string().optional(),
-  ownerName: Joi.string().optional(),
-  mobileNumber: Joi.string().optional(),
+  name: Joi.string().optional().allow('',null),
+  ownerName: Joi.string().optional().allow('',null),
+  mobileNumber: Joi.string().optional().allow('',null),
   optionalNumber: Joi.string().allow('', null),
-  whatsappNumber: Joi.string().optional(),
-  village: Joi.string().optional(),
-  district: Joi.string().optional(),
-  state: Joi.string().optional(),
-  taluka: Joi.string().optional(),
-  pinCode: Joi.string().optional(),
-  digiPin: Joi.string().optional(),
-  geoLocation: Joi.string().optional(),
-  hasGstCertificate: Joi.boolean().optional(),
+  whatsappNumber: Joi.string().optional().allow('',null),
+  village: Joi.string().optional().allow('',null),
+  district: Joi.string().optional().allow('',null),
+  state: Joi.string().optional().allow('',null),
+  taluka: Joi.string().optional().allow('',null),
+  pinCode: Joi.string().optional().allow('',null),
+  digiPin: Joi.string().optional().allow('',null),
+  geoLocation: Joi.string().optional().allow('',null),
+  hasGstCertificate: Joi.boolean().optional().allow(null),
   gstOrCertificateNumber: Joi.string().allow('', null),
-  totalCapacityMt: Joi.number().optional(),
-  builtYear: Joi.number().integer().optional(),
+  totalCapacityMt: Joi.number().optional().allow(null),
+  builtYear: Joi.number().integer().optional().allow(null),
   // constructionType: Joi.string().optional(),
   // roofType: Joi.string().optional(),
-  numberOfChambers: Joi.number().integer().optional(),
+  numberOfChambers: Joi.number().integer().optional().allow(null),
   // floorsPerChamber: Joi.number().integer().optional(),
   // chamberWiseCapacityMt: Joi.string().optional(),
-  numberOfSheds: Joi.number().integer().optional(),
+  numberOfSheds: Joi.number().integer().optional().allow(null),
   // shedSize: Joi.string().optional(),
   // antiChamberSizeCapacity: Joi.string().optional(),
   // totalArea: Joi.string().optional(),
-  hasAirCutter: Joi.boolean().optional(),
-  hasInsectTrap: Joi.boolean().optional(),
+  hasAirCutter: Joi.boolean().optional().allow(null),
+  hasInsectTrap: Joi.boolean().optional().allow(null),
   // gradingBookingAvailable: Joi.boolean().optional(),
-  gradingAreaAvailable: Joi.boolean().optional(),
+  gradingAreaAvailable: Joi.boolean().optional().allow(null),
   // gradingAreaSqft: Joi.number().when('gradingBookingAvailable', {
   // is: true,
   // then: Joi.optional(),
   // otherwise: Joi.optional(),
   // }),
   // gradingMachineMake: Joi.string().allow('', null),
-  gradingMachineAvailable: Joi.boolean().optional(),
+  gradingMachineAvailable: Joi.boolean().optional().allow(null),
   gradingMachineTph: Joi.number().allow(null),
-  manualGradingAreaAvailable: Joi.boolean().optional(),
-  numberOfKattas: Joi.number().optional(),
+  manualGradingAreaAvailable: Joi.boolean().optional().allow(null),
+  numberOfKattas: Joi.number().optional().allow(null),
   dryingFloorCapacityKatta: Joi.number().integer().allow(null),
   // bookingMode: Joi.string().optional(),
   coldStorageType: Joi.string().valid("Traditional", "Controlled Atmosphere").required(),
-  co2Controller: Joi.string().optional(),
-  humidityController: Joi.string().optional(),
-  temperatureController: Joi.string().optional(),
-  monitoringLogAvailable: Joi.boolean().optional(),
-  realTimeAlertSystem: Joi.boolean().optional(),
-  refrigerationType: Joi.string().optional(),
-  refrigerationMake: Joi.string().optional(),
-  machineCount: Joi.number().integer().optional(),
-  machineCapacity: Joi.number().optional(),
+  co2Controller: Joi.string().optional().allow('',null),
+  humidityController: Joi.string().optional().allow('',null),
+  temperatureController: Joi.string().optional().allow('',null),
+  monitoringLogAvailable: Joi.boolean().optional().allow(null),
+  realTimeAlertSystem: Joi.boolean().optional().allow(null),
+  refrigerationType: Joi.string().optional().allow('',null),
+  refrigerationMake: Joi.string().optional().allow('',null),
+  machineCount: Joi.number().integer().optional().allow(null),
+  machineCapacity: Joi.number().optional().allow(null),
   // machineMake: Joi.string().optional(),
   // hasAmmoniaDetector: Joi.boolean().optional(),
   // hasRemoteMonitoring: Joi.boolean().optional(),
   // hasWebCamera: Joi.boolean().optional(),
   // hasGuestStay: Joi.boolean().optional(),
   // hasGuestMeals: Joi.boolean().optional(),
-  weighBridge: Joi.boolean().optional(),
-  weighbridgeCapacityLength: Joi.string().optional(),
-  hasLorryShades: Joi.boolean().optional(),
-  lorryShadeCapacity: Joi.number().integer().optional(),
-  numberOfTrucks: Joi.number().integer().optional(),
+  weighBridge: Joi.boolean().optional().allow(null),
+  weighbridgeCapacityLength: Joi.string().optional().allow('',null),
+  hasLorryShades: Joi.boolean().optional().allow(null),
+  lorryShadeCapacity: Joi.number().integer().optional().allow(null),
+  numberOfTrucks: Joi.number().integer().optional().allow(null),
   // accessibility: Joi.string().optional(),
-  hasLabourForGrading: Joi.boolean().optional(),
-  noOfLabourInPeakSeason: Joi.number().integer().optional(),
+  hasLabourForGrading: Joi.boolean().optional().allow(null),
+  noOfLabourInPeakSeason: Joi.number().integer().optional().allow(null),
   // potatoDisposalMethod: Joi.string().optional(),
   // solarPowerCapacityKw: Joi.number().allow(null),
   // backupPowerCapacityKw: Joi.number().allow(null),
@@ -295,9 +305,9 @@ export const updateColdStorageSchema = Joi.object({
   // transportProvided: Joi.boolean().optional(),
   // willingOnlineAuction: Joi.boolean().optional(),
   // additionalComments: Joi.string().allow('', null),
-  isSlabWiseDiscount: Joi.boolean().optional(),
-  awardOrCertificate: Joi.string().optional().allow(""),
-  photos: Joi.string().optional().allow(""),
+  isSlabWiseDiscount: Joi.boolean().optional().allow(null),
+  awardOrCertificate: Joi.string().optional().allow('',null),
+  photos: Joi.string().optional().allow('',null),
 
   storageTypes: Joi.array().items(
     Joi.object({
@@ -327,20 +337,20 @@ export const updateColdStorageSchema = Joi.object({
   chamberCapacities: Joi.array().items(
     Joi.object({
       capacityMt: Joi.number().integer().min(0).required(),
-      noOfFloors: Joi.number().integer().optional(),
+      noOfFloors: Joi.number().integer().optional().allow(null),
       sizePerChamberSqft: Joi.number().required(),
-      description: Joi.string().optional(),
+      description: Joi.string().optional().allow('',null),
     })
   ).optional(),
 
   sheds: Joi.array().items(
     Joi.object({
       sizeSqMtr: Joi.number().integer().min(0).required(),
-      shedType: Joi.string().optional(),
+      shedType: Joi.string().optional().allow('',null),
     })
   ).optional(),
 
- dryingFacilityDetails: Joi.array()
+  dryingFacilityDetails: Joi.array()
     .items(
       Joi.object({
         facility: Joi.string().required(),
@@ -384,9 +394,9 @@ export const updateColdStorageSchema = Joi.object({
     .items(
       Joi.object({
         facility: Joi.string().required(),
-        capacityInKw: Joi.number().optional(),
-        backupInHrs: Joi.number().optional(),
-        make: Joi.string().optional(),
+        capacityInKw: Joi.number().optional().allow(null),
+        backupInHrs: Joi.number().optional().allow(null),
+        make: Joi.string().optional().allow('',null),
       })
     )
     .optional(),
