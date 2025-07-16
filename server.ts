@@ -28,6 +28,17 @@ import adminStorageTypeRoutes from "./src/routes/adminRoutes/coldStorage/adminSt
 import adminUsageTypeRoutes from "./src/routes/adminRoutes/coldStorage/adminUsageTypeRoutes";
 import adminOperationalChallengeRoutes from "./src/routes/adminRoutes/coldStorage/adminOperationalChallengeRoutes";
 import adminIrrigationMethodRoutes from "./src/routes/adminRoutes/farmer/adminIrrigationMethodRoutes";
+import adminConstructionTypeRoutes from "./src/routes/adminRoutes/coldStorage/adminConstructionTypeRoutes";
+import adminColdStorageTypeRoutes from "./src/routes/adminRoutes/coldStorage/adminColdStorageTypeRoutes";
+import adminRoofTypeRoutes from "./src/routes/adminRoutes/coldStorage/adminRoofTypeRoutes";
+import adminStorageFeatureRoutes from "./src/routes/adminRoutes/coldStorage/adminStorageFeatureRoutes";
+import adminDryingFacilityDetailRoutes from "./src/routes/adminRoutes/coldStorage/adminDryingFacilityDetailRoutes";
+import adminElevatoTypeRoutes from "./src/routes/adminRoutes/coldStorage/adminElevatorTypeRoutes";
+import adminMonitoringFacilityRoutes from "./src/routes/adminRoutes/coldStorage/adminMonitoringFacilityRoutes";
+import adminPowerFacilityRoutes from "./src/routes/adminRoutes/coldStorage/adminPowerFacilityRoutes";
+import adminPotatoDisposalSystemRoutes from "./src/routes/adminRoutes/coldStorage/adminPotatoDisposalSystemRoutes";
+import adminOtherFacilityRoutes from "./src/routes/adminRoutes/coldStorage/adminOtherFacilityRoutes";
+import adminStorageBookingSystemRoutes from "./src/routes/adminRoutes/coldStorage/adminStorageBookingSystemRoutes";
 import traderRoutes from "./src/routes/traderRoutes";
 import uploadRoutes from "./src/routes/uploadRoutes";
 
@@ -62,6 +73,17 @@ app.use(
 );
 app.use("/api/admin/storage_type", adminStorageTypeRoutes);
 app.use("/api/admin/usage_type", adminUsageTypeRoutes);
+app.use("/api/admin/construction_type", adminConstructionTypeRoutes);
+app.use("/api/admin/coldStorage_type", adminColdStorageTypeRoutes);
+app.use("/api/admin/roof_type", adminRoofTypeRoutes);
+app.use("/api/admin/storage_feature", adminStorageFeatureRoutes);
+app.use("/api/admin/drying_facility", adminDryingFacilityDetailRoutes);
+app.use("/api/admin/elevator_type", adminElevatoTypeRoutes);
+app.use("/api/admin/monitoring_facility", adminMonitoringFacilityRoutes);
+app.use("/api/admin/power_facility", adminPowerFacilityRoutes);
+app.use("/api/admin/potato_disposal_system", adminPotatoDisposalSystemRoutes);
+app.use("/api/admin/other_facility", adminOtherFacilityRoutes);
+app.use("/api/admin/storage_booking_system", adminStorageBookingSystemRoutes);
 app.use("/api/admin/brand_preference_reason", adminBrandPreferenceReasonRoutes);
 app.use("/api/admin/seed_brand", adminSeedBrandRoutes);
 app.use("/api/admin/selling_channel", adminSellingChannelRoutes);
