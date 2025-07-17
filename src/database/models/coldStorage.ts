@@ -158,8 +158,14 @@ ColdStorage.init({
   additionalComments: DataTypes.TEXT,
   state: DataTypes.STRING,
   isSlabWiseDiscount: DataTypes.BOOLEAN,
-  awardOrCertificate: {type: DataTypes.STRING, allowNull:true},
-  photos: {type: DataTypes.STRING, allowNull:true},
+  awardOrCertificate: {
+       type: DataTypes.ARRAY(DataTypes.STRING),
+        allowNull: true,
+      },
+  photos: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        allowNull: true,
+      },
   onBoardedBy: {
     type: DataTypes.INTEGER,
     allowNull: true,
