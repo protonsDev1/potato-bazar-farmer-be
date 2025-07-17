@@ -288,9 +288,19 @@ export const updateColdStorageSchema = Joi.object({
   // hasGuestStay: Joi.boolean().optional(),
   // hasGuestMeals: Joi.boolean().optional(),
   weighBridge: Joi.boolean().optional().allow(null),
-  weighbridgeCapacityLength: Joi.string().optional().allow('',null),
+   weighbridgeCapacityLength: Joi.string().when('weighBridge', {
+    is: true,
+    then: Joi.required(),
+    otherwise: Joi.optional().allow('', null),
+  }),
   hasLorryShades: Joi.boolean().optional().allow(null),
-  lorryShadeCapacity: Joi.number().integer().optional().allow(null),
+  lorryShadeCapacity: Joi.number()
+    .integer()
+    .when('hasLorryShades', {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional().allow(null),
+    }),
   numberOfTrucks: Joi.number().integer().optional().allow(null),
   // accessibility: Joi.string().optional(),
   hasLabourForGrading: Joi.boolean().optional().allow(null),
