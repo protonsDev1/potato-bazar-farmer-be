@@ -53,13 +53,14 @@ export const getRecentRegisteredUsers = async (req, res) => {
 export const getAgentPerformance = async (req, res) => {
   try {
     const { role, id: agentId } = req.user;
+    const { year } = req.query;
 
     if (role !== "agent")
       return res.status(400).json({
         message: "Only Agents are authorized to retrieve agent's performance.",
       });
 
-    const performance = await retrieveAgentPerformance(agentId);
+    const performance = await retrieveAgentPerformance(agentId, year);
 
     return res.status(200).json({ message: performance });
   } catch (error) {
@@ -204,7 +205,9 @@ export const resetPasswordForAgent = async (req, res) => {
 
 export const getAllAgentPerformance = async (req, res) => {
   try {
-    const result = await retrieveAllAgentPerformance();
+    const { year } = req.query;
+
+    const result = await retrieveAllAgentPerformance(year);
 
     return res
       .status(200)
