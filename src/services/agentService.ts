@@ -2,7 +2,7 @@ import ColdStorage from "../database/models/coldStorage";
 import Farmer from "../database/models/farmer";
 import { formatDate } from "../utils/dateFormat";
 
-import { Op, fn, col, literal } from "sequelize";
+import { Op } from "sequelize";
 import dayjs from "dayjs";
 import Agent from "../database/models/agent";
 import User from "../database/models/user";
@@ -36,8 +36,8 @@ export const retriveAllUsers = async (
     const combined = [...farmers, ...coldStorages, ...traders].map(
       (item: any) => ({
         id: item.id,
-        name: item.name,
-        village: item.village,
+        name: item instanceof Trader ? item.fullName : item.name,
+        village: item instanceof Trader ? item.cityOrVillage : item.village,
         district: item.district,
         createdAt: item.createdAt,
         date: formatDate(item.createdAt),
@@ -96,8 +96,8 @@ export const retrieveRecentRegistered = async (agentId) => {
     const combined = [...farmers, ...coldStorages, ...traders].map(
       (item: any) => ({
         id: item.id,
-        name: item.name,
-        village: item.village,
+        name: item instanceof Trader ? item.fullName : item.name,
+        village: item instanceof Trader ? item.cityOrVillage : item.village,
         district: item.district,
         date: formatDate(item.createdAt),
         createdAt: item.createdAt,
@@ -131,69 +131,84 @@ export const retrieveRecentRegistered = async (agentId) => {
   }
 };
 
-export const retrieveAgentPerformance = async (agentId) => {
+export const retrieveAgentPerformance = async (agentId, year) => {
   try {
     const monthsBack = 12;
-    const fromDate = dayjs()
-      .subtract(monthsBack, "month")
-      .startOf("month")
-      .toDate();
+
+    const fromDate = dayjs(`${year}-01-01`).startOf("month");
+    const toDate = dayjs(`${year}-12-31`).endOf("month");
 
     const [farmerMap, coldStorageMap, traderMap] = await Promise.all([
-      getMonthWiseRegistrations(Farmer, fromDate, { onBoardedBy: agentId }),
-      getMonthWiseRegistrations(ColdStorage, fromDate, {
+      getMonthWiseRegistrations(Farmer, fromDate.toDate(), toDate.toDate(), {
         onBoardedBy: agentId,
       }),
-      getMonthWiseRegistrations(Trader, fromDate, { onBoardedBy: agentId }),
+      getMonthWiseRegistrations(
+        ColdStorage,
+        fromDate.toDate(),
+        toDate.toDate(),
+        {
+          onBoardedBy: agentId,
+        }
+      ),
+      getMonthWiseRegistrations(Trader, fromDate.toDate(), toDate.toDate(), {
+        onBoardedBy: agentId,
+      }),
     ]);
 
-    const allMonths = new Set([
-      ...Object.keys(farmerMap),
-      ...Object.keys(coldStorageMap),
-      ...Object.keys(traderMap),
-    ]);
-    const monthlyRegistrations = Array.from(allMonths).map((month) => ({
-      month,
-      total:
-        (farmerMap[month] || 0) +
-        (coldStorageMap[month] || 0) +
-        (traderMap[month] || 0),
-    }));
+    const monthList = [];
+    for (let i = 0; i < monthsBack; i++) {
+      const month = fromDate.add(i, "month");
+      monthList.push(month.format("YYYY-MMM"));
+    }
 
-    monthlyRegistrations.sort(
-      (a, b) => dayjs(a.month, "MMM").month() - dayjs(b.month, "MMM").month()
-    );
+    const monthlyRegistrations = monthList.map((fullMonthLabel) => {
+      const shortMonth = dayjs(fullMonthLabel, "YYYY-MMM").format("MMM");
+      return {
+        month: shortMonth,
+        total:
+          (farmerMap[fullMonthLabel] || 0) +
+          (coldStorageMap[fullMonthLabel] || 0) +
+          (traderMap[fullMonthLabel] || 0),
+      };
+    });
 
-    const startOfMonth = dayjs().startOf("month").toDate();
-    const endOfMonth = dayjs().endOf("month").toDate();
+    let currentMonthRegistrations = 0;
+    let completionOfMonthlyTargetPercentage = 0;
 
-    const [currentFarmerCount, currentColdStorageCount, currentTraderCount] =
-      await Promise.all([
-        Farmer.count({
-          where: {
-            onBoardedBy: agentId,
-            createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
-          },
-        }),
-        ColdStorage.count({
-          where: {
-            onBoardedBy: agentId,
-            createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
-          },
-        }),
-        Trader.count({
-          where: {
-            onBoardedBy: agentId,
-            createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
-          },
-        }),
-      ]);
+    const isCurrentYear = dayjs().year() === parseInt(year);
 
-    const currentMonthRegistrations =
-      currentFarmerCount + currentColdStorageCount + currentTraderCount;
+    if (isCurrentYear) {
+      const startOfMonth = dayjs().startOf("month").toDate();
+      const endOfMonth = dayjs().endOf("month").toDate();
 
-    const completionOfMonthlyTargetPercentage =
-      (currentMonthRegistrations / 50) * 100;
+      const [currentFarmerCount, currentColdStorageCount, currentTraderCount] =
+        await Promise.all([
+          Farmer.count({
+            where: {
+              onBoardedBy: agentId,
+              createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+            },
+          }),
+          ColdStorage.count({
+            where: {
+              onBoardedBy: agentId,
+              createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+            },
+          }),
+          Trader.count({
+            where: {
+              onBoardedBy: agentId,
+              createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
+            },
+          }),
+        ]);
+
+      currentMonthRegistrations =
+        currentFarmerCount + currentColdStorageCount + currentTraderCount;
+
+      completionOfMonthlyTargetPercentage =
+        (currentMonthRegistrations / 50) * 100;
+    }
 
     return {
       monthlyRegistrations,
@@ -453,35 +468,33 @@ export const resetAgentPassword = async (agentId: number) => {
   };
 };
 
-export const retrieveAllAgentPerformance = async () => {
+export const retrieveAllAgentPerformance = async (year) => {
   const monthsBack = 12;
-  const fromDate = dayjs()
-    .subtract(monthsBack, "month")
-    .startOf("month")
-    .toDate();
+  const fromDate = dayjs(`${year}-01-01`).startOf("month");
+  const toDate = dayjs(`${year}-12-31`).endOf("month");
 
   const [farmerMap, coldStorageMap, traderMap] = await Promise.all([
-    getMonthWiseRegistrations(Farmer, fromDate),
-    getMonthWiseRegistrations(ColdStorage, fromDate),
-    getMonthWiseRegistrations(Trader, fromDate),
+    getMonthWiseRegistrations(Farmer, fromDate.toDate(), toDate.toDate()),
+    getMonthWiseRegistrations(ColdStorage, fromDate.toDate(), toDate.toDate()),
+    getMonthWiseRegistrations(Trader, fromDate.toDate(), toDate.toDate()),
   ]);
 
-  const allMonths = new Set([
-    ...Object.keys(farmerMap),
-    ...Object.keys(coldStorageMap),
-    ...Object.keys(traderMap),
-  ]);
-  const monthlyRegistrations = Array.from(allMonths).map((month) => ({
-    month,
-    total:
-      (farmerMap[month] || 0) +
-      (coldStorageMap[month] || 0) +
-      (traderMap[month] || 0),
-  }));
+  const monthList = [];
+  for (let i = 0; i < monthsBack; i++) {
+    const month = fromDate.add(i, "month");
+    monthList.push(month.format("YYYY-MMM"));
+  }
 
-  monthlyRegistrations.sort(
-    (a, b) => dayjs(a.month, "MMM").month() - dayjs(b.month, "MMM").month()
-  );
+  const monthlyRegistrations = monthList.map((fullMonthLabel) => {
+    const shortMonth = dayjs(fullMonthLabel, "YYYY-MMM").format("MMM");
+    return {
+      month: shortMonth,
+      total:
+        (farmerMap[fullMonthLabel] || 0) +
+        (coldStorageMap[fullMonthLabel] || 0) +
+        (traderMap[fullMonthLabel] || 0),
+    };
+  });
 
   const [farmerCount, coldStorageCount, traderCount] = await Promise.all([
     Farmer.count({}),
