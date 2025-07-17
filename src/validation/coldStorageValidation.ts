@@ -88,8 +88,8 @@ export const coldStorageSchema = Joi.object({
   // additionalComments: Joi.string().allow('', null),
   isSlabWiseDiscount: Joi.boolean().required(),
   userId: Joi.number().integer().allow(null),
-  awardOrCertificate: Joi.string().optional().allow('',null),
-  photos: Joi.string().optional().allow('',null),
+  awardOrCertificate: Joi.array().items(Joi.string()).optional(),
+  photos: Joi.array().items(Joi.string()).optional(),
 
   storageTypes: Joi.array().items(
     Joi.object({
@@ -306,9 +306,9 @@ export const updateColdStorageSchema = Joi.object({
   // willingOnlineAuction: Joi.boolean().optional(),
   // additionalComments: Joi.string().allow('', null),
   isSlabWiseDiscount: Joi.boolean().optional().allow(null),
-  awardOrCertificate: Joi.string().optional().allow('',null),
-  photos: Joi.string().optional().allow('',null),
-
+  awardOrCertificate: Joi.array().items(Joi.string()).optional(),
+  photos: Joi.array().items(Joi.string()).optional(),
+  
   storageTypes: Joi.array().items(
     Joi.object({
       storageType: Joi.string().required(),
