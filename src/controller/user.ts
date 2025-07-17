@@ -127,9 +127,21 @@ export const agentLogin = async (req, res) => {
       expiresIn: "24h",
     });
 
+    const agentResponse = {
+      id: agent.id,
+      name: agent.user.name,
+      agentId: agent.agentId,
+      phone: agent.phone,
+      address: agent.address,
+      district: agent.district,
+      state: agent.state,
+      note: agent.note,
+    };
+
     return res.status(200).json({
       message: "Login successful",
       token,
+      agent: agentResponse
     });
   } catch (err: any) {
     return res.status(500).json({ message: err.message || "Login error" });
