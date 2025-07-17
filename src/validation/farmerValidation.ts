@@ -12,11 +12,11 @@ export const onboardFarmerSchema = Joi.object({
   taluka: Joi.string().optional().allow(null, ""),
   district: Joi.string().optional().allow(null, ""),
   state: Joi.string().optional().allow(null, ""),
-  geoLocation: Joi.string().optional(),
-  pinCode: Joi.string().optional(),
+  geoLocation: Joi.string().optional().allow(null, ""),
+  pinCode: Joi.string().optional().allow(null, ""),
   digiPin: Joi.string().optional().allow(null, ""),
   whatsappNumber: Joi.string().optional().allow(null, ""),
-  isAadhaarCard: Joi.boolean().optional(),
+  isAadhaarCard: Joi.boolean().optional().allow(null),
   aadhaarNumber: Joi.string()
     .pattern(/^\d{12}$/)
     .when("isAadhaarCard", {
@@ -24,18 +24,18 @@ export const onboardFarmerSchema = Joi.object({
       then: Joi.required(),
       otherwise: Joi.optional().allow(null, ""),
     }),
-  isBankAccount: Joi.boolean().optional(),
+  isBankAccount: Joi.boolean().optional().allow(null),
 
   landDetails: Joi.array()
     .items(
       Joi.object({
         landOwnedAcres: Joi.number().required(),
         landLeasedAcres: Joi.number().required(),
-        totalLandUnderCultivation: Joi.number().optional(),
-        landForPotatoFarming: Joi.number().optional(),
-        areaUnderDrip: Joi.number().optional(),
-        storageCapacityAtFarm: Joi.number().optional(),
-        irrigationEquipmentModel: Joi.string().optional(),
+        totalLandUnderCultivation: Joi.number().optional().allow(null),
+        landForPotatoFarming: Joi.number().optional().allow(null),
+        areaUnderDrip: Joi.number().optional().allow(null),
+        storageCapacityAtFarm: Joi.number().optional().allow(null),
+        irrigationEquipmentModel: Joi.string().optional().allow(null,""),
         irrigationEquipmentBrand: Joi.string().optional().allow(null, ""),
         seedProcurementType: Joi.string()
           .valid("new", "reused", "both")
@@ -46,7 +46,7 @@ export const onboardFarmerSchema = Joi.object({
           .when("seedProcurementType", {
             is: "both",
             then: Joi.required(),
-            otherwise: Joi.forbidden(),
+            otherwise: Joi.optional().allow(null, ""),
           }),
 
         reusedSeedPercent: Joi.number()
@@ -55,31 +55,31 @@ export const onboardFarmerSchema = Joi.object({
           .when("seedProcurementType", {
             is: "both",
             then: Joi.required(),
-            otherwise: Joi.forbidden(),
+            otherwise: Joi.optional().allow(null, ""),
           }),
         seedBrandName: Joi.string().optional().allow(null, ""),
         soilType: Joi.string().optional().allow(null, ""),
-        averageYieldPerAcre: Joi.number().optional(),
+        averageYieldPerAcre: Joi.number().optional().allow(null),
         sowingMonth: Joi.string().optional().allow(null, ""),
         harvestMonth: Joi.string().optional().allow(null, ""),
         sowingMethod: Joi.string().optional().allow(null, ""),
-        storageFacilityAtFarm: Joi.boolean().optional(),
+        storageFacilityAtFarm: Joi.boolean().optional().allow(null),
         equipmentSource: Joi.string().optional().allow(null, ""),
         primarySalesPoint: Joi.string().optional().allow(null, ""),
         distanceToNearestMandi: Joi.string().optional().allow(null, ""),
-        isGradingMachineAtFarm: Joi.boolean().optional(),
-        isShadeAtFarmGate: Joi.boolean().optional(),
-        isUnderContractFarming: Joi.boolean().optional(),
-        contractPercent: Joi.number().optional(),
-        spotPercent: Joi.number().optional(),
+        isGradingMachineAtFarm: Joi.boolean().optional().allow(null),
+        isShadeAtFarmGate: Joi.boolean().optional().allow(null),
+        isUnderContractFarming: Joi.boolean().optional().allow(null),
+        contractPercent: Joi.number().optional().allow(null),
+        spotPercent: Joi.number().optional().allow(null),
         contractPartnerName: Joi.string().optional().allow(null, ""),
         reasonForTrust: Joi.string().optional().allow(null, ""),
         preference: Joi.string().optional().allow(null, ""),
-        contractFarmingPercent: Joi.number().min(1).max(100).optional(),
-        soldInSpotMarketPercent: Joi.number().min(0).max(100).optional(),
-        storedInColdStoragePercent: Joi.number().min(0).max(100).optional(),
-        interestedInDigitalTrading: Joi.boolean().optional(),
-        usesWhatsappForBusiness: Joi.boolean().optional(),
+        contractFarmingPercent: Joi.number().min(1).max(100).optional().allow(null),
+        soldInSpotMarketPercent: Joi.number().min(0).max(100).optional().allow(null),
+        storedInColdStoragePercent: Joi.number().min(0).max(100).optional().allow(null),
+        interestedInDigitalTrading: Joi.boolean().optional().allow(null),
+        usesWhatsappForBusiness: Joi.boolean().optional().allow(null),
       })
     )
     .optional(),
@@ -203,8 +203,8 @@ export const onboardFarmerSchema = Joi.object({
 });
 
 export const updateFarmerSchema = Joi.object({
-  name: Joi.string().optional(),
-  age: Joi.number().integer().min(1).optional(),
+  name: Joi.string().optional().allow(null,""),
+  age: Joi.number().integer().min(1).optional().allow(null),
   gender: Joi.string().valid("male", "female", "other").optional(),
   optionalNumber: Joi.string().optional().allow(null, ""),
   caste: Joi.string().optional().allow(null, ""),
@@ -213,11 +213,11 @@ export const updateFarmerSchema = Joi.object({
   taluka: Joi.string().optional().allow(null, ""),
   district: Joi.string().optional().allow(null, ""),
   state: Joi.string().optional().allow(null, ""),
-  geoLocation: Joi.string().optional(),
+  geoLocation: Joi.string().optional().allow(null,""),
   pinCode: Joi.string().optional().allow(null, ""),
   digiPin: Joi.string().optional().allow(null, ""),
   whatsappNumber: Joi.string().optional().allow(null, ""),
-  isAadhaarCard: Joi.boolean().optional(),
+  isAadhaarCard: Joi.boolean().optional().allow(null),
   aadhaarNumber: Joi.string()
     .pattern(/^\d{12}$/)
     .when("isAadhaarCard", {
@@ -225,47 +225,61 @@ export const updateFarmerSchema = Joi.object({
       then: Joi.required(),
       otherwise: Joi.optional().allow(null, ""),
     }),
-  isBankAccount: Joi.boolean().optional(),
+  isBankAccount: Joi.boolean().optional().allow(null),
 
   landDetails: Joi.array()
     .items(
       Joi.object({
-        landOwnedAcres: Joi.number().optional(),
-        landLeasedAcres: Joi.number().optional(),
-        totalLandUnderCultivation: Joi.number().optional(),
-        landForPotatoFarming: Joi.number().optional(),
-        areaUnderDrip: Joi.number().optional(),
-        storageCapacityAtFarm: Joi.number().optional(),
-        irrigationEquipmentModel: Joi.string().optional(),
+        landOwnedAcres: Joi.number().optional().allow(null),
+        landLeasedAcres: Joi.number().optional().allow(null),
+        totalLandUnderCultivation: Joi.number().optional().allow(null),
+        landForPotatoFarming: Joi.number().optional().allow(null),
+        areaUnderDrip: Joi.number().optional().allow(null),
+        storageCapacityAtFarm: Joi.number().optional().allow(null),
+        irrigationEquipmentModel: Joi.string().optional().allow(null,""),
         irrigationEquipmentBrand: Joi.string().optional().allow(null, ""),
         seedProcurementType: Joi.string()
           .valid("new", "reused", "both")
           .optional(),
-        newSeedPercent: Joi.number().min(0).max(100).optional(),
-        reusedSeedPercent: Joi.number().min(0).max(100).optional(),
+        newSeedPercent: Joi.number()
+          .min(0)
+          .max(100)
+          .when("seedProcurementType", {
+            is: "both",
+            then: Joi.required(),
+            otherwise: Joi.optional().allow(null, ""),
+          }),
+        reusedSeedPercent: Joi.number()
+          .min(0)
+          .max(100)
+          .when("seedProcurementType", {
+            is: "both",
+            then: Joi.required(),
+            otherwise: Joi.optional().allow(null, ""),
+          }),
         seedBrandName: Joi.string().optional().allow(null, ""),
         soilType: Joi.string().optional().allow(null, ""),
-        averageYieldPerAcre: Joi.number().optional(),
+        averageYieldPerAcre: Joi.number().optional().allow(null),
         sowingMonth: Joi.string().optional().allow(null, ""),
         harvestMonth: Joi.string().optional().allow(null, ""),
         sowingMethod: Joi.string().optional().allow(null, ""),
-        storageFacilityAtFarm: Joi.boolean().optional(),
+        storageFacilityAtFarm: Joi.boolean().optional().allow(null),
         equipmentSource: Joi.string().optional().allow(null, ""),
         primarySalesPoint: Joi.string().optional().allow(null, ""),
         distanceToNearestMandi: Joi.string().optional().allow(null, ""),
-        isGradingMachineAtFarm: Joi.boolean().optional(),
-        isShadeAtFarmGate: Joi.boolean().optional(),
-        isUnderContractFarming: Joi.boolean().optional(),
-        contractPercent: Joi.number().optional(),
-        spotPercent: Joi.number().optional(),
+        isGradingMachineAtFarm: Joi.boolean().optional().allow(null),
+        isShadeAtFarmGate: Joi.boolean().optional().allow(null),
+        isUnderContractFarming: Joi.boolean().optional().allow(null),
+        contractPercent: Joi.number().optional().allow(null),
+        spotPercent: Joi.number().optional().allow(null),
         contractPartnerName: Joi.string().optional().allow(null, ""),
         reasonForTrust: Joi.string().optional().allow(null, ""),
         preference: Joi.string().optional().allow(null, ""),
-        contractFarmingPercent: Joi.number().min(1).max(100).optional(),
-        soldInSpotMarketPercent: Joi.number().min(0).max(100).optional(),
-        storedInColdStoragePercent: Joi.number().min(0).max(100).optional(),
-        interestedInDigitalTrading: Joi.boolean().optional(),
-        usesWhatsappForBusiness: Joi.boolean().optional(),
+        contractFarmingPercent: Joi.number().min(1).max(100).optional().allow(null),
+        soldInSpotMarketPercent: Joi.number().min(0).max(100).optional().allow(null),
+        storedInColdStoragePercent: Joi.number().min(0).max(100).optional().allow(null),
+        interestedInDigitalTrading: Joi.boolean().optional().allow(null),
+        usesWhatsappForBusiness: Joi.boolean().optional().allow(null),
       })
     )
     .optional(),
