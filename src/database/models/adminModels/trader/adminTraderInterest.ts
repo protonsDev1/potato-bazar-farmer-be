@@ -12,7 +12,7 @@ class AdminTraderInterest extends Model<
   InferCreationAttributes<AdminTraderInterest>
 > {
   declare id: CreationOptional<number>;
-  declare interest: string;
+  declare name: string;
   declare isActive: CreationOptional<boolean>;
   declare position: CreationOptional<number>;
   declare createdAt: CreationOptional<Date>;
@@ -22,7 +22,7 @@ class AdminTraderInterest extends Model<
 AdminTraderInterest.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-    interest: { type: DataTypes.STRING(100), allowNull: false },
+    name: { type: DataTypes.STRING(100), allowNull: false },
     isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     position: {
       type: DataTypes.INTEGER,

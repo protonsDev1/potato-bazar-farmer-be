@@ -5,29 +5,29 @@ export const marketCoverageList = [
 ];
 
 export const traderTypeList = [
-  { type: "Mandi Agent", position: 1 },
-  { type: "Trader/Wholesaler", position: 2 },
-  { type: "Exporter", position: 3 },
+  { name: "Mandi Agent", position: 1 },
+  { name: "Trader/Wholesaler", position: 2 },
+  { name: "Exporter", position: 3 },
 ];
 
 export const cropTradedList = [
-  { cropName: "Potato", position: 1 },
-  { cropName: "Onion", position: 2 },
-  { cropName: "Tomato", position: 3 },
-  { cropName: "Garlic", position: 4 },
-  { cropName: "Ginger", position: 5 },
-  { cropName: "Other", position: 6 },
+  { name: "Potato", position: 1 },
+  { name: "Onion", position: 2 },
+  { name: "Tomato", position: 3 },
+  { name: "Garlic", position: 4 },
+  { name: "Ginger", position: 5 },
+  { name: "Other", position: 6 },
 ];
 
 export const traderInterestList = [
-  { interest: "Buy Produce", position: 1 },
-  { interest: "Post RFQ", position: 2 },
-  { interest: "Join Auction", position: 3 },
+  { name: "Buy Produce", position: 1 },
+  { name: "Post RFQ", position: 2 },
+  { name: "Join Auction", position: 3 },
 ];
 
 export const traderVarietyList = [
-  { variety: "Table", position: 1 },
-  { variety: "Chips", position: 2 },
-  { variety: "French Fries", position: 3 },
-  { variety: "Seed", position: 4 },
+  { name: "Table", position: 1 },
+  { name: "Chips", position: 2 },
+  { name: "French Fries", position: 3 },
+  { name: "Seed", position: 4 },
 ];
