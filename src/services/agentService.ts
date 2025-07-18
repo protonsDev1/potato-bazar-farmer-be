@@ -131,7 +131,7 @@ export const retrieveRecentRegistered = async (agentId) => {
   }
 };
 
-export const retrieveAgentPerformance = async (agentId, year) => {
+export const retrieveAgentPerformance = async (agentId, year= "2025") => {
   try {
     const monthsBack = 12;
 
@@ -468,7 +468,7 @@ export const resetAgentPassword = async (agentId: number) => {
   };
 };
 
-export const retrieveAllAgentPerformance = async (year) => {
+export const retrieveAllAgentPerformance = async (year= "2025") => {
   const monthsBack = 12;
   const fromDate = dayjs(`${year}-01-01`).startOf("month");
   const toDate = dayjs(`${year}-12-31`).endOf("month");
