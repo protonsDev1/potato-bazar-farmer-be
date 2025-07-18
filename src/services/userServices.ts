@@ -7,6 +7,7 @@ import { createOtp } from "./otpServices";
 
 import { Op, Sequelize } from 'sequelize';
 import bcrypt from 'bcrypt';
+import Trader from "../database/models/trader/trader";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -213,6 +214,30 @@ export const getDashboardCounts = async () => {
 
 export const checkExistingUser = async (mobile) =>{
   return await User.findOne({ where: { mobile } });
+};
+
+export const getRegistrationTypes = async (mobile) => {
+  const user = await User.findOne({ where: { mobile } });
+
+  if (!user) {
+    return {
+      isFarmerOnboarded: false,
+      isColdStorageOnboarded: false,
+      isTraderOnboarded: false,
+    };
+  }
+
+  const [isFarmer, isColdStorage, isTrader] = await Promise.all([
+    Farmer.findOne({ where: { userId: user.id } }),
+    ColdStorage.findOne({ where: { userId: user.id } }),
+    Trader.findOne({ where: { userId: user.id } }),
+  ]);
+
+  return {
+    isFarmerOnboarded: !!isFarmer,
+    isColdStorageOnboarded: !!isColdStorage,
+    isTraderOnboarded: !!isTrader,
+  };
 };
 
 export const registerInitialUser = async (mobile) =>{
