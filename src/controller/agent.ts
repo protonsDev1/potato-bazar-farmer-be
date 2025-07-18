@@ -19,7 +19,7 @@ export const getAllRegisteredUsers = async (req, res) => {
 
     if (role !== "agent")
       return res.status(400).json({
-        message: "Only Agents are authorized to retrieve users under agent.",
+        message: "Only Agents are authorized to retrieve users under them.",
       });
 
     const allUsers = await retriveAllUsers(id, page, limit);
@@ -38,7 +38,7 @@ export const getRecentRegisteredUsers = async (req, res) => {
 
     if (role !== "agent")
       return res.status(400).json({
-        message: "Only Agents are authorized to retrieve users under agent.",
+        message: "Only Agents are authorized to retrieve recent registered users under them.",
       });
 
     const recentRegistered = await retrieveRecentRegistered(id);
@@ -57,7 +57,7 @@ export const getAgentPerformance = async (req, res) => {
 
     if (role !== "agent")
       return res.status(400).json({
-        message: "Only Agents are authorized to retrieve agent's performance.",
+        message: "Only Agents are authorized to retrieve their own performance.",
       });
 
     const performance = await retrieveAgentPerformance(agentId, year);
@@ -77,7 +77,7 @@ export const getAgentDashboardStats = async (req, res) => {
     if (role !== "agent")
       return res.status(400).json({
         message:
-          "Only Agents are authorized to retrieve agent's dashboard stats.",
+          "Only Agents are authorized to retrieve their own dashboard stats.",
       });
 
     const stats = await retrieveAgentDashboardStats(agentId);
