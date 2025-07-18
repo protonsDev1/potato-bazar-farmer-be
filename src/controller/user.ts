@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getUserProfileDB, registerInitialUser, resetPasswordService, updateProfileService, updateRegistrationTypes } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, updateProfileService, updateRegistrationTypes } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
@@ -167,14 +167,17 @@ export const verifyOtp = async (req, res) => {
     if (!isValid) {
       return res.status(401).json({ message: 'Invalid or expired OTP' });
     }
+
+    const registrationType= await getRegistrationTypes(mobile);
+
     const existingUser = await checkExistingUser(mobile);
     if (existingUser) {
-      return res.status(200).json({ message: 'OTP verified. User already exists.', user: existingUser });
+      return res.status(200).json({ message: 'OTP verified. User already exists.', user: existingUser,registrationType });
     };
 
     const createUser = await registerInitialUser(mobile);
 
-    return res.status(200).json({ message: 'OTP verified',createUser });
+    return res.status(200).json({ message: 'OTP verified',createUser,registrationType });
   } catch (err: any) {
     return res.status(500).json({ message: err.message || 'OTP verification failed' });
   }
@@ -233,7 +236,6 @@ export const forgotPassword = async (req, res) => {
         "Otp has been sent successfully.Please contact support team if you have not received the otp.",
     });
   } catch (error) {
-    console.error("Error in forgot password:", error);
     return res
       .status(500)
       .json({ message: "Error in forgot password", error: error.message });
@@ -254,7 +256,6 @@ export const verifyForgotPasswordOtp = async (req, res) => {
 
     return res.status(200).json({ message: "Otp verified successfully." });
   } catch (error) {
-    console.error("Error in verifying otp:", error);
     return res
       .status(500)
       .json({ message: "Error in verifying otp", error: error.message });
@@ -278,8 +279,6 @@ export const resetPassword = async (req, res) => {
       .status(200)
       .json({ message: "Password has been reset successfully!" });
   } catch (error) {
-    console.error("Error reseting password:", error);
-
     return res.status(500).json({
       message: "Error reseting user's password",
       error: error.message,
@@ -304,7 +303,6 @@ export const changePassword = async (req, res) => {
 
     return res.status(200).json({ message: "Password changed successfully." });
   } catch (error) {
-    console.error("Error changing password:", error);
     return res.status(500).json({
       message: "Error changing user's password",
       error: error.message,
@@ -333,10 +331,27 @@ export const updateProfile = async (req, res) => {
 
     return res.status(200).json({ message: "Profile updated successfully." });
   } catch (error) {
-    console.error("Error updating profile:", error);
     return res.status(500).json({
       message: "Error updating profile",
       error: error.message,
     });
+  }
+};
+
+export const retrieveRegistrationTypes = async (req, res) => {
+  try {
+    const {mobile} = req.query;
+    const registrationTypes = await getRegistrationTypes(mobile);
+
+    return res
+      .status(200)
+      .json({ message: "Registration Types", registrationTypes });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({
+        message:
+          error.message || "Failed to retrieve user's registration types.",
+      });
   }
 };
