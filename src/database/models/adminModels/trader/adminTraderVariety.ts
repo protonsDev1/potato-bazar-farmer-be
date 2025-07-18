@@ -12,7 +12,7 @@ class AdminTraderVariety extends Model<
   InferCreationAttributes<AdminTraderVariety>
 > {
   declare id: CreationOptional<number>;
-  declare variety: string;
+  declare name: string;
   declare isActive: CreationOptional<boolean>;
   declare position: CreationOptional<number>;
   declare createdAt: CreationOptional<Date>;
@@ -22,7 +22,7 @@ class AdminTraderVariety extends Model<
 AdminTraderVariety.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-    variety: { type: DataTypes.STRING(100), allowNull: false },
+    name: { type: DataTypes.STRING(100), allowNull: false },
     isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     position: {
       type: DataTypes.INTEGER,
