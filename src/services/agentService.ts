@@ -131,7 +131,7 @@ export const retrieveRecentRegistered = async (agentId) => {
   }
 };
 
-export const retrieveAgentPerformance = async (agentId, year= "2025") => {
+export const retrieveAgentPerformance = async (agentId, year = "2025") => {
   try {
     const monthsBack = 12;
 
@@ -290,12 +290,28 @@ export const retrieveAgentDashboardStats = async (agentId) => {
   }
 };
 
-export const getPaginatedAgents = async (page: number, limit: number) => {
+export const getPaginatedAgents = async (
+  page: number,
+  limit: number,
+  search
+) => {
   const offset = (page - 1) * limit;
+
+  const searchCondition = search
+    ? {
+        [Op.or]: [
+          { agentId: { [Op.iLike]: `%${search}%` } },
+          { phone: { [Op.iLike]: `%${search}%` } },
+          { district: { [Op.iLike]: `%${search}%` } },
+          { "$user.name$": { [Op.iLike]: `%${search}%` } },
+        ],
+      }
+    : {};
 
   const { rows: agents, count: total } = await Agent.findAndCountAll({
     where: {
       isDeleted: false,
+      ...searchCondition,
     },
     attributes: { exclude: ["userId", "isDeleted"] },
     include: [
@@ -468,7 +484,7 @@ export const resetAgentPassword = async (agentId: number) => {
   };
 };
 
-export const retrieveAllAgentPerformance = async (year= "2025") => {
+export const retrieveAllAgentPerformance = async (year = "2025") => {
   const monthsBack = 12;
   const fromDate = dayjs(`${year}-01-01`).startOf("month");
   const toDate = dayjs(`${year}-12-31`).endOf("month");
