@@ -101,6 +101,11 @@ Farmer.belongsTo(User, {
   as: 'user',
 });
 
+Farmer.belongsTo(User, {
+ foreignKey: "onBoardedBy",
+  as: "onBoardedByUser"
+ });
+
 Farmer.hasMany(LandDetail,{
   foreignKey:'farmerId'
 });

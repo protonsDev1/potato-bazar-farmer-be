@@ -1,6 +1,7 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
 import sequelize from './db';
 import StorageType from './storageType';
+import User from './user';
 
 class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttributes<ColdStorage>> {
   declare id: CreationOptional<number>;
@@ -205,5 +206,7 @@ StorageType.belongsTo(ColdStorage, {
   foreignKey: 'coldStorageId',
 });
 
+ColdStorage.belongsTo(User, { foreignKey: "userId", as: "user" });
+ColdStorage.belongsTo(User, { foreignKey: "onBoardedBy", as: "onBoardedByUser" });
 
 export default ColdStorage;
