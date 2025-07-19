@@ -10,6 +10,7 @@ export const onboardTraderSchema = Joi.object({
   state: Joi.string().required(),
   district: Joi.string().required(),
   cityOrVillage: Joi.string().required(),
+  taluka: Joi.string().required(),
   pinCode: Joi.string().max(10).required(),
   digiPin: Joi.string().optional().allow(null, ""),
   geoLocation: Joi.string().optional().allow(null, ""),
@@ -100,7 +101,8 @@ export const onboardTraderSchema = Joi.object({
     mandiName: Joi.string().required(),
     state: Joi.string().required(),
     cityOrVillage: Joi.string().required(),
-    shopNumber: Joi.string().optional().allow(null,""),
+    shopNumber: Joi.string().optional().allow(null, ""),
+    mandiLicenceNo: Joi.string().required(),
   }).required(),
 
   traderDocuments: Joi.object({
@@ -112,14 +114,15 @@ export const onboardTraderSchema = Joi.object({
 });
 
 export const updateTraderSchema = Joi.object({
-  fullName: Joi.string().optional().allow(null,""),
-  businessName: Joi.string().optional().allow(null,""),
-  mobileNumber: Joi.string().max(15).optional().allow(null,""),
+  fullName: Joi.string().optional().allow(null, ""),
+  businessName: Joi.string().optional().allow(null, ""),
+  mobileNumber: Joi.string().max(15).optional().allow(null, ""),
   whatsappNumber: Joi.string().max(15).allow(null, ""),
   email: Joi.string().email().allow(null, ""),
 
   state: Joi.string().optional().allow(null, ""),
   district: Joi.string().optional().allow(null, ""),
+  taluka: Joi.string().optional().allow(null, ""),
   cityOrVillage: Joi.string().optional().allow(null, ""),
   pinCode: Joi.string().max(10).optional().allow(null, ""),
   digiPin: Joi.string().optional().allow(null, ""),
@@ -140,7 +143,7 @@ export const updateTraderSchema = Joi.object({
   spotBuying: Joi.boolean().optional().allow(null),
   seedsSales: Joi.boolean().optional().allow(null),
   ownColdStorage: Joi.boolean().optional().allow(null),
-  yearsInTrading: Joi.string().optional().allow(null,""),
+  yearsInTrading: Joi.string().optional().allow(null, ""),
   averageDailySalesKatta: Joi.number().optional().allow(null),
   salesOwnPotatoes: Joi.boolean().optional().allow(null),
   onlineAuctionInterest: Joi.boolean().optional().allow(null),
@@ -206,6 +209,7 @@ export const updateTraderSchema = Joi.object({
     state: Joi.string().optional().allow(null, ""),
     cityOrVillage: Joi.string().optional().allow(null, ""),
     shopNumber: Joi.string().optional().allow(null, ""),
+    mandiLicenceNo: Joi.string().optional().allow(null, ""),
   }).optional(),
 
   traderDocuments: Joi.object({

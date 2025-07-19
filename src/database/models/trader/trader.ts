@@ -22,6 +22,7 @@ class Trader extends Model<
   declare state: string;
   declare district: string;
   declare cityOrVillage: string;
+  declare taluka: string;
   declare pinCode: string;
   declare digiPin: string;
   declare geoLocation: string;
@@ -95,6 +96,10 @@ Trader.init(
     },
     pinCode: {
       type: DataTypes.STRING(10),
+      allowNull: false,
+    },
+    taluka: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
     digiPin: { type: DataTypes.STRING, allowNull: true },
