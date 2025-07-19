@@ -19,7 +19,6 @@ export const addTraderInterest = async (req, res) => {
     const response = await createRecord(
       AdminTraderInterest,
       req.body,
-      "interest"
     );
 
     if (response?.duplicate) {
@@ -100,7 +99,6 @@ export const updateTraderInterest = async (req, res) => {
       AdminTraderInterest,
       req.params.id,
       req.body,
-      "interest"
     );
 
     if (response?.duplicate) {
