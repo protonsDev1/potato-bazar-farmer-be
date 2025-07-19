@@ -6,6 +6,7 @@ import {
   updateTraderService,
 } from "../services/traderService";
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
+import { parseFilters } from "../utils/parseQuery";
 
 export const createTrader = async (req, res) => {
   try {
@@ -141,7 +142,9 @@ export const getTraderList = async (req, res) => {
   try {
     const { page, perPage, search } = req.query;
 
-    const traderList = await getTraderListByAdmin(page, perPage, search);
+    const filters = parseFilters(req.query);
+
+    const traderList = await getTraderListByAdmin(page, perPage, filters, search);
 
     return res.status(200).json({
       message: "Trader List",

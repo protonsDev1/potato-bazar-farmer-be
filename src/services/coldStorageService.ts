@@ -20,6 +20,7 @@ import RoofType from "../database/models/roofType";
 import SeasonWiseBookingSystem from "../database/models/seasonWiseStorageSystem";
 import SlabWiseDiscount from "../database/models/slabWiseDiscount";
 import StorageBookingSystem from "../database/models/storageBookingSystem";
+import User from "../database/models/user";
 
 
 const STORAGE_SIZE_RANGES = {
@@ -410,6 +411,18 @@ export const retrieveColdStorageProfile = async (
   try {
     const coldStoragePersonalInfo = await ColdStorage.findOne({
       where: { id: coldStorageId },
+     include: [
+    {
+      model: User,
+      as: 'user', 
+      attributes: ['id', 'name', 'role', 'email', 'mobile'],
+    },
+    {
+      model: User,
+      as: 'onBoardedByUser', 
+      attributes: ['id', 'name' , 'role', 'email', 'mobile'],
+    },
+  ],
     });
 
     const chamberCapacity = await ChamberCapacity.findAll({
@@ -546,6 +559,7 @@ export async function getColdStorage(
     const whereCondition: any = {};
 
     const {
+      state,
       district,
       agentId,
       storageType,
@@ -556,6 +570,10 @@ export async function getColdStorage(
 
     if (agentId && agentId.toLowerCase() !== "all") {
       whereCondition.onBoardedBy = agentId;
+    }
+
+     if (state && state.toLowerCase() !== "all") {
+      whereCondition.state = { [Op.iLike]: state };
     }
 
     if (district) {
@@ -579,17 +597,6 @@ export async function getColdStorage(
         whereCondition.totalCapacityMt = {
           [Op.between]: [Number(min), Number(max)],
         };
-      }
-    }
-
-    if (storageSize && storageSize !== "all") {
-      const sizeRange = STORAGE_SIZE_RANGES[storageSize.toLowerCase()];
-      if (sizeRange) {
-        whereCondition[Op.and] = [
-          literal(
-            `CAST("shedSize" AS INTEGER) BETWEEN ${sizeRange.min} AND ${sizeRange.max}`
-          ),
-        ];
       }
     }
 
@@ -622,11 +629,11 @@ export async function getColdStorage(
         "name",
         "ownerName",
         "mobileNumber",
+        "state",
         "district",
         "totalCapacityMt",
         "createdAt",
         "onBoardedBy",
-        "shedSize",
       ],
       where: whereCondition,
       include: [
@@ -647,11 +654,11 @@ export async function getColdStorage(
       coldStorageName: item.name,
       ownerName: item.ownerName,
       mobileNumber: item.mobileNumber,
+      state: item.state,
       district: item.district,
       totalCapacityMt: item.totalCapacityMt,
       registrationDate: formatDate(item.createdAt),
       storageTypes: item.storageTypes,
-      storageSize: item.shedSize,
       onBoardedBy: item.onBoardedBy,
     }));
 

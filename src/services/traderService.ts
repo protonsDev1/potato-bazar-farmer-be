@@ -11,6 +11,7 @@ import TraderInterest from "../database/models/trader/traderInterest";
 import TraderType from "../database/models/trader/traderType";
 import TraderVariety from "../database/models/trader/traderVariety";
 import User from "../database/models/user";
+import { convertISTDateRangeToUTC } from "../utils/dateFormat";
 
 export async function onboardTrader(payload) {
   try {
@@ -232,7 +233,21 @@ export const retrieveTraderProfile = async (
       varieties,
       cropsTraded,
     ] = await Promise.all([
-      Trader.findOne({ where: { id: traderId } }),
+      Trader.findOne({
+        where: { id: traderId },
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "name", "role", "email", "mobile"],
+          },
+          {
+            model: User,
+            as: "onBoardedByUser",
+            attributes: ["id", "name", "role", "email", "mobile"],
+          },
+        ],
+      }),
       BankDetail.findOne({ where: { traderId } }),
       MandiDetail.findOne({ where: { traderId } }),
       TraderDocument.findOne({ where: { traderId } }),
@@ -288,11 +303,45 @@ const safeUpsert = async (model, traderId, data, transaction) => {
 export const getTraderListByAdmin = async (
   page = 1,
   limit = 10,
+  filters,
   search?: string
 ) => {
   try {
     const offset = (page - 1) * limit;
     const whereCondition: any = {};
+
+    const { agentId, state, district, cityOrVillage, registrationDate } =
+      filters;
+
+    if (agentId && agentId.toLowerCase() !== "all") {
+      whereCondition.onBoardedBy = agentId;
+    }
+
+    if (district && district.toLowerCase() !== "all") {
+      whereCondition.district = { [Op.iLike]: district };
+    }
+
+    if (state && state.toLowerCase() !== "all") {
+      whereCondition.state = { [Op.iLike]: state };
+    }
+
+    if (cityOrVillage && cityOrVillage.toLowerCase() !== "all") {
+      whereCondition.cityOrVillage = { [Op.iLike]: cityOrVillage };
+    }
+
+    if (registrationDate && registrationDate.length === 2) {
+      const [startDate, endDate] = registrationDate;
+
+      if (startDate && endDate) {
+        const { startUTC, endUTC } = convertISTDateRangeToUTC(
+          startDate,
+          endDate
+        );
+        whereCondition.createdAt = {
+          [Op.between]: [new Date(startUTC), new Date(endUTC)],
+        };
+      }
+    }
 
     if (search?.trim()) {
       const searchTerm = `%${search?.trim()}%`;
