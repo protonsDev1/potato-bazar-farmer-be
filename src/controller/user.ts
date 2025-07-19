@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, updateProfileService, updateRegistrationTypes } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
@@ -353,5 +353,26 @@ export const retrieveRegistrationTypes = async (req, res) => {
         message:
           error.message || "Failed to retrieve user's registration types.",
       });
+  }
+};
+
+export const getRecentRegistrationsForAdmin = async (req, res) => {
+  try {
+    const { role } = req.user;
+
+    if (role !== "admin")
+      return res.status(400).json({
+        message:
+          "Only Admins are authorized to retrieve recent registered users.",
+      });
+
+    const recentRegistrations = await retrieveRecentRegisteredForAdmin();
+    return res
+      .status(200)
+      .json({ message: "Retreived recent registrations", recentRegistrations });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Failed in retreiving recent registrations.",
+    });
   }
 };
