@@ -8,6 +8,7 @@ import { createOtp } from "./otpServices";
 import { Op, Sequelize } from 'sequelize';
 import bcrypt from 'bcrypt';
 import Trader from "../database/models/trader/trader";
+import { formatDate } from "../utils/dateFormat";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -468,5 +469,57 @@ export const updateProfileService = async (data, userId, role) => {
     };
   } catch (error) {
     throw new Error(`Error in updating profile: ${error.message}`);
+  }
+};
+
+export const retrieveRecentRegisteredForAdmin = async () => {
+  try {
+    const [farmers, coldStorages, traders] = await Promise.all([
+      Farmer.findAll({
+        order: [["createdAt", "DESC"]],
+        limit: 5
+      }),
+      ColdStorage.findAll({
+        order: [["createdAt", "DESC"]],
+        limit: 5
+      }),
+      Trader.findAll({
+        order: [["createdAt", "DESC"]],
+        limit: 5
+      }),
+    ]);
+
+    const combined = [...farmers, ...coldStorages, ...traders].map(
+      (item: any) => ({
+        id: item.id,
+        name: item instanceof Trader ? item.fullName : item.name,
+        village: item instanceof Trader ? item.cityOrVillage : item.village,
+        district: item.district,
+        date: formatDate(item.createdAt),
+        createdAt: item.createdAt,
+        type:
+          item instanceof Farmer
+            ? "farmer"
+            : item instanceof ColdStorage
+            ? "cold storage"
+            : "trader",
+        status: "complete",
+      })
+    );
+
+    combined.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    // Take top 5
+    const topFive = combined.slice(0, 5);
+
+    const result = topFive.map(({ createdAt, ...rest }) => rest);
+
+    return { data: result };
+  } catch (error) {
+    console.log(error);
+    throw error;
   }
 };
