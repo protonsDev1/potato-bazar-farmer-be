@@ -15,7 +15,7 @@ export const addTraderType = async (req, res) => {
       .json({ message: "Only admins can add trader type." });
   }
 
-  const response = await createRecord(AdminTraderType, req.body, "type");
+  const response = await createRecord(AdminTraderType, req.body);
 
   if (response?.duplicate) {
     return res.status(409).json({
@@ -81,7 +81,6 @@ export const updateTraderType = async (req, res) => {
     AdminTraderType,
     req.params.id,
     req.body,
-    "type"
   );
 
   if (response?.duplicate) {
