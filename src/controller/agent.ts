@@ -38,7 +38,8 @@ export const getRecentRegisteredUsers = async (req, res) => {
 
     if (role !== "agent")
       return res.status(400).json({
-        message: "Only Agents are authorized to retrieve recent registered users under them.",
+        message:
+          "Only Agents are authorized to retrieve recent registered users under them.",
       });
 
     const recentRegistered = await retrieveRecentRegistered(id);
@@ -57,7 +58,8 @@ export const getAgentPerformance = async (req, res) => {
 
     if (role !== "agent")
       return res.status(400).json({
-        message: "Only Agents are authorized to retrieve their own performance.",
+        message:
+          "Only Agents are authorized to retrieve their own performance.",
       });
 
     const performance = await retrieveAgentPerformance(agentId, year);
@@ -95,8 +97,13 @@ export const listAgents = async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const perPage = parseInt(req.query.perPage as string) || 10;
+    const search = req.query.search;
 
-    const { agents, pagination } = await getPaginatedAgents(page, perPage);
+    const { agents, pagination } = await getPaginatedAgents(
+      page,
+      perPage,
+      search
+    );
 
     return res.status(200).json({
       message: "Agent list fetched successfully",
