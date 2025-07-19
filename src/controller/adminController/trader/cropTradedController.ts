@@ -17,7 +17,7 @@ export const addCropTraded = async (req, res) => {
         .json({ message: "Only admins are allowed to add crop traded." });
     }
 
-    const response = await createRecord(AdminCropTraded, req.body, "cropName");
+    const response = await createRecord(AdminCropTraded, req.body);
 
     if (response?.duplicate) {
       return res.status(409).json({
@@ -102,7 +102,6 @@ export const updateCropTraded = async (req, res) => {
       AdminCropTraded,
       id,
       req.body,
-      "cropName"
     );
     if (response?.duplicate) {
       return res.status(409).json({
