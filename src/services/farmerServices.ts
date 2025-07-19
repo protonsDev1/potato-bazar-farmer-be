@@ -344,6 +344,18 @@ export const retrieveFarmerProfile = async (
   try {
     const farmerPersonalInfo = await Farmer.findOne({
       where: { id: farmerId },
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name", "role", "email", "mobile"],
+        },
+        {
+          model: User,
+          as: "onBoardedByUser",
+          attributes: ["id", "name", "role", "email", "mobile"],
+        },
+      ],
     });
 
     const landDetails = await LandDetail.findOne({
@@ -457,6 +469,7 @@ export async function getFarmerListByAdmin(
 
     const {
       agentId,
+      state,
       district,
       potatoVariety,
       taluka,
@@ -473,6 +486,10 @@ export async function getFarmerListByAdmin(
 
     if (agentId && agentId.toLowerCase() !== "all") {
       whereCondition.onBoardedBy = agentId;
+    }
+
+    if (state && state.toLowerCase() !== "all") {
+      whereCondition.state = { [Op.iLike]: state };
     }
 
     if (district && district.toLowerCase() !== "all") {
@@ -597,6 +614,7 @@ export async function getFarmerListByAdmin(
         "gender",
         "name",
         "age",
+        "state",
         "village",
         "taluka",
         "district",
@@ -650,6 +668,7 @@ export async function getFarmerListByAdmin(
       age: item.age,
       village: item.village,
       taluka: item.taluka,
+      state: item.state,
       district: item.district,
       registrationDate: formatDate(item.createdAt),
       onBoardedBy: item.onBoardedBy,
