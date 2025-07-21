@@ -297,16 +297,18 @@ export const getUserProfileDB = async (id) => {
   const result: any = user.toJSON();
 
   if (user.agentProfile) {
-    const agentId = user.agentProfile.id;
+    const agentId = user.id;
 
-    const [farmerCount, coldStorageCount] = await Promise.all([
+    const [farmerCount, coldStorageCount, traderCount] = await Promise.all([
       Farmer.count({ where: { onBoardedBy: agentId } }),
       ColdStorage.count({ where: { onBoardedBy: agentId } }),
+      Trader.count({where: {onBoardedBy: agentId}})
     ]);
 
     result.onboardingStats = {
       farmerCount,
       coldStorageCount,
+      traderCount,
     };
   }
   return result;
