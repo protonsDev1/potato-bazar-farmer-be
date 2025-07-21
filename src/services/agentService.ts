@@ -224,8 +224,8 @@ export const retrieveAgentPerformance = async (agentId, year = "2025") => {
 
 export const retrieveAgentDashboardStats = async (agentId) => {
   try {
-    const startOfWeek = dayjs().startOf("week").toDate();
-    const endOfWeek = dayjs().endOf("week").toDate();
+    const endOfWeek = dayjs().endOf("day").toDate();
+    const startOfWeek = dayjs().subtract(6, "day").startOf("day").toDate();
 
     const agent = await Agent.findOne({ where: { userId: agentId } });
     if (!agent) {
