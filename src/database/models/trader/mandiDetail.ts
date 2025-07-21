@@ -19,6 +19,7 @@ class MandiDetail extends Model<
   declare cityOrVillage: string;
   declare mandiName: string;
   declare shopNumber: string | null;
+  declare district: string;
   declare mandiLicenceNo: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -36,6 +37,7 @@ MandiDetail.init(
     },
     state: { type: DataTypes.STRING(100), allowNull: false },
     cityOrVillage: { type: DataTypes.STRING(100), allowNull: false },
+    district: { type: DataTypes.STRING },
     mandiName: { type: DataTypes.STRING(100), allowNull: false },
     shopNumber: { type: DataTypes.STRING(50) },
     mandiLicenceNo: { type: DataTypes.STRING },
