@@ -100,6 +100,7 @@ export const onboardTraderSchema = Joi.object({
   mandiDetails: Joi.object({
     mandiName: Joi.string().required(),
     state: Joi.string().required(),
+    district: Joi.string().required(),
     cityOrVillage: Joi.string().required(),
     shopNumber: Joi.string().optional().allow(null, ""),
     mandiLicenceNo: Joi.string().required(),
@@ -207,6 +208,7 @@ export const updateTraderSchema = Joi.object({
   mandiDetails: Joi.object({
     mandiName: Joi.string().optional().allow(null, ""),
     state: Joi.string().optional().allow(null, ""),
+    district: Joi.string().optional().allow(null, ""),
     cityOrVillage: Joi.string().optional().allow(null, ""),
     shopNumber: Joi.string().optional().allow(null, ""),
     mandiLicenceNo: Joi.string().optional().allow(null, ""),
