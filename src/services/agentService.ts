@@ -252,7 +252,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
       Farmer.count({
         where: {
           onBoardedBy: agentId,
-          createdAt: {
+          updatedAt: {
             [Op.between]: [startOfWeek, endOfWeek],
           },
         },
@@ -260,7 +260,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
       ColdStorage.count({
         where: {
           onBoardedBy: agentId,
-          createdAt: {
+          updatedAt: {
             [Op.between]: [startOfWeek, endOfWeek],
           },
         },
@@ -268,7 +268,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
       Trader.count({
         where: {
           onBoardedBy: agentId,
-          createdAt: {
+          updatedAt: {
             [Op.between]: [startOfWeek, endOfWeek],
           },
         },
