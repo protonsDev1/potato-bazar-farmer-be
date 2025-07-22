@@ -51,6 +51,7 @@ class Trader extends Model<
   declare fssaiNumber: string | null;
   declare userId: number | null;
   declare onBoardedBy: ForeignKey<User["id"]> | null;
+  declare isDeleted: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -213,6 +214,10 @@ Trader.init(
         key: "id",
       },
       onDelete: "CASCADE",
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,

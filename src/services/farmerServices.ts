@@ -343,7 +343,7 @@ export const retrieveFarmerProfile = async (
 ) => {
   try {
     const farmerPersonalInfo = await Farmer.findOne({
-      where: { id: farmerId },
+      where: { id: farmerId, isDeleted: false },
       include: [
         {
           model: User,
@@ -483,6 +483,8 @@ export async function getFarmerListByAdmin(
       irrigationSource,
       registrationDate,
     } = filters;
+
+    whereCondition.isDeleted = false;
 
     if (agentId && agentId.toLowerCase() !== "all") {
       whereCondition.onBoardedBy = agentId;
@@ -689,3 +691,17 @@ export async function getFarmerListByAdmin(
     throw err;
   }
 }
+
+export const softDeleteFarmerById = async (farmerId: number) => {
+  const farmer = await Farmer.findByPk(farmerId);
+
+  if (!farmer || farmer.isDeleted) {
+    return { success: false, status: 404, message: "Farmer not found" };
+  }
+
+  farmer.isDeleted = true;
+  await farmer.save();
+
+  return { success: true, data: farmer };
+};
+
