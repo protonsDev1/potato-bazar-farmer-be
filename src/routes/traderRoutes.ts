@@ -3,6 +3,7 @@ import express from "express";
 import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 import {
   createTrader,
+  deleteTrader,
   getTraderList,
   getTraderProfileOverview,
   selfOnboardedTrader,
@@ -39,5 +40,7 @@ router.put(
 router.get("/profile/:traderId", authMiddleware, getTraderProfileOverview);
 
 router.get("/", adminMiddleware, getTraderList);
+
+router.delete("/delete/:id", adminMiddleware, deleteTrader);
 
 export default router;

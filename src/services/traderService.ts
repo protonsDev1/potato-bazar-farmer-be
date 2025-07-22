@@ -234,7 +234,7 @@ export const retrieveTraderProfile = async (
       cropsTraded,
     ] = await Promise.all([
       Trader.findOne({
-        where: { id: traderId },
+        where: { id: traderId, isDeleted: false },
         include: [
           {
             model: User,
@@ -309,6 +309,8 @@ export const getTraderListByAdmin = async (
   try {
     const offset = (page - 1) * limit;
     const whereCondition: any = {};
+
+    whereCondition.isDeleted = false;
 
     const { agentId, state, district, cityOrVillage, registrationDate } =
       filters;
@@ -419,4 +421,17 @@ export const getTraderListByAdmin = async (
     console.error("Error in get trader list:", err);
     throw err;
   }
+};
+
+export const softDeleteTraderById = async (traderId: number) => {
+  const trader = await Trader.findByPk(traderId);
+
+  if (!trader || trader.isDeleted) {
+    return { success: false, status: 404, message: "Trader not found" };
+  }
+
+  trader.isDeleted = true;
+  await trader.save();
+
+  return { success: true, data: trader };
 };

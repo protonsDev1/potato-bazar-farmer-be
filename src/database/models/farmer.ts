@@ -32,6 +32,7 @@ class Farmer extends Model<InferAttributes<Farmer>, InferCreationAttributes<Farm
   declare isBankAccount: boolean | null;
   declare onBoardedBy: number | null;
   declare userId: number | null;
+  declare isDeleted: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -76,6 +77,10 @@ Farmer.init(
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL',
     },
+    isDeleted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   },
