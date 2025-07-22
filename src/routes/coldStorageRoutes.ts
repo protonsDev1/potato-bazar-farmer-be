@@ -2,7 +2,7 @@ import express from 'express';
 import { createValidator } from 'express-joi-validation';
 import { adminMiddleware, authMiddleware } from '../utils/userAuth';
 import { coldStorageSchema, updateColdStorageSchema } from '../validation/coldStorageValidation';
-import { createColdStorage, getColdStorageProfile, getColdStorageList, selfOnboardColdStorage, updateColdStorage,  } from '../controller/coldStorage';
+import { createColdStorage, getColdStorageProfile, getColdStorageList, selfOnboardColdStorage, updateColdStorage, deleteColdStorage,  } from '../controller/coldStorage';
 
 const router = express.Router();
 const validator = createValidator({});
@@ -25,5 +25,6 @@ router.put(
   updateColdStorage
 );
 router.get("/", adminMiddleware, getColdStorageList);
+router.delete("/delete/:id", adminMiddleware, deleteColdStorage);
 
 export default router;

@@ -1,23 +1,31 @@
-import Farmer from '../database/models/farmer';
-import { onboardFarmer, retrieveFarmerProfile, getFarmerListByAdmin, updateFarmerDetails} from '../services/farmerServices';
-import { findUserByPkInDB, updateUserInDB } from '../services/userServices';
-import { parseFilters } from '../utils/parseQuery';
+import Farmer from "../database/models/farmer";
+import {
+  onboardFarmer,
+  retrieveFarmerProfile,
+  getFarmerListByAdmin,
+  updateFarmerDetails,
+  softDeleteFarmerById,
+} from "../services/farmerServices";
+import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
+import { parseFilters } from "../utils/parseQuery";
 
 export const createFarmer = async (req, res) => {
   try {
-     const userId = req.user.id;
+    const userId = req.user.id;
     req.body.onBoardedBy = userId;
 
     const user = await findUserByPkInDB(userId);
     if (!user.success) {
-      return res.status(400).json({ message: user.error});
+      return res.status(400).json({ message: user.error });
     }
-    
-    await updateUserInDB(req.body.userId,{name:req.body.name})
+
+    await updateUserInDB(req.body.userId, { name: req.body.name });
     const farmer = await onboardFarmer(req.body);
-    return res.status(201).json({ message: 'Farmer created', farmer });
+    return res.status(201).json({ message: "Farmer created", farmer });
   } catch (err: any) {
-    return res.status(500).json({ message: err.message || 'Failed to create farmer' });
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to create farmer" });
   }
 };
 
@@ -27,7 +35,9 @@ export const getProfileOverview = async (req, res) => {
 
     const { role, id } = req.user;
 
-    const farmer = await Farmer.findOne({ where: { id: farmerId } });
+    const farmer = await Farmer.findOne({
+      where: { id: farmerId, isDeleted: false },
+    });
 
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
@@ -63,21 +73,25 @@ export const updateFarmer = async (req, res) => {
     const { role, id } = req.user;
     const payload = req.body;
 
-    const farmer = await Farmer.findByPk(farmerId);
+    const farmer = await Farmer.findOne({
+      where: { id: farmerId, isDeleted: false },
+    });
     if (!farmer) {
       return res.status(404).json({ message: "Farmer not found" });
     }
 
     if (role !== "admin" && role !== "agent") {
       return res.status(403).json({
-        message: "Only Admins and Agents are authorized to update farmer profiles.",
+        message:
+          "Only Admins and Agents are authorized to update farmer profiles.",
       });
     }
 
     if (role === "agent") {
       const isOnboardedByAgent = farmer.onBoardedBy === id;
       const isWithin24Hours =
-        Date.now() - new Date(farmer.createdAt).getTime() <= 24 * 60 * 60 * 1000;
+        Date.now() - new Date(farmer.createdAt).getTime() <=
+        24 * 60 * 60 * 1000;
 
       if (!isOnboardedByAgent || !isWithin24Hours) {
         return res.status(403).json({
@@ -86,14 +100,18 @@ export const updateFarmer = async (req, res) => {
         });
       }
     }
-        
+
     await updateUserInDB(farmer.userId, { name: payload.name });
 
     const updatedFarmer = await updateFarmerDetails(farmerId, payload);
-    return res.status(200).json({ message: "Farmer updated successfully", farmer: updatedFarmer });
+    return res
+      .status(200)
+      .json({ message: "Farmer updated successfully", farmer: updatedFarmer });
   } catch (err) {
     console.error("Update Farmer Error:", err);
-    return res.status(500).json({ message: err.message || "Failed to update farmer" });
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to update farmer" });
   }
 };
 
@@ -103,7 +121,7 @@ export const getFarmerList = async (req, res) => {
 
     const filters = parseFilters(req.query);
 
-    const farmerList = await getFarmerListByAdmin(page, limit, filters,search);
+    const farmerList = await getFarmerListByAdmin(page, limit, filters, search);
 
     return res.status(200).json({
       message: "Farmer List",
@@ -111,7 +129,9 @@ export const getFarmerList = async (req, res) => {
     });
   } catch (error) {
     console.error("Controller Error:", error);
-    res.status(500).json({ message: error.message || "Failed to get Farmer List" });
+    res
+      .status(500)
+      .json({ message: error.message || "Failed to get Farmer List" });
   }
 };
 
@@ -137,5 +157,24 @@ export const selfOnboardFarmer = async (req, res) => {
     res
       .status(500)
       .json({ message: error.message || "Failed to self onboard farmer." });
+  }
+};
+
+export const deleteFarmer = async (req, res) => {
+  try {
+    const result = await softDeleteFarmerById(req.params.id);
+    if (!result.success) {
+      return res
+        .status(result.status)
+        .json({ success: false, message: result.message });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Farmer deleted successfully" });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: error.message || "Failed to delete farmer",
+    });
   }
 };

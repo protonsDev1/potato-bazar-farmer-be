@@ -1,5 +1,5 @@
 import ColdStorage from '../database/models/coldStorage';
-import { onboardColdStorage, retrieveColdStorageProfile,getColdStorage, updateColdStorageService } from '../services/coldStorageService';
+import { onboardColdStorage, retrieveColdStorageProfile,getColdStorage, updateColdStorageService, softDeleteColdStorageById } from '../services/coldStorageService';
 import { findUserByPkInDB, updateUserInDB } from '../services/userServices';
 import { parseFilters } from '../utils/parseQuery';
 
@@ -33,7 +33,7 @@ export const updateColdStorage = async (req, res) => {
     const { role, id } = req.user;
     const payload = req.body;
 
-    const coldStorage = await ColdStorage.findByPk(coldStorageId);
+    const coldStorage = await ColdStorage.findOne({ where: { id: coldStorageId, isDeleted: false } });
     if (!coldStorage) {
       return res.status(404).json({ message: 'Cold storage not found' });
     }
@@ -71,7 +71,7 @@ export const getColdStorageProfile = async (req, res) => {
     const { role, id } = req.user;
 
     const coldStorage = await ColdStorage.findOne({
-      where: { id: coldStorageId },
+      where: { id: coldStorageId, isDeleted: false },
     });
 
     if (role !== "admin" && coldStorage.onBoardedBy !== id)
@@ -149,3 +149,22 @@ export const selfOnboardColdStorage=async(req,res)=>{
       });
   }
 }
+
+export const deleteColdStorage = async (req, res) => {
+  try {
+    const result = await softDeleteColdStorageById(req.params.id);
+    if (!result.success) {
+      return res
+        .status(result.status)
+        .json({ success: false, message: result.message });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Cold Storage deleted successfully" });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: error.message || "Failed to delete cold storage",
+    });
+  }
+};
