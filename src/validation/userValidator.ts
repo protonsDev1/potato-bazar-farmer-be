@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { PriorityEnum, StatusEnum } from "../database/models/helpAndSupport";
 
 // Define the Joi schema for user signup validation
 export const userSchema = Joi.object({
@@ -61,52 +62,76 @@ export const otpSendSchema = Joi.object({
 });
 
 export const otpVerifySchema = Joi.object({
-  mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
   otp: Joi.string().required().length(4),
 });
 
 export const registrationTypesSchema = Joi.object({
-  mobile: Joi.string()
-    .required()
-    .messages({
-      'any.required': 'Mobile is required',
-    }),
+  mobile: Joi.string().required().messages({
+    "any.required": "Mobile is required",
+  }),
 
   registration_types: Joi.array()
-    .items(Joi.string().valid('farmer', 'cold_storage', 'trader'))
+    .items(Joi.string().valid("farmer", "cold_storage", "trader"))
     .min(1)
     .required()
     .messages({
-      'array.includes': 'registration_types must contain only valid values',
-      'any.required': 'registration_types is required',
-      'array.min': 'At least one registration type is required',
+      "array.includes": "registration_types must contain only valid values",
+      "any.required": "registration_types is required",
+      "array.min": "At least one registration type is required",
     }),
 });
 
-export const forgotPasswordSchema= Joi.object({
-  mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
+export const forgotPasswordSchema = Joi.object({
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
 });
 
-export const verifyOtpSchema= Joi.object({
-  mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
+export const verifyOtpSchema = Joi.object({
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
   otp: Joi.string().required().length(4),
-})
+});
 
 export const resetPasswordSchema = Joi.object({
-  mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
   password: Joi.string().required(),
   confirmPassword: Joi.string().required(),
 });
 
-export const changePasswordSchema= Joi.object({
+export const changePasswordSchema = Joi.object({
   oldPassword: Joi.string().required(),
   newPassword: Joi.string().required(),
   confirmNewPassword: Joi.string().required(),
 });
 
-export const updateProfileSchema= Joi.object({
+export const updateProfileSchema = Joi.object({
   name: Joi.string().optional(),
   email: Joi.string().optional(),
   mobile: Joi.string().optional(),
   location: Joi.string().optional(),
-})
+});
+
+export const helpAndSupportSchema = Joi.object({
+  subject: Joi.string().required(),
+  description: Joi.string().required(),
+  priority: Joi.string()
+    .valid(...Object.values(PriorityEnum))
+    .required(),
+});
+
+export const adminReplySchema = Joi.object({
+  reply: Joi.string().required(),
+});
+
+export const updateStatusSchema = Joi.object({
+  status: Joi.string()
+    .valid(...Object.values(StatusEnum))
+    .required(),
+});
