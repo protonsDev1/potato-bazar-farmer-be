@@ -81,6 +81,7 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare onBoardedBy: number | null;
   declare userId: number | null;
   declare state: string;
+  declare isDeleted: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -187,6 +188,10 @@ ColdStorage.init({
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL',
   },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
   createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   
@@ -194,7 +199,8 @@ ColdStorage.init({
   sequelize,
   modelName: 'ColdStorage',
   tableName: 'coldStorages',
-  timestamps: true
+  timestamps: true,
+  indexes: [{ fields: ["isDeleted"] }],
 });
 
 ColdStorage.hasMany(StorageType, {

@@ -3,6 +3,7 @@ import {
   getTraderListByAdmin,
   onboardTrader,
   retrieveTraderProfile,
+  softDeleteTraderById,
   updateTraderService,
 } from "../services/traderService";
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
@@ -36,7 +37,9 @@ export const updateTrader = async (req, res) => {
     const payload = req.body;
     const { role, id } = req.user;
 
-    const trader = await Trader.findByPk(traderId);
+    const trader = await Trader.findOne({
+      where: { id: traderId, isDeleted: false },
+    });
     if (!trader) return res.status(404).json({ message: "Trader not found" });
 
     if (role !== "admin" && role !== "agent") {
@@ -81,7 +84,7 @@ export const getTraderProfileOverview = async (req, res) => {
     const traderId = req.params.traderId;
     const { role, id: loggedInUserId } = req.user;
 
-    const trader = await Trader.findOne({ where: { id: traderId } });
+    const trader = await Trader.findOne({ where: { id: traderId, isDeleted: false } });
 
     if (!trader) {
       return res.status(404).json({ message: "Trader not found." });
@@ -144,7 +147,12 @@ export const getTraderList = async (req, res) => {
 
     const filters = parseFilters(req.query);
 
-    const traderList = await getTraderListByAdmin(page, perPage, filters, search);
+    const traderList = await getTraderListByAdmin(
+      page,
+      perPage,
+      filters,
+      search
+    );
 
     return res.status(200).json({
       message: "Trader List",
@@ -155,5 +163,24 @@ export const getTraderList = async (req, res) => {
     res
       .status(500)
       .json({ message: error.message || "Failed to get Trader List" });
+  }
+};
+
+export const deleteTrader = async (req, res) => {
+  try {
+    const result = await softDeleteTraderById(req.params.id);
+    if (!result.success) {
+      return res
+        .status(result.status)
+        .json({ success: false, message: result.message });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Trader deleted successfully" });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: error.message || "Failed to delete trader",
+    });
   }
 };

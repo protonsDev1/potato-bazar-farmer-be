@@ -410,7 +410,7 @@ export const retrieveColdStorageProfile = async (
 ) => {
   try {
     const coldStoragePersonalInfo = await ColdStorage.findOne({
-      where: { id: coldStorageId },
+      where: { id: coldStorageId, isDeleted: false },
      include: [
     {
       model: User,
@@ -568,6 +568,8 @@ export async function getColdStorage(
       registrationDate,
     } = filters;
 
+    whereCondition.isDeleted = false;
+    
     if (agentId && agentId.toLowerCase() !== "all") {
       whereCondition.onBoardedBy = agentId;
     }
@@ -673,4 +675,17 @@ export async function getColdStorage(
     console.error("Error in retrieving cold storage:", err);
     throw err;
   }
+};
+
+export const softDeleteColdStorageById = async (coldStorageId: number) => {
+  const coldStorage = await ColdStorage.findByPk(coldStorageId);
+
+  if (!coldStorage || coldStorage.isDeleted) {
+    return { success: false, status: 404, message: "Cold Storage not found" };
+  }
+
+  coldStorage.isDeleted = true;
+  await coldStorage.save();
+
+  return { success: true, data: coldStorage };
 };
