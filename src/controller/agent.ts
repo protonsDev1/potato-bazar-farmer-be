@@ -1,11 +1,17 @@
+import { StatusEnum } from "../database/models/helpAndSupport";
 import {
+  changeTicketStatus,
+  createTicket,
   getAgentDetailsById,
   getPaginatedAgents,
   resetAgentPassword,
+  responseOnTicket,
   retrieveAgentDashboardStats,
   retrieveAgentPerformance,
   retrieveAllAgentPerformance,
+  retrieveAllTicketDetails,
   retrieveRecentRegistered,
+  retrieveTicketDetail,
   retrieveTopAgents,
   retriveAllUsers,
   softDeleteAgentById,
@@ -236,6 +242,111 @@ export const getTopAgents = async (req, res) => {
     console.error("Failed in retrieving all top agents", error);
     return res.status(500).json({
       message: error.message || "Failed in retrieving all top agents",
+    });
+  }
+};
+
+export const createSupportTicket = async (req, res) => {
+  try {
+    const data = req.body;
+    const { id: agentId, role } = req.user;
+
+    if (role !== "agent")
+      return res.status(400).json({
+        message: "Only Agents are authorized to create support ticket.",
+      });
+
+    const response = await createTicket(data, agentId);
+
+    if (!response.success)
+      return res.status(400).json({ message: response.error });
+
+    return res
+      .status(201)
+      .json({ message: "New support ticket created", ticket: response.data });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed in creating support ticket.",
+    });
+  }
+};
+
+export const replyToSupportTicket = async (req, res) => {
+  try {
+    const { reply } = req.body;
+    const ticketId = req.params.ticketId;
+    const response = await responseOnTicket(ticketId, reply);
+
+    if (!response.success)
+      return res.status(400).json({ message: response.error });
+
+    return res
+      .status(200)
+      .json({ message: "Responded to support ticket successfully.", reply });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed in responding to support ticket.",
+    });
+  }
+};
+
+export const getTicketDetail = async (req, res) => {
+  try {
+    const ticketId = req.params.ticketId;
+    const { id: agentId } = req.user;
+
+    const response = await retrieveTicketDetail(ticketId, agentId);
+
+    return res.status(200).json({
+      message: "Ticket detail fetched successfully.",
+      detail: response,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed in retrieving support ticket detail.",
+    });
+  }
+};
+
+export const getAllTicketDetails = async (req, res) => {
+  try {
+    const allTicketDetails = await retrieveAllTicketDetails();
+
+    return res.status(200).json({
+      message: "All support ticket details fetched successfully.",
+      allTicketDetails,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        error.message || "Failed in retrieving  all support ticket details.",
+    });
+  }
+};
+
+export const updateStatusOfTicket = async (req, res) => {
+  try {
+    const ticketId = req.params.ticketId;
+    const { status } = req.body;
+    const { role } = req.user;
+
+    if (role === "agent" && status !== StatusEnum.OPEN)
+      return res.status(401).json({
+        message: `Agents are only allowed to set status to '${StatusEnum.OPEN}'.`,
+      });
+
+    const response = await changeTicketStatus(ticketId, status);
+
+    if (!response.success)
+      return res.status(400).json({ message: response.error });
+
+    return res
+      .status(200)
+      .json({ message: "Ticket status updated successfully." });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        error.message || "Failed in retrieving  all support ticket details.",
     });
   }
 };

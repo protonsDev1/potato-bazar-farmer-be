@@ -9,6 +9,11 @@ import User from "../database/models/user";
 import { generateRandomPassword } from "../utils/generate";
 import { getMonthWiseRegistrations } from "../utils/getMonthWiseRegistration";
 import Trader from "../database/models/trader/trader";
+import HelpAndSupport, {
+  PriorityEnum,
+  StatusEnum,
+} from "../database/models/helpAndSupport";
+import sequelize from "../database/models/db";
 
 export const retriveAllUsers = async (
   agentId: string,
@@ -569,4 +574,102 @@ export const retrieveTopAgents = async () => {
     .slice(0, 5);
 
   return topAgents;
+};
+
+export const createTicket = async (data, agentId) => {
+  const { subject, description, priority } = data;
+
+  if (!Object.values(PriorityEnum).includes(priority)) {
+    return {
+      success: false,
+      error: `Invalid priority value. Allowed values are: ${Object.values(
+        PriorityEnum
+      ).join(", ")}`,
+    };
+  }
+
+  const newTicket = await HelpAndSupport.create({
+    subject,
+    description,
+    priority,
+    agentId,
+  });
+
+  const ticketId = "TICKET-" + (1000 + newTicket.id);
+  await newTicket.update({ ticketId });
+
+  return {
+    success: true,
+    data: newTicket,
+  };
+};
+
+export const responseOnTicket = async (ticketId, reply) => {
+  const [updatedCount] = await HelpAndSupport.update(
+    { reply, status: StatusEnum.IN_PROGRESS },
+    { where: { ticketId } }
+  );
+
+  if (updatedCount === 0) {
+    return {
+      success: false,
+      error: "No ticket found with the provided ticketId.",
+    };
+  }
+
+  return { success: true };
+};
+
+export const retrieveTicketDetail = async (ticketId, agentId) => {
+  const ticketDetail = await HelpAndSupport.findOne({
+    where: { ticketId, agentId },
+  });
+
+  return ticketDetail;
+};
+
+export const retrieveAllTicketDetails = async () => {
+  const allTicketDetails = await HelpAndSupport.findAll({
+    order: [
+      [
+        sequelize.literal(`
+            CASE 
+              WHEN priority = 'high' THEN 1
+              WHEN priority = 'medium' THEN 2
+              WHEN priority = 'low' THEN 3
+            END
+          `),
+        "ASC",
+      ],
+      ["createdAt", "DESC"],
+    ],
+  });
+
+  return allTicketDetails;
+};
+
+export const changeTicketStatus = async (ticketId, status) => {
+  if (!Object.values(StatusEnum).includes(status as StatusEnum)) {
+    return {
+      success: false,
+      error: `Invalid status. Allowed values: ${Object.values(StatusEnum).join(
+        ", "
+      )}`,
+    };
+  }
+
+  const ticket = await HelpAndSupport.findOne({ where: { ticketId } });
+
+  if (!ticket) {
+    return {
+      success: false,
+      error: "Ticket not found.",
+    };
+  }
+
+  await ticket.update({ status });
+
+  return {
+    success: true,
+  };
 };

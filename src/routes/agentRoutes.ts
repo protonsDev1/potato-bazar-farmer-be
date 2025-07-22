@@ -3,20 +3,30 @@ import { createValidator } from "express-joi-validation";
 
 import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 import {
+  createSupportTicket,
   deleteAgent,
   getAgentDashboardStats,
   getAgentDetails,
   getAgentPerformance,
   getAllAgentPerformance,
   getAllRegisteredUsers,
+  getAllTicketDetails,
   getRecentRegisteredUsers,
+  getTicketDetail,
   getTopAgents,
   listAgents,
+  replyToSupportTicket,
   resetPasswordForAgent,
   updateAgent,
+  updateStatusOfTicket,
 } from "../controller/agent";
 import { updateAgentSchema } from "../validation/agentValidation";
 import { validateRequest } from "../middlewares/validationMiddleware";
+import {
+  adminReplySchema,
+  helpAndSupportSchema,
+  updateStatusSchema,
+} from "../validation/userValidator";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -37,5 +47,25 @@ router.delete("/delete/:id", adminMiddleware, deleteAgent);
 router.post("/:id/reset_password", adminMiddleware, resetPasswordForAgent);
 router.get("/all_agent_performance", adminMiddleware, getAllAgentPerformance);
 router.get("/top_performing_agents", adminMiddleware, getTopAgents);
+router.post(
+  "/create_ticket",
+  authMiddleware,
+  validator.body(helpAndSupportSchema),
+  createSupportTicket
+);
+router.post(
+  "/reply_on_ticket/:ticketId",
+  adminMiddleware,
+  validator.body(adminReplySchema),
+  replyToSupportTicket
+);
+router.get("/ticket_detail/:ticketId", authMiddleware, getTicketDetail);
+router.get("/all_tickets_detail", adminMiddleware, getAllTicketDetails);
+router.put(
+  "/update_status/:ticketId",
+  authMiddleware,
+  validator.body(updateStatusSchema),
+  updateStatusOfTicket
+);
 
 export default router;
