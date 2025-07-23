@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class ChamberCapacity extends Model<
   InferAttributes<ChamberCapacity>,
@@ -40,5 +41,14 @@ ChamberCapacity.init(
     timestamps: true,
   }
 );
+
+ChamberCapacity.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(ChamberCapacity, {
+  foreignKey: "coldStorageId",
+  as: "chamberCapacities",
+});
 
 export default ChamberCapacity;

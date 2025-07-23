@@ -1,3 +1,5 @@
+import { Worksheet } from "exceljs";
+
 import sequelize from "../database/models/db"; // sequelize instance
 import Farmer from "../database/models/farmer";
 import LandDetail from "../database/models/landDetails";
@@ -648,7 +650,7 @@ export async function getFarmerListByAdmin(
         },
         {
           model: LandDetail,
-          as: "LandDetails",
+          as: "LandDetail",
           attributes: [
             "id",
             "landOwnedAcres",
@@ -688,7 +690,7 @@ export async function getFarmerListByAdmin(
       onBoardedBy: item.onBoardedBy,
       PotatoVarietyGrown: item.PotatoVarietyGrown,
       users: item.user,
-      LandDetails: item.LandDetails,
+      LandDetails: item.LandDetail,
       IrrigationSources: item.IrrigationSources,
     }));
 
@@ -717,3 +719,436 @@ export const softDeleteFarmerById = async (farmerId: number) => {
   return { success: true, data: farmer };
 };
 
+export async function getAllFarmersWithAssociations(
+  filters: any,
+  search: string
+) {
+  const whereCondition: any = {};
+  const landDetailsWhere: any = {};
+
+  const {
+    agentId,
+    state,
+    district,
+    potatoVariety,
+    taluka,
+    ageRange,
+    gender,
+    landSizeRange,
+    farmingType,
+    soilType,
+    sowingMonth,
+    harvestMonth,
+    irrigationSource,
+    registrationDate,
+  } = filters;
+
+  whereCondition.isDeleted = false;
+
+  if (agentId && agentId.toLowerCase() !== "all") {
+    whereCondition.onBoardedBy = agentId;
+  }
+
+  if (state && state.toLowerCase() !== "all") {
+    whereCondition.state = { [Op.iLike]: state };
+  }
+
+  if (district && district.toLowerCase() !== "all") {
+    whereCondition.district = { [Op.iLike]: district };
+  }
+
+  if (taluka && taluka.toLowerCase() !== "all") {
+    whereCondition.taluka = { [Op.iLike]: taluka };
+  }
+
+  if (gender && gender.toLowerCase() !== "all") {
+    whereCondition.gender = { [Op.iLike]: gender };
+  }
+
+  if (potatoVariety && potatoVariety.toLowerCase() !== "all") {
+    whereCondition.id = {
+      [Op.in]: literal(`(
+        SELECT "farmerId"
+        FROM "PotatoVarietyGrown"
+        WHERE LOWER("variety") = LOWER('${potatoVariety}')
+      )`),
+    };
+  }
+
+  if (ageRange && ageRange.length === 2) {
+    const [min, max] = ageRange;
+    if (min && max) {
+      whereCondition.age = {
+        [Op.between]: [Number(min), Number(max)],
+      };
+    }
+  }
+
+  if (soilType && soilType.toLowerCase() !== "all") {
+    landDetailsWhere.soilType = { [Op.iLike]: soilType };
+  }
+
+  if (sowingMonth && sowingMonth.toLowerCase() !== "all") {
+    landDetailsWhere.sowingMonth = { [Op.iLike]: sowingMonth };
+  }
+
+  if (harvestMonth && harvestMonth.toLowerCase() !== "all") {
+    landDetailsWhere.harvestMonth = { [Op.iLike]: harvestMonth };
+  }
+
+  if (landSizeRange && landSizeRange.length === 2) {
+    const [min, max] = landSizeRange;
+    if (min && max) {
+      landDetailsWhere.landOwnedAcres = {
+        [Op.between]: [Number(min), Number(max)],
+      };
+    }
+  }
+
+  if (farmingType && farmingType.toLowerCase() !== "all") {
+    const type = farmingType.toLowerCase();
+    if (type === "own land") {
+      landDetailsWhere.landOwnedAcres = { [Op.gt]: 0 };
+    } else if (type === "lease") {
+      landDetailsWhere.landLeasedAcres = { [Op.gt]: 0 };
+    } else if (type === "both") {
+      landDetailsWhere[Op.and] = [
+        { landOwnedAcres: { [Op.gt]: 0 } },
+        { landLeasedAcres: { [Op.gt]: 0 } },
+      ];
+    }
+  }
+
+  if (
+    irrigationSource &&
+    Array.isArray(irrigationSource) &&
+    irrigationSource.length > 0
+  ) {
+    const validSources = irrigationSource
+      .filter((s: string) => s && s.trim())
+      .map((s: string) => s.toLowerCase());
+
+    if (validSources.length > 0) {
+      const formattedList = validSources.map((s) => `'${s}'`).join(",");
+
+      whereCondition.id = {
+        [Op.in]: Sequelize.literal(`(
+          SELECT DISTINCT "farmerId"
+          FROM "IrrigationSources"
+          WHERE LOWER("method") IN (${formattedList})
+        )`),
+      };
+    }
+  }
+
+  if (registrationDate && registrationDate.length === 2) {
+    const [startDate, endDate] = registrationDate;
+    if (startDate && endDate) {
+      const { startUTC, endUTC } = convertISTDateRangeToUTC(startDate, endDate);
+      whereCondition.createdAt = {
+        [Op.between]: [new Date(startUTC), new Date(endUTC)],
+      };
+    }
+  }
+
+  if (search?.trim()) {
+    const searchTerm = `%${search.trim()}%`;
+    whereCondition[Op.or] = [
+      { id: isNaN(Number(search)) ? -1 : Number(search) },
+      { name: { [Op.iLike]: searchTerm } },
+    ];
+  }
+
+  const farmers = await Farmer.findAll({
+    where: whereCondition,
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["mobile"],
+      },
+      {
+        model: User,
+        as: "onBoardedByUser",
+        attributes: ["name"],
+      },
+      {
+        model: LandDetail,
+        as: "LandDetail",
+        where:
+          Object.keys(landDetailsWhere).length > 0
+            ? landDetailsWhere
+            : undefined,
+        required: Object.keys(landDetailsWhere).length > 0,
+      },
+      {
+        model: IrrigationSource,
+        as: "IrrigationSources",
+        attributes: ["method"],
+      },
+      {
+        model: IrrigationMethod,
+        as: "IrrigationMethods",
+        attributes: ["method"],
+      },
+      {
+        model: FarmEquipment,
+        as: "FarmEquipments",
+        attributes: ["machine", "brand", "model"],
+      },
+      {
+        model: PotatoVarietyGrown,
+        as: "PotatoVarietyGrown",
+        attributes: ["variety", "subVariety"],
+      },
+      {
+        model: PriceDiscoveryMethod,
+        as: "PriceDiscoveryMethods",
+        attributes: ["method"],
+      },
+      {
+        model: SellingChallenge,
+        as: "SellingChallenges",
+        attributes: ["name"],
+      },
+      {
+        model: MajorSellingChallenge,
+        as: "MajorSellingChallenges",
+        attributes: ["name"],
+      },
+      { model: SellingChannel, as: "SellingChannels", attributes: ["name"] },
+      { model: TechnologyUsed, as: "TechnologyUseds", attributes: ["name"] },
+      {
+        model: BrandPreferenceReason,
+        as: "BrandPreferenceReasons",
+        attributes: ["reason"],
+      },
+      { model: SellingPrice, as: "SellingPrices", attributes: ["price"] },
+      { model: SellingPlace, as: "SellingPlaces", attributes: ["place"] },
+      { model: PotatoType, as: "PotatoTypes", attributes: ["type"] },
+      {
+        model: OtherCropGrown,
+        as: "OtherCropGrowns",
+        attributes: ["cropName", "sowingMonth", "harvestingMonth"],
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+  return farmers;
+}
+
+export const createFarmerWorksheetColumns = (worksheet: Worksheet) => {
+  worksheet.columns = [
+    { header: "Farmer ID", key: "id", width: 10 },
+    { header: "Name", key: "name", width: 20 },
+    { header: "Gender", key: "gender", width: 10 },
+    { header: "Age", key: "age", width: 10 },
+    { header: "Mobile", key: "mobile", width: 15 },
+    { header: "Optional Number", key: "optionalNumber", width: 20 },
+    { header: "Whatsapp Number", key: "whatsappNumber", width: 20 },
+    { header: "Caste", key: "caste", width: 15 },
+    { header: "Sub Caste", key: "subCaste", width: 15 },
+    { header: "State", key: "state", width: 15 },
+    { header: "District", key: "district", width: 15 },
+    { header: "Taluka", key: "taluka", width: 15 },
+    { header: "Village", key: "village", width: 20 },
+    { header: "Pin Code", key: "pinCode", width: 20 },
+    { header: "DIGI Pin", key: "digiPin", width: 20 },
+    { header: "Aadhar Number", key: "aadhaarNumber", width: 20 },
+    { header: "Registration Date", key: "registrationDate", width: 20 },
+    { header: "Onboarded By", key: "onBoardedBy", width: 20 },
+
+    { header: "Land Owned (Acres)", key: "landOwned", width: 15 },
+    { header: "Land Leased (Acres)", key: "landLeased", width: 15 },
+    { header: "Sowing Month", key: "sowingMonth", width: 15 },
+    { header: "Harvest Month", key: "harvestMonth", width: 15 },
+    {
+      header: "Total Land Under Cultivation",
+      key: "totalLandUnderCultivation",
+      width: 20,
+    },
+    {
+      header: "Land For Potato Farming",
+      key: "landForPotatoFarming",
+      width: 20,
+    },
+    { header: "Soil Type", key: "soilType", width: 15 },
+    { header: "Area Under Drip", key: "areaUnderDrip", width: 20 },
+    {
+      header: "Storage Capacity At Farm",
+      key: "storageCapacityAtFarm",
+      width: 25,
+    },
+    {
+      header: "Irrigation Equipment Brand",
+      key: "irrigationEquipmentBrand",
+      width: 25,
+    },
+    { header: "Seed Procurement Type", key: "seedProcurementType", width: 20 },
+    { header: "New Seed (%)", key: "newSeedPercent", width: 15 },
+    { header: "Reused Seed (%)", key: "reusedSeedPercent", width: 15 },
+    { header: "Seed Brand Name", key: "seedBrandName", width: 20 },
+    { header: "Average Yield/Acre", key: "averageYieldPerAcre", width: 20 },
+    { header: "Primary Sales Point", key: "primarySalesPoint", width: 20 },
+    {
+      header: "Distance to Nearest Mandi",
+      key: "distanceToNearestMandi",
+      width: 20,
+    },
+    {
+      header: "Grading Machine at Farm",
+      key: "isGradingMachineAtFarm",
+      width: 20,
+    },
+    { header: "Shade at Farm Gate", key: "isShadeAtFarmGate", width: 20 },
+    {
+      header: "Is Under Contract Farming",
+      key: "isUnderContractFarming",
+      width: 20,
+    },
+    { header: "Contract Partner Name", key: "contractPartnerName", width: 20 },
+    { header: "Reason for Trust", key: "reasonForTrust", width: 20 },
+    { header: "Preference", key: "preference", width: 20 },
+    {
+      header: "Contract Farming (%)",
+      key: "contractFarmingPercent",
+      width: 20,
+    },
+    {
+      header: "Sold in Spot Market (%)",
+      key: "soldInSpotMarketPercent",
+      width: 20,
+    },
+    {
+      header: "Stored in Cold Storage (%)",
+      key: "storedInColdStoragePercent",
+      width: 25,
+    },
+    {
+      header: "Interested in Digital Trading",
+      key: "interestedInDigitalTrading",
+      width: 25,
+    },
+    {
+      header: "Uses WhatsApp for Business",
+      key: "usesWhatsappForBusiness",
+      width: 25,
+    },
+
+    { header: "Irrigation Sources", key: "irrigationSources", width: 40 },
+    { header: "Irrigation Methods", key: "irrigationMethods", width: 40 },
+    { header: "Farm Equipments", key: "farmEquipments", width: 40 },
+    { header: "Potato Varieties", key: "potatoVarieties", width: 40 },
+    { header: "Price Discovery Methods", key: "priceDiscovery", width: 40 },
+    { header: "Selling Challenges", key: "sellingChallenges", width: 50 },
+    {
+      header: "Major Selling Challenge",
+      key: "majorSellingChallenge",
+      width: 40,
+    },
+    { header: "Selling Channels", key: "sellingChannels", width: 40 },
+    { header: "Technology Used", key: "technologyUsed", width: 40 },
+    { header: "Brand Preference Reasons", key: "brandPreferences", width: 40 },
+    { header: "Selling Price", key: "sellingPrices", width: 40 },
+    { header: "Selling Place", key: "sellingPlaces", width: 40 },
+    { header: "Potato Types", key: "potatoTypes", width: 40 },
+    { header: "Other Crops", key: "otherCrops", width: 50 },
+  ];
+};
+
+const joinByKey = (arr: any[], key: string) =>
+  arr
+    ?.map((i) => i[key])
+    .filter(Boolean)
+    .join(", ") || "";
+
+export const addFarmersToWorksheet = (farmers: any[], worksheet: Worksheet) => {
+  for (const farmer of farmers) {
+    worksheet.addRow({
+      id: farmer.id,
+      name: farmer.name,
+      gender: farmer.gender,
+      age: farmer.age,
+      mobile: farmer.user?.mobile || "",
+      optionalNumber: farmer.optionalNumber || "",
+      whatsappNumber: farmer.whatsappNumber || "",
+      caste: farmer.caste || "",
+      subCaste: farmer.subCaste || "",
+      state: farmer.state,
+      district: farmer.district,
+      taluka: farmer.taluka,
+      village: farmer.village,
+      pinCode: farmer.pinCode || "",
+      digiPin: farmer.digiPin || "",
+      aadhaarNumber: farmer.aadhaarNumber || "",
+      registrationDate: formatDate(farmer.createdAt),
+      onBoardedBy: farmer.onBoardedByUser.name,
+
+      // Land Details
+      landOwned: farmer.LandDetail?.landOwnedAcres || "",
+      landLeased: farmer.LandDetail?.landLeasedAcres || "",
+      sowingMonth: farmer.LandDetail?.sowingMonth || "",
+      harvestMonth: farmer.LandDetail?.harvestMonth || "",
+      totalLandUnderCultivation:
+        farmer.LandDetail?.totalLandUnderCultivation || "",
+      landForPotatoFarming: farmer.LandDetail?.landForPotatoFarming || "",
+      soilType: farmer.LandDetail?.soilType || "",
+      areaUnderDrip: farmer.LandDetail?.areaUnderDrip ? "Yes" : "No",
+      storageCapacityAtFarm: farmer.LandDetail?.storageCapacityAtFarm
+        ? "Yes"
+        : "No",
+      irrigationEquipmentBrand:
+        farmer.LandDetail?.irrigationEquipmentBrand || "",
+      seedProcurementType: farmer.LandDetail?.seedProcurementType || "",
+      newSeedPercent: farmer.LandDetail?.newSeedPercent || "",
+      reusedSeedPercent: farmer.LandDetail?.reusedSeedPercent || "",
+      seedBrandName: farmer.LandDetail?.seedBrandName || "",
+      averageYieldPerAcre: farmer.LandDetail?.averageYieldPerAcre || "",
+      primarySalesPoint: farmer.LandDetail?.primarySalesPoint || "",
+      distanceToNearestMandi: farmer.LandDetail?.distanceToNearestMandi || "",
+      isGradingMachineAtFarm: farmer.LandDetail?.isGradingMachineAtFarm || "",
+      isShadeAtFarmGate: farmer.LandDetail?.isShadeAtFarmGate || "",
+      isUnderContractFarming: farmer.LandDetail?.isUnderContractFarming || "",
+      contractPartnerName: farmer.LandDetail?.contractPartnerName || "",
+      reasonForTrust: farmer.LandDetail?.reasonForTrust || "",
+      preference: farmer.LandDetail?.preference || "",
+      contractFarmingPercent: farmer.LandDetail?.contractFarmingPercent || "",
+      soldInSpotMarketPercent: farmer.LandDetail?.soldInSpotMarketPercent || "",
+      storedInColdStoragePercent:
+        farmer.LandDetail?.storedInColdStoragePercent || "",
+      interestedInDigitalTrading: farmer.LandDetail?.interestedInDigitalTrading
+        ? "Yes"
+        : "No",
+      usesWhatsappForBusiness: farmer.LandDetail?.usesWhatsappForBusiness
+        ? "Yes"
+        : "No",
+
+      // Associations
+      irrigationSources: joinByKey(farmer.IrrigationSources, "method"),
+      irrigationMethods: joinByKey(farmer.IrrigationMethods, "method"),
+      farmEquipments:
+        farmer.FarmEquipments?.map((e) =>
+          `${e.machine || ""} ${e.brand || ""} ${e.model || ""}`.trim()
+        ).join(", ") || "",
+      potatoVarieties:
+        farmer.PotatoVarietyGrown?.map(
+          (v) => `${v.variety}${v.subVariety ? ` (${v.subVariety})` : ""}`
+        ).join(", ") || "",
+      priceDiscovery: joinByKey(farmer.PriceDiscoveryMethods, "method"),
+      sellingChallenges: joinByKey(farmer.SellingChallenges, "name"),
+      majorSellingChallenge: joinByKey(farmer.MajorSellingChallenges, "name"),
+      sellingChannels: joinByKey(farmer.SellingChannels, "name"),
+      technologyUsed: joinByKey(farmer.TechnologyUseds, "name"),
+      brandPreferences: joinByKey(farmer.BrandPreferenceReasons, "reason"),
+      sellingPrices: joinByKey(farmer.SellingPrices, "price"),
+      sellingPlaces: joinByKey(farmer.SellingPlaces, "place"),
+      potatoTypes: joinByKey(farmer.PotatoTypes, "type"),
+      otherCrops:
+        farmer.OtherCropGrowns?.map((e) =>
+          `${e.cropName || ""} (${e.sowingMonth || ""} - ${
+            e.harvestingMonth || ""
+          })`.trim()
+        ).join(", ") || "",
+    });
+  }
+};

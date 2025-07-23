@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class OtherFacility extends Model<
   InferAttributes<OtherFacility>,
@@ -25,7 +26,7 @@ OtherFacility.init(
       references: { model: "coldStorages", key: "id" },
       onDelete: "CASCADE",
     },
-    facility: {type: DataTypes.STRING, allowNull:true},
+    facility: { type: DataTypes.STRING, allowNull: true },
   },
   {
     sequelize,
@@ -34,5 +35,14 @@ OtherFacility.init(
     timestamps: true,
   }
 );
+
+OtherFacility.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(OtherFacility, {
+  foreignKey: "coldStorageId",
+  as: "otherFacilities",
+});
 
 export default OtherFacility;

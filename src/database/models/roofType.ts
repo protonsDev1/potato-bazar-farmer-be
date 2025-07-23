@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class RoofType extends Model<
   InferAttributes<RoofType>,
@@ -34,5 +35,15 @@ RoofType.init(
     timestamps: true,
   }
 );
+
+RoofType.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(RoofType, {
+  foreignKey: "coldStorageId",
+  as: "roofTypes",
+});
+
 
 export default RoofType;

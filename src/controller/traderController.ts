@@ -1,5 +1,10 @@
+import ExcelJS from "exceljs";
+
 import Trader from "../database/models/trader/trader";
 import {
+  addTradersToWorksheet,
+  createTraderWorksheetColumns,
+  getAllTradersWithAssociations,
   getTraderListByAdmin,
   onboardTrader,
   retrieveTraderProfile,
@@ -84,7 +89,9 @@ export const getTraderProfileOverview = async (req, res) => {
     const traderId = req.params.traderId;
     const { role, id: loggedInUserId } = req.user;
 
-    const trader = await Trader.findOne({ where: { id: traderId, isDeleted: false } });
+    const trader = await Trader.findOne({
+      where: { id: traderId, isDeleted: false },
+    });
 
     if (!trader) {
       return res.status(404).json({ message: "Trader not found." });
@@ -182,5 +189,45 @@ export const deleteTrader = async (req, res) => {
     return res.status(500).json({
       message: error.message || "Failed to delete trader",
     });
+  }
+};
+
+export const exportTraders = async (req, res) => {
+  try {
+    const userRole = req.user?.role;
+
+    if (userRole !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Only admin can export trader data." });
+    }
+
+    const filters = parseFilters(req.query);
+    const search = req.query.search || "";
+    const farmers = await getAllTradersWithAssociations(filters, search);
+
+    if (!farmers.length) {
+      return res.status(404).json({ message: "No traders found." });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Farmers");
+
+    createTraderWorksheetColumns(worksheet);
+    addTradersToWorksheet(farmers, worksheet);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", "attachment; filename=traders.xlsx");
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Trader export error:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to export traders", error: error.message });
   }
 };

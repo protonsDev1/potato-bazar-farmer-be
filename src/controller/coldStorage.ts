@@ -1,5 +1,7 @@
+import ExcelJS from "exceljs";
+
 import ColdStorage from '../database/models/coldStorage';
-import { onboardColdStorage, retrieveColdStorageProfile,getColdStorage, updateColdStorageService, softDeleteColdStorageById } from '../services/coldStorageService';
+import { onboardColdStorage, retrieveColdStorageProfile,getColdStorage, updateColdStorageService, softDeleteColdStorageById, getAllColdStoragesWithAssociations, createColdStorageWorksheetColumns, addColdStoragesToWorksheet } from '../services/coldStorageService';
 import { findUserByPkInDB, updateUserInDB } from '../services/userServices';
 import { parseFilters } from '../utils/parseQuery';
 
@@ -165,6 +167,49 @@ export const deleteColdStorage = async (req, res) => {
   } catch (error: any) {
     return res.status(500).json({
       message: error.message || "Failed to delete cold storage",
+    });
+  }
+};
+
+export const exportColdStorages = async (req, res) => {
+  try {
+    const userRole = req.user?.role;
+
+    if (userRole !== "admin") {
+      return res.status(403).json({ message: "Only admin can export data." });
+    }
+
+    const filters = parseFilters(req.query);
+    const search = req.query.search || "";
+
+    const coldStorages = await getAllColdStoragesWithAssociations(filters, search);
+
+    if (!coldStorages.length) {
+      return res.status(404).json({ message: "No cold storages found." });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Cold Storages");
+
+    createColdStorageWorksheetColumns(worksheet);
+    addColdStoragesToWorksheet(coldStorages, worksheet);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=cold_storages.xlsx"
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Cold Storage export error:", error);
+    res.status(500).json({
+      message: "Failed to export cold storages",
+      error: error.message,
     });
   }
 };

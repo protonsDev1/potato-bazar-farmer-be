@@ -1,5 +1,6 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
 import sequelize from './db';
+import ColdStorage from './coldStorage';
 
 class ElevatorAndStuffing extends Model<InferAttributes<ElevatorAndStuffing>, InferCreationAttributes<ElevatorAndStuffing>> {
   declare id: CreationOptional<number>;
@@ -20,5 +21,14 @@ ElevatorAndStuffing.init(
     timestamps: false,
   }
 );
+
+ElevatorAndStuffing.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(ElevatorAndStuffing, {
+  foreignKey: "coldStorageId",
+  as: "elevatorAndStuffings",
+});
 
 export default ElevatorAndStuffing;
