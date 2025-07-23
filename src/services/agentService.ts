@@ -643,8 +643,26 @@ export const retrieveTicketDetail = async (ticketId, agentId) => {
   return ticketDetail;
 };
 
-export const retrieveAllTicketDetails = async () => {
-  const allTicketDetails = await HelpAndSupport.findAll({
+export const retrieveAllTicketDetails = async (
+  page = 1,
+  limit = 10,
+  search
+) => {
+  const offset = (page - 1) * limit;
+
+  const whereCondition = search
+    ? {
+        [Op.or]: [
+          { ticketId: { [Op.iLike]: `%${search}%` } },
+          { subject: { [Op.iLike]: `%${search}%` } },
+        ],
+      }
+    : {};
+
+  const { count, rows } = await HelpAndSupport.findAndCountAll({
+    where: whereCondition,
+    limit,
+    offset,
     order: [
       [
         sequelize.literal(`
@@ -660,7 +678,14 @@ export const retrieveAllTicketDetails = async () => {
     ],
   });
 
-  return allTicketDetails;
+  return {
+    data: rows,
+    paginationData: {
+      total: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+    },
+  };
 };
 
 export const changeTicketStatus = async (ticketId, status) => {
@@ -689,9 +714,23 @@ export const changeTicketStatus = async (ticketId, status) => {
   };
 };
 
-export const retrieveAgentTickets = async (agentId) => {
-  const tickets = await HelpAndSupport.findAll({
-    where: { agentId },
+export const retrieveAgentTickets = async (agentId, page, limit, search) => {
+  const offset = (page - 1) * limit;
+
+  const whereCondition = {
+    agentId,
+    ...(search?.trim() && {
+      [Op.or]: [
+        { ticketId: { [Op.iLike]: `%${search.trim()}%` } },
+        { subject: { [Op.iLike]: `%${search.trim()}%` } },
+      ],
+    }),
+  };
+
+  const { count, rows } = await HelpAndSupport.findAndCountAll({
+    where: whereCondition,
+    limit,
+    offset,
     order: [
       [
         sequelize.literal(`
@@ -706,5 +745,12 @@ export const retrieveAgentTickets = async (agentId) => {
       ["createdAt", "DESC"],
     ],
   });
-  return tickets;
+  return {
+    data: rows,
+    paginationData: {
+      total: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+    },
+  };
 };
