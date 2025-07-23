@@ -19,6 +19,7 @@ import SellingPlace from "../database/models/sellingPlace";
 import OtherCropGrown from "../database/models/otherCropGrown";
 import IrrigationMethod from "../database/models/irrigationMethod";
 import PotatoType from "../database/models/potatoType";
+import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboardedUsers";
 
 interface Payload {
   name: string;
@@ -251,6 +252,17 @@ export async function onboardFarmer(payload: Payload) {
           );
         }
       }
+
+       await AgentOnboardedUser.create({
+        userId: payload.userId,
+        agentId: payload.onBoardedBy,
+        userType: USER_TYPE.FARMER,
+        userName: payload.name,
+        village: payload.village,
+        district: payload.district,
+        state: payload.state,
+        statusOfRegistration: "complete"
+      });
 
       return farmer;
     });

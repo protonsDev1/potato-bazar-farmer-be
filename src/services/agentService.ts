@@ -14,66 +14,81 @@ import HelpAndSupport, {
   StatusEnum,
 } from "../database/models/helpAndSupport";
 import sequelize from "../database/models/db";
+import AgentOnboardedUser, {
+  USER_TYPE,
+} from "../database/models/agentOnboardedUsers";
 
-export const retriveAllUsers = async (
+export const retrieveAllUsers = async (
   agentId: string,
   page = 1,
-  limit = 10
+  limit = 10,
+  filters
 ) => {
   try {
     const offset = (page - 1) * limit;
 
-    const [farmers, coldStorages, traders] = await Promise.all([
-      Farmer.findAll({
-        where: { onBoardedBy: agentId },
-        order: [["createdAt", "DESC"]],
-      }),
-      ColdStorage.findAll({
-        where: { onBoardedBy: agentId },
-        order: [["createdAt", "DESC"]],
-      }),
-      Trader.findAll({
-        where: { onBoardedBy: agentId },
-        order: [["createdAt", "DESC"]],
-      }),
-    ]);
+    const { type, name, village, district, state } = filters;
 
-    const combined = [...farmers, ...coldStorages, ...traders].map(
-      (item: any) => ({
-        id: item.id,
-        name: item instanceof Trader ? item.fullName : item.name,
-        village: item instanceof Trader ? item.cityOrVillage : item.village,
-        district: item.district,
-        createdAt: item.createdAt,
-        date: formatDate(item.createdAt),
-        canAgentEdit:
-          Date.now() - new Date(item.createdAt).getTime() <=
-          24 * 60 * 60 * 1000,
-        type:
-          item instanceof Farmer
-            ? "farmer"
-            : item instanceof ColdStorage
-            ? "cold storage"
-            : "trader",
-        status: "complete",
+    const whereCondition: any = { agentId };
+
+    if (type) whereCondition.userType = type;
+    if (name) whereCondition.userName = { [Op.iLike]: `%${name}%` };
+    if (village) whereCondition.village = { [Op.iLike]: `%${village}%` };
+    if (district) whereCondition.district = { [Op.iLike]: `%${district}%` };
+    if (state) whereCondition.state = { [Op.iLike]: `%${state}%` };
+
+    const { count, rows: onboarded } = await AgentOnboardedUser.findAndCountAll(
+      {
+        where: whereCondition,
+        limit,
+        offset,
+        order: [["createdAt", "DESC"]],
+      }
+    );
+
+    const enrichedResults = await Promise.all(
+      onboarded.map(async (entry) => {
+        let profile = null;
+
+        if (entry.userType === USER_TYPE.FARMER) {
+          profile = await Farmer.findOne({ where: { userId: entry.userId } });
+        } else if (entry.userType === USER_TYPE.COLD_STORAGE) {
+          profile = await ColdStorage.findOne({
+            where: { userId: entry.userId },
+          });
+        } else if (entry.userType === USER_TYPE.TRADER) {
+          profile = await Trader.findOne({ where: { userId: entry.userId } });
+        }
+
+        if (!profile) return null;
+
+        return {
+          id: profile.id,
+          name: entry.userName,
+          village: entry.village,
+          district: entry.district,
+          state: entry.state,
+          createdAt: profile.createdAt,
+          date: formatDate(profile.createdAt),
+          canAgentEdit:
+            Date.now() - new Date(profile.createdAt).getTime() <=
+            24 * 60 * 60 * 1000,
+          type: entry.userType,
+          status: entry.statusOfRegistration,
+        };
       })
     );
 
-    // Sort by date descending
-    combined.sort(
+    enrichedResults.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-    const paginated = combined.slice(offset, offset + limit);
-
-    const result = paginated.map(({ createdAt, ...rest }) => rest);
-
     return {
-      data: result,
-      total: combined.length,
+      data: enrichedResults,
       currentPage: page,
-      totalPages: Math.ceil(combined.length / limit),
+      total: count,
+      totalPages: Math.ceil(count / limit),
     };
   } catch (error) {
     console.log(error);
@@ -672,4 +687,24 @@ export const changeTicketStatus = async (ticketId, status) => {
   return {
     success: true,
   };
+};
+
+export const retrieveAgentTickets = async (agentId) => {
+  const tickets = await HelpAndSupport.findAll({
+    where: { agentId },
+    order: [
+      [
+        sequelize.literal(`
+            CASE 
+              WHEN priority = 'high' THEN 1
+              WHEN priority = 'medium' THEN 2
+              WHEN priority = 'low' THEN 3
+            END
+          `),
+        "ASC",
+      ],
+      ["createdAt", "DESC"],
+    ],
+  });
+  return tickets;
 };

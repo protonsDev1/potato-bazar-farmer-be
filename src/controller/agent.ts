@@ -8,27 +8,31 @@ import {
   responseOnTicket,
   retrieveAgentDashboardStats,
   retrieveAgentPerformance,
+  retrieveAgentTickets,
   retrieveAllAgentPerformance,
   retrieveAllTicketDetails,
   retrieveRecentRegistered,
   retrieveTicketDetail,
   retrieveTopAgents,
-  retriveAllUsers,
+  retrieveAllUsers,
   softDeleteAgentById,
   updateAgentById,
 } from "../services/agentService";
+import { parseFilters } from "../utils/parseQuery";
 
 export const getAllRegisteredUsers = async (req, res) => {
   try {
     const { page, perPage: limit } = req.query;
     const { id, role } = req.user;
 
+    const filters = parseFilters(req.query);
+
     if (role !== "agent")
       return res.status(400).json({
         message: "Only Agents are authorized to retrieve users under them.",
       });
 
-    const allUsers = await retriveAllUsers(id, page, limit);
+    const allUsers = await retrieveAllUsers(id, page, limit, filters);
 
     return res.status(200).json({ message: allUsers });
   } catch (error) {
@@ -347,6 +351,22 @@ export const updateStatusOfTicket = async (req, res) => {
     return res.status(500).json({
       message:
         error.message || "Failed in retrieving  all support ticket details.",
+    });
+  }
+};
+
+export const getAgentAllTickets = async (req, res) => {
+  try {
+    const { id: agentId } = req.user;
+    const tickets = await retrieveAgentTickets(agentId);
+
+    return res
+      .status(200)
+      .json({ message: "Agent's all tickets fetched successfully", tickets });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        error.message || "Failed in retrieving agent's all support tickets.",
     });
   }
 };
