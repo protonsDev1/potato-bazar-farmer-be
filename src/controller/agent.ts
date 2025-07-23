@@ -314,7 +314,13 @@ export const getTicketDetail = async (req, res) => {
 
 export const getAllTicketDetails = async (req, res) => {
   try {
-    const allTicketDetails = await retrieveAllTicketDetails();
+    const { page, perPage: limit, search } = req.query;
+
+    const allTicketDetails = await retrieveAllTicketDetails(
+      page,
+      limit,
+      search
+    );
 
     return res.status(200).json({
       message: "All support ticket details fetched successfully.",
@@ -357,8 +363,9 @@ export const updateStatusOfTicket = async (req, res) => {
 
 export const getAgentAllTickets = async (req, res) => {
   try {
+    const { page, perPage: limit, search } = req.query;
     const { id: agentId } = req.user;
-    const tickets = await retrieveAgentTickets(agentId);
+    const tickets = await retrieveAgentTickets(agentId, page, limit, search);
 
     return res
       .status(200)
