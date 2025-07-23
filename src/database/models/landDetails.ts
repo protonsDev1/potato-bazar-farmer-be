@@ -1,7 +1,17 @@
-import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
-import sequelize from './db';
+import {
+  Model,
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from "sequelize";
+import sequelize from "./db";
+import Farmer from "./farmer";
 
-class LandDetail extends Model<InferAttributes<LandDetail>, InferCreationAttributes<LandDetail>> {
+class LandDetail extends Model<
+  InferAttributes<LandDetail>,
+  InferCreationAttributes<LandDetail>
+> {
   declare id: CreationOptional<number>;
   declare farmerId: number;
   declare landOwnedAcres: number | null;
@@ -12,7 +22,7 @@ class LandDetail extends Model<InferAttributes<LandDetail>, InferCreationAttribu
   declare storageCapacityAtFarm: number | null;
   declare irrigationEquipmentBrand: string | null;
   declare irrigationEquipmentModel: number | null;
-  declare seedProcurementType: 'new' | 'reused' | 'both' | null;
+  declare seedProcurementType: "new" | "reused" | "both" | null;
   declare newSeedPercent: number | null;
   declare reusedSeedPercent: number | null;
   declare seedBrandName: string | null;
@@ -35,7 +45,7 @@ class LandDetail extends Model<InferAttributes<LandDetail>, InferCreationAttribu
   declare preference: string | null;
   declare contractFarmingPercent: number | null;
   declare soldInSpotMarketPercent: number | null;
-  declare storedInColdStoragePercent: number| null;
+  declare storedInColdStoragePercent: number | null;
   declare interestedInDigitalTrading: boolean | null;
   declare usesWhatsappForBusiness: boolean | null;
   declare createdAt: CreationOptional<Date>;
@@ -47,8 +57,8 @@ LandDetail.init(
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     farmerId: {
       type: DataTypes.INTEGER,
-      references: { model: 'Farmers', key: 'id' },
-      onDelete: 'CASCADE',
+      references: { model: "Farmers", key: "id" },
+      onDelete: "CASCADE",
       allowNull: false,
     },
     landOwnedAcres: { type: DataTypes.FLOAT, allowNull: true },
@@ -60,7 +70,7 @@ LandDetail.init(
     irrigationEquipmentBrand: { type: DataTypes.STRING, allowNull: true },
     irrigationEquipmentModel: { type: DataTypes.STRING, allowNull: true },
     seedProcurementType: {
-      type: DataTypes.ENUM('new', 'reused', 'both'),
+      type: DataTypes.ENUM("new", "reused", "both"),
       allowNull: true,
     },
     newSeedPercent: {
@@ -75,8 +85,8 @@ LandDetail.init(
     soilType: { type: DataTypes.STRING, allowNull: true },
     averageYieldPerAcre: { type: DataTypes.FLOAT, allowNull: true },
     sowingMonth: { type: DataTypes.STRING, allowNull: true },
-    harvestMonth: {type: DataTypes.STRING, allowNull: true},
-    equipmentSource: {type:DataTypes.STRING,allowNull:true},
+    harvestMonth: { type: DataTypes.STRING, allowNull: true },
+    equipmentSource: { type: DataTypes.STRING, allowNull: true },
     sowingMethod: { type: DataTypes.STRING, allowNull: true },
     storageFacilityAtFarm: { type: DataTypes.BOOLEAN, allowNull: true },
     primarySalesPoint: { type: DataTypes.STRING, allowNull: true },
@@ -91,7 +101,7 @@ LandDetail.init(
     preference: { type: DataTypes.TEXT, allowNull: true },
     contractFarmingPercent: { type: DataTypes.FLOAT, allowNull: true },
     soldInSpotMarketPercent: { type: DataTypes.FLOAT, allowNull: true },
-    storedInColdStoragePercent: {type:DataTypes.FLOAT,allowNull:true},
+    storedInColdStoragePercent: { type: DataTypes.FLOAT, allowNull: true },
     interestedInDigitalTrading: { type: DataTypes.BOOLEAN, allowNull: true },
     usesWhatsappForBusiness: { type: DataTypes.BOOLEAN, allowNull: true },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
@@ -99,11 +109,19 @@ LandDetail.init(
   },
   {
     sequelize,
-    modelName: 'LandDetail',
-    tableName: 'LandDetails',
+    modelName: "LandDetail",
+    tableName: "LandDetails",
     timestamps: true,
-    indexes: [{ fields: ['farmerId'] }],
+    indexes: [{ fields: ["farmerId"] }],
   }
 );
+
+Farmer.hasOne(LandDetail, {
+  foreignKey: "farmerId",
+});
+
+LandDetail.belongsTo(Farmer, {
+  foreignKey: "farmerId",
+});
 
 export default LandDetail;

@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class SlabWiseDiscount extends Model<
   InferAttributes<SlabWiseDiscount>,
@@ -36,5 +37,14 @@ SlabWiseDiscount.init(
     timestamps: true,
   }
 );
+
+SlabWiseDiscount.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(SlabWiseDiscount, {
+  foreignKey: "coldStorageId",
+  as: "slabWiseDiscounts",
+});
 
 export default SlabWiseDiscount;

@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class PotatoDisposalSystem extends Model<
   InferAttributes<PotatoDisposalSystem>,
@@ -34,5 +35,14 @@ PotatoDisposalSystem.init(
     timestamps: true,
   }
 );
+
+PotatoDisposalSystem.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(PotatoDisposalSystem, {
+  foreignKey: "coldStorageId",
+  as: "potatoDisposalSystems",
+});
 
 export default PotatoDisposalSystem;

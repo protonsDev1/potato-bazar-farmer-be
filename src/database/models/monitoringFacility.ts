@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class MonitoringFacility extends Model<
   InferAttributes<MonitoringFacility>,
@@ -34,5 +35,14 @@ MonitoringFacility.init(
     timestamps: true,
   }
 );
+
+MonitoringFacility.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(MonitoringFacility, {
+  foreignKey: "coldStorageId",
+  as: "monitoringFacilities",
+});
 
 export default MonitoringFacility;

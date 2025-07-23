@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class ConstructionType extends Model<
   InferAttributes<ConstructionType>,
@@ -34,5 +35,14 @@ ConstructionType.init(
     timestamps: true,
   }
 );
+
+ConstructionType.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(ConstructionType, {
+  foreignKey: "coldStorageId",
+  as: "constructionTypes",
+});
 
 export default ConstructionType;

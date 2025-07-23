@@ -4,6 +4,7 @@ import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 import {
   createTrader,
   deleteTrader,
+  exportTraders,
   getTraderList,
   getTraderProfileOverview,
   selfOnboardedTrader,
@@ -42,5 +43,7 @@ router.get("/profile/:traderId", authMiddleware, getTraderProfileOverview);
 router.get("/", adminMiddleware, getTraderList);
 
 router.delete("/delete/:id", adminMiddleware, deleteTrader);
+
+router.get("/export", adminMiddleware, exportTraders);
 
 export default router;
