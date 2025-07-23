@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class PowerFacility extends Model<
   InferAttributes<PowerFacility>,
@@ -40,5 +41,14 @@ PowerFacility.init(
     timestamps: true,
   }
 );
+
+PowerFacility.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(PowerFacility, {
+  foreignKey: "coldStorageId",
+  as: "powerFacilities",
+});
 
 export default PowerFacility;

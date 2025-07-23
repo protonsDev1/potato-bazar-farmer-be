@@ -4,14 +4,23 @@ import {
   InferAttributes,
   InferCreationAttributes,
   CreationOptional,
-} from 'sequelize';
-import sequelize from './db';
-import PotatoVarietyGrown from './potatoVarietyGrown';
-import User from './user';
-import LandDetail from './landDetails';
-import IrrigationSource from './irrigationSource';
+} from "sequelize";
+import sequelize from "./db";
+import PotatoVarietyGrown from "./potatoVarietyGrown";
+import User from "./user";
+import IrrigationSource from "./irrigationSource";
+import FarmEquipment from "./farmEquipment";
+import PriceDiscoveryMethod from "./priceDiscoveryMethod";
+import SellingChallenge from "./sellingChallenge";
+import MajorSellingChallenge from "./majorSellingChallenge";
+import SellingChannel from "./sellingChannel";
+import TechnologyUsed from "./technologyUsed";
+import PotatoType from "./potatoType";
 
-class Farmer extends Model<InferAttributes<Farmer>, InferCreationAttributes<Farmer>> {
+class Farmer extends Model<
+  InferAttributes<Farmer>,
+  InferCreationAttributes<Farmer>
+> {
   declare id: CreationOptional<number>;
   declare name: string;
   declare age: number;
@@ -28,7 +37,7 @@ class Farmer extends Model<InferAttributes<Farmer>, InferCreationAttributes<Farm
   declare isAadhaarCard: boolean | null;
   declare aadhaarNumber: string | null;
   declare pinCode: string | null;
-  declare digiPin : string | null;
+  declare digiPin: string | null;
   declare isBankAccount: boolean | null;
   declare onBoardedBy: number | null;
   declare userId: number | null;
@@ -44,7 +53,7 @@ Farmer.init(
     age: { type: DataTypes.INTEGER, allowNull: false },
     gender: { type: DataTypes.STRING, allowNull: false },
     optionalNumber: { type: DataTypes.STRING, allowNull: true },
-    whatsappNumber: {type: DataTypes.STRING, allowNull: true},
+    whatsappNumber: { type: DataTypes.STRING, allowNull: true },
     caste: { type: DataTypes.STRING, allowNull: true },
     subCaste: { type: DataTypes.STRING, allowNull: true },
     village: { type: DataTypes.STRING, allowNull: true },
@@ -54,77 +63,132 @@ Farmer.init(
     geoLocation: { type: DataTypes.STRING, allowNull: true },
     isAadhaarCard: { type: DataTypes.BOOLEAN, allowNull: true },
     aadhaarNumber: { type: DataTypes.STRING, allowNull: true },
-    pinCode:{type: DataTypes.STRING, allowNull: true},
-    digiPin: {type: DataTypes.STRING, allowNull: true},
+    pinCode: { type: DataTypes.STRING, allowNull: true },
+    digiPin: { type: DataTypes.STRING, allowNull: true },
     isBankAccount: { type: DataTypes.BOOLEAN, allowNull: true },
     onBoardedBy: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'users',
-        key: 'id',
+        model: "users",
+        key: "id",
       },
-      onUpdate: 'CASCADE',
-      onDelete: 'SET NULL',
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL",
     },
-    userId:{
+    userId: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'users',
-        key: 'id',
+        model: "users",
+        key: "id",
       },
-      onUpdate: 'CASCADE',
-      onDelete: 'SET NULL',
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL",
     },
     isDeleted: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   },
   {
     sequelize,
-    modelName: 'Farmer',
-    tableName: 'Farmers',
+    modelName: "Farmer",
+    tableName: "Farmers",
     timestamps: true,
   }
 );
 
 Farmer.hasMany(PotatoVarietyGrown, {
-  foreignKey: 'farmerId',
-  as: 'PotatoVarietyGrown',
+  foreignKey: "farmerId",
+  as: "PotatoVarietyGrown",
 });
 
 PotatoVarietyGrown.belongsTo(Farmer, {
-  foreignKey: 'farmerId',
+  foreignKey: "farmerId",
 });
 
 Farmer.belongsTo(User, {
-  foreignKey: 'userId',
-  as: 'user',
+  foreignKey: "userId",
+  as: "user",
 });
 
 Farmer.belongsTo(User, {
- foreignKey: "onBoardedBy",
-  as: "onBoardedByUser"
- });
-
-Farmer.hasMany(LandDetail,{
-  foreignKey:'farmerId'
+  foreignKey: "onBoardedBy",
+  as: "onBoardedByUser",
 });
 
-LandDetail.belongsTo(Farmer,{
-  foreignKey:'farmerId'
+Farmer.hasMany(IrrigationSource, {
+  foreignKey: "farmerId",
 });
 
-Farmer.hasMany(IrrigationSource,{
-  foreignKey:'farmerId'
+IrrigationSource.belongsTo(Farmer, {
+  foreignKey: "farmerId",
 });
 
-IrrigationSource.belongsTo(Farmer,{
-  foreignKey:'farmerId'
+Farmer.hasMany(FarmEquipment, {
+  foreignKey: "farmerId",
 });
 
+FarmEquipment.belongsTo(Farmer, {
+  foreignKey: "farmerId",
+});
+
+Farmer.hasMany(PriceDiscoveryMethod, {
+  foreignKey: "farmerId",
+});
+
+PriceDiscoveryMethod.belongsTo(Farmer, {
+  foreignKey: "farmerId",
+});
+
+Farmer.hasMany(SellingChallenge, {
+  foreignKey: "farmerId",
+});
+
+SellingChallenge.belongsTo(Farmer, {
+  foreignKey: "farmerId",
+});
+
+Farmer.hasMany(MajorSellingChallenge, {
+  foreignKey: "farmerId",
+});
+
+MajorSellingChallenge.belongsTo(Farmer, {
+  foreignKey: "farmerId",
+});
+
+Farmer.hasMany(SellingChannel, {
+  foreignKey: "farmerId",
+});
+
+SellingChannel.belongsTo(Farmer, {
+  foreignKey: "farmerId",
+});
+
+Farmer.hasMany(MajorSellingChallenge, {
+  foreignKey: "farmerId",
+});
+
+MajorSellingChallenge.belongsTo(Farmer, {
+  foreignKey: "farmerId",
+});
+
+Farmer.hasMany(TechnologyUsed, {
+  foreignKey: "farmerId",
+});
+
+TechnologyUsed.belongsTo(Farmer, {
+  foreignKey: "farmerId",
+});
+
+Farmer.hasMany(PotatoType, {
+  foreignKey: "farmerId",
+});
+
+PotatoType.belongsTo(Farmer, {
+  foreignKey: "farmerId",
+});
 export default Farmer;

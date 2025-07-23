@@ -11,10 +11,10 @@ import TraderInterest from "../database/models/trader/traderInterest";
 import TraderType from "../database/models/trader/traderType";
 import TraderVariety from "../database/models/trader/traderVariety";
 import User from "../database/models/user";
-import { convertISTDateRangeToUTC } from "../utils/dateFormat";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
+import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
 
 export async function onboardTrader(payload) {
   try {
@@ -448,4 +448,157 @@ export const softDeleteTraderById = async (traderId: number) => {
   await trader.save();
 
   return { success: true, data: trader };
+};
+
+export const getAllTradersWithAssociations = async (filters, search) => {
+  const whereCondition: any = {};
+
+  const { agentId, state, district, cityOrVillage, registrationDate } = filters;
+
+  whereCondition.isDeleted = false;
+
+  if (agentId && agentId.toLowerCase() !== "all") {
+    whereCondition.onBoardedBy = agentId;
+  }
+
+  if (district && district.toLowerCase() !== "all") {
+    whereCondition.district = { [Op.iLike]: district };
+  }
+
+  if (state && state.toLowerCase() !== "all") {
+    whereCondition.state = { [Op.iLike]: state };
+  }
+
+  if (cityOrVillage && cityOrVillage.toLowerCase() !== "all") {
+    whereCondition.cityOrVillage = { [Op.iLike]: cityOrVillage };
+  }
+
+  if (registrationDate && registrationDate.length === 2) {
+    const [startDate, endDate] = registrationDate;
+
+    if (startDate && endDate) {
+      const { startUTC, endUTC } = convertISTDateRangeToUTC(startDate, endDate);
+      whereCondition.createdAt = {
+        [Op.between]: [new Date(startUTC), new Date(endUTC)],
+      };
+    }
+  }
+
+  if (search?.trim()) {
+    const searchTerm = `%${search?.trim()}%`;
+    whereCondition[Op.or] = [
+      { id: isNaN(Number(search)) ? -1 : Number(search) },
+      { fullName: { [Op.iLike]: searchTerm } },
+      { mobileNumber: { [Op.iLike]: searchTerm } },
+      { email: { [Op.iLike]: searchTerm } },
+      Sequelize.where(Sequelize.col("onBoardedByUser.name"), {
+        [Op.iLike]: searchTerm,
+      }),
+    ];
+  }
+
+  const traders = await Trader.findAll({
+    where: whereCondition,
+    include: [
+      { model: User, as: "user", attributes: ["name", "mobile"] },
+      { model: User, as: "onBoardedByUser", attributes: ["name", "mobile"] },
+      { model: MandiDetail, as: "mandiDetail" },
+      { model: TraderDocument, as: "document" },
+      { model: TraderInterest, as: "traderInterests" },
+      { model: MarketCoverage, as: "marketCoverages" },
+      { model: TraderType, as: "traderTypes" },
+      { model: TraderVariety, as: "traderVarieties" },
+      { model: CropTraded, as: "cropsTraded" },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+
+  return traders;
+};
+
+export const createTraderWorksheetColumns = (worksheet) => {
+  worksheet.columns = [
+    { header: "Trader ID", key: "id", width: 10 },
+    { header: "Name", key: "fullName", width: 25 },
+    { header: "Business Name", key: "businessName", width: 30 },
+    { header: "Mobile", key: "mobileNumber", width: 20 },
+    { header: "Email", key: "email", width: 25 },
+    { header: "State", key: "state", width: 20 },
+    { header: "District", key: "district", width: 20 },
+    { header: "City/Village", key: "cityOrVillage", width: 20 },
+    { header: "Taluka", key: "taluka", width: 20 },
+    { header: "PIN", key: "pinCode", width: 15 },
+    { header: "DIGI PIN", key: "digiPin", width: 20 },
+    { header: "Registration Date", key: "registrationDate", width: 20 },
+    { header: "Onboarded By", key: "onBoardedBy", width: 20 },
+    { header: "Language", key: "languagePreference", width: 20 },
+    { header: "Employees", key: "numberOfEmployees", width: 20 },
+    { header: "Own Potato Farming", key: "ownPotatoFarming", width: 20 },
+    { header: "Contract Farming", key: "contractFarming", width: 20 },
+    { header: "Spot Buying", key: "spotBuying", width: 20 },
+    { header: "Seeds Sales", key: "seedsSales", width: 20 },
+    { header: "Own Cold Storage", key: "ownColdStorage", width: 20 },
+    {
+      header: "Yearly Volume (Tons)",
+      key: "yearlyPurchaseVolumeTons",
+      width: 25,
+    },
+    { header: "Main Region", key: "mainProcurementRegion", width: 30 },
+    {
+      header: "Geographical Market",
+      key: "geographicalMarketCovered",
+      width: 30,
+    },
+    { header: "Years in Trading", key: "yearsInTrading", width: 20 },
+    { header: "Daily Sales (Katta)", key: "averageDailySalesKatta", width: 25 },
+    { header: "Market Types", key: "traderTypes", width: 50 },
+    { header: "Trader Varieties", key: "traderVarieties", width: 50 },
+    { header: "Crops Traded", key: "cropsTraded", width: 50 },
+    { header: "Trader Interests", key: "traderInterests", width: 50 },
+    { header: "Market Coverage", key: "marketCoverages", width: 50 },
+    { header: "Mandi Details", key: "mandiDetail", width: 80 },
+  ];
+};
+
+export const addTradersToWorksheet = (traders, worksheet) => {
+  traders.forEach((trader) => {
+    worksheet.addRow({
+      id: trader.id,
+      fullName: trader.fullName,
+      businessName: trader.businessName,
+      mobileNumber: trader.mobileNumber,
+      email: trader.email || "",
+      state: trader.state,
+      district: trader.district,
+      cityOrVillage: trader.cityOrVillage,
+      taluka: trader.taluka,
+      pinCode: trader.pinCode,
+      digiPin: trader.digiPin || "",
+      registrationDate: formatDate(trader.createdAt),
+      onBoardedBy: trader.onBoardedByUser.name,
+      languagePreference: trader.languagePreference || "",
+      numberOfEmployees: trader.numberOfEmployees || "",
+      ownPotatoFarming: trader.ownPotatoFarming ? "Yes" : "No",
+      contractFarming: trader.contractFarming ? "Yes" : "No",
+      spotBuying: trader.spotBuying ? "Yes" : "No",
+      seedsSales: trader.seedsSales ? "Yes" : "No",
+      ownColdStorage: trader.ownColdStorage ? "Yes" : "No",
+      yearlyPurchaseVolumeTons: trader.yearlyPurchaseVolumeTons || "",
+      mainProcurementRegion: trader.mainProcurementRegion || "",
+      geographicalMarketCovered: trader.geographicalMarketCovered || "",
+      yearsInTrading: trader.yearsInTrading || "",
+      averageDailySalesKatta: trader.averageDailySalesKatta || "",
+      traderTypes: trader.traderTypes?.map((t) => t.type).join(", ") || "",
+      traderVarieties:
+        trader.traderVarieties?.map((v) => v.variety).join(", ") || "",
+      cropsTraded: trader.cropsTraded?.map((c) => c.cropName).join(", ") || "",
+      traderInterests:
+        trader.traderInterests?.map((i) => i.interest).join(", ") || "",
+      marketCoverages:
+        trader.marketCoverages?.map((m) => m.name).join(", ") || "",
+      mandiDetail: trader.mandiDetail
+        ? `Mandi: ${trader.mandiDetail.mandiName}, Shop: ${trader.mandiDetail.shopNumber}, Licence: ${trader.mandiDetail.mandiLicenceNo}`
+        : "",
+    });
+  });
 };

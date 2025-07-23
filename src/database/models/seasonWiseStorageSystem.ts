@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class SeasonWiseBookingSystem extends Model<
   InferAttributes<SeasonWiseBookingSystem>,
@@ -36,5 +37,14 @@ SeasonWiseBookingSystem.init(
     timestamps: true,
   }
 );
+
+SeasonWiseBookingSystem.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(SeasonWiseBookingSystem, {
+  foreignKey: "coldStorageId",
+  as: "seasonWiseBookingSystems",
+});
 
 export default SeasonWiseBookingSystem;

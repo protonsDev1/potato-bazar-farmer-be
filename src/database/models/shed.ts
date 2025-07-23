@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class Shed extends Model<InferAttributes<Shed>, InferCreationAttributes<Shed>> {
   declare id: CreationOptional<number>;
@@ -33,5 +34,14 @@ Shed.init(
     timestamps: true,
   }
 );
+
+Shed.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(Shed, {
+  foreignKey: "coldStorageId",
+  as: "sheds",
+});
 
 export default Shed;
