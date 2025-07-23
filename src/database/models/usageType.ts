@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class UsageType extends Model<
   InferAttributes<UsageType>,
@@ -27,7 +28,7 @@ UsageType.init(
       onDelete: "CASCADE",
     },
     type: { type: DataTypes.STRING, allowNull: true },
-    capacity: {type: DataTypes.INTEGER, allowNull: true},
+    capacity: { type: DataTypes.INTEGER, allowNull: true },
   },
   {
     sequelize,
@@ -36,5 +37,14 @@ UsageType.init(
     timestamps: true,
   }
 );
+
+UsageType.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+ColdStorage.hasMany(UsageType, {
+  foreignKey: "coldStorageId",
+  as: "usageTypes",
+});
 
 export default UsageType;

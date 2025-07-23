@@ -1,9 +1,14 @@
+import ExcelJS from "exceljs";
+
 import Farmer from "../database/models/farmer";
 import {
   onboardFarmer,
   retrieveFarmerProfile,
   getFarmerListByAdmin,
   updateFarmerDetails,
+  createFarmerWorksheetColumns,
+  addFarmersToWorksheet,
+  getAllFarmersWithAssociations,
   softDeleteFarmerById,
 } from "../services/farmerServices";
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
@@ -176,5 +181,45 @@ export const deleteFarmer = async (req, res) => {
     return res.status(500).json({
       message: error.message || "Failed to delete farmer",
     });
+  }
+};
+
+export const exportFarmers = async (req, res) => {
+  try {
+    const userRole = req.user?.role;
+
+    if (userRole !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Only admin can export farmer data." });
+    }
+
+    const filters = parseFilters(req.query);
+    const search = req.query.search || "";
+    const farmers = await getAllFarmersWithAssociations(filters, search);
+
+    if (!farmers.length) {
+      return res.status(404).json({ message: "No farmers found." });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Farmers");
+
+    createFarmerWorksheetColumns(worksheet);
+    addFarmersToWorksheet(farmers, worksheet);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", "attachment; filename=farmers.xlsx");
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Farmer export error:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to export farmers", error: error.message });
   }
 };
