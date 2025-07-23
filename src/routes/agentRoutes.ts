@@ -5,6 +5,7 @@ import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 import {
   createSupportTicket,
   deleteAgent,
+  getAgentAllTickets,
   getAgentDashboardStats,
   getAgentDetails,
   getAgentPerformance,
@@ -67,5 +68,6 @@ router.put(
   validator.body(updateStatusSchema),
   updateStatusOfTicket
 );
+router.get("/agent_tickets_detail", authMiddleware, getAgentAllTickets);
 
 export default router;

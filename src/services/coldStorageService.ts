@@ -21,6 +21,7 @@ import SeasonWiseBookingSystem from "../database/models/seasonWiseStorageSystem"
 import SlabWiseDiscount from "../database/models/slabWiseDiscount";
 import StorageBookingSystem from "../database/models/storageBookingSystem";
 import User from "../database/models/user";
+import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboardedUsers";
 
 
 const STORAGE_SIZE_RANGES = {
@@ -337,6 +338,17 @@ export async function onboardColdStorage(payload: any) {
         );
         }
       }
+
+        await AgentOnboardedUser.create({
+        userId: payload.userId,
+        agentId: payload.onBoardedBy,
+        userType: USER_TYPE.COLD_STORAGE,
+        userName: payload.ownerName,
+        village: payload.village,
+        district: payload.district,
+        state: payload.state,
+        statusOfRegistration: "complete"
+      });
 
       return coldStorage;
     });
