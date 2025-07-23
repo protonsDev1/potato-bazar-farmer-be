@@ -12,6 +12,9 @@ import TraderType from "../database/models/trader/traderType";
 import TraderVariety from "../database/models/trader/traderVariety";
 import User from "../database/models/user";
 import { convertISTDateRangeToUTC } from "../utils/dateFormat";
+import AgentOnboardedUser, {
+  USER_TYPE,
+} from "../database/models/agentOnboardedUsers";
 
 export async function onboardTrader(payload) {
   try {
@@ -124,6 +127,17 @@ export async function onboardTrader(payload) {
           { transaction: t }
         );
       }
+
+      await AgentOnboardedUser.create({
+        userId: payload.userId,
+        agentId: payload.onBoardedBy,
+        userType: USER_TYPE.TRADER,
+        userName: payload.fullName,
+        village: payload.cityOrVillage,
+        district: payload.district,
+        state: payload.state,
+        statusOfRegistration: "complete",
+      });
 
       return trader;
     });
