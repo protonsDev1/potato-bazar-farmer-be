@@ -31,7 +31,7 @@ export const retrieveAllUsers = async (
 
     const whereCondition: any = { agentId };
 
-    if (type) whereCondition.userType = type;
+    if (type && type!== "all") whereCondition.userType = type;
     if (name) whereCondition.userName = { [Op.iLike]: `%${name}%` };
     if (village) whereCondition.village = { [Op.iLike]: `%${village}%` };
     if (district) whereCondition.district = { [Op.iLike]: `%${district}%` };
@@ -714,7 +714,12 @@ export const changeTicketStatus = async (ticketId, status) => {
   };
 };
 
-export const retrieveAgentTickets = async (agentId, page, limit, search) => {
+export const retrieveAgentTickets = async (
+  agentId,
+  page = 1,
+  limit = 10,
+  search
+) => {
   const offset = (page - 1) * limit;
 
   const whereCondition = {
