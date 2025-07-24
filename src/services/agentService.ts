@@ -1,3 +1,5 @@
+import { Worksheet } from "exceljs";
+
 import ColdStorage from "../database/models/coldStorage";
 import Farmer from "../database/models/farmer";
 import { formatDate } from "../utils/dateFormat";
@@ -31,7 +33,7 @@ export const retrieveAllUsers = async (
 
     const whereCondition: any = { agentId };
 
-    if (type && type!== "all") whereCondition.userType = type;
+    if (type && type !== "all") whereCondition.userType = type;
     if (name) whereCondition.userName = { [Op.iLike]: `%${name}%` };
     if (village) whereCondition.village = { [Op.iLike]: `%${village}%` };
     if (district) whereCondition.district = { [Op.iLike]: `%${district}%` };
@@ -758,4 +760,66 @@ export const retrieveAgentTickets = async (
       totalPages: Math.ceil(count / limit),
     },
   };
+};
+
+export const getAllAgentsWithAssociations = async (search?: string) => {
+  const searchCondition = search
+    ? {
+        [Op.or]: [
+          { agentId: { [Op.iLike]: `%${search}%` } },
+          { phone: { [Op.iLike]: `%${search}%` } },
+          { district: { [Op.iLike]: `%${search}%` } },
+          { "$user.name$": { [Op.iLike]: `%${search}%` } },
+        ],
+      }
+    : {};
+
+  const agents = await Agent.findAll({
+    where: {
+      isDeleted: false,
+      ...searchCondition,
+    },
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "name", "email"],
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+
+  return agents;
+};
+
+export const createAgentWorksheetColumns = (worksheet: Worksheet) => {
+  worksheet.columns = [
+    { header: "ID", key: "id", width: 20 },
+    { header: "Agent ID", key: "agentId", width: 20 },
+    { header: "Name", key: "name", width: 25 },
+    { header: "Phone", key: "phone", width: 15 },
+    { header: "Email", key: "email", width: 40 },
+    { header: "Status", key: "status", width: 20 },
+    { header: "State", key: "state", width: 25 },
+    { header: "District", key: "district", width: 25 },
+    { header: "Address", key: "address", width: 60 },
+    { header: "Joined Date", key: "createdAt", width: 20 },
+  ];
+};
+
+export const addAgentsToWorksheet = (agents: any[], worksheet: Worksheet) => {
+  agents.forEach((agent) => {
+    worksheet.addRow({
+      id: agent.id,
+      agentId: agent.agentId,
+      name: agent.user?.name || "",
+      phone: agent.phone || "",
+      email: agent.user?.email || "",
+      status: agent.isActive ? "Active" : "Inactive",
+      state: agent.state || "",
+      district: agent.district || "",
+      address: agent.address || "",
+      createdAt: formatDate(agent.createdAt),
+    });
+  });
 };

@@ -1,3 +1,5 @@
+import ExcelJS from "exceljs";
+
 import { StatusEnum } from "../database/models/helpAndSupport";
 import {
   changeTicketStatus,
@@ -17,6 +19,9 @@ import {
   retrieveAllUsers,
   softDeleteAgentById,
   updateAgentById,
+  getAllAgentsWithAssociations,
+  createAgentWorksheetColumns,
+  addAgentsToWorksheet,
 } from "../services/agentService";
 import { parseFilters } from "../utils/parseQuery";
 
@@ -375,5 +380,35 @@ export const getAgentAllTickets = async (req, res) => {
       message:
         error.message || "Failed in retrieving agent's all support tickets.",
     });
+  }
+};
+
+export const exportAgents = async (req, res) => {
+  try {
+    const { search } = req.query;
+
+    const agents = await getAllAgentsWithAssociations(search as string);
+
+    if (!agents.length) {
+      return res.status(404).json({ message: "No agents found." });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Agents");
+
+    createAgentWorksheetColumns(worksheet);
+    addAgentsToWorksheet(agents, worksheet);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", "attachment; filename=agents.xlsx");
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Failed to export agents", error);
+    res.status(500).json({ message: "Failed to export agents", error });
   }
 };
