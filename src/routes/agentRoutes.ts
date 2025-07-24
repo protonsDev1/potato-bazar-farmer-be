@@ -5,6 +5,7 @@ import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 import {
   createSupportTicket,
   deleteAgent,
+  exportAgents,
   getAgentAllTickets,
   getAgentDashboardStats,
   getAgentDetails,
@@ -69,5 +70,6 @@ router.put(
   updateStatusOfTicket
 );
 router.get("/agent_tickets_detail", authMiddleware, getAgentAllTickets);
+router.get("/export", adminMiddleware, exportAgents);
 
 export default router;
