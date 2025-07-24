@@ -21,7 +21,9 @@ import SellingPlace from "../database/models/sellingPlace";
 import OtherCropGrown from "../database/models/otherCropGrown";
 import IrrigationMethod from "../database/models/irrigationMethod";
 import PotatoType from "../database/models/potatoType";
-import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboardedUsers";
+import AgentOnboardedUser, {
+  USER_TYPE,
+} from "../database/models/agentOnboardedUsers";
 
 interface Payload {
   name: string;
@@ -255,7 +257,7 @@ export async function onboardFarmer(payload: Payload) {
         }
       }
 
-       await AgentOnboardedUser.create({
+      await AgentOnboardedUser.create({
         userId: payload.userId,
         agentId: payload.onBoardedBy,
         userType: USER_TYPE.FARMER,
@@ -263,7 +265,7 @@ export async function onboardFarmer(payload: Payload) {
         village: payload.village,
         district: payload.district,
         state: payload.state,
-        statusOfRegistration: "complete"
+        statusOfRegistration: "complete",
       });
 
       return farmer;
@@ -719,7 +721,7 @@ export const softDeleteFarmerById = async (farmerId: number) => {
   return { success: true, data: farmer };
 };
 
-export async function getAllFarmersWithAssociations(
+export async function getAllFarmers(
   filters: any,
   search: string
 ) {
@@ -862,74 +864,24 @@ export async function getAllFarmersWithAssociations(
   const farmers = await Farmer.findAll({
     where: whereCondition,
     include: [
-      {
-        model: User,
-        as: "user",
-        attributes: ["mobile"],
-      },
-      {
-        model: User,
-        as: "onBoardedByUser",
-        attributes: ["name"],
-      },
+      { model: User, as: "user", attributes: ["mobile"] },
+      { model: User, as: "onBoardedByUser", attributes: ["name"] },
       {
         model: LandDetail,
         as: "LandDetail",
+        attributes: [
+          "id",
+          "landOwnedAcres",
+          "landLeasedAcres",
+          "soilType",
+          "sowingMonth",
+          "harvestMonth",
+        ],
         where:
           Object.keys(landDetailsWhere).length > 0
             ? landDetailsWhere
             : undefined,
         required: Object.keys(landDetailsWhere).length > 0,
-      },
-      {
-        model: IrrigationSource,
-        as: "IrrigationSources",
-        attributes: ["method"],
-      },
-      {
-        model: IrrigationMethod,
-        as: "IrrigationMethods",
-        attributes: ["method"],
-      },
-      {
-        model: FarmEquipment,
-        as: "FarmEquipments",
-        attributes: ["machine", "brand", "model"],
-      },
-      {
-        model: PotatoVarietyGrown,
-        as: "PotatoVarietyGrown",
-        attributes: ["variety", "subVariety"],
-      },
-      {
-        model: PriceDiscoveryMethod,
-        as: "PriceDiscoveryMethods",
-        attributes: ["method"],
-      },
-      {
-        model: SellingChallenge,
-        as: "SellingChallenges",
-        attributes: ["name"],
-      },
-      {
-        model: MajorSellingChallenge,
-        as: "MajorSellingChallenges",
-        attributes: ["name"],
-      },
-      { model: SellingChannel, as: "SellingChannels", attributes: ["name"] },
-      { model: TechnologyUsed, as: "TechnologyUseds", attributes: ["name"] },
-      {
-        model: BrandPreferenceReason,
-        as: "BrandPreferenceReasons",
-        attributes: ["reason"],
-      },
-      { model: SellingPrice, as: "SellingPrices", attributes: ["price"] },
-      { model: SellingPlace, as: "SellingPlaces", attributes: ["place"] },
-      { model: PotatoType, as: "PotatoTypes", attributes: ["type"] },
-      {
-        model: OtherCropGrown,
-        as: "OtherCropGrowns",
-        attributes: ["cropName", "sowingMonth", "harvestingMonth"],
       },
     ],
     order: [["createdAt", "DESC"]],
@@ -1056,14 +1008,65 @@ export const createFarmerWorksheetColumns = (worksheet: Worksheet) => {
   ];
 };
 
-const joinByKey = (arr: any[], key: string) =>
-  arr
-    ?.map((i) => i[key])
-    .filter(Boolean)
-    .join(", ") || "";
-
-export const addFarmersToWorksheet = (farmers: any[], worksheet: Worksheet) => {
+export const addFarmersToWorksheet = async (
+  farmers: any[],
+  worksheet: Worksheet
+) => {
   for (const farmer of farmers) {
+    const farmerId = farmer.id;
+
+    const [
+      landDetail,
+      irrigationSources,
+      irrigationMethods,
+      farmEquipments,
+      potatoVarieties,
+      priceDiscoveryMethods,
+      sellingChallenges,
+      majorSellingChallenges,
+      sellingChannels,
+      technologyUseds,
+      brandPreferenceReasons,
+      sellingPrices,
+      sellingPlaces,
+      potatoTypes,
+      otherCropGrowns,
+    ] = await Promise.all([
+      LandDetail.findOne({ where: { farmerId } }),
+      IrrigationSource.findAll({ where: { farmerId }, attributes: ["method"] }),
+      IrrigationMethod.findAll({ where: { farmerId }, attributes: ["method"] }),
+      FarmEquipment.findAll({
+        where: { farmerId },
+        attributes: ["machine", "brand", "model"],
+      }),
+      PotatoVarietyGrown.findAll({
+        where: { farmerId },
+        attributes: ["variety", "subVariety"],
+      }),
+      PriceDiscoveryMethod.findAll({
+        where: { farmerId },
+        attributes: ["method"],
+      }),
+      SellingChallenge.findAll({ where: { farmerId }, attributes: ["name"] }),
+      MajorSellingChallenge.findAll({
+        where: { farmerId },
+        attributes: ["name"],
+      }),
+      SellingChannel.findAll({ where: { farmerId }, attributes: ["name"] }),
+      TechnologyUsed.findAll({ where: { farmerId }, attributes: ["name"] }),
+      BrandPreferenceReason.findAll({
+        where: { farmerId },
+        attributes: ["reason"],
+      }),
+      SellingPrice.findAll({ where: { farmerId }, attributes: ["price"] }),
+      SellingPlace.findAll({ where: { farmerId }, attributes: ["place"] }),
+      PotatoType.findAll({ where: { farmerId }, attributes: ["type"] }),
+      OtherCropGrown.findAll({
+        where: { farmerId },
+        attributes: ["cropName", "sowingMonth", "harvestingMonth"],
+      }),
+    ]);
+
     worksheet.addRow({
       id: farmer.id,
       name: farmer.name,
@@ -1082,73 +1085,67 @@ export const addFarmersToWorksheet = (farmers: any[], worksheet: Worksheet) => {
       digiPin: farmer.digiPin || "",
       aadhaarNumber: farmer.aadhaarNumber || "",
       registrationDate: formatDate(farmer.createdAt),
-      onBoardedBy: farmer.onBoardedByUser.name,
+      onBoardedBy: farmer.onBoardedByUser?.name || "",
 
       // Land Details
-      landOwned: farmer.LandDetail?.landOwnedAcres || "",
-      landLeased: farmer.LandDetail?.landLeasedAcres || "",
-      sowingMonth: farmer.LandDetail?.sowingMonth || "",
-      harvestMonth: farmer.LandDetail?.harvestMonth || "",
-      totalLandUnderCultivation:
-        farmer.LandDetail?.totalLandUnderCultivation || "",
-      landForPotatoFarming: farmer.LandDetail?.landForPotatoFarming || "",
-      soilType: farmer.LandDetail?.soilType || "",
-      areaUnderDrip: farmer.LandDetail?.areaUnderDrip ? "Yes" : "No",
-      storageCapacityAtFarm: farmer.LandDetail?.storageCapacityAtFarm
+      landOwned: landDetail?.landOwnedAcres || "",
+      landLeased: landDetail?.landLeasedAcres || "",
+      sowingMonth: landDetail?.sowingMonth || "",
+      harvestMonth: landDetail?.harvestMonth || "",
+      totalLandUnderCultivation: landDetail?.totalLandUnderCultivation || "",
+      landForPotatoFarming: landDetail?.landForPotatoFarming || "",
+      soilType: landDetail?.soilType || "",
+      areaUnderDrip: landDetail?.areaUnderDrip ? "Yes" : "No",
+      storageCapacityAtFarm: landDetail?.storageCapacityAtFarm ? "Yes" : "No",
+      irrigationEquipmentBrand: landDetail?.irrigationEquipmentBrand || "",
+      seedProcurementType: landDetail?.seedProcurementType || "",
+      newSeedPercent: landDetail?.newSeedPercent || "",
+      reusedSeedPercent: landDetail?.reusedSeedPercent || "",
+      seedBrandName: landDetail?.seedBrandName || "",
+      averageYieldPerAcre: landDetail?.averageYieldPerAcre || "",
+      primarySalesPoint: landDetail?.primarySalesPoint || "",
+      distanceToNearestMandi: landDetail?.distanceToNearestMandi || "",
+      isGradingMachineAtFarm: landDetail?.isGradingMachineAtFarm || "",
+      isShadeAtFarmGate: landDetail?.isShadeAtFarmGate ? "Yes" : "No",
+      isUnderContractFarming: landDetail?.isUnderContractFarming ? "Yes" : "No",
+      contractPartnerName: landDetail?.contractPartnerName || "",
+      reasonForTrust: landDetail?.reasonForTrust || "",
+      preference: landDetail?.preference || "",
+      contractFarmingPercent: landDetail?.contractFarmingPercent || "",
+      soldInSpotMarketPercent: landDetail?.soldInSpotMarketPercent || "",
+      storedInColdStoragePercent: landDetail?.storedInColdStoragePercent || "",
+      interestedInDigitalTrading: landDetail?.interestedInDigitalTrading
         ? "Yes"
         : "No",
-      irrigationEquipmentBrand:
-        farmer.LandDetail?.irrigationEquipmentBrand || "",
-      seedProcurementType: farmer.LandDetail?.seedProcurementType || "",
-      newSeedPercent: farmer.LandDetail?.newSeedPercent || "",
-      reusedSeedPercent: farmer.LandDetail?.reusedSeedPercent || "",
-      seedBrandName: farmer.LandDetail?.seedBrandName || "",
-      averageYieldPerAcre: farmer.LandDetail?.averageYieldPerAcre || "",
-      primarySalesPoint: farmer.LandDetail?.primarySalesPoint || "",
-      distanceToNearestMandi: farmer.LandDetail?.distanceToNearestMandi || "",
-      isGradingMachineAtFarm: farmer.LandDetail?.isGradingMachineAtFarm || "",
-      isShadeAtFarmGate: farmer.LandDetail?.isShadeAtFarmGate || "",
-      isUnderContractFarming: farmer.LandDetail?.isUnderContractFarming || "",
-      contractPartnerName: farmer.LandDetail?.contractPartnerName || "",
-      reasonForTrust: farmer.LandDetail?.reasonForTrust || "",
-      preference: farmer.LandDetail?.preference || "",
-      contractFarmingPercent: farmer.LandDetail?.contractFarmingPercent || "",
-      soldInSpotMarketPercent: farmer.LandDetail?.soldInSpotMarketPercent || "",
-      storedInColdStoragePercent:
-        farmer.LandDetail?.storedInColdStoragePercent || "",
-      interestedInDigitalTrading: farmer.LandDetail?.interestedInDigitalTrading
-        ? "Yes"
-        : "No",
-      usesWhatsappForBusiness: farmer.LandDetail?.usesWhatsappForBusiness
+      usesWhatsappForBusiness: landDetail?.usesWhatsappForBusiness
         ? "Yes"
         : "No",
 
       // Associations
-      irrigationSources: joinByKey(farmer.IrrigationSources, "method"),
-      irrigationMethods: joinByKey(farmer.IrrigationMethods, "method"),
-      farmEquipments:
-        farmer.FarmEquipments?.map((e) =>
+      irrigationSources: irrigationSources.map((i) => i.method).join(", "),
+      irrigationMethods: irrigationMethods.map((i) => i.method).join(", "),
+      farmEquipments: farmEquipments
+        .map((e) =>
           `${e.machine || ""} ${e.brand || ""} ${e.model || ""}`.trim()
-        ).join(", ") || "",
-      potatoVarieties:
-        farmer.PotatoVarietyGrown?.map(
-          (v) => `${v.variety}${v.subVariety ? ` (${v.subVariety})` : ""}`
-        ).join(", ") || "",
-      priceDiscovery: joinByKey(farmer.PriceDiscoveryMethods, "method"),
-      sellingChallenges: joinByKey(farmer.SellingChallenges, "name"),
-      majorSellingChallenge: joinByKey(farmer.MajorSellingChallenges, "name"),
-      sellingChannels: joinByKey(farmer.SellingChannels, "name"),
-      technologyUsed: joinByKey(farmer.TechnologyUseds, "name"),
-      brandPreferences: joinByKey(farmer.BrandPreferenceReasons, "reason"),
-      sellingPrices: joinByKey(farmer.SellingPrices, "price"),
-      sellingPlaces: joinByKey(farmer.SellingPlaces, "place"),
-      potatoTypes: joinByKey(farmer.PotatoTypes, "type"),
-      otherCrops:
-        farmer.OtherCropGrowns?.map((e) =>
-          `${e.cropName || ""} (${e.sowingMonth || ""} - ${
-            e.harvestingMonth || ""
-          })`.trim()
-        ).join(", ") || "",
+        )
+        .join(", "),
+      potatoVarieties: potatoVarieties
+        .map((v) => `${v.variety}${v.subVariety ? ` (${v.subVariety})` : ""}`)
+        .join(", "),
+      priceDiscovery: priceDiscoveryMethods.map((p) => p.method).join(", "),
+      sellingChallenges: sellingChallenges.map((s) => s.name).join(", "),
+      majorSellingChallenge: majorSellingChallenges
+        .map((s) => s.name)
+        .join(", "),
+      sellingChannels: sellingChannels.map((s) => s.name).join(", "),
+      technologyUsed: technologyUseds.map((t) => t.name).join(", "),
+      brandPreferences: brandPreferenceReasons.map((b) => b.reason).join(", "),
+      sellingPrices: sellingPrices.map((p) => p.price).join(", "),
+      sellingPlaces: sellingPlaces.map((p) => p.place).join(", "),
+      potatoTypes: potatoTypes.map((p) => p.type).join(", "),
+      otherCrops: otherCropGrowns
+        .map((c) => `${c.cropName} (${c.sowingMonth} - ${c.harvestingMonth})`)
+        .join(", "),
     });
   }
 };

@@ -8,8 +8,8 @@ import {
   updateFarmerDetails,
   createFarmerWorksheetColumns,
   addFarmersToWorksheet,
-  getAllFarmersWithAssociations,
   softDeleteFarmerById,
+  getAllFarmers,
 } from "../services/farmerServices";
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 import { parseFilters } from "../utils/parseQuery";
@@ -196,7 +196,7 @@ export const exportFarmers = async (req, res) => {
 
     const filters = parseFilters(req.query);
     const search = req.query.search || "";
-    const farmers = await getAllFarmersWithAssociations(filters, search);
+    const farmers = await getAllFarmers(filters, search);
 
     if (!farmers.length) {
       return res.status(404).json({ message: "No farmers found." });
@@ -206,7 +206,7 @@ export const exportFarmers = async (req, res) => {
     const worksheet = workbook.addWorksheet("Farmers");
 
     createFarmerWorksheetColumns(worksheet);
-    addFarmersToWorksheet(farmers, worksheet);
+    await addFarmersToWorksheet(farmers, worksheet);
 
     res.setHeader(
       "Content-Type",

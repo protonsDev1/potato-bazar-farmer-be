@@ -21,7 +21,9 @@ import SeasonWiseBookingSystem from "../database/models/seasonWiseStorageSystem"
 import SlabWiseDiscount from "../database/models/slabWiseDiscount";
 import StorageBookingSystem from "../database/models/storageBookingSystem";
 import User from "../database/models/user";
-import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboardedUsers";
+import AgentOnboardedUser, {
+  USER_TYPE,
+} from "../database/models/agentOnboardedUsers";
 
 const STORAGE_SIZE_RANGES = {
   small: { min: 0, max: 999 },
@@ -360,7 +362,7 @@ export async function onboardColdStorage(payload: any) {
         }
       }
 
-        await AgentOnboardedUser.create({
+      await AgentOnboardedUser.create({
         userId: payload.userId,
         agentId: payload.onBoardedBy,
         userType: USER_TYPE.COLD_STORAGE,
@@ -368,7 +370,7 @@ export async function onboardColdStorage(payload: any) {
         village: payload.village,
         district: payload.district,
         state: payload.state,
-        statusOfRegistration: "complete"
+        statusOfRegistration: "complete",
       });
 
       return coldStorage;
@@ -763,10 +765,7 @@ export const softDeleteColdStorageById = async (coldStorageId: number) => {
   return { success: true, data: coldStorage };
 };
 
-export async function getAllColdStoragesWithAssociations(
-  filters: any,
-  search: string
-) {
+export async function getAllColdStorages(filters: any, search: string) {
   try {
     const whereCondition: any = {};
 
@@ -839,105 +838,7 @@ export async function getAllColdStoragesWithAssociations(
 
     const coldStorages = await ColdStorage.findAll({
       where: whereCondition,
-      include: [
-        {
-          model: User,
-          as: "user",
-          attributes: ["mobile"],
-        },
-        {
-          model: User,
-          as: "onBoardedByUser",
-          attributes: ["name"],
-        },
-        {
-          model: StorageType,
-          as: "storageTypes",
-          attributes: ["id", "storageType"],
-        },
-        {
-          model: ChamberCapacity,
-          as: "chamberCapacities",
-          attributes: [
-            "capacityMt",
-            "noOfFloors",
-            "sizePerChamberSqft",
-            "description",
-          ],
-        },
-        {
-          model: ElevatorAndStuffing,
-          as: "elevatorAndStuffings",
-          attributes: ["name"],
-        },
-        {
-          model: OperationalChallenge,
-          as: "operationalChallenges",
-          attributes: ["challenge"],
-        },
-        { model: Shed, as: "sheds", attributes: ["sizeSqMtr", "shedType"] },
-        {
-          model: UsageType,
-          as: "usageTypes",
-          attributes: ["type", "capacity"],
-        },
-        {
-          model: DryingFacilityDetail,
-          as: "dryingFacilityDetails",
-          attributes: ["facility"],
-        },
-        {
-          model: FeatureOfStorage,
-          as: "featureOfStorages",
-          attributes: ["feature"],
-        },
-        {
-          model: MonitoringFacility,
-          as: "monitoringFacilities",
-          attributes: ["facility"],
-        },
-        {
-          model: OtherFacility,
-          as: "otherFacilities",
-          attributes: ["facility"],
-        },
-        {
-          model: PotatoDisposalSystem,
-          as: "potatoDisposalSystems",
-          attributes: ["disposalSystem"],
-        },
-        {
-          model: PowerFacility,
-          as: "powerFacilities",
-          attributes: ["facility", "capacityInKw", "backupInHrs", "make"],
-        },
-        {
-          model: ConstructionType,
-          as: "constructionTypes",
-          attributes: ["constructionType"],
-        },
-        {
-          model: ColdStorageType,
-          as: "coldStorageTypes",
-          attributes: ["coldStorageType"],
-        },
-        { model: RoofType, as: "roofTypes", attributes: ["roofType"] },
-        {
-          model: StorageBookingSystem,
-          as: "storageBookingSystems",
-          attributes: ["bookingSystem"],
-        },
-        {
-          model: SeasonWiseBookingSystem,
-          as: "seasonWiseBookingSystems",
-          attributes: ["season", "quantityInKg"],
-        },
-        {
-          model: SlabWiseDiscount,
-          as: "slabWiseDiscounts",
-          attributes: ["quantityInMt", "discount"],
-        },
-      ],
+      include: [{ model: User, as: "onBoardedByUser", attributes: ["name"] }],
       order: [["createdAt", "DESC"]],
     });
 
@@ -996,84 +897,117 @@ export const createColdStorageWorksheetColumns = (worksheet) => {
 };
 
 export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
-  coldStorages.forEach((cs) => {
+  for (const storage of coldStorages) {
+    const coldStorageId = storage.id;
+
+    const [
+      chamberCapacities,
+      elevatorAndStuffings,
+      operationalChallenges,
+      sheds,
+      storageTypes,
+      usageTypes,
+      dryingFacilityDetails,
+      featureOfStorages,
+      monitoringFacilities,
+      otherFacilities,
+      potatoDisposalSystems,
+      powerFacilities,
+      constructionTypes,
+      coldStorageTypes,
+      roofTypes,
+      storageBookingSystems,
+      seasonWiseBookingSystems,
+      slabWiseDiscounts,
+    ] = await Promise.all([
+      ChamberCapacity.findAll({ where: { coldStorageId } }),
+      ElevatorAndStuffing.findAll({ where: { coldStorageId } }),
+      OperationalChallenge.findAll({ where: { coldStorageId } }),
+      Shed.findAll({ where: { coldStorageId } }),
+      StorageType.findAll({ where: { coldStorageId } }),
+      UsageType.findAll({ where: { coldStorageId } }),
+      DryingFacilityDetail.findAll({ where: { coldStorageId } }),
+      FeatureOfStorage.findAll({ where: { coldStorageId } }),
+      MonitoringFacility.findAll({ where: { coldStorageId } }),
+      OtherFacility.findAll({ where: { coldStorageId } }),
+      PotatoDisposalSystem.findAll({ where: { coldStorageId } }),
+      PowerFacility.findAll({ where: { coldStorageId } }),
+      ConstructionType.findAll({ where: { coldStorageId } }),
+      ColdStorageType.findAll({ where: { coldStorageId } }),
+      RoofType.findAll({ where: { coldStorageId } }),
+      StorageBookingSystem.findAll({ where: { coldStorageId } }),
+      SeasonWiseBookingSystem.findAll({ where: { coldStorageId } }),
+      SlabWiseDiscount.findAll({ where: { coldStorageId } }),
+    ]);
+
     worksheet.addRow({
-      id: cs.id,
-      name: cs.name || "",
-      ownerName: cs.ownerName || "",
-      mobileNumber: cs.mobileNumber || "",
-      state: cs.state || "",
-      district: cs.district || "",
-      taluka: cs.taluka || "",
-      village: cs.village || "",
-      pinCode: cs.pinCode || "",
-      digiPin: cs.digiPin || "",
-      gstOrCertificateNumber: cs.gstOrCertificateNumber || "",
-      registrationDate: formatDate(cs.createdAt),
-      onBoardedBy: cs.onBoardedByUser.name,
-      totalCapacityMt: cs.totalCapacityMt || "",
-      builtYear: cs.builtYear || "",
-      coldStorageType: cs.coldStorageType || "",
-
+      id: storage.id,
+      name: storage.name || "",
+      ownerName: storage.ownerName || "",
+      mobileNumber: storage.mobileNumber || "",
+      state: storage.state || "",
+      district: storage.district || "",
+      taluka: storage.taluka || "",
+      village: storage.village || "",
+      pinCode: storage.pinCode || "",
+      digiPin: storage.digiPin || "",
+      gstOrCertificateNumber: storage.gstOrCertificateNumber || "",
+      registrationDate: formatDate(storage.createdAt),
+      onBoardedBy: storage.onBoardedByUser?.name || "",
+      totalCapacityMt: storage.totalCapacityMt || "",
+      builtYear: storage.builtYear || "",
+      coldStorageType:
+        coldStorageTypes.map((c) => c.coldStorageType).join(", ") || "",
       constructionTypes:
-        cs.constructionTypes?.map((c) => c.constructionType).join(", ") || "",
-      roofTypes: cs.roofTypes?.map((r) => r.roofType).join(", ") || "",
-
+        constructionTypes.map((c) => c.constructionType).join(", ") || "",
+      roofTypes: roofTypes.map((r) => r.roofType).join(", ") || "",
       chamberCapacities:
-        cs.chamberCapacities
-          ?.map(
+        chamberCapacities
+          .map(
             (c) =>
               `Capacity: ${c.capacityMt}MT, Floors: ${c.noOfFloors}, Size: ${c.sizePerChamberSqft}sqft, Desc: ${c.description}`
           )
           .join(" | ") || "",
-
       sheds:
-        cs.sheds
-          ?.map((s) => `Size: ${s.sizeSqMtr}, Type: ${s.shedType || "N/A"}`)
+        sheds
+          .map((s) => `Size: ${s.sizeSqMtr}, Type: ${s.shedType || "N/A"}`)
           .join(" | ") || "",
-
       elevatorAndStuffings:
-        cs.elevatorAndStuffings?.map((e) => e.name).join(", ") || "",
+        elevatorAndStuffings.map((e) => e.name).join(", ") || "",
       operationalChallenges:
-        cs.operationalChallenges?.map((c) => c.challenge).join(", ") || "",
-      storageTypes: cs.storageTypes?.map((s) => s.storageType).join(", ") || "",
+        operationalChallenges.map((c) => c.challenge).join(", ") || "",
+      storageTypes: storageTypes.map((s) => s.storageType).join(", ") || "",
       usageTypes:
-        cs.usageTypes?.map((u) => `${u.type}: ${u.capacity}MT`).join(" | ") ||
-        "",
+        usageTypes.map((u) => `${u.type}: ${u.capacity}MT`).join(" | ") || "",
       dryingFacilityDetails:
-        cs.dryingFacilityDetails?.map((d) => d.facility).join(", ") || "",
+        dryingFacilityDetails.map((d) => d.facility).join(", ") || "",
       featureOfStorages:
-        cs.featureOfStorages?.map((f) => f.feature).join(", ") || "",
+        featureOfStorages.map((f) => f.feature).join(", ") || "",
       monitoringFacilities:
-        cs.monitoringFacilities?.map((m) => m.facility).join(", ") || "",
-      otherFacilities:
-        cs.otherFacilities?.map((o) => o.facility).join(", ") || "",
+        monitoringFacilities.map((m) => m.facility).join(", ") || "",
+      otherFacilities: otherFacilities.map((o) => o.facility).join(", ") || "",
       potatoDisposalSystems:
-        cs.potatoDisposalSystems?.map((p) => p.disposalSystem).join(", ") || "",
-
+        potatoDisposalSystems.map((p) => p.disposalSystem).join(", ") || "",
       powerFacilities:
-        cs.powerFacilities
-          ?.map(
+        powerFacilities
+          .map(
             (p) =>
               `${p.facility} (Capacity: ${p.capacityInKw || "-"}kW, Backup: ${
                 p.backupInHrs || "-"
               }hrs, Make: ${p.make || "-"})`
           )
           .join(" | ") || "",
-
       storageBookingSystems:
-        cs.storageBookingSystems?.map((s) => s.bookingSystem).join(", ") || "",
-
+        storageBookingSystems.map((s) => s.bookingSystem).join(", ") || "",
       seasonWiseBookingSystems:
-        cs.seasonWiseBookingSystems
-          ?.map((s) => `${s.season}: ${s.quantityInKg}kg`)
+        seasonWiseBookingSystems
+          .map((s) => `${s.season}: ${s.quantityInKg}kg`)
           .join(" | ") || "",
-
       slabWiseDiscounts:
-        cs.slabWiseDiscounts
-          ?.map((s) => `${s.quantityInMt}MT = ${s.discount}%`)
+        slabWiseDiscounts
+          .map((s) => `${s.quantityInMt}MT = ${s.discount}%`)
           .join(" | ") || "",
-      uniqueFeatures: cs.uniqueFeatures || "",
+      uniqueFeatures: storage.uniqueFeatures || "",
     });
-  });
+  }
 };
