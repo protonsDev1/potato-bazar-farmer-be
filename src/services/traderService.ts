@@ -450,7 +450,7 @@ export const softDeleteTraderById = async (traderId: number) => {
   return { success: true, data: trader };
 };
 
-export const getAllTradersWithAssociations = async (filters, search) => {
+export const getAllTraders = async (filters, search) => {
   const whereCondition: any = {};
 
   const { agentId, state, district, cityOrVillage, registrationDate } = filters;
@@ -502,13 +502,6 @@ export const getAllTradersWithAssociations = async (filters, search) => {
     include: [
       { model: User, as: "user", attributes: ["name", "mobile"] },
       { model: User, as: "onBoardedByUser", attributes: ["name", "mobile"] },
-      { model: MandiDetail, as: "mandiDetail" },
-      { model: TraderDocument, as: "document" },
-      { model: TraderInterest, as: "traderInterests" },
-      { model: MarketCoverage, as: "marketCoverages" },
-      { model: TraderType, as: "traderTypes" },
-      { model: TraderVariety, as: "traderVarieties" },
-      { model: CropTraded, as: "cropsTraded" },
     ],
     order: [["createdAt", "DESC"]],
   });
@@ -560,8 +553,29 @@ export const createTraderWorksheetColumns = (worksheet) => {
   ];
 };
 
-export const addTradersToWorksheet = (traders, worksheet) => {
-  traders.forEach((trader) => {
+export const addTradersToWorksheet = async (traders, worksheet) => {
+  for (const trader of traders) {
+    const traderId = trader.id;
+
+    const [
+      traderTypes,
+      traderVarieties,
+      cropsTraded,
+      traderInterests,
+      marketCoverages,
+      mandiDetail,
+    ] = await Promise.all([
+      TraderType.findAll({ where: { traderId }, attributes: ["type"] }),
+      TraderVariety.findAll({ where: { traderId }, attributes: ["variety"] }),
+      CropTraded.findAll({ where: { traderId }, attributes: ["cropName"] }),
+      TraderInterest.findAll({ where: { traderId }, attributes: ["interest"] }),
+      MarketCoverage.findAll({ where: { traderId }, attributes: ["name"] }),
+      MandiDetail.findOne({
+        where: { traderId },
+        attributes: ["mandiName", "shopNumber", "mandiLicenceNo"],
+      }),
+    ]);
+
     worksheet.addRow({
       id: trader.id,
       fullName: trader.fullName,
@@ -575,7 +589,7 @@ export const addTradersToWorksheet = (traders, worksheet) => {
       pinCode: trader.pinCode,
       digiPin: trader.digiPin || "",
       registrationDate: formatDate(trader.createdAt),
-      onBoardedBy: trader.onBoardedByUser.name,
+      onBoardedBy: trader.onBoardedByUser?.name || "",
       languagePreference: trader.languagePreference || "",
       numberOfEmployees: trader.numberOfEmployees || "",
       ownPotatoFarming: trader.ownPotatoFarming ? "Yes" : "No",
@@ -588,17 +602,14 @@ export const addTradersToWorksheet = (traders, worksheet) => {
       geographicalMarketCovered: trader.geographicalMarketCovered || "",
       yearsInTrading: trader.yearsInTrading || "",
       averageDailySalesKatta: trader.averageDailySalesKatta || "",
-      traderTypes: trader.traderTypes?.map((t) => t.type).join(", ") || "",
-      traderVarieties:
-        trader.traderVarieties?.map((v) => v.variety).join(", ") || "",
-      cropsTraded: trader.cropsTraded?.map((c) => c.cropName).join(", ") || "",
-      traderInterests:
-        trader.traderInterests?.map((i) => i.interest).join(", ") || "",
-      marketCoverages:
-        trader.marketCoverages?.map((m) => m.name).join(", ") || "",
-      mandiDetail: trader.mandiDetail
-        ? `Mandi: ${trader.mandiDetail.mandiName}, Shop: ${trader.mandiDetail.shopNumber}, Licence: ${trader.mandiDetail.mandiLicenceNo}`
+      traderTypes: traderTypes.map((t) => t.type).join(", "),
+      traderVarieties: traderVarieties.map((v) => v.variety).join(", "),
+      cropsTraded: cropsTraded.map((c) => c.cropName).join(", "),
+      traderInterests: traderInterests.map((i) => i.interest).join(", "),
+      marketCoverages: marketCoverages.map((m) => m.name).join(", "),
+      mandiDetail: mandiDetail
+        ? `Mandi: ${mandiDetail.mandiName}, Shop: ${mandiDetail.shopNumber}, Licence: ${mandiDetail.mandiLicenceNo}`
         : "",
     });
-  });
+  }
 };
