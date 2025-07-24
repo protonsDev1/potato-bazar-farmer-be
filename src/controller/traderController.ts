@@ -4,7 +4,7 @@ import Trader from "../database/models/trader/trader";
 import {
   addTradersToWorksheet,
   createTraderWorksheetColumns,
-  getAllTradersWithAssociations,
+  getAllTraders,
   getTraderListByAdmin,
   onboardTrader,
   retrieveTraderProfile,
@@ -204,7 +204,7 @@ export const exportTraders = async (req, res) => {
 
     const filters = parseFilters(req.query);
     const search = req.query.search || "";
-    const farmers = await getAllTradersWithAssociations(filters, search);
+    const farmers = await getAllTraders(filters, search);
 
     if (!farmers.length) {
       return res.status(404).json({ message: "No traders found." });
@@ -214,7 +214,7 @@ export const exportTraders = async (req, res) => {
     const worksheet = workbook.addWorksheet("Farmers");
 
     createTraderWorksheetColumns(worksheet);
-    addTradersToWorksheet(farmers, worksheet);
+    await addTradersToWorksheet(farmers, worksheet);
 
     res.setHeader(
       "Content-Type",
