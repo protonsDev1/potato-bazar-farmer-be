@@ -20,7 +20,7 @@ import RoofType from "../database/models/roofType";
 import SeasonWiseBookingSystem from "../database/models/seasonWiseStorageSystem";
 import SlabWiseDiscount from "../database/models/slabWiseDiscount";
 import StorageBookingSystem from "../database/models/storageBookingSystem";
-import User from "../database/models/user";
+import User, { REGISTRATION_STATUS } from "../database/models/user";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
@@ -370,7 +370,7 @@ export async function onboardColdStorage(payload: any) {
         village: payload.village,
         district: payload.district,
         state: payload.state,
-        statusOfRegistration: "complete",
+        statusOfRegistration: REGISTRATION_STATUS.PENDING,
       });
 
       return coldStorage;
@@ -711,6 +711,7 @@ export async function getColdStorage(
         "totalCapacityMt",
         "createdAt",
         "onBoardedBy",
+        "status"
       ],
       where: whereCondition,
       include: [
@@ -743,6 +744,7 @@ export async function getColdStorage(
       onBoardedByUser: item.onBoardedByUser,
       storageTypes: item.storageTypes,
       onBoardedBy: item.onBoardedBy,
+      status: item.status,
     }));
 
     return {
@@ -870,6 +872,7 @@ export const createColdStorageWorksheetColumns = (worksheet) => {
     { header: "GST Number", key: "gstOrCertificateNumber", width: 20 },
     { header: "Registration Date", key: "registrationDate", width: 20 },
     { header: "Onboarded By", key: "onBoardedBy", width: 20 },
+    { header: "Status", key: "status", width: 10},
     { header: "Total Capacity (MT)", key: "totalCapacityMt", width: 20 },
     { header: "Built Year", key: "builtYear", width: 20 },
     { header: "Cold Storage Type", key: "coldStorageType", width: 20 },
@@ -960,6 +963,7 @@ export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
       gstOrCertificateNumber: storage.gstOrCertificateNumber || "",
       registrationDate: formatDate(storage.createdAt),
       onBoardedBy: storage.onBoardedByUser?.name || "",
+      status: storage.status,
       totalCapacityMt: storage.totalCapacityMt || "",
       builtYear: storage.builtYear || "",
       coldStorageType:

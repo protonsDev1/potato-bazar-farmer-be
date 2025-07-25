@@ -7,7 +7,7 @@ import {
 } from "sequelize";
 import sequelize from "./db";
 import PotatoVarietyGrown from "./potatoVarietyGrown";
-import User from "./user";
+import User, { REGISTRATION_STATUS } from "./user";
 import IrrigationSource from "./irrigationSource";
 import FarmEquipment from "./farmEquipment";
 import PriceDiscoveryMethod from "./priceDiscoveryMethod";
@@ -42,6 +42,7 @@ class Farmer extends Model<
   declare onBoardedBy: number | null;
   declare userId: number | null;
   declare isDeleted: boolean;
+  declare status: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -89,6 +90,10 @@ Farmer.init(
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    status:{
+      type: DataTypes.STRING,
+      defaultValue: REGISTRATION_STATUS.PENDING
     },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },

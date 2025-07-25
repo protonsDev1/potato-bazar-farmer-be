@@ -1,4 +1,4 @@
-import User from "../database/models/user";
+import User, { REGISTRATION_STATUS } from "../database/models/user";
 import Agent from '../database/models/agent';
 import { generateAgentId, generateRandomPassword } from '../utils/generate';
 import Farmer from "../database/models/farmer";
@@ -9,6 +9,7 @@ import { Op, Sequelize } from 'sequelize';
 import bcrypt from 'bcrypt';
 import Trader from "../database/models/trader/trader";
 import { formatDate } from "../utils/dateFormat";
+import { USER_TYPE } from "../database/models/agentOnboardedUsers";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -524,4 +525,62 @@ export const retrieveRecentRegisteredForAdmin = async () => {
     console.log(error);
     throw error;
   }
+};
+
+export const updateRegistrationStatus = async (status, userType, userId) => {
+  if (
+    !Object.values(REGISTRATION_STATUS).includes(status as REGISTRATION_STATUS)
+  ) {
+    return {
+      success: false,
+      error: `Invalid status. Allowed values: ${Object.values(
+        REGISTRATION_STATUS
+      ).join(", ")}`,
+    };
+  }
+
+  let Model;
+
+  switch (userType) {
+    case USER_TYPE.FARMER:
+      Model = Farmer;
+      break;
+    case USER_TYPE.COLD_STORAGE:
+      Model = ColdStorage;
+      break;
+    case USER_TYPE.TRADER:
+      Model = Trader;
+      break;
+    default:
+      return {
+        success: false,
+        error: `Invalid user type: ${userType}`,
+      };
+  }
+
+  const user = await Model.findByPk(userId);
+
+  if (!user) {
+    return {
+      success: false,
+      error: `${userType} not found.`,
+    };
+  }
+
+  if (
+    user.status === REGISTRATION_STATUS.APPROVED ||
+    user.status === REGISTRATION_STATUS.REJECTED
+  ) {
+    return {
+      success: false,
+      error: `${userType} is already ${user.status}.`,
+    };
+  }
+
+  await user.update({ status });
+
+  return {
+    success: true,
+    message: `${userType} status updated to ${status}`,
+  };
 };

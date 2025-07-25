@@ -7,7 +7,7 @@ import {
   ForeignKey,
 } from "sequelize";
 import sequelize from "../db";
-import User from "../user";
+import User, { REGISTRATION_STATUS } from "../user";
 
 class Trader extends Model<
   InferAttributes<Trader>,
@@ -52,6 +52,7 @@ class Trader extends Model<
   declare userId: number | null;
   declare onBoardedBy: ForeignKey<User["id"]> | null;
   declare isDeleted: boolean;
+  declare status: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -218,6 +219,10 @@ Trader.init(
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: REGISTRATION_STATUS.PENDING
     },
     createdAt: {
       type: DataTypes.DATE,

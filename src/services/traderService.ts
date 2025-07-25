@@ -10,7 +10,7 @@ import TraderDocument from "../database/models/trader/traderDocument";
 import TraderInterest from "../database/models/trader/traderInterest";
 import TraderType from "../database/models/trader/traderType";
 import TraderVariety from "../database/models/trader/traderVariety";
-import User from "../database/models/user";
+import User, { REGISTRATION_STATUS } from "../database/models/user";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
@@ -136,7 +136,7 @@ export async function onboardTrader(payload) {
         village: payload.cityOrVillage,
         district: payload.district,
         state: payload.state,
-        statusOfRegistration: "complete",
+        statusOfRegistration: REGISTRATION_STATUS.PENDING,
       });
 
       return trader;
@@ -389,6 +389,7 @@ export const getTraderListByAdmin = async (
         "geoLocation",
         "createdAt",
         "onBoardedBy",
+        "status"
       ],
       include: [
         {
@@ -423,6 +424,7 @@ export const getTraderListByAdmin = async (
       onboardingDate: trader.createdAt.toISOString().split("T")[0],
       user: trader.user,
       onBoardedBy: trader.onBoardedByUser,
+      status: trader.status,
     }));
 
     return {
@@ -524,6 +526,7 @@ export const createTraderWorksheetColumns = (worksheet) => {
     { header: "DIGI PIN", key: "digiPin", width: 20 },
     { header: "Registration Date", key: "registrationDate", width: 20 },
     { header: "Onboarded By", key: "onBoardedBy", width: 20 },
+    { header: "Status", key: "status", width: 10},
     { header: "Language", key: "languagePreference", width: 20 },
     { header: "Employees", key: "numberOfEmployees", width: 20 },
     { header: "Own Potato Farming", key: "ownPotatoFarming", width: 20 },
@@ -590,6 +593,7 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       digiPin: trader.digiPin || "",
       registrationDate: formatDate(trader.createdAt),
       onBoardedBy: trader.onBoardedByUser?.name || "",
+      status: trader.status,
       languagePreference: trader.languagePreference || "",
       numberOfEmployees: trader.numberOfEmployees || "",
       ownPotatoFarming: trader.ownPotatoFarming ? "Yes" : "No",

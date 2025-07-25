@@ -13,7 +13,7 @@ import MajorSellingChallenge from "../database/models/majorSellingChallenge";
 import PriceDiscoveryMethod from "../database/models/priceDiscoveryMethod";
 
 import { literal, Model, ModelStatic, Op, Sequelize } from "sequelize";
-import User from "../database/models/user";
+import User, { REGISTRATION_STATUS } from "../database/models/user";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
 import BrandPreferenceReason from "../database/models/brandPreferenceReason";
 import SellingPrice from "../database/models/sellingPrice";
@@ -265,7 +265,7 @@ export async function onboardFarmer(payload: Payload) {
         village: payload.village,
         district: payload.district,
         state: payload.state,
-        statusOfRegistration: "complete",
+        statusOfRegistration: REGISTRATION_STATUS.PENDING,
       });
 
       return farmer;
@@ -638,6 +638,7 @@ export async function getFarmerListByAdmin(
         "district",
         "createdAt",
         "onBoardedBy",
+        "status"
       ],
       include: [
         {
@@ -695,6 +696,7 @@ export async function getFarmerListByAdmin(
       district: item.district,
       registrationDate: formatDate(item.createdAt),
       onBoardedBy: item.onBoardedBy,
+      status: item.status,
       onBoardedByUser: item.onBoardedByUser,
       PotatoVarietyGrown: item.PotatoVarietyGrown,
       users: item.user,
@@ -912,7 +914,7 @@ export const createFarmerWorksheetColumns = (worksheet: Worksheet) => {
     { header: "Aadhar Number", key: "aadhaarNumber", width: 20 },
     { header: "Registration Date", key: "registrationDate", width: 20 },
     { header: "Onboarded By", key: "onBoardedBy", width: 20 },
-
+    { header: "Status", key: "status", width: 10},
     { header: "Land Owned (Acres)", key: "landOwned", width: 15 },
     { header: "Land Leased (Acres)", key: "landLeased", width: 15 },
     { header: "Sowing Month", key: "sowingMonth", width: 15 },
@@ -1089,7 +1091,7 @@ export const addFarmersToWorksheet = async (
       aadhaarNumber: farmer.aadhaarNumber || "",
       registrationDate: formatDate(farmer.createdAt),
       onBoardedBy: farmer.onBoardedByUser?.name || "",
-
+      status: farmer.status,
       // Land Details
       landOwned: landDetail?.landOwnedAcres || "",
       landLeased: landDetail?.landLeasedAcres || "",
