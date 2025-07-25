@@ -8,7 +8,14 @@ import {
   import bcrypt from 'bcrypt';
   import sequelize from './db'; 
 import Agent from './agent';
-  
+
+
+export enum REGISTRATION_STATUS {
+  APPROVED = "approved",
+  PENDING = "pending",
+  REJECTED = "rejected",
+}
+
   class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
     declare id: string;
     declare name: string;

@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin } from "../controller/user";
+import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema } from "../validation/userValidator";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus } from "../controller/user";
 import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 
@@ -40,6 +40,13 @@ router.put("/update_profile",authMiddleware,validator.body(updateProfileSchema),
 router.get("/registration_types", retrieveRegistrationTypes);
 
 router.get("/recent_registrations", adminMiddleware, getRecentRegistrationsForAdmin);
+
+router.put(
+  "/update_status",
+  adminMiddleware,
+  validator.body(updateRegistrationStatusSchema),
+  adminUpdateRegistrationStatus
+);
 
 export default router;
 

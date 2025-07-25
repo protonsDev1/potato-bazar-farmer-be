@@ -135,3 +135,9 @@ export const updateStatusSchema = Joi.object({
     .valid(...Object.values(StatusEnum))
     .required(),
 });
+
+export const updateRegistrationStatusSchema= Joi.object({
+  status: Joi.string().required(),
+  userType: Joi.string().required(),
+  userId: Joi.string().required(),
+})

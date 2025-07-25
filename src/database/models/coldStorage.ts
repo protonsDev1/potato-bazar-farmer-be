@@ -1,7 +1,7 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
 import sequelize from './db';
 import StorageType from './storageType';
-import User from './user';
+import User, { REGISTRATION_STATUS } from './user';
 
 class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttributes<ColdStorage>> {
   declare id: CreationOptional<number>;
@@ -82,6 +82,7 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare userId: number | null;
   declare state: string;
   declare isDeleted: boolean;
+  declare status: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -191,6 +192,10 @@ ColdStorage.init({
   isDeleted: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
+  },
+  status: {
+    type: DataTypes.STRING,
+    defaultValue: REGISTRATION_STATUS.PENDING
   },
   createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },

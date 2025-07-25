@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
@@ -373,6 +373,23 @@ export const getRecentRegistrationsForAdmin = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: error.message || "Failed in retreiving recent registrations.",
+    });
+  }
+};
+
+export const adminUpdateRegistrationStatus = async (req, res) => {
+  try {
+    const { status, userType, userId } = req.body;
+
+    const response = await updateRegistrationStatus(status, userType, userId);
+
+    if (!response.success)
+      return res.status(400).json({ message: response.error });
+
+    return res.status(200).json({ message: response.message });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Failed in updating status.",
     });
   }
 };
