@@ -651,6 +651,11 @@ export async function getFarmerListByAdmin(
           attributes: ["id", "mobile"],
         },
         {
+          model: User,
+          as: "onBoardedByUser",
+          attributes: ["id", "name", "role", "email", "mobile"],
+        },
+        {
           model: LandDetail,
           as: "LandDetail",
           attributes: [
@@ -690,6 +695,7 @@ export async function getFarmerListByAdmin(
       district: item.district,
       registrationDate: formatDate(item.createdAt),
       onBoardedBy: item.onBoardedBy,
+      onBoardedByUser: item.onBoardedByUser,
       PotatoVarietyGrown: item.PotatoVarietyGrown,
       users: item.user,
       LandDetails: item.LandDetail,
@@ -721,10 +727,7 @@ export const softDeleteFarmerById = async (farmerId: number) => {
   return { success: true, data: farmer };
 };
 
-export async function getAllFarmers(
-  filters: any,
-  search: string
-) {
+export async function getAllFarmers(filters: any, search: string) {
   const whereCondition: any = {};
   const landDetailsWhere: any = {};
 
