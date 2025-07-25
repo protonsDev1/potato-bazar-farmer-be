@@ -715,6 +715,11 @@ export async function getColdStorage(
       where: whereCondition,
       include: [
         {
+          model: User,
+          as: "onBoardedByUser",
+          attributes: ["id", "name", "role", "email", "mobile"],
+        },
+        {
           model: StorageType,
           as: "storageTypes",
           attributes: ["id", "storageType"],
@@ -735,6 +740,7 @@ export async function getColdStorage(
       district: item.district,
       totalCapacityMt: item.totalCapacityMt,
       registrationDate: formatDate(item.createdAt),
+      onBoardedByUser: item.onBoardedByUser,
       storageTypes: item.storageTypes,
       onBoardedBy: item.onBoardedBy,
     }));
