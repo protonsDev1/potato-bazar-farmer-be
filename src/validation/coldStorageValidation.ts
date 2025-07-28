@@ -22,7 +22,7 @@ export const coldStorageSchema = Joi.object({
   numberOfChambers: Joi.number().integer().required(),
   // floorsPerChamber: Joi.number().integer().required(),
   // chamberWiseCapacityMt: Joi.string().required(),
-  numberOfSheds: Joi.number().integer().required(),
+  numberOfSheds: Joi.number().integer().optional().allow(null,""),
   // shedSize: Joi.string().required(),
   // antiChamberSizeCapacity: Joi.string().required(),
   // totalArea: Joi.string().required(),
@@ -39,7 +39,7 @@ export const coldStorageSchema = Joi.object({
   gradingMachineAvailable: Joi.boolean().required(),
   gradingMachineTph: Joi.number().allow(null),
   manualGradingAreaAvailable: Joi.boolean().required(),
-  numberOfKattas: Joi.number().required(),
+  numberOfKattas: Joi.number().optional().allow(null,""),
   dryingFloorCapacityKatta: Joi.number().integer().allow(null),
   // bookingMode: Joi.string().required(),
   coldStorageType: Joi.string().valid("Traditional", "Controlled Atmosphere").required(),
@@ -114,7 +114,7 @@ export const coldStorageSchema = Joi.object({
     Joi.object({
       name: Joi.string().required(),
     })
-  ).required(),
+  ).optional(),
 
   chamberCapacities: Joi.array().items(
     Joi.object({
@@ -127,10 +127,10 @@ export const coldStorageSchema = Joi.object({
 
   sheds: Joi.array().items(
     Joi.object({
-      sizeSqMtr: Joi.number().integer().min(0).required(),
+      sizeSqMtr: Joi.number().integer().min(0).optional().allow(null,""),
       shedType: Joi.string().optional().allow('',null),
     })
-  ).required(),
+  ).optional(),
 
   dryingFacilityDetails: Joi.array()
     .items(
@@ -162,7 +162,7 @@ export const coldStorageSchema = Joi.object({
         facility: Joi.string().required(),
       })
     )
-    .required(),
+    .optional(),
 
   potatoDisposalSystems: Joi.array()
     .items(
@@ -188,7 +188,7 @@ export const coldStorageSchema = Joi.object({
       Joi.object({
         constructionType: Joi.string().required(),
       })
-    ).required(),
+    ).optional(),
 
   coldStorageTypes: Joi.array()
   .items(
@@ -202,14 +202,14 @@ export const coldStorageSchema = Joi.object({
     Joi.object({
       roofType: Joi.string().required(),
     })
-  ).required(),
+  ).optional(),
 
   storageBookingSystems: Joi.array()
   .items(
     Joi.object({
       bookingSystem: Joi.string().required(),
     })
-  ).required(),
+  ).optional(),
 
   seasonWiseBookingSystems: Joi.array()
   .items(
@@ -217,15 +217,15 @@ export const coldStorageSchema = Joi.object({
       season: Joi.string().required(),
       quantityInKg: Joi.number().required(),
     })
-  ).required(),
+  ).optional(),
 
   slabWiseDiscount: Joi.array()
   .items(
     Joi.object({
-      quantityInMt: Joi.number().required(),
-      discount: Joi.number().required(),
+      quantityInMt: Joi.number().optional().allow(null,""),
+      discount: Joi.number().optional().allow(null,""),
     })
-  ).required(),
+  ).optional(),
 
 });
 
@@ -355,7 +355,7 @@ export const updateColdStorageSchema = Joi.object({
 
   sheds: Joi.array().items(
     Joi.object({
-      sizeSqMtr: Joi.number().integer().min(0).required(),
+      sizeSqMtr: Joi.number().integer().min(0).optional().allow(null,""),
       shedType: Joi.string().optional().allow('',null),
     })
   ).optional(),
@@ -450,8 +450,8 @@ export const updateColdStorageSchema = Joi.object({
   slabWiseDiscount: Joi.array()
   .items(
     Joi.object({
-      quantityInMt: Joi.number().required(),
-      discount: Joi.number().required(),
+      quantityInMt: Joi.number().optional().allow(null,""),
+      discount: Joi.number().optional().allow(null,""),
     })
   ).optional(),
 
