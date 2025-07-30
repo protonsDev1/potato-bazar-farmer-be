@@ -196,7 +196,7 @@ export async function onboardColdStorage(payload: any) {
       if (Array.isArray(payload.sheds)) {
         if (payload.sheds.length !== payload.numberOfSheds) {
           throw new Error(
-            `Expected ${payload.numberOfSheds} chambers, but got ${payload.sheds.length}`
+            `Expected ${payload.numberOfSheds} sheds, but got ${payload.sheds.length}`
           );
         }
 
