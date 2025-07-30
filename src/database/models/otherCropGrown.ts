@@ -28,9 +28,9 @@ OtherCropGrown.init(
       onDelete: "CASCADE",
       allowNull: false,
     },
-    cropName: { type: DataTypes.STRING, allowNull: false },
-    sowingMonth: { type: DataTypes.STRING, allowNull: false },
-    harvestingMonth: { type: DataTypes.STRING, allowNull: false },
+    cropName: { type: DataTypes.STRING, allowNull: true },
+    sowingMonth: { type: DataTypes.STRING, allowNull: true },
+    harvestingMonth: { type: DataTypes.STRING, allowNull: true },
   },
   {
     sequelize,
