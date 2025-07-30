@@ -34,7 +34,7 @@ export const potatoTypeList = [
 export const potatoVarietyList = [
   { name: "Table", position: 1 },
   { name: "Chips", position: 2 },
-  { name: "French Fry", position: 3 },
+  { name: "Fries", position: 3 },
 ];
 
 export const potatoSubVarietyList = [
@@ -155,27 +155,27 @@ export const potatoSubVarietyList = [
     name: "Taurus",
   },
   {
-    varietyName: "French Fry",
+    varietyName: "Fries",
     name: "Frysona",
   },
   {
-    varietyName: "French Fry",
+    varietyName: "Fries",
     name: "FryOm",
   },
   {
-    varietyName: "French Fry",
+    varietyName: "Fries",
     name: "Santana",
   },
   {
-    varietyName: "French Fry",
+    varietyName: "Fries",
     name: "Innovator",
   },
   {
-    varietyName: "French Fry",
+    varietyName: "Fries",
     name: "HYSM",
   },
   {
-    varietyName: "French Fry",
+    varietyName: "Fries",
     name: "Kennebeck",
   },
 ];
