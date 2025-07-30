@@ -178,7 +178,7 @@ export const onboardFarmerSchema = Joi.object({
   otherCropsGrown: Joi.array()
     .items(
       Joi.object({
-        cropName: Joi.string().required(),
+        cropName: Joi.string().optional().allow(null, ""),
         sowingMonth: Joi.string().optional().allow(null, ""),
         harvestingMonth: Joi.string().optional().allow(null, ""),
       })
@@ -342,7 +342,7 @@ export const updateFarmerSchema = Joi.object({
   otherCropsGrown: Joi.array()
     .items(
       Joi.object({
-        cropName: Joi.string().required(),
+        cropName: Joi.string().optional().allow(null, ""),
         sowingMonth: Joi.string().optional().allow(null, ""),
         harvestingMonth: Joi.string().optional().allow(null, ""),
       })
