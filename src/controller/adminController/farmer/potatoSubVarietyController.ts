@@ -45,12 +45,17 @@ export const addPotatoSubVarietyGrown = async (req, res) => {
 
 export const getPotatoSubVarietyGrown = async (req, res) => {
   try {
-    const response = await getAllRecords(AdminPotatoSubVarietyGrown);
+    const { varietyId } = req.query;
 
-    if (response?.success) {
+    const response = await AdminPotatoSubVarietyGrown.findAll({
+      where: { varietyId },
+      order: [["position", "ASC"]],
+    });
+
+    if (response) {
       return res.status(200).json({
         message: "Potato Sub Varieties fetched successfully.",
-        data: response.data,
+        data: response,
       });
     }
 
@@ -64,12 +69,17 @@ export const getPotatoSubVarietyGrown = async (req, res) => {
 
 export const getActivePotatoSubVarietyGrown = async (req, res) => {
   try {
-    const response = await getActiveRecords(AdminPotatoSubVarietyGrown);
+    const { varietyId } = req.query;
 
-    if (response?.success) {
+    const response = await AdminPotatoSubVarietyGrown.findAll({
+      where: { varietyId, isActive: true },
+      order: [["position", "ASC"]],
+    });
+
+    if (response) {
       return res.status(200).json({
         message: "Potato Sub Varieties fetched successfully.",
-        data: response.data,
+        data: response,
       });
     }
 

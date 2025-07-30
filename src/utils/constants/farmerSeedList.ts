@@ -31,6 +31,155 @@ export const potatoTypeList = [
   { name: "French Fry", position: 3 },
 ];
 
+export const potatoVarietyList = [
+  { name: "Table", position: 1 },
+  { name: "Chips", position: 2 },
+  { name: "French Fry", position: 3 },
+];
+
+export const potatoSubVarietyList = [
+  {
+    varietyName: "Table",
+    name: "Jyoti",
+  },
+  {
+    varietyName: "Table",
+    name: "Badshah",
+  },
+  {
+    varietyName: "Table",
+    name: "Lauvkar",
+  },
+  {
+    varietyName: "Table",
+    name: "Diamond",
+  },
+  {
+    varietyName: "Table",
+    name: "Colombo",
+  },
+  {
+    varietyName: "Table",
+    name: "Bahar (3797)",
+  },
+  {
+    varietyName: "Table",
+    name: "Surya",
+  },
+  {
+    varietyName: "Table",
+    name: "Amber Light",
+  },
+  {
+    varietyName: "Table",
+    name: "LR",
+  },
+  {
+    varietyName: "Table",
+    name: "Chipsona-1",
+  },
+  {
+    varietyName: "Table",
+    name: "Chipsona-3",
+  },
+  {
+    varietyName: "Table",
+    name: "KCM",
+  },
+  {
+    varietyName: "Table",
+    name: "Hermes",
+  },
+  {
+    varietyName: "Table",
+    name: "Taurus",
+  },
+  {
+    varietyName: "Table",
+    name: "Frysona",
+  },
+  {
+    varietyName: "Table",
+    name: "FryOm",
+  },
+  {
+    varietyName: "Table",
+    name: "Santana",
+  },
+  {
+    varietyName: "Table",
+    name: "Innovator",
+  },
+  {
+    varietyName: "Table",
+    name: "HYFM",
+  },
+  {
+    varietyName: "Table",
+    name: "Jamania",
+  },
+  {
+    varietyName: "Table",
+    name: "Uday",
+  },
+  {
+    varietyName: "Table",
+    name: "Mohan",
+  },
+  {
+    varietyName: "Table",
+    name: "Other (CPRI)",
+  },
+  {
+    varietyName: "Chips",
+    name: "LR",
+  },
+  {
+    varietyName: "Chips",
+    name: "Chipsona-1",
+  },
+  {
+    varietyName: "Chips",
+    name: "Chipsona-3",
+  },
+  {
+    varietyName: "Chips",
+    name: "KCM",
+  },
+  {
+    varietyName: "Chips",
+    name: "Hermes",
+  },
+  {
+    varietyName: "Chips",
+    name: "Taurus",
+  },
+  {
+    varietyName: "French Fry",
+    name: "Frysona",
+  },
+  {
+    varietyName: "French Fry",
+    name: "FryOm",
+  },
+  {
+    varietyName: "French Fry",
+    name: "Santana",
+  },
+  {
+    varietyName: "French Fry",
+    name: "Innovator",
+  },
+  {
+    varietyName: "French Fry",
+    name: "HYSM",
+  },
+  {
+    varietyName: "French Fry",
+    name: "Kennebeck",
+  },
+];
+
 export const farmEquipmentList = [
   { name: "Plough", position: 1 },
   { name: "Trolley", position: 2 },
