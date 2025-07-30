@@ -9,6 +9,7 @@ export const seedPotatoSubVariety = async (potatoSubVarietyList) => {
 
   potatoVarieties.map((variety) => {
     keyMap[variety.name] = variety.id;
+    console.log(variety.id, "production -------->>>>>>> ///////////////***************************///////////////.......................................>>>>>>>>>>>>>>>...................>>>>>>>.....varietyId");
   });
 
   const data = potatoSubVarietyList.map((subVariety) => {
