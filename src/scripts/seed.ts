@@ -71,6 +71,7 @@ import {
   traderVarietyList,
 } from "../utils/constants/traderSeedList";
 import { seedData } from "./seedHelper";
+import { seedDataWithoutTrunctate } from "./seedHelperWithoutTruncate";
 
 const seedDatabase = async () => {
   try {
@@ -158,13 +159,11 @@ const seedDatabase = async () => {
 
     await seedData(AdminPotatoType, potatoTypeList, "Potato Types");
 
-    await seedData(
+    await seedDataWithoutTrunctate(
       AdminPotatoVarietyGrown,
       potatoVarietyList,
       "Potato Varieties"
     );
-
-    await seedPotatoSubVariety(potatoSubVarietyList);
 
     await seedData(
       AdminFarmEquipmentUsed,
@@ -195,6 +194,8 @@ const seedDatabase = async () => {
       brandReasonList,
       "Brand Preference Reasons"
     );
+
+    await seedPotatoSubVariety(potatoSubVarietyList);
 
     process.exit(0);
   } catch (error) {

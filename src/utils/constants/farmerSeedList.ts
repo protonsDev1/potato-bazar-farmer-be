@@ -35,6 +35,7 @@ export const potatoVarietyList = [
   { name: "Table", position: 1 },
   { name: "Chips", position: 2 },
   { name: "Fries", position: 3 },
+  { name: "Flakes", position: 4 },
 ];
 
 export const potatoSubVarietyList = [
@@ -131,6 +132,10 @@ export const potatoSubVarietyList = [
     name: "Other (CPRI)",
   },
   {
+    varietyName: "Table",
+    name: "Other",
+  },
+  {
     varietyName: "Chips",
     name: "LR",
   },
@@ -155,6 +160,10 @@ export const potatoSubVarietyList = [
     name: "Taurus",
   },
   {
+    varietyName: "Chips",
+    name: "Other",
+  },
+  {
     varietyName: "Fries",
     name: "Frysona",
   },
@@ -177,6 +186,58 @@ export const potatoSubVarietyList = [
   {
     varietyName: "Fries",
     name: "Kennebeck",
+  },
+  {
+    varietyName: "Fries",
+    name: "Other",
+  },
+  {
+    varietyName: "Flakes",
+    name: "LR",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Chipsona-1",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Chipsona-3",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Hermes",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Taurus",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Frysona",
+  },
+  {
+    varietyName: "Flakes",
+    name: "FryOm",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Santana",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Innovator",
+  },
+  {
+    varietyName: "Flakes",
+    name: "HYSM",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Kennebeck",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Other",
   },
 ];
 
