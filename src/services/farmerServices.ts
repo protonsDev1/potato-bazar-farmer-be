@@ -47,7 +47,9 @@ interface Payload {
   landDetails?: Array<Record<string, any>>;
   irrigationSources?: Array<{ method: string }>;
   irrigationMethods?: Array<{ method: string }>;
-  potatoVarieties?: Array<{ variety: string; subVariety?: string }>;
+  potatoVarieties?: Array<{
+    isCustom?: boolean; variety: string; subVariety?: string 
+}>;
   farmEquipment?: Array<{ machine: string; brand?: string; model?: string }>;
   technologyUsed?: Array<{ name: string }>;
   sellingChannels?: Array<{ name: string }>;
@@ -142,6 +144,7 @@ export async function onboardFarmer(payload: Payload) {
               farmerId: farmer.id,
               variety: variety.variety,
               subVariety: variety.subVariety,
+              isCustom: variety?.isCustom,
             },
             { transaction: t }
           );
@@ -394,7 +397,7 @@ export const retrieveFarmerProfile = async (
     });
 
     const potatoVariety = await PotatoVarietyGrown.findAll({
-      attributes: ["variety", "subVariety"],
+      attributes: ["variety", "subVariety", "isCustom"],
       where: { farmerId },
     });
 
@@ -644,7 +647,7 @@ export async function getFarmerListByAdmin(
         {
           model: PotatoVarietyGrown,
           as: "PotatoVarietyGrown",
-          attributes: ["id", "variety", "subVariety"],
+          attributes: ["id", "variety", "subVariety", "isCustom"],
         },
         {
           model: User,
@@ -1046,7 +1049,7 @@ export const addFarmersToWorksheet = async (
       }),
       PotatoVarietyGrown.findAll({
         where: { farmerId },
-        attributes: ["variety", "subVariety"],
+        attributes: ["variety", "subVariety", "isCustom"],
       }),
       PriceDiscoveryMethod.findAll({
         where: { farmerId },
