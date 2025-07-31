@@ -105,6 +105,7 @@ export const onboardFarmerSchema = Joi.object({
       Joi.object({
         variety: Joi.string().required(),
         subVariety: Joi.string().optional().allow(null, ""),
+        isCustom: Joi.boolean().optional().allow(null,""),
       })
     )
     .optional(),
@@ -297,6 +298,7 @@ export const updateFarmerSchema = Joi.object({
       Joi.object({
         variety: Joi.string().required(),
         subVariety: Joi.string().optional().allow(null, ""),
+        isCustom: Joi.boolean().optional().allow(null,""),
       })
     )
     .optional(),
