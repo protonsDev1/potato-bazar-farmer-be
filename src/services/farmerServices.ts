@@ -684,7 +684,7 @@ export async function getFarmerListByAdmin(
       ],
       limit,
       offset,
-      order: [["createdAt", "DESC"]],
+      order: [["updatedAt", "DESC"]],
       distinct: true,
     });
 
@@ -892,7 +892,7 @@ export async function getAllFarmers(filters: any, search: string) {
         required: Object.keys(landDetailsWhere).length > 0,
       },
     ],
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
   return farmers;
 }
