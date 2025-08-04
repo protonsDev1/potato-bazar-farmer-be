@@ -345,7 +345,7 @@ export const getPaginatedAgents = async (
     ],
     limit,
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   return {
@@ -786,7 +786,7 @@ export const getAllAgentsWithAssociations = async (search?: string) => {
         attributes: ["id", "name", "email"],
       },
     ],
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   return agents;
