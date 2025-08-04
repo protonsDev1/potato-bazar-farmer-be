@@ -710,6 +710,7 @@ export async function getColdStorage(
         "district",
         "totalCapacityMt",
         "createdAt",
+        "updatedAt",
         "onBoardedBy",
         "status"
       ],
