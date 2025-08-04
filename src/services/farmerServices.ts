@@ -640,6 +640,7 @@ export async function getFarmerListByAdmin(
         "taluka",
         "district",
         "createdAt",
+        "updatedAt",
         "onBoardedBy",
         "status"
       ],
