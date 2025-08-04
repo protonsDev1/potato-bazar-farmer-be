@@ -388,6 +388,7 @@ export const getTraderListByAdmin = async (
         "digiPin",
         "geoLocation",
         "createdAt",
+        "updatedAt",
         "onBoardedBy",
         "status"
       ],
