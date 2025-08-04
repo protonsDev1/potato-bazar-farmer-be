@@ -405,7 +405,7 @@ export const getTraderListByAdmin = async (
       ],
       limit,
       offset,
-      order: [["createdAt", "DESC"]],
+      order: [["updatedAt", "DESC"]],
       distinct: true,
     });
 
@@ -505,7 +505,7 @@ export const getAllTraders = async (filters, search) => {
       { model: User, as: "user", attributes: ["name", "mobile"] },
       { model: User, as: "onBoardedByUser", attributes: ["name", "mobile"] },
     ],
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   return traders;
