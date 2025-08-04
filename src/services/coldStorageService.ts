@@ -729,7 +729,7 @@ export async function getColdStorage(
       distinct: true,
       limit,
       offset,
-      order: [["createdAt", "DESC"]],
+      order: [["updatedAt", "DESC"]],
     });
 
     const data = rows.map((item) => ({
@@ -847,7 +847,7 @@ export async function getAllColdStorages(filters: any, search: string) {
     const coldStorages = await ColdStorage.findAll({
       where: whereCondition,
       include: [{ model: User, as: "onBoardedByUser", attributes: ["name"] }],
-      order: [["createdAt", "DESC"]],
+      order: [["updatedAt", "DESC"]],
     });
 
     return coldStorages;
