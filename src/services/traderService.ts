@@ -326,8 +326,14 @@ export const getTraderListByAdmin = async (
 
     whereCondition.isDeleted = false;
 
-    const { agentId, state, district, cityOrVillage, registrationDate } =
-      filters;
+    const {
+      agentId,
+      state,
+      district,
+      cityOrVillage,
+      registrationDate,
+      onboardedByUser,
+    } = filters;
 
     if (agentId && agentId.toLowerCase() !== "all") {
       whereCondition.onBoardedBy = agentId;
@@ -356,6 +362,18 @@ export const getTraderListByAdmin = async (
         whereCondition.createdAt = {
           [Op.between]: [new Date(startUTC), new Date(endUTC)],
         };
+      }
+    }
+
+    let onBoardedByUserWhere: any = {};
+
+    if (onboardedByUser && onboardedByUser.toLowerCase() !== "all") {
+      if (onboardedByUser === "self") {
+        onBoardedByUserWhere.role = "user";
+      } else if (onboardedByUser === "agent") {
+        onBoardedByUserWhere.role = "agent";
+      } else if (onboardedByUser === "admin") {
+        onBoardedByUserWhere.role = "admin";
       }
     }
 
@@ -390,7 +408,7 @@ export const getTraderListByAdmin = async (
         "createdAt",
         "updatedAt",
         "onBoardedBy",
-        "status"
+        "status",
       ],
       include: [
         {
@@ -401,7 +419,11 @@ export const getTraderListByAdmin = async (
         {
           model: User,
           as: "onBoardedByUser",
-          attributes: ["id", "name", "email", "mobile"],
+          attributes: ["id", "name", "email", "role", "mobile"],
+          where: Object.keys(onBoardedByUserWhere).length
+            ? onBoardedByUserWhere
+            : undefined,
+          required: Object.keys(onBoardedByUserWhere).length > 0,
         },
       ],
       limit,
@@ -456,7 +478,14 @@ export const softDeleteTraderById = async (traderId: number) => {
 export const getAllTraders = async (filters, search) => {
   const whereCondition: any = {};
 
-  const { agentId, state, district, cityOrVillage, registrationDate } = filters;
+  const {
+    agentId,
+    state,
+    district,
+    cityOrVillage,
+    registrationDate,
+    onboardedByUser,
+  } = filters;
 
   whereCondition.isDeleted = false;
 
@@ -487,6 +516,18 @@ export const getAllTraders = async (filters, search) => {
     }
   }
 
+  let onBoardedByUserWhere: any = {};
+
+  if (onboardedByUser && onboardedByUser.toLowerCase() !== "all") {
+    if (onboardedByUser === "self") {
+      onBoardedByUserWhere.role = "user";
+    } else if (onboardedByUser === "agent") {
+      onBoardedByUserWhere.role = "agent";
+    } else if (onboardedByUser === "admin") {
+      onBoardedByUserWhere.role = "admin";
+    }
+  }
+
   if (search?.trim()) {
     const searchTerm = `%${search?.trim()}%`;
     whereCondition[Op.or] = [
@@ -504,7 +545,15 @@ export const getAllTraders = async (filters, search) => {
     where: whereCondition,
     include: [
       { model: User, as: "user", attributes: ["name", "mobile"] },
-      { model: User, as: "onBoardedByUser", attributes: ["name", "mobile"] },
+      {
+        model: User,
+        as: "onBoardedByUser",
+        attributes: ["name", "mobile"],
+        where: Object.keys(onBoardedByUserWhere).length
+          ? onBoardedByUserWhere
+          : undefined,
+        required: Object.keys(onBoardedByUserWhere).length > 0,
+      },
     ],
     order: [["updatedAt", "DESC"]],
   });
@@ -527,7 +576,7 @@ export const createTraderWorksheetColumns = (worksheet) => {
     { header: "DIGI PIN", key: "digiPin", width: 20 },
     { header: "Registration Date", key: "registrationDate", width: 20 },
     { header: "Onboarded By", key: "onBoardedBy", width: 20 },
-    { header: "Status", key: "status", width: 10},
+    { header: "Status", key: "status", width: 10 },
     { header: "Language", key: "languagePreference", width: 20 },
     { header: "Employees", key: "numberOfEmployees", width: 20 },
     { header: "Own Potato Farming", key: "ownPotatoFarming", width: 20 },

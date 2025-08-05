@@ -641,6 +641,7 @@ export async function getColdStorage(
       storageSize,
       capacityRange,
       registrationDate,
+      onboardedByUser,
     } = filters;
 
     whereCondition.isDeleted = false;
@@ -691,6 +692,18 @@ export async function getColdStorage(
       }
     }
 
+    let onBoardedByUserWhere: any = {};
+
+    if (onboardedByUser && onboardedByUser.toLowerCase() !== "all") {
+      if (onboardedByUser === "self") {
+        onBoardedByUserWhere.role = "user";
+      } else if (onboardedByUser === "agent") {
+        onBoardedByUserWhere.role = "agent";
+      } else if (onboardedByUser === "admin") {
+        onBoardedByUserWhere.role = "admin";
+      }
+    }
+
     if (search?.trim()) {
       const searchTerm = `%${search.trim()}%`;
       whereCondition[Op.or] = [
@@ -712,7 +725,7 @@ export async function getColdStorage(
         "createdAt",
         "updatedAt",
         "onBoardedBy",
-        "status"
+        "status",
       ],
       where: whereCondition,
       include: [
@@ -720,6 +733,10 @@ export async function getColdStorage(
           model: User,
           as: "onBoardedByUser",
           attributes: ["id", "name", "role", "email", "mobile"],
+          where: Object.keys(onBoardedByUserWhere).length
+            ? onBoardedByUserWhere
+            : undefined,
+          required: Object.keys(onBoardedByUserWhere).length > 0,
         },
         {
           model: StorageType,
@@ -786,6 +803,7 @@ export async function getAllColdStorages(filters: any, search: string) {
       storageSize,
       capacityRange,
       registrationDate,
+      onboardedByUser,
     } = filters;
 
     whereCondition.isDeleted = false;
@@ -836,6 +854,18 @@ export async function getAllColdStorages(filters: any, search: string) {
       }
     }
 
+    let onBoardedByUserWhere: any = {};
+
+    if (onboardedByUser && onboardedByUser.toLowerCase() !== "all") {
+      if (onboardedByUser === "self") {
+        onBoardedByUserWhere.role = "user";
+      } else if (onboardedByUser === "agent") {
+        onBoardedByUserWhere.role = "agent";
+      } else if (onboardedByUser === "admin") {
+        onBoardedByUserWhere.role = "admin";
+      }
+    }
+
     if (search?.trim()) {
       const searchTerm = `%${search.trim()}%`;
       whereCondition[Op.or] = [
@@ -847,7 +877,17 @@ export async function getAllColdStorages(filters: any, search: string) {
 
     const coldStorages = await ColdStorage.findAll({
       where: whereCondition,
-      include: [{ model: User, as: "onBoardedByUser", attributes: ["name"] }],
+      include: [
+        {
+          model: User,
+          as: "onBoardedByUser",
+          attributes: ["name"],
+          where: Object.keys(onBoardedByUserWhere).length
+            ? onBoardedByUserWhere
+            : undefined,
+          required: Object.keys(onBoardedByUserWhere).length > 0,
+        },
+      ],
       order: [["updatedAt", "DESC"]],
     });
 
@@ -873,7 +913,7 @@ export const createColdStorageWorksheetColumns = (worksheet) => {
     { header: "GST Number", key: "gstOrCertificateNumber", width: 20 },
     { header: "Registration Date", key: "registrationDate", width: 20 },
     { header: "Onboarded By", key: "onBoardedBy", width: 20 },
-    { header: "Status", key: "status", width: 10},
+    { header: "Status", key: "status", width: 10 },
     { header: "Total Capacity (MT)", key: "totalCapacityMt", width: 20 },
     { header: "Built Year", key: "builtYear", width: 20 },
     { header: "Cold Storage Type", key: "coldStorageType", width: 20 },
