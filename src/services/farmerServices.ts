@@ -48,8 +48,10 @@ interface Payload {
   irrigationSources?: Array<{ method: string }>;
   irrigationMethods?: Array<{ method: string }>;
   potatoVarieties?: Array<{
-    isCustom?: boolean; variety: string; subVariety?: string 
-}>;
+    isCustom?: boolean;
+    variety: string;
+    subVariety?: string;
+  }>;
   farmEquipment?: Array<{ machine: string; brand?: string; model?: string }>;
   technologyUsed?: Array<{ name: string }>;
   sellingChannels?: Array<{ name: string }>;
@@ -501,6 +503,7 @@ export async function getFarmerListByAdmin(
       harvestMonth,
       irrigationSource,
       registrationDate,
+      onboardedByUser,
     } = filters;
 
     whereCondition.isDeleted = false;
@@ -620,11 +623,36 @@ export async function getFarmerListByAdmin(
       }
     }
 
+    let onBoardedByUserWhere: any = {};
+
+    if (onboardedByUser && onboardedByUser.toLowerCase() !== "all") {
+      if (onboardedByUser === "self") {
+        onBoardedByUserWhere.role = "user";
+      } else if (onboardedByUser === "agent") {
+        onBoardedByUserWhere.role = "agent";
+      } else if (onboardedByUser === "admin") {
+        onBoardedByUserWhere.role = "admin";
+      }
+    }
+
     if (search?.trim()) {
       const searchTerm = `%${search?.trim()}%`;
+
+      const matchedUsers = await User.findAll({
+        where: {
+          mobile: { [Op.iLike]: searchTerm },
+        },
+        attributes: ["id"],
+      });
+
+      const matchedUserIds = matchedUsers.map((u) => u.id);
+
       whereCondition[Op.or] = [
         { id: isNaN(Number(search)) ? -1 : Number(search) },
         { name: { [Op.iLike]: searchTerm } },
+        ...(matchedUserIds.length > 0
+          ? [{ userId: { [Op.in]: matchedUserIds } }]
+          : []),
       ];
     }
 
@@ -642,7 +670,7 @@ export async function getFarmerListByAdmin(
         "createdAt",
         "updatedAt",
         "onBoardedBy",
-        "status"
+        "status",
       ],
       include: [
         {
@@ -659,6 +687,10 @@ export async function getFarmerListByAdmin(
           model: User,
           as: "onBoardedByUser",
           attributes: ["id", "name", "role", "email", "mobile"],
+          where: Object.keys(onBoardedByUserWhere).length
+            ? onBoardedByUserWhere
+            : undefined,
+          required: Object.keys(onBoardedByUserWhere).length > 0,
         },
         {
           model: LandDetail,
@@ -752,6 +784,7 @@ export async function getAllFarmers(filters: any, search: string) {
     harvestMonth,
     irrigationSource,
     registrationDate,
+    onboardedByUser,
   } = filters;
 
   whereCondition.isDeleted = false;
@@ -862,6 +895,18 @@ export async function getAllFarmers(filters: any, search: string) {
     }
   }
 
+  let onBoardedByUserWhere: any = {};
+
+  if (onboardedByUser && onboardedByUser.toLowerCase() !== "all") {
+    if (onboardedByUser === "self") {
+      onBoardedByUserWhere.role = "user";
+    } else if (onboardedByUser === "agent") {
+      onBoardedByUserWhere.role = "agent";
+    } else if (onboardedByUser === "admin") {
+      onBoardedByUserWhere.role = "admin";
+    }
+  }
+
   if (search?.trim()) {
     const searchTerm = `%${search.trim()}%`;
     whereCondition[Op.or] = [
@@ -874,7 +919,15 @@ export async function getAllFarmers(filters: any, search: string) {
     where: whereCondition,
     include: [
       { model: User, as: "user", attributes: ["mobile"] },
-      { model: User, as: "onBoardedByUser", attributes: ["name"] },
+      {
+        model: User,
+        as: "onBoardedByUser",
+        attributes: ["name"],
+        where: Object.keys(onBoardedByUserWhere).length
+          ? onBoardedByUserWhere
+          : undefined,
+        required: Object.keys(onBoardedByUserWhere).length > 0,
+      },
       {
         model: LandDetail,
         as: "LandDetail",
@@ -918,7 +971,7 @@ export const createFarmerWorksheetColumns = (worksheet: Worksheet) => {
     { header: "Aadhar Number", key: "aadhaarNumber", width: 20 },
     { header: "Registration Date", key: "registrationDate", width: 20 },
     { header: "Onboarded By", key: "onBoardedBy", width: 20 },
-    { header: "Status", key: "status", width: 10},
+    { header: "Status", key: "status", width: 10 },
     { header: "Land Owned (Acres)", key: "landOwned", width: 15 },
     { header: "Land Leased (Acres)", key: "landLeased", width: 15 },
     { header: "Sowing Month", key: "sowingMonth", width: 15 },
