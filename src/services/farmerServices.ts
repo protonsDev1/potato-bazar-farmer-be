@@ -309,9 +309,13 @@ export const updateFarmerDetails = async (
       "isBankAccount",
     ];
 
-    const updateData = {};
+    const updateData: Record<string, any> = {};
     for (const key of updatableFields) {
       if (key in payload) updateData[key] = payload[key];
+    }
+
+    if (farmer.status === REGISTRATION_STATUS.REJECTED) {
+      updateData.status = REGISTRATION_STATUS.PENDING;
     }
 
     await Farmer.update(updateData, {
