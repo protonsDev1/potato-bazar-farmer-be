@@ -165,7 +165,7 @@ export const verifyOtp = async (req, res) => {
 
     const isValid = await verifyOtpFromDB(mobile, otp);
     if (!isValid) {
-      return res.status(401).json({ message: 'Invalid or expired OTP' });
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
 
     const registrationType= await getRegistrationTypes(mobile);
