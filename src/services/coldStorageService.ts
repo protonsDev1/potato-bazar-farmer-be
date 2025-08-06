@@ -383,7 +383,15 @@ export async function onboardColdStorage(payload: any) {
 
 export const updateColdStorageService = async (coldStorageId, payload) => {
   return await sequelize.transaction(async (t) => {
-    const updateData = {};
+    const coldStorage = await ColdStorage.findByPk(coldStorageId, {
+      transaction: t,
+    });
+
+    if (!coldStorage) {
+      throw new Error("Cold storage not found");
+    }
+
+    const updateData: Record<string, any> = {};
     const editableFields = [
       "name",
       "ownerName",
@@ -436,6 +444,10 @@ export const updateColdStorageService = async (coldStorageId, payload) => {
       if (field in payload) {
         updateData[field] = payload[field];
       }
+    }
+
+    if (coldStorage.status === REGISTRATION_STATUS.REJECTED) {
+      updateData.status = REGISTRATION_STATUS.PENDING;
     }
 
     await ColdStorage.update(updateData, {
