@@ -149,6 +149,13 @@ export async function onboardTrader(payload) {
 
 export async function updateTraderService(traderId, payload) {
   return await sequelize.transaction(async (t) => {
+    const isTraderExist = await Trader.findByPk(traderId, {
+      transaction: t,
+    });
+
+    if (!isTraderExist) {
+      throw new Error("Trader not found");
+    }
     const updatableFields = [
       "fullName",
       "businessName",
@@ -184,9 +191,14 @@ export async function updateTraderService(traderId, payload) {
       "acceptsOnlinePayments",
     ];
 
-    const updateData = {};
+    const updateData: Record<string, any> = {};
+
     for (const key of updatableFields) {
       if (key in payload) updateData[key] = payload[key];
+    }
+
+    if (isTraderExist.status === REGISTRATION_STATUS.REJECTED) {
+      updateData.status = REGISTRATION_STATUS.PENDING;
     }
 
     await Trader.update(updateData, {
