@@ -7,6 +7,7 @@ import {
 } from "sequelize";
 
 import sequelize from "../../db";
+import AdminPotatoVarietyGrown from "./adminPotatoVarietyGrown";
 
 class AdminPotatoSubVarietyGrown extends Model<
   InferAttributes<AdminPotatoSubVarietyGrown>,
@@ -45,5 +46,15 @@ AdminPotatoSubVarietyGrown.init(
     timestamps: true,
   }
 );
+
+AdminPotatoVarietyGrown.hasMany(AdminPotatoSubVarietyGrown, {
+  foreignKey: "varietyId",
+  as: "adminPotatoVariety",
+});
+
+AdminPotatoSubVarietyGrown.belongsTo(AdminPotatoVarietyGrown, {
+  foreignKey: "varietyId",
+  as: "parentVariety",
+});
 
 export default AdminPotatoSubVarietyGrown;
