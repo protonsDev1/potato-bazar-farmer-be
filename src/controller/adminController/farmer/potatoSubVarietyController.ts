@@ -1,4 +1,5 @@
 import AdminPotatoSubVarietyGrown from "../../../database/models/adminModels/farmer/adminPotatoSubVariety";
+import AdminPotatoVarietyGrown from "../../../database/models/adminModels/farmer/adminPotatoVarietyGrown";
 import {
   createRecord,
   getAllRecords,
@@ -47,8 +48,16 @@ export const getPotatoSubVarietyGrown = async (req, res) => {
   try {
     const { varietyId } = req.query;
 
+    const whereCondition = varietyId ? { varietyId } : {};
+
     const response = await AdminPotatoSubVarietyGrown.findAll({
-      where: { varietyId },
+      where: whereCondition,
+      include: [
+        {
+          model: AdminPotatoVarietyGrown,
+          as: "parentVariety",
+        },
+      ],
       order: [["position", "ASC"]],
     });
 
@@ -71,8 +80,18 @@ export const getActivePotatoSubVarietyGrown = async (req, res) => {
   try {
     const { varietyId } = req.query;
 
+    const whereCondition = varietyId
+      ? { varietyId, isActive: true }
+      : { isActive: true };
+
     const response = await AdminPotatoSubVarietyGrown.findAll({
-      where: { varietyId, isActive: true },
+      where: whereCondition,
+      include: [
+        {
+          model: AdminPotatoVarietyGrown,
+          as: "parentVariety",
+        },
+      ],
       order: [["position", "ASC"]],
     });
 
