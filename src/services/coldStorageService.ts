@@ -640,7 +640,8 @@ export async function getColdStorage(
   page: number = 1,
   limit: number = 10,
   filters,
-  search
+  search,
+  userId
 ) {
   try {
     const offset = (page - 1) * limit;
@@ -763,6 +764,18 @@ export async function getColdStorage(
       order: [["updatedAt", "DESC"]],
     });
 
+    const likedColdStorageRecords = await LikeColdStorage.findAll({
+      where: {
+        userId,
+        coldStorageId: { [Op.in]: rows.map((item) => item.id) },
+      },
+      attributes: ["coldStorageId"],
+    });
+
+    const likedIds = new Set(
+      likedColdStorageRecords.map((r) => r.coldStorageId)
+    );
+
     const data = rows.map((item) => ({
       id: item.id,
       coldStorageName: item.name,
@@ -776,6 +789,7 @@ export async function getColdStorage(
       storageTypes: item.storageTypes,
       onBoardedBy: item.onBoardedBy,
       status: item.status,
+      isLiked: likedIds.has(item.id),
     }));
 
     return {
