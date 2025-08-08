@@ -141,10 +141,17 @@ export const getColdStorageProfile = async (req, res) => {
 export const getColdStorageList = async (req, res) => {
   try {
     const { page, perPage: limit, search } = req.query;
+    const { id: userId } = req.user;
 
     const filters = parseFilters(req.query);
 
-    const coldStorage = await getColdStorage(page, limit, filters, search);
+    const coldStorage = await getColdStorage(
+      page,
+      limit,
+      filters,
+      search,
+      userId
+    );
 
     return res.status(200).json({
       message: "Cold storage list",
