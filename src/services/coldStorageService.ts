@@ -24,6 +24,7 @@ import User, { REGISTRATION_STATUS } from "../database/models/user";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
+import LikeColdStorage from "../database/models/likeColdStorage";
 
 const STORAGE_SIZE_RANGES = {
   small: { min: 0, max: 999 },
@@ -1072,5 +1073,27 @@ export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
           .join(" | ") || "",
       uniqueFeatures: storage.uniqueFeatures || "",
     });
+  }
+};
+
+export const likeOrDislikeService = async (userId, coldStorageId) => {
+  const isValidColdStorage = await ColdStorage.findByPk(coldStorageId);
+
+  if (!isValidColdStorage)
+    return {
+      success: false,
+      error: "Cold Storage not found!",
+    };
+
+  const isExistingColdStorageLiked = await LikeColdStorage.findOne({
+    where: { userId, coldStorageId },
+  });
+
+  if (isExistingColdStorageLiked) {
+    await LikeColdStorage.destroy({ where: { userId, coldStorageId } });
+    return { success: true, data: "Cold Storage disliked successfully!" };
+  } else {
+    await LikeColdStorage.create({ userId, coldStorageId });
+    return { success: true, data: "Cold Storage liked successfully!" };
   }
 };
