@@ -68,6 +68,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare webPermissions?: SubAdminWebPermission[];
   declare createdAt: CreationOptional<Date>;
   declare passwordUpdatedAt: CreationOptional<Date>;
+  declare oneSignalPlayerId: string | null;
   declare updatedAt: CreationOptional<Date>;
 
   async validatePassword(password: string): Promise<boolean> {
@@ -203,6 +204,10 @@ User.init(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    oneSignalPlayerId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    }
   },
   {
     sequelize,
