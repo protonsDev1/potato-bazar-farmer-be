@@ -10,6 +10,7 @@ import {
   createColdStorageWorksheetColumns,
   addColdStoragesToWorksheet,
   getAllColdStorages,
+  likeOrDislikeService,
 } from "../services/coldStorageService";
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 import { parseFilters } from "../utils/parseQuery";
@@ -140,10 +141,17 @@ export const getColdStorageProfile = async (req, res) => {
 export const getColdStorageList = async (req, res) => {
   try {
     const { page, perPage: limit, search } = req.query;
+    const { id: userId } = req.user;
 
     const filters = parseFilters(req.query);
 
-    const coldStorage = await getColdStorage(page, limit, filters, search);
+    const coldStorage = await getColdStorage(
+      page,
+      limit,
+      filters,
+      search,
+      userId
+    );
 
     return res.status(200).json({
       message: "Cold storage list",
@@ -241,3 +249,29 @@ export const exportColdStorages = async (req, res) => {
     });
   }
 };
+
+export const likeOrDislikeColdStorage = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { coldStorageId } = req.body;
+
+    if (!coldStorageId)
+      return res
+        .status(400)
+        .json({ message: "cold storage id is a required field!" });
+
+    const response = await likeOrDislikeService(id, coldStorageId);
+
+    if (!response.success)
+      return res.status(400).json({ message: response.error });
+
+    return res.status(200).json({ message: response.data });
+  } catch (error) {
+    console.error("Like or dislike coldStorage error:", error);
+    res.status(500).json({
+      message: "Failed to like or dislike cold storages",
+      error: error.message,
+    });
+  }
+};
+
