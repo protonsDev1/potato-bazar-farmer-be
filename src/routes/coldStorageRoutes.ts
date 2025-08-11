@@ -13,6 +13,7 @@ import {
   updateColdStorage,
   deleteColdStorage,
   exportColdStorages,
+  likeOrDislikeColdStorage,
 } from "../controller/coldStorage";
 
 const router = express.Router();
@@ -42,5 +43,6 @@ router.put(
 router.get("/", adminMiddleware, getColdStorageList);
 router.delete("/delete/:id", adminMiddleware, deleteColdStorage);
 router.get("/export", adminMiddleware, exportColdStorages);
+router.post("/like", authMiddleware, likeOrDislikeColdStorage);
 
 export default router;
