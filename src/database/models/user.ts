@@ -29,6 +29,12 @@ export enum REGISTRATION_STATUS {
     declare agentProfile?: Agent
     declare lastLogin: CreationOptional<Date>;
     declare location: string;
+    declare state: string;
+    declare district: string;
+    declare cityOrVillage: string;
+    declare pinCode: string;
+    declare userType: string[];
+    declare isUserOnBoardedOnMobile: boolean;
     declare createdAt: CreationOptional<Date>;
     declare passwordUpdatedAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
@@ -90,10 +96,33 @@ export enum REGISTRATION_STATUS {
         type: DataTypes.DATE,
         allowNull: true,
       },
-      
       location:{
        type: DataTypes.STRING,
        allowNull:true,
+      },
+      state:{
+        type: DataTypes.STRING,
+        allowNull:true,
+      },
+      district: {
+          type: DataTypes.STRING,
+        allowNull:true,
+      },
+      cityOrVillage: {
+         type: DataTypes.STRING,
+        allowNull:true,
+      },
+      pinCode: {
+             type: DataTypes.STRING,
+        allowNull:true,
+      },
+      userType: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        allowNull: true
+      },
+      isUserOnBoardedOnMobile: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       }
     },
     {

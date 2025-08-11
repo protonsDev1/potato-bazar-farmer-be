@@ -584,3 +584,35 @@ export const updateRegistrationStatus = async (status, userType, userId) => {
     message: `${userType} status updated to ${status}`,
   };
 };
+
+export const mobileOnboardingLoginService = async (userData) => {
+  const {
+    mobile,
+    firstName,
+    lastName,
+    userType,
+    state,
+    district,
+    cityOrVillage,
+    pinCode,
+  } = userData;
+
+  const user = await User.findOne({ where: { mobile } });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const updatedUser = await user.update({
+    name: `${firstName} ${lastName}`,
+    state,
+    district,
+    cityOrVillage,
+    pinCode,
+    userType,
+    isUserOnBoardedOnMobile: true,
+  });
+
+  return updatedUser;
+};
+
