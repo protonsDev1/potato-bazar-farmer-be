@@ -136,8 +136,19 @@ export const updateStatusSchema = Joi.object({
     .required(),
 });
 
-export const updateRegistrationStatusSchema= Joi.object({
+export const updateRegistrationStatusSchema = Joi.object({
   status: Joi.string().required(),
   userType: Joi.string().required(),
   userId: Joi.string().required(),
-})
+});
+
+export const mobileLoginSchema = Joi.object({
+  mobile: Joi.string().required(),
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
+  userType: Joi.array().items(Joi.string()).optional(),
+  state: Joi.string().required(),
+  district: Joi.string().required(),
+  cityOrVillage: Joi.string().required(),
+  pinCode: Joi.string().required(),
+});
