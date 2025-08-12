@@ -618,3 +618,9 @@ export const mobileOnboardingLoginService = async (userData) => {
   return updatedUser;
 };
 
+export const getUserRole = async (userId) => {
+  const user = await User.findByPk(userId);
+  return {
+    role: user.role
+  };
+};
