@@ -162,7 +162,7 @@ export const sendOtp = async (req, res) => {
 
 export const verifyOtp = async (req, res) => {
   try {
-    const { mobile, otp } = req.body;
+    const { mobile, otp, hasStartedUsingMobile } = req.body;
 
     const isValid = await verifyOtpFromDB(mobile, otp);
     if (!isValid) {
@@ -173,6 +173,10 @@ export const verifyOtp = async (req, res) => {
 
     const existingUser = await checkExistingUser(mobile);
     if (existingUser) {
+      if (hasStartedUsingMobile) {
+        await existingUser.update({ hasStartedUsingMobile: true });
+      }
+      
       const token = jwt.sign({ id: existingUser.id }, JWT_SECRET, {
         expiresIn: "24h",
       });
@@ -186,7 +190,7 @@ export const verifyOtp = async (req, res) => {
         });
     }
 
-    const createUser = await registerInitialUser(mobile);
+    const createUser = await registerInitialUser(mobile, hasStartedUsingMobile);
 
     return res
       .status(200)

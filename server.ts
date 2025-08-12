@@ -42,6 +42,7 @@ import adminStorageBookingSystemRoutes from "./src/routes/adminRoutes/coldStorag
 import traderRoutes from "./src/routes/traderRoutes";
 import uploadRoutes from "./src/routes/uploadRoutes";
 import csRequirementRoutes from "./src/routes/csRequirementRoutes";
+import subAdminRoutes from "./src/routes/subAdminRoutes";
 
 const cors = require("cors");
 
@@ -95,6 +96,7 @@ app.use("/api/admin/operational_challenge", adminOperationalChallengeRoutes);
 app.use("/api/traders", traderRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api", csRequirementRoutes);
+app.use("/api/sub_admins", subAdminRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
