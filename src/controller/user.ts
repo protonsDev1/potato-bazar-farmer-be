@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User from '../database/models/user';
+import { USER_TYPE } from '../database/models/agentOnboardedUsers';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -165,21 +166,69 @@ export const verifyOtp = async (req, res) => {
 
     const isValid = await verifyOtpFromDB(mobile, otp);
     if (!isValid) {
-      return res.status(400).json({ message: 'Invalid or expired OTP' });
+      return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    const registrationType= await getRegistrationTypes(mobile);
+    const registrationType = await getRegistrationTypes(mobile);
 
     const existingUser = await checkExistingUser(mobile);
     if (existingUser) {
-      return res.status(200).json({ message: 'OTP verified. User already exists.', user: existingUser,registrationType });
-    };
+      const token = jwt.sign({ id: existingUser.id }, JWT_SECRET, {
+        expiresIn: "24h",
+      });
+      return res
+        .status(200)
+        .json({
+          message: "OTP verified. User already exists.",
+          token,
+          user: existingUser,
+          registrationType,
+        });
+    }
 
     const createUser = await registerInitialUser(mobile);
 
-    return res.status(200).json({ message: 'OTP verified',createUser,registrationType });
+    return res
+      .status(200)
+      .json({ message: "OTP verified", createUser, registrationType });
   } catch (err: any) {
-    return res.status(500).json({ message: err.message || 'OTP verification failed' });
+    return res
+      .status(500)
+      .json({ message: err.message || "OTP verification failed" });
+  }
+};
+
+export const UserLoginOnMobile = async (req, res) => {
+  try {
+    const { userType } = req.body;
+
+    if (
+      !Array.isArray(userType) ||
+      userType.some(
+        (type) => !Object.values(USER_TYPE).includes(type as USER_TYPE)
+      )
+    )
+      return res.status(400).json({
+        message: `Invalid User Types. Allowed values: ${Object.values(
+          USER_TYPE
+        ).join(", ")}`,
+      });
+
+    const userOnboardedOnMobile = await mobileOnboardingLoginService(req.body);
+
+    const token = jwt.sign({ id: userOnboardedOnMobile.id }, JWT_SECRET, {
+      expiresIn: "24h",
+    });
+
+    return res.status(200).json({
+      message: "User Onboarded on mobile Successfully.",
+      token,
+      user: userOnboardedOnMobile,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message || "Failed to onboard on mobile." });
   }
 };
 
