@@ -9,7 +9,7 @@ import { Op, Sequelize } from 'sequelize';
 import bcrypt from 'bcrypt';
 import Trader from "../database/models/trader/trader";
 import { formatDate } from "../utils/dateFormat";
-import { USER_TYPE } from "../database/models/agentOnboardedUsers";
+import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboardedUsers";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -559,6 +559,7 @@ export const updateRegistrationStatus = async (status, userType, userId) => {
   }
 
   const user = await Model.findByPk(userId);
+  const agentOnboardedUser= await AgentOnboardedUser.findOne({where:{userId}});
 
   if (!user) {
     return {
@@ -578,6 +579,7 @@ export const updateRegistrationStatus = async (status, userType, userId) => {
   }
 
   await user.update({ status });
+  await agentOnboardedUser.update({statusOfRegistration:status});
 
   return {
     success: true,

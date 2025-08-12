@@ -50,6 +50,7 @@ export const getAllRegisteredUsers = async (req, res) => {
 export const getRecentRegisteredUsers = async (req, res) => {
   try {
     const { id, role } = req.user;
+    const { page, perPage: limit } = req.query;
 
     if (role !== "agent")
       return res.status(400).json({
@@ -57,7 +58,7 @@ export const getRecentRegisteredUsers = async (req, res) => {
           "Only Agents are authorized to retrieve recent registered users under them.",
       });
 
-    const recentRegistered = await retrieveRecentRegistered(id);
+    const recentRegistered = await retrieveRecentRegistered(id, page, limit);
     return res.status(200).json({ message: recentRegistered });
   } catch (error) {
     res.status(500).json({

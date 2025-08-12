@@ -30,6 +30,8 @@ class AgentOnboardedUser extends Model<
   declare district: string;
   declare state: string;
   declare statusOfRegistration: string;
+  declare updatedAt?: Date;
+  declare createdAt?: Date;
 }
 
 AgentOnboardedUser.init(
