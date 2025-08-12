@@ -559,12 +559,23 @@ export const updateRegistrationStatus = async (status, userType, userId) => {
   }
 
   const user = await Model.findByPk(userId);
-  const agentOnboardedUser= await AgentOnboardedUser.findOne({where:{userId}});
 
   if (!user) {
     return {
       success: false,
       error: `${userType} not found.`,
+    };
+  }
+
+   const agentOnboardedUser = await AgentOnboardedUser.findOne({
+    where: { userId: user.userId, userType },
+  });
+
+  if(!agentOnboardedUser)
+  {
+    return {
+      success:false,
+      error: `${userType} not found in agentOnboardUser.`,
     };
   }
 
@@ -579,7 +590,7 @@ export const updateRegistrationStatus = async (status, userType, userId) => {
   }
 
   await user.update({ status });
-  await agentOnboardedUser.update({statusOfRegistration:status});
+  await agentOnboardedUser.update({ statusOfRegistration: status });
 
   return {
     success: true,
