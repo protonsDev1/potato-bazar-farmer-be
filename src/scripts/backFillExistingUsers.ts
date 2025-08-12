@@ -4,6 +4,7 @@ import AgentOnboardedUser, {
 import ColdStorage from "../database/models/coldStorage";
 import Farmer from "../database/models/farmer";
 import Trader from "../database/models/trader/trader";
+import { REGISTRATION_STATUS } from "../database/models/user";
 
 const backfillAgentOnboardedUsers = async () => {
   try {
@@ -60,7 +61,7 @@ const backfillAgentOnboardedUsers = async () => {
           village: f.village,
           district: f.district,
           state: f.state,
-          statusOfRegistration: "complete",
+          statusOfRegistration: REGISTRATION_STATUS.PENDING,
         });
       }
     });
@@ -75,15 +76,13 @@ const backfillAgentOnboardedUsers = async () => {
           village: c.village,
           district: c.district,
           state: c.state,
-          statusOfRegistration: "complete",
+          statusOfRegistration: REGISTRATION_STATUS.PENDING,
         });
       }
     });
 
     traders.forEach((t) => {
       if (t.userId && t.onBoardedBy) {
-        console.log(t, ".........trader");
-
         inserts.push({
           userId: t.userId,
           agentId: t.onBoardedBy,
@@ -92,7 +91,7 @@ const backfillAgentOnboardedUsers = async () => {
           village: t.cityOrVillage,
           district: t.district,
           state: t.state,
-          statusOfRegistration: "complete",
+          statusOfRegistration: REGISTRATION_STATUS.PENDING,
         });
       }
     });

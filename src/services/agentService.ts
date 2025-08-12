@@ -2,7 +2,7 @@ import { Worksheet } from "exceljs";
 
 import ColdStorage from "../database/models/coldStorage";
 import Farmer from "../database/models/farmer";
-import { formatDate } from "../utils/dateFormat";
+import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
 
 import { Op } from "sequelize";
 import dayjs from "dayjs";
@@ -16,9 +16,7 @@ import HelpAndSupport, {
   StatusEnum,
 } from "../database/models/helpAndSupport";
 import sequelize from "../database/models/db";
-import AgentOnboardedUser, {
-  USER_TYPE,
-} from "../database/models/agentOnboardedUsers";
+import AgentOnboardedUser from "../database/models/agentOnboardedUsers";
 
 export const retrieveAllUsers = async (
   agentId: string,
@@ -29,7 +27,7 @@ export const retrieveAllUsers = async (
   try {
     const offset = (page - 1) * limit;
 
-    const { type, name, village, district, state } = filters;
+    const { type, name, village, district, state, registrationDate } = filters;
 
     const whereCondition: any = { agentId };
 
@@ -38,6 +36,20 @@ export const retrieveAllUsers = async (
     if (village) whereCondition.village = { [Op.iLike]: `%${village}%` };
     if (district) whereCondition.district = { [Op.iLike]: `%${district}%` };
     if (state) whereCondition.state = { [Op.iLike]: `%${state}%` };
+
+    if (registrationDate && registrationDate.length === 2) {
+      const [startDate, endDate] = registrationDate;
+
+      if (startDate && endDate) {
+        const { startUTC, endUTC } = convertISTDateRangeToUTC(
+          startDate,
+          endDate
+        );
+        whereCondition.createdAt = {
+          [Op.between]: [new Date(startUTC), new Date(endUTC)],
+        };
+      }
+    }
 
     const { count, rows: onboarded } = await AgentOnboardedUser.findAndCountAll(
       {
@@ -48,43 +60,22 @@ export const retrieveAllUsers = async (
       }
     );
 
-    const enrichedResults = await Promise.all(
-      onboarded.map(async (entry) => {
-        let profile = null;
-
-        if (entry.userType === USER_TYPE.FARMER) {
-          profile = await Farmer.findOne({ where: { userId: entry.userId } });
-        } else if (entry.userType === USER_TYPE.COLD_STORAGE) {
-          profile = await ColdStorage.findOne({
-            where: { userId: entry.userId },
-          });
-        } else if (entry.userType === USER_TYPE.TRADER) {
-          profile = await Trader.findOne({ where: { userId: entry.userId } });
-        }
-
-        if (!profile) return null;
-
-        return {
-          id: profile.id,
-          name: entry.userName,
-          village: entry.village,
-          district: entry.district,
-          state: entry.state,
-          createdAt: profile.createdAt,
-          date: formatDate(profile.createdAt),
-          canAgentEdit:
-            Date.now() - new Date(profile.createdAt).getTime() <=
-            24 * 60 * 60 * 1000,
-          type: entry.userType,
-          status: entry.statusOfRegistration,
-        };
-      })
-    );
-
-    enrichedResults.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    const enrichedResults = onboarded.map((entry) => {
+      return {
+        id: entry.id,
+        name: entry.userName,
+        village: entry.village,
+        district: entry.district,
+        state: entry.state,
+        createdAt: entry.createdAt,
+        date: formatDate(entry.createdAt),
+        canAgentEdit:
+          Date.now() - new Date(entry.createdAt).getTime() <=
+          24 * 60 * 60 * 1000,
+        type: entry.userType,
+        status: entry.statusOfRegistration,
+      };
+    });
 
     return {
       data: enrichedResults,
@@ -98,55 +89,52 @@ export const retrieveAllUsers = async (
   }
 };
 
-export const retrieveRecentRegistered = async (agentId) => {
+export const retrieveRecentRegistered = async (
+  agentId,
+  page = 1,
+  limit = 10
+) => {
   try {
-    const [farmers, coldStorages, traders] = await Promise.all([
-      Farmer.findAll({
-        where: { onBoardedBy: agentId },
-        order: [["createdAt", "DESC"]],
-      }),
-      ColdStorage.findAll({
-        where: { onBoardedBy: agentId },
-        order: [["createdAt", "DESC"]],
-      }),
-      Trader.findAll({
-        where: { onBoardedBy: agentId },
-        order: [["createdAt", "DESC"]],
-      }),
-    ]);
+    const offset = (page - 1) * limit;
 
-    const combined = [...farmers, ...coldStorages, ...traders].map(
-      (item: any) => ({
-        id: item.id,
-        name: item instanceof Trader ? item.fullName : item.name,
-        village: item instanceof Trader ? item.cityOrVillage : item.village,
-        district: item.district,
-        date: formatDate(item.createdAt),
-        createdAt: item.createdAt,
+    const endOfWeek = dayjs().endOf("day").toDate();
+    const startOfWeek = dayjs().subtract(6, "day").startOf("day").toDate();
+
+    const { count, rows } = await AgentOnboardedUser.findAndCountAll({
+      where: {
+        agentId,
+        updatedAt: {
+          [Op.between]: [startOfWeek, endOfWeek],
+        },
+      },
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+
+    const enrichedResults = rows.map((entry) => {
+      return {
+        id: entry.id,
+        name: entry.userName,
+        village: entry.village,
+        district: entry.district,
+        state: entry.state,
+        createdAt: entry.createdAt,
+        date: formatDate(entry.createdAt),
         canAgentEdit:
-          Date.now() - new Date(item.createdAt).getTime() <=
+          Date.now() - new Date(entry.createdAt).getTime() <=
           24 * 60 * 60 * 1000,
-        type:
-          item instanceof Farmer
-            ? "farmer"
-            : item instanceof ColdStorage
-            ? "cold storage"
-            : "trader",
-        status: "complete",
-      })
-    );
+        type: entry.userType,
+        status: entry.statusOfRegistration,
+      };
+    });
 
-    combined.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-    // Take top 5
-    const topFive = combined.slice(0, 5);
-
-    const result = topFive.map(({ createdAt, ...rest }) => rest);
-
-    return { data: result };
+    return {
+      data: enrichedResults,
+      currentPage: page,
+      total: count,
+      totalPages: Math.ceil(count / limit),
+    };
   } catch (error) {
     console.log(error);
     throw error;
