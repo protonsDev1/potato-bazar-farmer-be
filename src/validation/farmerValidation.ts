@@ -35,7 +35,7 @@ export const onboardFarmerSchema = Joi.object({
         landForPotatoFarming: Joi.number().optional().allow(null),
         areaUnderDrip: Joi.number().optional().allow(null),
         storageCapacityAtFarm: Joi.number().optional().allow(null),
-        irrigationEquipmentModel: Joi.string().optional().allow(null,""),
+        irrigationEquipmentModel: Joi.string().optional().allow(null, ""),
         irrigationEquipmentBrand: Joi.string().optional().allow(null, ""),
         seedProcurementType: Joi.string()
           .valid("new", "reused", "both")
@@ -57,7 +57,6 @@ export const onboardFarmerSchema = Joi.object({
             then: Joi.required(),
             otherwise: Joi.optional().allow(null, ""),
           }),
-        seedBrandName: Joi.string().optional().allow(null, ""),
         soilType: Joi.string().optional().allow(null, ""),
         averageYieldPerAcre: Joi.number().optional().allow(null),
         sowingMonth: Joi.string().optional().allow(null, ""),
@@ -75,9 +74,21 @@ export const onboardFarmerSchema = Joi.object({
         contractPartnerName: Joi.string().optional().allow(null, ""),
         reasonForTrust: Joi.string().optional().allow(null, ""),
         preference: Joi.string().optional().allow(null, ""),
-        contractFarmingPercent: Joi.number().min(1).max(100).optional().allow(null),
-        soldInSpotMarketPercent: Joi.number().min(0).max(100).optional().allow(null),
-        storedInColdStoragePercent: Joi.number().min(0).max(100).optional().allow(null),
+        contractFarmingPercent: Joi.number()
+          .min(1)
+          .max(100)
+          .optional()
+          .allow(null),
+        soldInSpotMarketPercent: Joi.number()
+          .min(0)
+          .max(100)
+          .optional()
+          .allow(null),
+        storedInColdStoragePercent: Joi.number()
+          .min(0)
+          .max(100)
+          .optional()
+          .allow(null),
         interestedInDigitalTrading: Joi.boolean().optional().allow(null),
         usesWhatsappForBusiness: Joi.boolean().optional().allow(null),
       })
@@ -105,7 +116,7 @@ export const onboardFarmerSchema = Joi.object({
       Joi.object({
         variety: Joi.string().required(),
         subVariety: Joi.string().optional().allow(null, ""),
-        isCustom: Joi.boolean().optional().allow(null,""),
+        isCustom: Joi.boolean().optional().allow(null, ""),
       })
     )
     .optional(),
@@ -201,10 +212,19 @@ export const onboardFarmerSchema = Joi.object({
       })
     )
     .optional(),
+
+  seedBrandName: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().required(),
+        isCustom: Joi.boolean().optional().allow(null, ""),
+      })
+    )
+    .optional(),
 });
 
 export const updateFarmerSchema = Joi.object({
-  name: Joi.string().optional().allow(null,""),
+  name: Joi.string().optional().allow(null, ""),
   age: Joi.number().integer().min(1).optional().allow(null),
   gender: Joi.string().valid("male", "female", "other").optional(),
   optionalNumber: Joi.string().optional().allow(null, ""),
@@ -214,7 +234,7 @@ export const updateFarmerSchema = Joi.object({
   taluka: Joi.string().optional().allow(null, ""),
   district: Joi.string().optional().allow(null, ""),
   state: Joi.string().optional().allow(null, ""),
-  geoLocation: Joi.string().optional().allow(null,""),
+  geoLocation: Joi.string().optional().allow(null, ""),
   pinCode: Joi.string().optional().allow(null, ""),
   digiPin: Joi.string().optional().allow(null, ""),
   whatsappNumber: Joi.string().optional().allow(null, ""),
@@ -237,7 +257,7 @@ export const updateFarmerSchema = Joi.object({
         landForPotatoFarming: Joi.number().optional().allow(null),
         areaUnderDrip: Joi.number().optional().allow(null),
         storageCapacityAtFarm: Joi.number().optional().allow(null),
-        irrigationEquipmentModel: Joi.string().optional().allow(null,""),
+        irrigationEquipmentModel: Joi.string().optional().allow(null, ""),
         irrigationEquipmentBrand: Joi.string().optional().allow(null, ""),
         seedProcurementType: Joi.string()
           .valid("new", "reused", "both")
@@ -258,7 +278,6 @@ export const updateFarmerSchema = Joi.object({
             then: Joi.required(),
             otherwise: Joi.optional().allow(null, ""),
           }),
-        seedBrandName: Joi.string().optional().allow(null, ""),
         soilType: Joi.string().optional().allow(null, ""),
         averageYieldPerAcre: Joi.number().optional().allow(null),
         sowingMonth: Joi.string().optional().allow(null, ""),
@@ -276,9 +295,21 @@ export const updateFarmerSchema = Joi.object({
         contractPartnerName: Joi.string().optional().allow(null, ""),
         reasonForTrust: Joi.string().optional().allow(null, ""),
         preference: Joi.string().optional().allow(null, ""),
-        contractFarmingPercent: Joi.number().min(1).max(100).optional().allow(null),
-        soldInSpotMarketPercent: Joi.number().min(0).max(100).optional().allow(null),
-        storedInColdStoragePercent: Joi.number().min(0).max(100).optional().allow(null),
+        contractFarmingPercent: Joi.number()
+          .min(1)
+          .max(100)
+          .optional()
+          .allow(null),
+        soldInSpotMarketPercent: Joi.number()
+          .min(0)
+          .max(100)
+          .optional()
+          .allow(null),
+        storedInColdStoragePercent: Joi.number()
+          .min(0)
+          .max(100)
+          .optional()
+          .allow(null),
         interestedInDigitalTrading: Joi.boolean().optional().allow(null),
         usesWhatsappForBusiness: Joi.boolean().optional().allow(null),
       })
@@ -298,7 +329,7 @@ export const updateFarmerSchema = Joi.object({
       Joi.object({
         variety: Joi.string().required(),
         subVariety: Joi.string().optional().allow(null, ""),
-        isCustom: Joi.boolean().optional().allow(null,""),
+        isCustom: Joi.boolean().optional().allow(null, ""),
       })
     )
     .optional(),
@@ -357,5 +388,14 @@ export const updateFarmerSchema = Joi.object({
 
   potatoTypes: Joi.array()
     .items(Joi.object({ type: Joi.string().required() }))
+    .optional(),
+
+  seedBrandName: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().required(),
+        isCustom: Joi.boolean().optional().allow(null, ""),
+      })
+    )
     .optional(),
 });

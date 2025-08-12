@@ -13,7 +13,7 @@ import MajorSellingChallenge from "../database/models/majorSellingChallenge";
 import PriceDiscoveryMethod from "../database/models/priceDiscoveryMethod";
 
 import { literal, Model, ModelStatic, Op, Sequelize } from "sequelize";
-import User, { REGISTRATION_STATUS } from "../database/models/user";
+import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
 import BrandPreferenceReason from "../database/models/brandPreferenceReason";
 import SellingPrice from "../database/models/sellingPrice";
@@ -24,6 +24,8 @@ import PotatoType from "../database/models/potatoType";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
+import SeedBrandName from "../database/models/seedBrandName";
+import { getUserRole } from "./userServices";
 
 interface Payload {
   name: string;
@@ -67,6 +69,7 @@ interface Payload {
     sowingMonth: string;
     harvestingMonth: string;
   }>;
+  seedBrandName?: Array<{ name: string; isCustom?: boolean }>;
 
   onBoardedBy?: number;
   userId?: number;
@@ -262,16 +265,35 @@ export async function onboardFarmer(payload: Payload) {
         }
       }
 
-      await AgentOnboardedUser.create({
-        userId: payload.userId,
-        agentId: payload.onBoardedBy,
-        userType: USER_TYPE.FARMER,
-        userName: payload.name,
-        village: payload.village,
-        district: payload.district,
-        state: payload.state,
-        statusOfRegistration: REGISTRATION_STATUS.PENDING,
-      });
+      if (payload.seedBrandName) {
+        for (const seedBrand of payload.seedBrandName) {
+          await SeedBrandName.create(
+            {
+              farmerId: farmer.id,
+              name: seedBrand.name,
+              isCustom: seedBrand?.isCustom,
+            },
+            { transaction: t }
+          );
+        }
+      }
+
+      const user = await getUserRole(payload.onBoardedBy);
+
+      if (user.role === USER_ROLES.AGENT)
+        await AgentOnboardedUser.create(
+          {
+            userId: payload.userId,
+            agentId: payload.onBoardedBy,
+            userType: USER_TYPE.FARMER,
+            userName: payload.name,
+            village: payload.village,
+            district: payload.district,
+            state: payload.state,
+            statusOfRegistration: REGISTRATION_STATUS.PENDING,
+          },
+          { transaction: t }
+        );
 
       return farmer;
     });
@@ -339,6 +361,7 @@ export const updateFarmerDetails = async (
       potatoTypes: PotatoType,
       otherCropsGrown: OtherCropGrown,
       priceDiscoveryMethods: PriceDiscoveryMethod,
+      seedBrandName: SeedBrandName,
     };
 
     for (const [key, Model] of Object.entries(relationMap)) {
@@ -457,6 +480,11 @@ export const retrieveFarmerProfile = async (
       where: { farmerId },
     });
 
+    const seedBrandName = await SeedBrandName.findAll({
+      attributes: ["name"],
+      where: { farmerId },
+    });
+
     return {
       farmerPersonalInfo,
       landDetails,
@@ -474,6 +502,7 @@ export const retrieveFarmerProfile = async (
       sellingPlaces,
       potatoTypes,
       otherCropsGrown,
+      seedBrandName,
       canAgentEdit: isWithin24Hours,
     };
   } catch (err) {
@@ -1097,6 +1126,7 @@ export const addFarmersToWorksheet = async (
       sellingPlaces,
       potatoTypes,
       otherCropGrowns,
+      seedBrandName,
     ] = await Promise.all([
       LandDetail.findOne({ where: { farmerId } }),
       IrrigationSource.findAll({ where: { farmerId }, attributes: ["method"] }),
@@ -1131,6 +1161,7 @@ export const addFarmersToWorksheet = async (
         where: { farmerId },
         attributes: ["cropName", "sowingMonth", "harvestingMonth"],
       }),
+      SeedBrandName.findAll({ where: { farmerId }, attributes: ["name"] }),
     ]);
 
     worksheet.addRow({
@@ -1167,7 +1198,6 @@ export const addFarmersToWorksheet = async (
       seedProcurementType: landDetail?.seedProcurementType || "",
       newSeedPercent: landDetail?.newSeedPercent || "",
       reusedSeedPercent: landDetail?.reusedSeedPercent || "",
-      seedBrandName: landDetail?.seedBrandName || "",
       averageYieldPerAcre: landDetail?.averageYieldPerAcre || "",
       primarySalesPoint: landDetail?.primarySalesPoint || "",
       distanceToNearestMandi: landDetail?.distanceToNearestMandi || "",
@@ -1212,6 +1242,7 @@ export const addFarmersToWorksheet = async (
       otherCrops: otherCropGrowns
         .map((c) => `${c.cropName} (${c.sowingMonth} - ${c.harvestingMonth})`)
         .join(", "),
+      seedBrandName: seedBrandName.map((v) => v.name).join(", "),
     });
   }
 };

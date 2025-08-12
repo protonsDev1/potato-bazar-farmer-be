@@ -9,7 +9,7 @@ export const coldStorageSchema = Joi.object({
   village: Joi.string().required(),
   district: Joi.string().required(),
   state: Joi.string().required(),
-  taluka: Joi.string().required(),
+  taluka: Joi.string().optional().allow(null,""),
   pinCode: Joi.string().required(),
   digiPin: Joi.string().optional().allow('',null),
   geoLocation: Joi.string().optional().allow('',null),

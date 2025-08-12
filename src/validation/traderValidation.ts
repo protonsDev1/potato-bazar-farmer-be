@@ -10,7 +10,7 @@ export const onboardTraderSchema = Joi.object({
   state: Joi.string().required(),
   district: Joi.string().required(),
   cityOrVillage: Joi.string().required(),
-  taluka: Joi.string().required(),
+  taluka: Joi.string().optional().allow(null, ""),
   pinCode: Joi.string().max(10).required(),
   digiPin: Joi.string().optional().allow(null, ""),
   geoLocation: Joi.string().optional().allow(null, ""),
