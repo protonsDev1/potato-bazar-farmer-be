@@ -10,11 +10,12 @@ import TraderDocument from "../database/models/trader/traderDocument";
 import TraderInterest from "../database/models/trader/traderInterest";
 import TraderType from "../database/models/trader/traderType";
 import TraderVariety from "../database/models/trader/traderVariety";
-import User, { REGISTRATION_STATUS } from "../database/models/user";
+import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
+import { getUserRole } from "./userServices";
 
 export async function onboardTrader(payload) {
   try {
@@ -128,16 +129,22 @@ export async function onboardTrader(payload) {
         );
       }
 
-      await AgentOnboardedUser.create({
-        userId: payload.userId,
-        agentId: payload.onBoardedBy,
-        userType: USER_TYPE.TRADER,
-        userName: payload.fullName,
-        village: payload.cityOrVillage,
-        district: payload.district,
-        state: payload.state,
-        statusOfRegistration: REGISTRATION_STATUS.PENDING,
-      });
+      const user = await getUserRole(payload.onBoardedBy);
+
+      if (user.role === USER_ROLES.AGENT)
+        await AgentOnboardedUser.create(
+          {
+            userId: payload.userId,
+            agentId: payload.onBoardedBy,
+            userType: USER_TYPE.TRADER,
+            userName: payload.fullName,
+            village: payload.cityOrVillage,
+            district: payload.district,
+            state: payload.state,
+            statusOfRegistration: REGISTRATION_STATUS.PENDING,
+          },
+          { transaction: t }
+        );
 
       return trader;
     });

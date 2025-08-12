@@ -20,11 +20,12 @@ import RoofType from "../database/models/roofType";
 import SeasonWiseBookingSystem from "../database/models/seasonWiseStorageSystem";
 import SlabWiseDiscount from "../database/models/slabWiseDiscount";
 import StorageBookingSystem from "../database/models/storageBookingSystem";
-import User, { REGISTRATION_STATUS } from "../database/models/user";
+import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
 import LikeColdStorage from "../database/models/likeColdStorage";
+import { getUserRole } from "./userServices";
 
 const STORAGE_SIZE_RANGES = {
   small: { min: 0, max: 999 },
@@ -363,16 +364,22 @@ export async function onboardColdStorage(payload: any) {
         }
       }
 
-      await AgentOnboardedUser.create({
-        userId: payload.userId,
-        agentId: payload.onBoardedBy,
-        userType: USER_TYPE.COLD_STORAGE,
-        userName: payload.ownerName,
-        village: payload.village,
-        district: payload.district,
-        state: payload.state,
-        statusOfRegistration: REGISTRATION_STATUS.PENDING,
-      });
+      const user = await getUserRole(payload.onBoardedBy);
+
+      if (user.role === USER_ROLES.AGENT)
+        await AgentOnboardedUser.create(
+          {
+            userId: payload.userId,
+            agentId: payload.onBoardedBy,
+            userType: USER_TYPE.COLD_STORAGE,
+            userName: payload.ownerName,
+            village: payload.village,
+            district: payload.district,
+            state: payload.state,
+            statusOfRegistration: REGISTRATION_STATUS.PENDING,
+          },
+          { transaction: t }
+        );
 
       return coldStorage;
     });
@@ -642,7 +649,7 @@ export async function getColdStorage(
   filters,
   search,
   userId,
-  sortBy?: string,
+  sortBy?: string
 ) {
   try {
     const offset = (page - 1) * limit;

@@ -16,6 +16,14 @@ export enum REGISTRATION_STATUS {
   REJECTED = "rejected",
 }
 
+export enum USER_ROLES {
+  SUPER_ADMIN = "super_admin",
+  ADMIN = "admin",
+  SUB_ADMIN = "sub_admin",
+  AGENT = "agent",
+  USER = "user",
+}
+
   class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
     declare id: string;
     declare name: string;
