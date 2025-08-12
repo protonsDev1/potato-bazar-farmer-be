@@ -54,12 +54,10 @@ export const updateColdStorage = async (req, res) => {
     }
 
     if (role !== "admin" && role !== "agent") {
-      return res
-        .status(403)
-        .json({
-          message:
-            "Only Admins and Agents are authorized to update cold storage profiles.",
-        });
+      return res.status(403).json({
+        message:
+          "Only Admins and Agents are authorized to update cold storage profiles.",
+      });
     }
 
     if (role === "agent") {
@@ -69,12 +67,10 @@ export const updateColdStorage = async (req, res) => {
         24 * 60 * 60 * 1000;
 
       if (!isOnboardedByAgent || !isWithin24Hours) {
-        return res
-          .status(403)
-          .json({
-            message:
-              "Only Admins or the Agent who onboarded the cold storage within the last 24 hours can update the profile.",
-          });
+        return res.status(403).json({
+          message:
+            "Only Admins or the Agent who onboarded the cold storage within the last 24 hours can update the profile.",
+        });
       }
     }
 
@@ -87,12 +83,10 @@ export const updateColdStorage = async (req, res) => {
       payload
     );
 
-    return res
-      .status(200)
-      .json({
-        message: "Cold Storage updated successfully",
-        data: updatedColdStorage,
-      });
+    return res.status(200).json({
+      message: "Cold Storage updated successfully",
+      data: updatedColdStorage,
+    });
   } catch (err) {
     console.error("Update Cold Storage Error:", err);
     return res
@@ -105,17 +99,11 @@ export const getColdStorageProfile = async (req, res) => {
   try {
     const coldStorageId = req.params.id;
 
-    const { role, id } = req.user;
+    const { role } = req.user;
 
     const coldStorage = await ColdStorage.findOne({
       where: { id: coldStorageId, isDeleted: false },
     });
-
-    if (role !== "admin" && coldStorage.onBoardedBy !== id)
-      return res.status(403).json({
-        message:
-          "Only Agents those register the coldStorage or an Admin are authorized to view coldStorage's profile.",
-      });
 
     let isWithin24Hours = true;
 
@@ -140,7 +128,7 @@ export const getColdStorageProfile = async (req, res) => {
 
 export const getColdStorageList = async (req, res) => {
   try {
-    const { page, perPage: limit, search } = req.query;
+    const { page, perPage: limit, search, sortBy } = req.query;
     const { id: userId } = req.user;
 
     const filters = parseFilters(req.query);
@@ -150,7 +138,8 @@ export const getColdStorageList = async (req, res) => {
       limit,
       filters,
       search,
-      userId
+      userId,
+      sortBy,
     );
 
     return res.status(200).json({

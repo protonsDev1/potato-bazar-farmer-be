@@ -40,7 +40,7 @@ router.put(
   validator.body(updateColdStorageSchema),
   updateColdStorage
 );
-router.get("/", adminMiddleware, getColdStorageList);
+router.get("/", authMiddleware, getColdStorageList);
 router.delete("/delete/:id", adminMiddleware, deleteColdStorage);
 router.get("/export", adminMiddleware, exportColdStorages);
 router.post("/like", authMiddleware, likeOrDislikeColdStorage);

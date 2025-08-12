@@ -641,7 +641,8 @@ export async function getColdStorage(
   limit: number = 10,
   filters,
   search,
-  userId
+  userId,
+  sortBy?: string,
 ) {
   try {
     const offset = (page - 1) * limit;
@@ -650,6 +651,7 @@ export async function getColdStorage(
     const {
       state,
       district,
+      verified,
       agentId,
       storageType,
       storageSize,
@@ -659,6 +661,16 @@ export async function getColdStorage(
     } = filters;
 
     whereCondition.isDeleted = false;
+
+    if (userId) {
+      whereCondition.onBoardedBy = {
+        [Op.ne]: userId,
+      };
+    }
+
+    if (verified && verified.toString() === "true") {
+      whereCondition.status = REGISTRATION_STATUS.APPROVED;
+    }
 
     if (agentId && agentId.toLowerCase() !== "all") {
       whereCondition.onBoardedBy = agentId;
@@ -727,6 +739,33 @@ export async function getColdStorage(
       ];
     }
 
+    let order: any[] = [["updatedAt", "DESC"]];
+
+    if (sortBy) {
+      switch (sortBy) {
+        case "verified":
+          order = [
+            [
+              literal(
+                `CASE WHEN status = '${REGISTRATION_STATUS.APPROVED}' THEN 0 ELSE 1 END`
+              ),
+              "ASC",
+            ],
+            ["updatedAt", "DESC"],
+          ];
+          break;
+        case "capacity_high":
+          order = [["totalCapacityMt", "DESC"]];
+          break;
+        case "capacity_low":
+          order = [["totalCapacityMt", "ASC"]];
+          break;
+        default:
+          order = [["updatedAt", "DESC"]];
+          break;
+      }
+    }
+
     const { count, rows }: any = await ColdStorage.findAndCountAll({
       attributes: [
         "id",
@@ -761,7 +800,7 @@ export async function getColdStorage(
       distinct: true,
       limit,
       offset,
-      order: [["updatedAt", "DESC"]],
+      order,
     });
 
     const likedColdStorageRecords = await LikeColdStorage.findAll({
