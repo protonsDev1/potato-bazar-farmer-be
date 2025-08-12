@@ -16,7 +16,9 @@ import HelpAndSupport, {
   StatusEnum,
 } from "../database/models/helpAndSupport";
 import sequelize from "../database/models/db";
-import AgentOnboardedUser from "../database/models/agentOnboardedUsers";
+import AgentOnboardedUser, {
+  USER_TYPE,
+} from "../database/models/agentOnboardedUsers";
 
 export const retrieveAllUsers = async (
   agentId: string,
@@ -60,22 +62,36 @@ export const retrieveAllUsers = async (
       }
     );
 
-    const enrichedResults = onboarded.map((entry) => {
-      return {
-        id: entry.id,
-        name: entry.userName,
-        village: entry.village,
-        district: entry.district,
-        state: entry.state,
-        createdAt: entry.createdAt,
-        date: formatDate(entry.createdAt),
-        canAgentEdit:
-          Date.now() - new Date(entry.createdAt).getTime() <=
-          24 * 60 * 60 * 1000,
-        type: entry.userType,
-        status: entry.statusOfRegistration,
-      };
-    });
+    const enrichedResults = await Promise.all(
+      onboarded.map(async (entry) => {
+        let profile = null;
+
+        if (entry.userType === USER_TYPE.FARMER) {
+          profile = await Farmer.findOne({ where: { userId: entry.userId } });
+        } else if (entry.userType === USER_TYPE.COLD_STORAGE) {
+          profile = await ColdStorage.findOne({
+            where: { userId: entry.userId },
+          });
+        } else if (entry.userType === USER_TYPE.TRADER) {
+          profile = await Trader.findOne({ where: { userId: entry.userId } });
+        }
+
+        return {
+          id: profile.id,
+          name: entry.userName,
+          village: entry.village,
+          district: entry.district,
+          state: entry.state,
+          createdAt: entry.createdAt,
+          date: formatDate(entry.createdAt),
+          canAgentEdit:
+            Date.now() - new Date(entry.createdAt).getTime() <=
+            24 * 60 * 60 * 1000,
+          type: entry.userType,
+          status: entry.statusOfRegistration,
+        };
+      })
+    );
 
     return {
       data: enrichedResults,
@@ -112,22 +128,36 @@ export const retrieveRecentRegistered = async (
       order: [["createdAt", "DESC"]],
     });
 
-    const enrichedResults = rows.map((entry) => {
-      return {
-        id: entry.id,
-        name: entry.userName,
-        village: entry.village,
-        district: entry.district,
-        state: entry.state,
-        createdAt: entry.createdAt,
-        date: formatDate(entry.createdAt),
-        canAgentEdit:
-          Date.now() - new Date(entry.createdAt).getTime() <=
-          24 * 60 * 60 * 1000,
-        type: entry.userType,
-        status: entry.statusOfRegistration,
-      };
-    });
+    const enrichedResults = await Promise.all(
+      rows.map(async (entry) => {
+        let profile = null;
+
+        if (entry.userType === USER_TYPE.FARMER) {
+          profile = await Farmer.findOne({ where: { userId: entry.userId } });
+        } else if (entry.userType === USER_TYPE.COLD_STORAGE) {
+          profile = await ColdStorage.findOne({
+            where: { userId: entry.userId },
+          });
+        } else if (entry.userType === USER_TYPE.TRADER) {
+          profile = await Trader.findOne({ where: { userId: entry.userId } });
+        }
+
+        return {
+          id: profile.id,
+          name: entry.userName,
+          village: entry.village,
+          district: entry.district,
+          state: entry.state,
+          createdAt: entry.createdAt,
+          date: formatDate(entry.createdAt),
+          canAgentEdit:
+            Date.now() - new Date(entry.createdAt).getTime() <=
+            24 * 60 * 60 * 1000,
+          type: entry.userType,
+          status: entry.statusOfRegistration,
+        };
+      })
+    );
 
     return {
       data: enrichedResults,
