@@ -41,6 +41,7 @@ import adminOtherFacilityRoutes from "./src/routes/adminRoutes/coldStorage/admin
 import adminStorageBookingSystemRoutes from "./src/routes/adminRoutes/coldStorage/adminStorageBookingSystemRoutes";
 import traderRoutes from "./src/routes/traderRoutes";
 import uploadRoutes from "./src/routes/uploadRoutes";
+import csRequirementRoutes from "./src/routes/csRequirementRoutes";
 
 const cors = require("cors");
 
@@ -93,6 +94,7 @@ app.use("/api/admin/irrigation_method", adminIrrigationMethodRoutes);
 app.use("/api/admin/operational_challenge", adminOperationalChallengeRoutes);
 app.use("/api/traders", traderRoutes);
 app.use("/api", uploadRoutes);
+app.use("/api", csRequirementRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
