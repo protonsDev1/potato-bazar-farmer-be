@@ -22,6 +22,7 @@ export enum USER_ROLES {
   SUB_ADMIN = "sub_admin",
   AGENT = "agent",
   USER = "user",
+  MANDI_AGENT = "mandi_agent"
 }
 
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
