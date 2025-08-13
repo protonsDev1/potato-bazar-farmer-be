@@ -66,6 +66,7 @@ export const otpVerifySchema = Joi.object({
     .required()
     .pattern(/^[6-9]\d{9}$/),
   otp: Joi.string().required().length(4),
+  hasStartedUsingMobile: Joi.boolean().optional().allow(null),
 });
 
 export const registrationTypesSchema = Joi.object({

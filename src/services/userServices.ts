@@ -242,12 +242,13 @@ export const getRegistrationTypes = async (mobile) => {
   };
 };
 
-export const registerInitialUser = async (mobile) =>{
+export const registerInitialUser = async (mobile, hasStartedUsingMobile) =>{
   return await User.create({
     name: 'Guest',
     mobile,
     role:'user',
-    otpVerified:true,
+    otpVerified: true,
+    hasStartedUsingMobile: !!hasStartedUsingMobile
   });
 };
 
