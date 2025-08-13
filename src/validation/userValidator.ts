@@ -27,7 +27,7 @@ export const userSchema = Joi.object({
   }),
 
   role: Joi.string()
-    .valid("agent", "admin", "user") // optional but can have predefined values
+    .valid("agent", "admin", "user", "super_admin") // optional but can have predefined values
     .optional()
     .messages({
       "string.base": "Role should be a type of string",
