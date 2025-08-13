@@ -148,6 +148,7 @@ export const mobileLoginSchema = Joi.object({
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
   userType: Joi.array().items(Joi.string()).optional(),
+  location: Joi.string().optional().allow(null,""),
   state: Joi.string().required(),
   district: Joi.string().required(),
   cityOrVillage: Joi.string().required(),
