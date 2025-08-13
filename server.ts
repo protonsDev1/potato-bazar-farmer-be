@@ -43,6 +43,7 @@ import traderRoutes from "./src/routes/traderRoutes";
 import uploadRoutes from "./src/routes/uploadRoutes";
 import csRequirementRoutes from "./src/routes/csRequirementRoutes";
 import subAdminRoutes from "./src/routes/subAdminRoutes";
+import mandiAgentRoutes from "./src/routes/mandiAgentRoutes";
 
 const cors = require("cors");
 
@@ -97,6 +98,7 @@ app.use("/api/traders", traderRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api", csRequirementRoutes);
 app.use("/api/sub_admins", subAdminRoutes);
+app.use("/api/mandi_agent", mandiAgentRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
