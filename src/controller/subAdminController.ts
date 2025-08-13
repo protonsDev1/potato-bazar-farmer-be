@@ -12,7 +12,7 @@ export const createSubAdmin = async (req, res) => {
     if (!result) {
       return res
         .status(result.statusCode)
-        .json({ success: false, error: result.message });
+        .json({ success: false, message: result.message });
     }
 
     return res
