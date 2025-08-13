@@ -1,9 +1,10 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
 import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile } from "../controller/user";
-import { adminMiddleware, authMiddleware } from "../utils/userAuth";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers } from "../controller/user";
+import { adminMiddleware, authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});  
@@ -52,6 +53,12 @@ router.post(
   "/mobile_login",
   validator.body(mobileLoginSchema),
   UserLoginOnMobile
+);
+
+router.get(
+  "/mobile/list",
+  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
+  retrieveMobileUsers
 );
 
 export default router;

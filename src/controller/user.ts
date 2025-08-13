@@ -3,8 +3,9 @@ import { changePasswordService, checkExistingUser, createUserInDB, createUserWit
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
-import User from '../database/models/user';
+import User, { USER_ROLES } from '../database/models/user';
 import { USER_TYPE } from '../database/models/agentOnboardedUsers';
+import { Op } from 'sequelize';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -443,6 +444,28 @@ export const adminUpdateRegistrationStatus = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: error.message || "Failed in updating status.",
+    });
+  }
+};
+
+export const retrieveMobileUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      where: {
+        role: USER_ROLES.USER,
+        [Op.or]: [
+          { isUserOnBoardedOnMobile: true },
+          { hasStartedUsingMobile: true },
+        ],
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Users onboarded on mobile.", users });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Failed in retrieving mobile users.",
     });
   }
 };
