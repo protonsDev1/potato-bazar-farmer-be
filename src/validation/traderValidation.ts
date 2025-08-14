@@ -3,6 +3,7 @@ import Joi from "joi";
 export const onboardTraderSchema = Joi.object({
   fullName: Joi.string().required(),
   businessName: Joi.string().required(),
+  businessAddress: Joi.string().optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).required(),
   whatsappNumber: Joi.string().max(15).allow(null, ""),
   email: Joi.string().email().allow(null, ""),
@@ -117,6 +118,7 @@ export const onboardTraderSchema = Joi.object({
 export const updateTraderSchema = Joi.object({
   fullName: Joi.string().optional().allow(null, ""),
   businessName: Joi.string().optional().allow(null, ""),
+  businessAddress: Joi.string().optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).optional().allow(null, ""),
   whatsappNumber: Joi.string().max(15).allow(null, ""),
   email: Joi.string().email().allow(null, ""),
