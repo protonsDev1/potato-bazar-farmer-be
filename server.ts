@@ -44,6 +44,7 @@ import uploadRoutes from "./src/routes/uploadRoutes";
 import csRequirementRoutes from "./src/routes/csRequirementRoutes";
 import subAdminRoutes from "./src/routes/subAdminRoutes";
 import mandiAgentRoutes from "./src/routes/mandiAgentRoutes";
+import govSchemeRoutes from "./src/routes/govSchemeRoutes";
 
 const cors = require("cors");
 
@@ -99,6 +100,7 @@ app.use("/api", uploadRoutes);
 app.use("/api", csRequirementRoutes);
 app.use("/api/sub_admins", subAdminRoutes);
 app.use("/api/mandi_agent", mandiAgentRoutes);
+app.use("/api/government_schemes", govSchemeRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
