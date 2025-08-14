@@ -605,6 +605,7 @@ export const mobileOnboardingLoginService = async (userData) => {
     firstName,
     lastName,
     userType,
+    location,
     state,
     district,
     cityOrVillage,
@@ -619,6 +620,7 @@ export const mobileOnboardingLoginService = async (userData) => {
 
   const updatedUser = await user.update({
     name: `${firstName} ${lastName}`,
+    location,
     state,
     district,
     cityOrVillage,

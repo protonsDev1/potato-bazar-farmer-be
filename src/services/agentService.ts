@@ -119,7 +119,7 @@ export const retrieveRecentRegistered = async (
     const { count, rows } = await AgentOnboardedUser.findAndCountAll({
       where: {
         agentId,
-        updatedAt: {
+        createdAt: {
           [Op.between]: [startOfWeek, endOfWeek],
         },
       },
