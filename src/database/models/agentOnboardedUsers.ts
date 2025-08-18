@@ -30,6 +30,7 @@ class AgentOnboardedUser extends Model<
   declare district: string;
   declare state: string;
   declare statusOfRegistration: string;
+  declare isDeleted: boolean;
   declare updatedAt?: Date;
   declare createdAt?: Date;
 }
@@ -79,6 +80,10 @@ AgentOnboardedUser.init(
     },
     statusOfRegistration: {
       type: DataTypes.STRING,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {

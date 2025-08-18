@@ -858,8 +858,15 @@ export const softDeleteColdStorageById = async (coldStorageId: number) => {
     return { success: false, status: 404, message: "Cold Storage not found" };
   }
 
+  const agentOnboardedCs = await AgentOnboardedUser.findOne({
+    where: { userId: coldStorage.userId, userType: USER_TYPE.COLD_STORAGE },
+  });
+
   coldStorage.isDeleted = true;
+  agentOnboardedCs.isDeleted = true;
+
   await coldStorage.save();
+  await agentOnboardedCs.save();
 
   return { success: true, data: coldStorage };
 };
