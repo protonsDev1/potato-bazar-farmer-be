@@ -492,8 +492,15 @@ export const softDeleteTraderById = async (traderId: number) => {
     return { success: false, status: 404, message: "Trader not found" };
   }
 
+  const agentOnboardedTrader = await AgentOnboardedUser.findOne({
+    where: { userId: trader.userId, userType: USER_TYPE.TRADER },
+  });
+
   trader.isDeleted = true;
+  agentOnboardedTrader.isDeleted = true;
+
   await trader.save();
+  await agentOnboardedTrader.save();
 
   return { success: true, data: trader };
 };

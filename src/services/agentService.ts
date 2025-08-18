@@ -31,7 +31,7 @@ export const retrieveAllUsers = async (
 
     const { type, name, village, district, state, registrationDate } = filters;
 
-    const whereCondition: any = { agentId };
+    const whereCondition: any = { agentId, isDeleted: false };
 
     if (type && type !== "all") whereCondition.userType = type;
     if (name) whereCondition.userName = { [Op.iLike]: `%${name}%` };
@@ -119,6 +119,7 @@ export const retrieveRecentRegistered = async (
     const { count, rows } = await AgentOnboardedUser.findAndCountAll({
       where: {
         agentId,
+        isDeleted: false,
         createdAt: {
           [Op.between]: [startOfWeek, endOfWeek],
         },
