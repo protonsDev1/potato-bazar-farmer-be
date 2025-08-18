@@ -12,6 +12,19 @@ export enum GOVERNMENT_TYPE {
   STATE_GOVERNMENT = "State",
 }
 
+export enum GOV_SCHEME_CATEGORY {
+  AGRICULTURE = "Agriculture",
+  INSURANCE = "Insurance",
+  SUBSIDY = "Subsidy",
+  LOAN = "Loan",
+  TRAINING = "Training",
+  TECHNOLOGY = "Technology",
+  MARKETING = "Marketing",
+  STORAGE = "Storage",
+  PROCESSING = "Processing",
+  EXPORT = "Export",
+}
+
 class GovernmentScheme extends Model<
   InferAttributes<GovernmentScheme>,
   InferCreationAttributes<GovernmentScheme>
