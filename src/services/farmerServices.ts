@@ -792,8 +792,15 @@ export const softDeleteFarmerById = async (farmerId: number) => {
     return { success: false, status: 404, message: "Farmer not found" };
   }
 
+  const agentOnboardedFarmer = await AgentOnboardedUser.findOne({
+    where: { userId: farmer.userId, userType: USER_TYPE.FARMER },
+  });
+
   farmer.isDeleted = true;
+  agentOnboardedFarmer.isDeleted = true;
+
   await farmer.save();
+  await agentOnboardedFarmer.save();
 
   return { success: true, data: farmer };
 };
