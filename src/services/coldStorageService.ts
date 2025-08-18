@@ -669,11 +669,11 @@ export async function getColdStorage(
 
     whereCondition.isDeleted = false;
 
-    if (userId) {
-      whereCondition.onBoardedBy = {
-        [Op.ne]: userId,
-      };
-    }
+    // if (userId) {
+    //   whereCondition.onBoardedBy = {
+    //     [Op.ne]: userId,
+    //   };
+    // }
 
     if (verified && verified.toString() === "true") {
       whereCondition.status = REGISTRATION_STATUS.APPROVED;
