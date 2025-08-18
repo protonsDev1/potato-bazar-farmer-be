@@ -3,6 +3,7 @@ import { createValidator } from "express-joi-validation";
 
 import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 import {
+  addMonthlyTargetForAgent,
   createSupportTicket,
   deleteAgent,
   exportAgents,
@@ -22,7 +23,10 @@ import {
   updateAgent,
   updateStatusOfTicket,
 } from "../controller/agent";
-import { updateAgentSchema } from "../validation/agentValidation";
+import {
+  agentMonthlyTargetSchema,
+  updateAgentSchema,
+} from "../validation/agentValidation";
 import { validateRequest } from "../middlewares/validationMiddleware";
 import {
   adminReplySchema,
@@ -71,5 +75,11 @@ router.put(
 );
 router.get("/agent_tickets_detail", authMiddleware, getAgentAllTickets);
 router.get("/export", adminMiddleware, exportAgents);
+router.post(
+  "/month_target",
+  validator.body(agentMonthlyTargetSchema),
+  adminMiddleware,
+  addMonthlyTargetForAgent
+);
 
 export default router;
