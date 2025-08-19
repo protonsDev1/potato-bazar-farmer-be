@@ -38,7 +38,7 @@ export const onboardTraderSchema = Joi.object({
   bankLoanFacility: Joi.boolean().optional().allow(null),
   coldStorageAccess: Joi.boolean().optional().allow(null),
   acceptsOnlinePayments: Joi.boolean().optional().allow(null),
-
+  subVariety: Joi.array().items(Joi.string()).optional(),
   // panNumber: Joi.string().length(10).required(),
   // gstNumber: Joi.string().max(30).allow(null, ""),
   // fssaiNumber: Joi.string().max(50).allow(null, ""),
@@ -153,7 +153,7 @@ export const updateTraderSchema = Joi.object({
   bankLoanFacility: Joi.boolean().optional().allow(null),
   coldStorageAccess: Joi.boolean().optional().allow(null),
   acceptsOnlinePayments: Joi.boolean().optional().allow(null),
-
+  subVariety: Joi.array().items(Joi.string()).optional(),
   // panNumber: Joi.string().length(10).optional(),
   // gstNumber: Joi.string().max(30).allow(null, ""),
   // fssaiNumber: Joi.string().max(50).allow(null, ""),
