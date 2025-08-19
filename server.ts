@@ -45,7 +45,7 @@ import csRequirementRoutes from "./src/routes/csRequirementRoutes";
 import subAdminRoutes from "./src/routes/subAdminRoutes";
 import mandiAgentRoutes from "./src/routes/mandiAgentRoutes";
 import govSchemeRoutes from "./src/routes/govSchemeRoutes";
-import kycRoutes from "./src/routes/kycRoutes";
+import newsRoutes from "./src/routes/newsRoutes";import kycRoutes from "./src/routes/kycRoutes";
 
 
 const cors = require("cors");
@@ -103,6 +103,7 @@ app.use("/api", csRequirementRoutes);
 app.use("/api/sub_admins", subAdminRoutes);
 app.use("/api/mandi_agent", mandiAgentRoutes);
 app.use("/api/government_schemes", govSchemeRoutes);
+app.use("/api/news", newsRoutes);
 app.use("/api/kyc", kycRoutes);
 
 
