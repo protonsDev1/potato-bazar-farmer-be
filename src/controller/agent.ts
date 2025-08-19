@@ -25,6 +25,7 @@ import {
 } from "../services/agentService";
 import { parseFilters } from "../utils/parseQuery";
 import AgentMonthlyTarget from "../database/models/agentMonthlyTarget";
+import dayjs from "dayjs";
 
 export const getAllRegisteredUsers = async (req, res) => {
   try {
@@ -81,7 +82,10 @@ export const getAgentPerformance = async (req, res) => {
 
     const performance = await retrieveAgentPerformance(agentId, year);
 
-    return res.status(200).json({ message: performance });
+    return res.status(200).json({
+      message: "Agent's performance fetched successfully.",
+      data: performance,
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message || "Failed in retreiving performance of agent.",
@@ -230,8 +234,9 @@ export const resetPasswordForAgent = async (req, res) => {
 export const getAllAgentPerformance = async (req, res) => {
   try {
     const { year } = req.query;
+    const { agentId } = req.params;
 
-    const result = await retrieveAllAgentPerformance(year);
+    const result = await retrieveAllAgentPerformance(year, agentId);
 
     return res
       .status(200)
@@ -443,8 +448,29 @@ export const addMonthlyTargetForAgent = async (req, res) => {
     });
   } catch (error) {
     console.error("Failed to add monthly target for agents.", error);
-    res
-      .status(500)
-      .json({ message: error.message || "Failed to add monthly target for agents." });
+    res.status(500).json({
+      message: error.message || "Failed to add monthly target for agents.",
+    });
+  }
+};
+
+export const retrieveAgentAllMonthTargets = async (req, res) => {
+  try {
+    const { agentId } = req.params;
+    const { year = dayjs().year() } = req.query;
+
+    const targets = await AgentMonthlyTarget.findAll({
+      where: { agentUserId: agentId, year },
+    });
+
+    return res.status(200).json({
+      message: "Agent's monthly target fetched successfully",
+      year,
+      targets,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed in retrieving agent's monthly target.",
+    });
   }
 };
