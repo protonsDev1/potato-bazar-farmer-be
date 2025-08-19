@@ -10,11 +10,12 @@ import TraderDocument from "../database/models/trader/traderDocument";
 import TraderInterest from "../database/models/trader/traderInterest";
 import TraderType from "../database/models/trader/traderType";
 import TraderVariety from "../database/models/trader/traderVariety";
-import User, { REGISTRATION_STATUS } from "../database/models/user";
+import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
+import { getUserRole } from "./userServices";
 
 export async function onboardTrader(payload) {
   try {
@@ -23,6 +24,7 @@ export async function onboardTrader(payload) {
         {
           fullName: payload.fullName,
           businessName: payload.businessName,
+          businessAddress: payload.businessAddress,
           mobileNumber: payload.mobileNumber,
           whatsappNumber: payload.whatsappNumber,
           email: payload.email,
@@ -58,6 +60,7 @@ export async function onboardTrader(payload) {
           fssaiNumber: payload.fssaiNumber,
           userId: payload.userId,
           onBoardedBy: payload.onBoardedBy,
+          subVariety: payload.subVariety,
         },
         { transaction: t }
       );
@@ -128,16 +131,22 @@ export async function onboardTrader(payload) {
         );
       }
 
-      await AgentOnboardedUser.create({
-        userId: payload.userId,
-        agentId: payload.onBoardedBy,
-        userType: USER_TYPE.TRADER,
-        userName: payload.fullName,
-        village: payload.cityOrVillage,
-        district: payload.district,
-        state: payload.state,
-        statusOfRegistration: REGISTRATION_STATUS.PENDING,
-      });
+      const user = await getUserRole(payload.onBoardedBy);
+
+      if (user.role === USER_ROLES.AGENT)
+        await AgentOnboardedUser.create(
+          {
+            userId: payload.userId,
+            agentId: payload.onBoardedBy,
+            userType: USER_TYPE.TRADER,
+            userName: payload.fullName,
+            village: payload.cityOrVillage,
+            district: payload.district,
+            state: payload.state,
+            statusOfRegistration: REGISTRATION_STATUS.PENDING,
+          },
+          { transaction: t }
+        );
 
       return trader;
     });
@@ -159,6 +168,7 @@ export async function updateTraderService(traderId, payload) {
     const updatableFields = [
       "fullName",
       "businessName",
+      "businessAddress",
       "mobileNumber",
       "whatsappNumber",
       "email",
@@ -189,6 +199,7 @@ export async function updateTraderService(traderId, payload) {
       "bankLoanFacility",
       "coldStorageAccess",
       "acceptsOnlinePayments",
+      "subVariety",
     ];
 
     const updateData: Record<string, any> = {};
@@ -408,6 +419,7 @@ export const getTraderListByAdmin = async (
         "id",
         "fullName",
         "businessName",
+        "businessAddress",
         "email",
         "mobileNumber",
         "state",
@@ -421,6 +433,7 @@ export const getTraderListByAdmin = async (
         "updatedAt",
         "onBoardedBy",
         "status",
+        "subVariety",
       ],
       include: [
         {
@@ -448,6 +461,7 @@ export const getTraderListByAdmin = async (
       id: trader.id,
       fullName: trader.fullName,
       businessName: trader.businessName,
+      businessAddress: trader.businessAddress,
       mobileNumber: trader.mobileNumber,
       email: trader.email,
       cityOrVillage: trader.cityOrVillage,
@@ -460,6 +474,7 @@ export const getTraderListByAdmin = async (
       user: trader.user,
       onBoardedBy: trader.onBoardedByUser,
       status: trader.status,
+      subVariety: trader.subVariety,
     }));
 
     return {
@@ -481,8 +496,15 @@ export const softDeleteTraderById = async (traderId: number) => {
     return { success: false, status: 404, message: "Trader not found" };
   }
 
+  const agentOnboardedTrader = await AgentOnboardedUser.findOne({
+    where: { userId: trader.userId, userType: USER_TYPE.TRADER },
+  });
+
   trader.isDeleted = true;
+  agentOnboardedTrader.isDeleted = true;
+
   await trader.save();
+  await agentOnboardedTrader.save();
 
   return { success: true, data: trader };
 };
@@ -578,6 +600,7 @@ export const createTraderWorksheetColumns = (worksheet) => {
     { header: "Trader ID", key: "id", width: 10 },
     { header: "Name", key: "fullName", width: 25 },
     { header: "Business Name", key: "businessName", width: 30 },
+    { header: "Business Address", key: "businessAddress", width: 30 },
     { header: "Mobile", key: "mobileNumber", width: 20 },
     { header: "Email", key: "email", width: 25 },
     { header: "State", key: "state", width: 20 },
@@ -589,6 +612,7 @@ export const createTraderWorksheetColumns = (worksheet) => {
     { header: "Registration Date", key: "registrationDate", width: 20 },
     { header: "Onboarded By", key: "onBoardedBy", width: 20 },
     { header: "Status", key: "status", width: 10 },
+    { header: "Sub Varieties", key: "subVariety", width: 20 },
     { header: "Language", key: "languagePreference", width: 20 },
     { header: "Employees", key: "numberOfEmployees", width: 20 },
     { header: "Own Potato Farming", key: "ownPotatoFarming", width: 20 },
@@ -645,6 +669,7 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       id: trader.id,
       fullName: trader.fullName,
       businessName: trader.businessName,
+      businessAddress: trader.businessAddress,
       mobileNumber: trader.mobileNumber,
       email: trader.email || "",
       state: trader.state,
@@ -656,6 +681,7 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       registrationDate: formatDate(trader.createdAt),
       onBoardedBy: trader.onBoardedByUser?.name || "",
       status: trader.status,
+      subVariety: trader.subVariety,
       languagePreference: trader.languagePreference || "",
       numberOfEmployees: trader.numberOfEmployees || "",
       ownPotatoFarming: trader.ownPotatoFarming ? "Yes" : "No",

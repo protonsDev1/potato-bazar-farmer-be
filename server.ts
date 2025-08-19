@@ -42,6 +42,9 @@ import adminStorageBookingSystemRoutes from "./src/routes/adminRoutes/coldStorag
 import traderRoutes from "./src/routes/traderRoutes";
 import uploadRoutes from "./src/routes/uploadRoutes";
 import csRequirementRoutes from "./src/routes/csRequirementRoutes";
+import subAdminRoutes from "./src/routes/subAdminRoutes";
+import mandiAgentRoutes from "./src/routes/mandiAgentRoutes";
+import govSchemeRoutes from "./src/routes/govSchemeRoutes";
 import kycRoutes from "./src/routes/kycRoutes";
 
 
@@ -97,6 +100,9 @@ app.use("/api/admin/operational_challenge", adminOperationalChallengeRoutes);
 app.use("/api/traders", traderRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api", csRequirementRoutes);
+app.use("/api/sub_admins", subAdminRoutes);
+app.use("/api/mandi_agent", mandiAgentRoutes);
+app.use("/api/government_schemes", govSchemeRoutes);
 app.use("/api/kyc", kycRoutes);
 
 

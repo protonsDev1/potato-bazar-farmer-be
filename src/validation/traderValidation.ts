@@ -3,6 +3,7 @@ import Joi from "joi";
 export const onboardTraderSchema = Joi.object({
   fullName: Joi.string().required(),
   businessName: Joi.string().required(),
+  businessAddress: Joi.string().optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).required(),
   whatsappNumber: Joi.string().max(15).allow(null, ""),
   email: Joi.string().email().allow(null, ""),
@@ -10,7 +11,7 @@ export const onboardTraderSchema = Joi.object({
   state: Joi.string().required(),
   district: Joi.string().required(),
   cityOrVillage: Joi.string().required(),
-  taluka: Joi.string().required(),
+  taluka: Joi.string().optional().allow(null, ""),
   pinCode: Joi.string().max(10).required(),
   digiPin: Joi.string().optional().allow(null, ""),
   geoLocation: Joi.string().optional().allow(null, ""),
@@ -37,7 +38,7 @@ export const onboardTraderSchema = Joi.object({
   bankLoanFacility: Joi.boolean().optional().allow(null),
   coldStorageAccess: Joi.boolean().optional().allow(null),
   acceptsOnlinePayments: Joi.boolean().optional().allow(null),
-
+  subVariety: Joi.array().items(Joi.string()).optional(),
   // panNumber: Joi.string().length(10).required(),
   // gstNumber: Joi.string().max(30).allow(null, ""),
   // fssaiNumber: Joi.string().max(50).allow(null, ""),
@@ -117,6 +118,7 @@ export const onboardTraderSchema = Joi.object({
 export const updateTraderSchema = Joi.object({
   fullName: Joi.string().optional().allow(null, ""),
   businessName: Joi.string().optional().allow(null, ""),
+  businessAddress: Joi.string().optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).optional().allow(null, ""),
   whatsappNumber: Joi.string().max(15).allow(null, ""),
   email: Joi.string().email().allow(null, ""),
@@ -151,7 +153,7 @@ export const updateTraderSchema = Joi.object({
   bankLoanFacility: Joi.boolean().optional().allow(null),
   coldStorageAccess: Joi.boolean().optional().allow(null),
   acceptsOnlinePayments: Joi.boolean().optional().allow(null),
-
+  subVariety: Joi.array().items(Joi.string()).optional(),
   // panNumber: Joi.string().length(10).optional(),
   // gstNumber: Joi.string().max(30).allow(null, ""),
   // fssaiNumber: Joi.string().max(50).allow(null, ""),

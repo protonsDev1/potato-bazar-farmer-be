@@ -16,7 +16,10 @@ import HelpAndSupport, {
   StatusEnum,
 } from "../database/models/helpAndSupport";
 import sequelize from "../database/models/db";
-import AgentOnboardedUser from "../database/models/agentOnboardedUsers";
+import AgentOnboardedUser, {
+  USER_TYPE,
+} from "../database/models/agentOnboardedUsers";
+import AgentMonthlyTarget from "../database/models/agentMonthlyTarget";
 
 export const retrieveAllUsers = async (
   agentId: string,
@@ -29,7 +32,7 @@ export const retrieveAllUsers = async (
 
     const { type, name, village, district, state, registrationDate } = filters;
 
-    const whereCondition: any = { agentId };
+    const whereCondition: any = { agentId, isDeleted: false };
 
     if (type && type !== "all") whereCondition.userType = type;
     if (name) whereCondition.userName = { [Op.iLike]: `%${name}%` };
@@ -60,22 +63,36 @@ export const retrieveAllUsers = async (
       }
     );
 
-    const enrichedResults = onboarded.map((entry) => {
-      return {
-        id: entry.id,
-        name: entry.userName,
-        village: entry.village,
-        district: entry.district,
-        state: entry.state,
-        createdAt: entry.createdAt,
-        date: formatDate(entry.createdAt),
-        canAgentEdit:
-          Date.now() - new Date(entry.createdAt).getTime() <=
-          24 * 60 * 60 * 1000,
-        type: entry.userType,
-        status: entry.statusOfRegistration,
-      };
-    });
+    const enrichedResults = await Promise.all(
+      onboarded.map(async (entry) => {
+        let profile = null;
+
+        if (entry.userType === USER_TYPE.FARMER) {
+          profile = await Farmer.findOne({ where: { userId: entry.userId } });
+        } else if (entry.userType === USER_TYPE.COLD_STORAGE) {
+          profile = await ColdStorage.findOne({
+            where: { userId: entry.userId },
+          });
+        } else if (entry.userType === USER_TYPE.TRADER) {
+          profile = await Trader.findOne({ where: { userId: entry.userId } });
+        }
+
+        return {
+          id: profile.id,
+          name: entry.userName,
+          village: entry.village,
+          district: entry.district,
+          state: entry.state,
+          createdAt: entry.createdAt,
+          date: formatDate(entry.createdAt),
+          canAgentEdit:
+            Date.now() - new Date(entry.createdAt).getTime() <=
+            24 * 60 * 60 * 1000,
+          type: entry.userType,
+          status: entry.statusOfRegistration,
+        };
+      })
+    );
 
     return {
       data: enrichedResults,
@@ -103,7 +120,8 @@ export const retrieveRecentRegistered = async (
     const { count, rows } = await AgentOnboardedUser.findAndCountAll({
       where: {
         agentId,
-        updatedAt: {
+        isDeleted: false,
+        createdAt: {
           [Op.between]: [startOfWeek, endOfWeek],
         },
       },
@@ -112,22 +130,36 @@ export const retrieveRecentRegistered = async (
       order: [["createdAt", "DESC"]],
     });
 
-    const enrichedResults = rows.map((entry) => {
-      return {
-        id: entry.id,
-        name: entry.userName,
-        village: entry.village,
-        district: entry.district,
-        state: entry.state,
-        createdAt: entry.createdAt,
-        date: formatDate(entry.createdAt),
-        canAgentEdit:
-          Date.now() - new Date(entry.createdAt).getTime() <=
-          24 * 60 * 60 * 1000,
-        type: entry.userType,
-        status: entry.statusOfRegistration,
-      };
-    });
+    const enrichedResults = await Promise.all(
+      rows.map(async (entry) => {
+        let profile = null;
+
+        if (entry.userType === USER_TYPE.FARMER) {
+          profile = await Farmer.findOne({ where: { userId: entry.userId } });
+        } else if (entry.userType === USER_TYPE.COLD_STORAGE) {
+          profile = await ColdStorage.findOne({
+            where: { userId: entry.userId },
+          });
+        } else if (entry.userType === USER_TYPE.TRADER) {
+          profile = await Trader.findOne({ where: { userId: entry.userId } });
+        }
+
+        return {
+          id: profile.id,
+          name: entry.userName,
+          village: entry.village,
+          district: entry.district,
+          state: entry.state,
+          createdAt: entry.createdAt,
+          date: formatDate(entry.createdAt),
+          canAgentEdit:
+            Date.now() - new Date(entry.createdAt).getTime() <=
+            24 * 60 * 60 * 1000,
+          type: entry.userType,
+          status: entry.statusOfRegistration,
+        };
+      })
+    );
 
     return {
       data: enrichedResults,
@@ -141,7 +173,10 @@ export const retrieveRecentRegistered = async (
   }
 };
 
-export const retrieveAgentPerformance = async (agentId, year = "2025") => {
+export const retrieveAgentPerformance = async (
+  agentId,
+  year = dayjs().year()
+) => {
   try {
     const monthsBack = 12;
 
@@ -166,65 +201,45 @@ export const retrieveAgentPerformance = async (agentId, year = "2025") => {
     ]);
 
     const monthList = [];
+
     for (let i = 0; i < monthsBack; i++) {
       const month = fromDate.add(i, "month");
       monthList.push(month.format("YYYY-MMM"));
     }
 
-    const monthlyRegistrations = monthList.map((fullMonthLabel) => {
+    const allMonthsTarget = await AgentMonthlyTarget.findAll({
+      where: { agentUserId: agentId, year },
+    });
+
+    const targetMap: Record<string, number> = {};
+
+    allMonthsTarget.forEach((target) => {
+      const label = dayjs(`${year}-${target.month}`, "YYYY-MMM").format("MMM");
+      targetMap[label] = target.monthlyTarget;
+    });
+
+    const monthlyPerformance = monthList.map((fullMonthLabel) => {
       const shortMonth = dayjs(fullMonthLabel, "YYYY-MMM").format("MMM");
+
+      const total =
+        (farmerMap[fullMonthLabel] || 0) +
+        (coldStorageMap[fullMonthLabel] || 0) +
+        (traderMap[fullMonthLabel] || 0);
+
+      const monthlyTarget = targetMap[shortMonth] || 0;
+
       return {
         month: shortMonth,
-        total:
-          (farmerMap[fullMonthLabel] || 0) +
-          (coldStorageMap[fullMonthLabel] || 0) +
-          (traderMap[fullMonthLabel] || 0),
+        monthlyRegistrations: total,
+        monthlyTarget,
+        completionOfMonthlyTargetPercentage:
+          monthlyTarget === 0 ? 0 : (total / monthlyTarget) * 100,
       };
     });
 
-    let currentMonthRegistrations = 0;
-    let completionOfMonthlyTargetPercentage = 0;
-
-    const isCurrentYear = dayjs().year() === parseInt(year);
-
-    if (isCurrentYear) {
-      const startOfMonth = dayjs().startOf("month").toDate();
-      const endOfMonth = dayjs().endOf("month").toDate();
-
-      const [currentFarmerCount, currentColdStorageCount, currentTraderCount] =
-        await Promise.all([
-          Farmer.count({
-            where: {
-              onBoardedBy: agentId,
-              createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
-            },
-          }),
-          ColdStorage.count({
-            where: {
-              onBoardedBy: agentId,
-              createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
-            },
-          }),
-          Trader.count({
-            where: {
-              onBoardedBy: agentId,
-              createdAt: { [Op.between]: [startOfMonth, endOfMonth] },
-            },
-          }),
-        ]);
-
-      currentMonthRegistrations =
-        currentFarmerCount + currentColdStorageCount + currentTraderCount;
-
-      completionOfMonthlyTargetPercentage =
-        (currentMonthRegistrations / 50) * 100;
-    }
-
     return {
-      monthlyRegistrations,
-      currentMonthRegistrations,
-      monthlyTarget: 50,
-      completionOfMonthlyTargetPercentage,
+      year,
+      monthlyPerformance,
     };
   } catch (error) {
     console.error(error);
@@ -494,50 +509,67 @@ export const resetAgentPassword = async (agentId: number) => {
   };
 };
 
-export const retrieveAllAgentPerformance = async (year = "2025") => {
+export const retrieveAllAgentPerformance = async (
+  year = dayjs().year(),
+  agentId
+) => {
   const monthsBack = 12;
+
   const fromDate = dayjs(`${year}-01-01`).startOf("month");
   const toDate = dayjs(`${year}-12-31`).endOf("month");
 
   const [farmerMap, coldStorageMap, traderMap] = await Promise.all([
-    getMonthWiseRegistrations(Farmer, fromDate.toDate(), toDate.toDate()),
-    getMonthWiseRegistrations(ColdStorage, fromDate.toDate(), toDate.toDate()),
-    getMonthWiseRegistrations(Trader, fromDate.toDate(), toDate.toDate()),
+    getMonthWiseRegistrations(Farmer, fromDate.toDate(), toDate.toDate(), {
+      onBoardedBy: agentId,
+    }),
+    getMonthWiseRegistrations(ColdStorage, fromDate.toDate(), toDate.toDate(), {
+      onBoardedBy: agentId,
+    }),
+    getMonthWiseRegistrations(Trader, fromDate.toDate(), toDate.toDate(), {
+      onBoardedBy: agentId,
+    }),
   ]);
 
   const monthList = [];
+
   for (let i = 0; i < monthsBack; i++) {
     const month = fromDate.add(i, "month");
     monthList.push(month.format("YYYY-MMM"));
   }
 
-  const monthlyRegistrations = monthList.map((fullMonthLabel) => {
+  const allMonthsTarget = await AgentMonthlyTarget.findAll({
+    where: { agentUserId: agentId, year },
+  });
+
+  const targetMap: Record<string, number> = {};
+
+  allMonthsTarget.forEach((target) => {
+    const label = dayjs(`${year}-${target.month}`, "YYYY-MMM").format("MMM");
+    targetMap[label] = target.monthlyTarget;
+  });
+
+  const monthlyPerformance = monthList.map((fullMonthLabel) => {
     const shortMonth = dayjs(fullMonthLabel, "YYYY-MMM").format("MMM");
+
+    const total =
+      (farmerMap[fullMonthLabel] || 0) +
+      (coldStorageMap[fullMonthLabel] || 0) +
+      (traderMap[fullMonthLabel] || 0);
+
+    const monthlyTarget = targetMap[shortMonth] || 0;
+
     return {
       month: shortMonth,
-      total:
-        (farmerMap[fullMonthLabel] || 0) +
-        (coldStorageMap[fullMonthLabel] || 0) +
-        (traderMap[fullMonthLabel] || 0),
+      monthlyRegistrations: total,
+      monthlyTarget,
+      completionOfMonthlyTargetPercentage:
+        monthlyTarget === 0 ? 0 : (total / monthlyTarget) * 100,
     };
   });
 
-  const [farmerCount, coldStorageCount, traderCount] = await Promise.all([
-    Farmer.count({}),
-    ColdStorage.count({}),
-    Trader.count({}),
-  ]);
-
-  const totalRegistrations = farmerCount + coldStorageCount + traderCount;
-  const farmerPercentage = (farmerCount / totalRegistrations) * 100;
-  const coldStoragePercentage = (coldStorageCount / totalRegistrations) * 100;
-  const traderPercentage = (traderCount / totalRegistrations) * 100;
-
   return {
-    monthlyRegistrations,
-    farmerPercentage,
-    coldStoragePercentage,
-    traderPercentage,
+    year,
+    monthlyPerformance,
   };
 };
 
