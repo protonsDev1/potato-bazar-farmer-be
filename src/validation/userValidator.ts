@@ -27,7 +27,7 @@ export const userSchema = Joi.object({
   }),
 
   role: Joi.string()
-    .valid("agent", "admin", "user") // optional but can have predefined values
+    .valid("agent", "admin", "user", "super_admin") // optional but can have predefined values
     .optional()
     .messages({
       "string.base": "Role should be a type of string",
@@ -66,6 +66,7 @@ export const otpVerifySchema = Joi.object({
     .required()
     .pattern(/^[6-9]\d{9}$/),
   otp: Joi.string().required().length(4),
+  hasStartedUsingMobile: Joi.boolean().optional().allow(null),
 });
 
 export const registrationTypesSchema = Joi.object({
@@ -147,6 +148,7 @@ export const mobileLoginSchema = Joi.object({
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
   userType: Joi.array().items(Joi.string()).optional(),
+  location: Joi.string().optional().allow(null,""),
   state: Joi.string().required(),
   district: Joi.string().required(),
   cityOrVillage: Joi.string().required(),

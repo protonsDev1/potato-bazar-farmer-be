@@ -3,8 +3,9 @@ import { changePasswordService, checkExistingUser, createUserInDB, createUserWit
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
-import User from '../database/models/user';
+import User, { USER_ROLES } from '../database/models/user';
 import { USER_TYPE } from '../database/models/agentOnboardedUsers';
+import { Op } from 'sequelize';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -162,7 +163,7 @@ export const sendOtp = async (req, res) => {
 
 export const verifyOtp = async (req, res) => {
   try {
-    const { mobile, otp } = req.body;
+    const { mobile, otp, hasStartedUsingMobile } = req.body;
 
     const isValid = await verifyOtpFromDB(mobile, otp);
     if (!isValid) {
@@ -173,6 +174,10 @@ export const verifyOtp = async (req, res) => {
 
     const existingUser = await checkExistingUser(mobile);
     if (existingUser) {
+      if (hasStartedUsingMobile) {
+        await existingUser.update({ hasStartedUsingMobile: true });
+      }
+      
       const token = jwt.sign({ id: existingUser.id }, JWT_SECRET, {
         expiresIn: "24h",
       });
@@ -186,7 +191,7 @@ export const verifyOtp = async (req, res) => {
         });
     }
 
-    const createUser = await registerInitialUser(mobile);
+    const createUser = await registerInitialUser(mobile, hasStartedUsingMobile);
 
     return res
       .status(200)
@@ -439,6 +444,28 @@ export const adminUpdateRegistrationStatus = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: error.message || "Failed in updating status.",
+    });
+  }
+};
+
+export const retrieveMobileUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      where: {
+        role: USER_ROLES.USER,
+        [Op.or]: [
+          { isUserOnBoardedOnMobile: true },
+          { hasStartedUsingMobile: true },
+        ],
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Users onboarded on mobile.", users });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message || "Failed in retrieving mobile users.",
     });
   }
 };

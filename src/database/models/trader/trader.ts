@@ -16,6 +16,7 @@ class Trader extends Model<
   declare id: CreationOptional<number>;
   declare fullName: string;
   declare businessName: string;
+  declare businessAddress: string;
   declare mobileNumber: string;
   declare whatsappNumber: string | null;
   declare email: string | null;
@@ -53,6 +54,7 @@ class Trader extends Model<
   declare onBoardedBy: ForeignKey<User["id"]> | null;
   declare isDeleted: boolean;
   declare status: string;
+  declare subVariety: Array<string>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -71,6 +73,10 @@ Trader.init(
     businessName: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    businessAddress: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     mobileNumber: {
       type: DataTypes.STRING(15),
@@ -222,7 +228,11 @@ Trader.init(
     },
     status: {
       type: DataTypes.STRING,
-      defaultValue: REGISTRATION_STATUS.PENDING
+      defaultValue: REGISTRATION_STATUS.PENDING,
+    },
+    subVariety: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
     },
     createdAt: {
       type: DataTypes.DATE,

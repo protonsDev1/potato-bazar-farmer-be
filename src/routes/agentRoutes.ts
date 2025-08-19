@@ -3,6 +3,7 @@ import { createValidator } from "express-joi-validation";
 
 import { adminMiddleware, authMiddleware } from "../utils/userAuth";
 import {
+  addMonthlyTargetForAgent,
   createSupportTicket,
   deleteAgent,
   exportAgents,
@@ -19,10 +20,14 @@ import {
   listAgents,
   replyToSupportTicket,
   resetPasswordForAgent,
+  retrieveAgentAllMonthTargets,
   updateAgent,
   updateStatusOfTicket,
 } from "../controller/agent";
-import { updateAgentSchema } from "../validation/agentValidation";
+import {
+  agentMonthlyTargetSchema,
+  updateAgentSchema,
+} from "../validation/agentValidation";
 import { validateRequest } from "../middlewares/validationMiddleware";
 import {
   adminReplySchema,
@@ -47,7 +52,11 @@ router.put(
 );
 router.delete("/delete/:id", adminMiddleware, deleteAgent);
 router.post("/:id/reset_password", adminMiddleware, resetPasswordForAgent);
-router.get("/all_agent_performance", adminMiddleware, getAllAgentPerformance);
+router.get(
+  "/all_agent_performance/:agentId",
+  adminMiddleware,
+  getAllAgentPerformance
+);
 router.get("/top_performing_agents", adminMiddleware, getTopAgents);
 router.post(
   "/create_ticket",
@@ -71,5 +80,16 @@ router.put(
 );
 router.get("/agent_tickets_detail", authMiddleware, getAgentAllTickets);
 router.get("/export", adminMiddleware, exportAgents);
+router.post(
+  "/month_target",
+  validator.body(agentMonthlyTargetSchema),
+  adminMiddleware,
+  addMonthlyTargetForAgent
+);
+router.get(
+  "/month_target/:agentId",
+  adminMiddleware,
+  retrieveAgentAllMonthTargets
+);
 
 export default router;

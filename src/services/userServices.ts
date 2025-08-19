@@ -242,12 +242,13 @@ export const getRegistrationTypes = async (mobile) => {
   };
 };
 
-export const registerInitialUser = async (mobile) =>{
+export const registerInitialUser = async (mobile, hasStartedUsingMobile) =>{
   return await User.create({
     name: 'Guest',
     mobile,
     role:'user',
-    otpVerified:true,
+    otpVerified: true,
+    hasStartedUsingMobile: !!hasStartedUsingMobile
   });
 };
 
@@ -559,12 +560,23 @@ export const updateRegistrationStatus = async (status, userType, userId) => {
   }
 
   const user = await Model.findByPk(userId);
-  const agentOnboardedUser= await AgentOnboardedUser.findOne({where:{userId}});
 
   if (!user) {
     return {
       success: false,
       error: `${userType} not found.`,
+    };
+  }
+
+   const agentOnboardedUser = await AgentOnboardedUser.findOne({
+    where: { userId: user.userId, userType },
+  });
+
+  if(!agentOnboardedUser)
+  {
+    return {
+      success:false,
+      error: `${userType} not found in agentOnboardUser.`,
     };
   }
 
@@ -579,7 +591,7 @@ export const updateRegistrationStatus = async (status, userType, userId) => {
   }
 
   await user.update({ status });
-  await agentOnboardedUser.update({statusOfRegistration:status});
+  await agentOnboardedUser.update({ statusOfRegistration: status });
 
   return {
     success: true,
@@ -593,6 +605,7 @@ export const mobileOnboardingLoginService = async (userData) => {
     firstName,
     lastName,
     userType,
+    location,
     state,
     district,
     cityOrVillage,
@@ -607,6 +620,7 @@ export const mobileOnboardingLoginService = async (userData) => {
 
   const updatedUser = await user.update({
     name: `${firstName} ${lastName}`,
+    location,
     state,
     district,
     cityOrVillage,
@@ -618,3 +632,9 @@ export const mobileOnboardingLoginService = async (userData) => {
   return updatedUser;
 };
 
+export const getUserRole = async (userId) => {
+  const user = await User.findByPk(userId);
+  return {
+    role: user.role
+  };
+};
