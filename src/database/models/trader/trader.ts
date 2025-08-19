@@ -54,6 +54,7 @@ class Trader extends Model<
   declare onBoardedBy: ForeignKey<User["id"]> | null;
   declare isDeleted: boolean;
   declare status: string;
+  declare subVariety: Array<string>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -228,6 +229,10 @@ Trader.init(
     status: {
       type: DataTypes.STRING,
       defaultValue: REGISTRATION_STATUS.PENDING,
+    },
+    subVariety: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
     },
     createdAt: {
       type: DataTypes.DATE,

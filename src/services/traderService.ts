@@ -60,6 +60,7 @@ export async function onboardTrader(payload) {
           fssaiNumber: payload.fssaiNumber,
           userId: payload.userId,
           onBoardedBy: payload.onBoardedBy,
+          subVariety: payload.subVariety,
         },
         { transaction: t }
       );
@@ -198,6 +199,7 @@ export async function updateTraderService(traderId, payload) {
       "bankLoanFacility",
       "coldStorageAccess",
       "acceptsOnlinePayments",
+      "subVariety",
     ];
 
     const updateData: Record<string, any> = {};
@@ -431,6 +433,7 @@ export const getTraderListByAdmin = async (
         "updatedAt",
         "onBoardedBy",
         "status",
+        "subVariety",
       ],
       include: [
         {
@@ -471,6 +474,7 @@ export const getTraderListByAdmin = async (
       user: trader.user,
       onBoardedBy: trader.onBoardedByUser,
       status: trader.status,
+      subVariety: trader.subVariety,
     }));
 
     return {
@@ -608,6 +612,7 @@ export const createTraderWorksheetColumns = (worksheet) => {
     { header: "Registration Date", key: "registrationDate", width: 20 },
     { header: "Onboarded By", key: "onBoardedBy", width: 20 },
     { header: "Status", key: "status", width: 10 },
+    { header: "Sub Varieties", key: "subVariety", width: 20 },
     { header: "Language", key: "languagePreference", width: 20 },
     { header: "Employees", key: "numberOfEmployees", width: 20 },
     { header: "Own Potato Farming", key: "ownPotatoFarming", width: 20 },
@@ -676,6 +681,7 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       registrationDate: formatDate(trader.createdAt),
       onBoardedBy: trader.onBoardedByUser?.name || "",
       status: trader.status,
+      subVariety: trader.subVariety,
       languagePreference: trader.languagePreference || "",
       numberOfEmployees: trader.numberOfEmployees || "",
       ownPotatoFarming: trader.ownPotatoFarming ? "Yes" : "No",
