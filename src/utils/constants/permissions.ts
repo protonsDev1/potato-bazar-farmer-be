@@ -8,6 +8,7 @@ export const PERMISSIONS = {
   CONTENT_MANAGEMENT: "content_management",
   HELP_SUPPORT: "help_support",
   REPORTS: "reports",
+  EVENTS: "events"
 } as const;
 
 export type PermissionType = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
