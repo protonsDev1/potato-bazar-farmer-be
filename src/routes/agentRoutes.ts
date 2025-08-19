@@ -20,6 +20,7 @@ import {
   listAgents,
   replyToSupportTicket,
   resetPasswordForAgent,
+  retrieveAgentAllMonthTargets,
   updateAgent,
   updateStatusOfTicket,
 } from "../controller/agent";
@@ -51,7 +52,11 @@ router.put(
 );
 router.delete("/delete/:id", adminMiddleware, deleteAgent);
 router.post("/:id/reset_password", adminMiddleware, resetPasswordForAgent);
-router.get("/all_agent_performance", adminMiddleware, getAllAgentPerformance);
+router.get(
+  "/all_agent_performance/:agentId",
+  adminMiddleware,
+  getAllAgentPerformance
+);
 router.get("/top_performing_agents", adminMiddleware, getTopAgents);
 router.post(
   "/create_ticket",
@@ -80,6 +85,11 @@ router.post(
   validator.body(agentMonthlyTargetSchema),
   adminMiddleware,
   addMonthlyTargetForAgent
+);
+router.get(
+  "/month_target/:agentId",
+  adminMiddleware,
+  retrieveAgentAllMonthTargets
 );
 
 export default router;
