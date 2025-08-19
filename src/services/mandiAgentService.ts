@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import sequelize from "../database/models/db";
 import MandiAgent from "../database/models/mandiAgent";
 import User, { USER_ROLES } from "../database/models/user";
+import { hasValue } from "../utils/parseQuery";
 
 interface MandiAgentResponse {
   success: boolean;
@@ -11,8 +12,6 @@ interface MandiAgentResponse {
   data?: object;
   message?: string;
 }
-
-const hasValue = (val: any) => val !== undefined && val !== "" && val !== null;
 
 export const addMandiAgent = async (
   mandiAgentData
@@ -96,7 +95,7 @@ export const getAllMandiAgents = async (
 
   const whereUser: any = {};
   if (search) {
-    whereUser.name = { [Op.like]: `%${search}%` };
+    whereUser.name = { [Op.iLike]: `%${search}%` };
   }
 
   const { count, rows } = await MandiAgent.findAndCountAll({
