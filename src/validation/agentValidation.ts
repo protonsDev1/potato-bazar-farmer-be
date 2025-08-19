@@ -12,3 +12,25 @@ export const updateAgentSchema = Joi.object({
   note: Joi.string().optional().allow(""),
   isActive: Joi.boolean().optional(),
 });
+
+export const agentMonthlyTargetSchema = Joi.object({
+  agentId: Joi.number().required(),
+  year: Joi.number().required(),
+  month: Joi.string()
+    .required()
+    .valid(
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ),
+  monthlyTarget: Joi.number().required(),
+});
