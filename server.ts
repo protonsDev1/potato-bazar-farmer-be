@@ -45,7 +45,9 @@ import csRequirementRoutes from "./src/routes/csRequirementRoutes";
 import subAdminRoutes from "./src/routes/subAdminRoutes";
 import mandiAgentRoutes from "./src/routes/mandiAgentRoutes";
 import govSchemeRoutes from "./src/routes/govSchemeRoutes";
-import newsRoutes from "./src/routes/newsRoutes";
+import newsRoutes from "./src/routes/newsRoutes";import kycRoutes from "./src/routes/kycRoutes";
+
+
 const cors = require("cors");
 
 const app = express();
@@ -102,6 +104,8 @@ app.use("/api/sub_admins", subAdminRoutes);
 app.use("/api/mandi_agent", mandiAgentRoutes);
 app.use("/api/government_schemes", govSchemeRoutes);
 app.use("/api/news", newsRoutes);
+app.use("/api/kyc", kycRoutes);
+
 
 const PORT = 8000;
 const startServer = async () => {
