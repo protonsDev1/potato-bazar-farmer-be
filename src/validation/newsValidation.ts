@@ -12,6 +12,7 @@ export const createNewsSchema = Joi.object({
   description: Joi.string().trim().required(),
   images: Joi.array().items(Joi.string().uri()).optional(),
   tags: Joi.array().items(Joi.string().trim()).required(),
+  isFeatured: Joi.boolean().default(false),
 });
 
 export const updateNewsSchema = Joi.object({
@@ -25,4 +26,5 @@ export const updateNewsSchema = Joi.object({
   description: Joi.string().trim().optional(),
   images: Joi.array().items(Joi.string().uri()).optional(),
   tags: Joi.array().items(Joi.string().trim()).optional(),
+  isFeatured: Joi.boolean().optional(),
 });

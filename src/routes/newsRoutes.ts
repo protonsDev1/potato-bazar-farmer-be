@@ -1,6 +1,10 @@
 import express from "express";
 import { createValidator } from "express-joi-validation";
-import { authMiddleware, superAdminMiddleware } from "../utils/userAuth";
+import {
+  authMiddleware,
+  optionalAuthMiddleware,
+  superAdminMiddleware,
+} from "../utils/userAuth";
 import {
   createNewsSchema,
   updateNewsSchema,
@@ -23,9 +27,9 @@ router.post(
   createNews
 );
 
-router.get("/", authMiddleware, listNews);
+router.get("/", listNews);
 
-router.get("/:id", authMiddleware, getNewsById);
+router.get("/:id", optionalAuthMiddleware, getNewsById);
 
 router.put(
   "/:id",

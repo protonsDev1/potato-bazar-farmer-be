@@ -33,6 +33,7 @@ class News extends Model<InferAttributes<News>, InferCreationAttributes<News>> {
   declare images: string[] | null;
   declare tags: string[];
   declare views: CreationOptional<number>;
+  declare isFeatured: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -71,6 +72,10 @@ News.init(
     views: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
+    },
+    isFeatured: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,
