@@ -41,18 +41,18 @@ export const login = async (req, res) => {
     try {
       const { email, password } = req.body;
       // Validate input using the Joi schema
-    
+        
   
       // Find the user by email
       const user = await findUserByEmail(email);
       if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ success: false, message: 'User not found' });
       }
   
       // Compare the password with the hashed password in the database
       const isPasswordValid = await user.validatePassword(password);
       if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Invalid password' });
+        return res.status(401).json({ success: false, message: 'Invalid password' });
       }
   
       // Generate the JWT token
@@ -65,6 +65,7 @@ export const login = async (req, res) => {
       // Return the success response with the token
       return res.status(200).json({
         message: 'Login successful',
+        success: true,
         token,
         user: {
           id: user.id,
@@ -75,6 +76,7 @@ export const login = async (req, res) => {
       });
     } catch (error) {
       return res.status(400).json({
+        success: false,
         message: error.message || 'An error occurred during login',
       });
     }
@@ -155,9 +157,9 @@ export const sendOtp = async (req, res) => {
     const { mobile } = req.body;
 
     const otpRecord = await createOtp(mobile);
-    return res.status(200).json({ message: 'OTP sent', otp: otpRecord.otp }); // for demo
+    return res.status(200).json({ success: true, message: 'OTP sent', otp: otpRecord.otp }); // for demo
   } catch (err: any) {
-    return res.status(500).json({ message: err.message || 'Failed to send OTP' });
+    return res.status(500).json({ success: false, message: err.message || 'Failed to send OTP' });
   }
 };
 
@@ -167,7 +169,7 @@ export const verifyOtp = async (req, res) => {
 
     const isValid = await verifyOtpFromDB(mobile, otp);
     if (!isValid) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
+      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
     }
 
     const registrationType = await getRegistrationTypes(mobile);
@@ -184,6 +186,7 @@ export const verifyOtp = async (req, res) => {
       return res
         .status(200)
         .json({
+          success: true,
           message: "OTP verified. User already exists.",
           token,
           user: existingUser,
@@ -195,11 +198,11 @@ export const verifyOtp = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "OTP verified", createUser, registrationType });
+      .json({ success: true, message: "OTP verified", createUser, registrationType });
   } catch (err: any) {
     return res
       .status(500)
-      .json({ message: err.message || "OTP verification failed" });
+      .json({ success: false, message: err.message || "OTP verification failed" });
   }
 };
 
@@ -214,6 +217,7 @@ export const UserLoginOnMobile = async (req, res) => {
       )
     )
       return res.status(400).json({
+        success: false,
         message: `Invalid User Types. Allowed values: ${Object.values(
           USER_TYPE
         ).join(", ")}`,
@@ -226,6 +230,7 @@ export const UserLoginOnMobile = async (req, res) => {
     });
 
     return res.status(200).json({
+      success: true,
       message: "User Onboarded on mobile Successfully.",
       token,
       user: userOnboardedOnMobile,
@@ -233,7 +238,7 @@ export const UserLoginOnMobile = async (req, res) => {
   } catch (error) {
     return res
       .status(500)
-      .json({ message: error.message || "Failed to onboard on mobile." });
+      .json({ success: false, message: error.message || "Failed to onboard on mobile." });
   }
 };
 
@@ -462,9 +467,10 @@ export const retrieveMobileUsers = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "Users onboarded on mobile.", users });
+      .json({ success: true, message: "Users onboarded on mobile.", users });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: error.message || "Failed in retrieving mobile users.",
     });
   }

@@ -52,6 +52,17 @@ export const addMandiAgent = async (
     }
   }
 
+  const isDuplicateLicense = await MandiAgent.findOne({
+    where: { licenseNumber },
+  });
+
+  if (isDuplicateLicense) {
+    return {
+      success: false,
+      error: "Mandi agent with given license number already exists.",
+    };
+  }
+
   return await sequelize.transaction(async (t) => {
     const mandiUser = await User.create(
       {
@@ -229,6 +240,19 @@ export const updateMandiAgentService = async (
       return {
         success: false,
         error: "Mobile number to be updated already exists.",
+      };
+    }
+  }
+
+  if (licenseNumber) {
+    const isDuplicateLicense = await MandiAgent.findOne({
+      where: { licenseNumber },
+    });
+
+    if (isDuplicateLicense) {
+      return {
+        success: false,
+        error: "Mandi agent with given license number already exists.",
       };
     }
   }
