@@ -1,7 +1,7 @@
 import Otp from '../database/models/otp';
 
 export const createOtp = async (mobile: string) => {
-  const otp = '1234'; 
+  const otp = '123456'; 
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); 
 
   return await Otp.create({ mobile, otp, expiresAt });
