@@ -8,12 +8,6 @@ import {
 
 import sequelize from "./db";
 
-export enum EVENT_STATUS {
-  PENDING = "pending",
-  REJECTED = "rejected",
-  APPROVED = "approved",
-}
-
 class Event extends Model<
   InferAttributes<Event>,
   InferCreationAttributes<Event>
@@ -21,7 +15,7 @@ class Event extends Model<
   declare id: CreationOptional<number>;
   declare email: string;
   declare mobile: string;
-  declare ownerName: string;
+  declare organiserName: string;
   declare image: string;
   declare title: string;
   declare description: Text;
@@ -32,7 +26,7 @@ class Event extends Model<
   declare location: string;
   declare document: string;
   declare website: string;
-  declare status: string;
+  declare isFeatured: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -52,7 +46,7 @@ Event.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    ownerName: {
+    organiserName: {
       type: DataTypes.STRING,
       allowNull: true,
     },
@@ -96,10 +90,9 @@ Event.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    status: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: EVENT_STATUS.PENDING,
+    isFeatured: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -118,9 +111,6 @@ Event.init(
     tableName: "events",
     timestamps: true,
     indexes: [
-      {
-        fields: ["status"],
-      },
       {
         fields: ["startDate", "endDate"],
       },

@@ -1,10 +1,10 @@
 import Joi from "joi";
-import { EVENT_STATUS } from "../database/models/event";
+import { EVENT_REQUEST_STATUS } from "../database/models/eventRequest";
 
 export const createEventSchema = Joi.object({
   email: Joi.string().required(),
   mobile: Joi.string().required(),
-  ownerName: Joi.string().optional().allow(null, ""),
+  organiserName: Joi.string().optional().allow(null, ""),
   image: Joi.string().optional().allow(null, ""),
   title: Joi.string().required(),
   description: Joi.string().required(),
@@ -15,12 +15,13 @@ export const createEventSchema = Joi.object({
   location: Joi.string().required(),
   document: Joi.string().optional().allow(null, ""),
   website: Joi.string().optional().allow(null, ""),
+  isFeatured: Joi.boolean().optional().allow(null, ""),
 });
 
 export const updateEventSchema = Joi.object({
   email: Joi.string().optional().allow(null, ""),
   mobile: Joi.string().optional().allow(null, ""),
-  ownerName: Joi.string().optional().allow(null, ""),
+  organiserName: Joi.string().optional().allow(null, ""),
   image: Joi.string().optional().allow(null, ""),
   title: Joi.string().optional().allow(null, ""),
   description: Joi.string().optional().allow(null, ""),
@@ -31,10 +32,11 @@ export const updateEventSchema = Joi.object({
   location: Joi.string().optional().allow(null, ""),
   document: Joi.string().optional().allow(null, ""),
   website: Joi.string().optional().allow(null, ""),
+  isFeatured: Joi.boolean().optional().allow(null, ""),
 });
 
 export const updateEventStatusSchema = Joi.object({
   status: Joi.string()
-    .valid(EVENT_STATUS.APPROVED, EVENT_STATUS.REJECTED)
+    .valid(EVENT_REQUEST_STATUS.APPROVED, EVENT_REQUEST_STATUS.REJECTED)
     .required(),
 });

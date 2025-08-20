@@ -1,8 +1,8 @@
 import Joi from "joi";
 
 export const createMandiAgentSchema = Joi.object({
-  firstName: Joi.string().required(),
-  lastName: Joi.string().required(),
+  firstName: Joi.string().trim().required(),
+  lastName: Joi.string().trim().required(),
   email: Joi.string().required(),
   mobile: Joi.string().required(),
   password: Joi.string().required(),
