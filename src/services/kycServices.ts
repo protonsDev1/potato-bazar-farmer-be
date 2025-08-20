@@ -9,7 +9,9 @@ export const createKycInDB = async (kycData: any) => {
 export const updateKycStatusInDB = async (kycId: number, status: boolean) => {
   const kyc = await KycDocument.findByPk(kycId);
   if (!kyc) throw new Error("KYC record not found");
+  const applicationStatus = status ? 'approved' : 'rejected';
   kyc.isVerified = status;
+  kyc.status=applicationStatus;
   await kyc.save();
   return kyc;
 };
