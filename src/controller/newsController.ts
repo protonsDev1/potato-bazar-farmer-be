@@ -17,12 +17,19 @@ export const createNews = async (req, res) => {
 
 export const listNews = async (req, res) => {
   try {
-    const { search = "", page = 1, perPage = 10, category } = req.query;
+    const {
+      search = "",
+      page = 1,
+      perPage = 10,
+      category,
+      isFeatured,
+    } = req.query;
     const result = await listNewsService({
       search: search.toString(),
       page: Number(page),
       limit: Number(perPage),
       category,
+      isFeatured,
     });
     return res.status(result.statusCode).json(result);
   } catch (err) {

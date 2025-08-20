@@ -23,9 +23,9 @@ router.post(
   createGovScheme
 );
 
-router.get("/", authMiddleware, listGovSchemes);
+router.get("/", listGovSchemes);
 
-router.get("/:id", authMiddleware, getGovSchemeById);
+router.get("/:id", getGovSchemeById);
 
 router.put(
   "/:id",
