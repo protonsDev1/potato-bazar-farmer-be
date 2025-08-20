@@ -12,7 +12,13 @@ export const createNewsService = async (payload) => {
   };
 };
 
-export const listNewsService = async ({ search, page, limit, category }) => {
+export const listNewsService = async ({
+  search,
+  page,
+  limit,
+  category,
+  isFeatured,
+}) => {
   const whereClause: any = {};
 
   if (search) {
@@ -24,6 +30,10 @@ export const listNewsService = async ({ search, page, limit, category }) => {
 
   if (category) {
     whereClause.category = category;
+  }
+
+  if (isFeatured && isFeatured === "true") {
+    whereClause.isFeatured = true;
   }
 
   const offset = (page - 1) * limit;
