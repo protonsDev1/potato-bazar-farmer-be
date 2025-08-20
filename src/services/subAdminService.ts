@@ -79,21 +79,27 @@ export const listSubAdminsService = async ({ search, page, limit }) => {
     };
   });
 
-  const recentAdditions = await User.count({
-    where: {
-      role: USER_ROLES.SUB_ADMIN,
-      createdAt: {
-        [Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+  const [recentAdditions, activeCount, totalSubAdmins] = await Promise.all([
+    User.count({
+      where: {
+        role: USER_ROLES.SUB_ADMIN,
+        createdAt: {
+          [Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // last 7 days
+        },
       },
-    },
-  });
+    }),
 
-  const activeCount = await User.count({
-    where: {
-      role: USER_ROLES.SUB_ADMIN,
-      isActive: true,
-    },
-  });
+    User.count({
+      where: {
+        role: USER_ROLES.SUB_ADMIN,
+        isActive: true,
+      },
+    }),
+
+    User.count({
+      where: { role: USER_ROLES.SUB_ADMIN },
+    }),
+  ]);
 
   return {
     success: true,
@@ -103,6 +109,7 @@ export const listSubAdminsService = async ({ search, page, limit }) => {
       total: count,
       page,
       perPage: limit,
+      totalSubAdmins,
       activeCount,
       recentAdditions,
       subAdmins: subAdmins,
