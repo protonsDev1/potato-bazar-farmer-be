@@ -17,6 +17,7 @@ import {
     declare isVerified: boolean;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
+    declare status: String;
   }
   
   KycDocument.init(
@@ -58,7 +59,13 @@ import {
       updatedAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW
+      },
+      status: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: 'pending'
       }
+      
     },
     {
       sequelize,
