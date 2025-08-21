@@ -212,7 +212,7 @@ export const getSellRequestByIdService = async (id: number) => {
       {
         model: User,
         as: "user",
-        attributes: [",id", "name", "email", "mobile"],
+        attributes: ["id", "name", "email", "mobile"],
       },
     ],
   });
