@@ -145,8 +145,8 @@ export const updateRegistrationStatusSchema = Joi.object({
 
 export const mobileLoginSchema = Joi.object({
   mobile: Joi.string().required(),
-  firstName: Joi.string().required(),
-  lastName: Joi.string().required(),
+  firstName: Joi.string().trim().required(),
+  lastName: Joi.string().trim().required(),
   userType: Joi.array().items(Joi.string()).optional(),
   location: Joi.string().optional().allow(null,""),
   state: Joi.string().required(),
