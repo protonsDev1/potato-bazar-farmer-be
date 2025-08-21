@@ -113,7 +113,15 @@ export const getAllMandiAgents = async (
     include: [
       {
         model: User,
-        attributes: ["name", "mobile", "district", "cityOrVillage", "state"],
+        attributes: [
+          "name",
+          "mobile",
+          "district",
+          "cityOrVillage",
+          "state",
+          "email",
+          "pinCode",
+        ],
         as: "user",
         where: whereUser,
       },
@@ -129,11 +137,15 @@ export const getAllMandiAgents = async (
     return {
       id: entry.id,
       name: mandiUser?.name,
+      firstName: mandiUser.name.split(" ")[0],
+      lastName: mandiUser.name.split(" ")[1],
       contact: mandiUser?.mobile,
+      email: mandiUser?.email,
       location: {
         district: mandiUser?.district,
         city: mandiUser?.cityOrVillage,
         state: mandiUser?.state,
+        pinCode: mandiUser?.pinCode,
       },
       licenseNumber: entry.licenseNumber,
       status: entry.isActive,
@@ -195,6 +207,7 @@ export const updateMandiAgentService = async (
           "cityOrVillage",
           "state",
           "email",
+          "pinCode",
         ],
         as: "user",
       },

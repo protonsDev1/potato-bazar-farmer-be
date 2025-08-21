@@ -1,6 +1,8 @@
 import { Op } from "sequelize";
 import Event from "../database/models/event";
 import { buildDate, hasValue } from "../utils/parseQuery";
+import EventRequest from "../database/models/eventRequest";
+import User from "../database/models/user";
 
 export const addEvent = async (eventData) => {
   const { startDate, endDate, startTime, endTime } = eventData;
@@ -23,7 +25,12 @@ export const addEvent = async (eventData) => {
   };
 };
 
-export const getAllEvents = async (search, page = 1, limit = 10, status) => {
+export const getAllEvents = async (
+  search,
+  page = 1,
+  limit = 10,
+  isFeatured
+) => {
   const offset = (page - 1) * limit;
 
   const whereCondition: any = {};
@@ -34,7 +41,7 @@ export const getAllEvents = async (search, page = 1, limit = 10, status) => {
     ];
   }
 
-  if (status) whereCondition.status = status;
+  if (isFeatured) whereCondition.isFeatured = true;
 
   const { rows: events, count: total } = await Event.findAndCountAll({
     where: { ...whereCondition },
@@ -69,6 +76,43 @@ export const getAllEvents = async (search, page = 1, limit = 10, status) => {
   };
 };
 
+export const getAllEventRequests = async (page = 1, limit = 10, search) => {
+  const offset = (page - 1) * limit;
+
+  const whereCondition: any = {};
+  if (search) {
+    whereCondition[Op.or] = [
+      { title: { [Op.iLike]: `%${search}%` } },
+      { location: { [Op.iLike]: `%${search}%` } },
+    ];
+  }
+
+  const { rows, count } = await EventRequest.findAndCountAll({
+    where: whereCondition,
+    include: [
+      {
+        model: Event,
+        as: "events",
+      },
+      {
+        model: User,
+        as: "users",
+        attributes: ["id", "name", "email", "mobile"],
+      },
+    ],
+    limit,
+    offset,
+    order: [["createdAt", "DESC"]],
+  });
+
+  return {
+    data: rows,
+    total: count,
+    currentPage: page,
+    totalPages: Math.ceil(count / limit),
+  };
+};
+
 export const updateEventService = async (eventId, payload) => {
   let { startDate, endDate, startTime, endTime } = payload;
 
@@ -100,7 +144,7 @@ export const updateEventService = async (eventId, payload) => {
   const updatableFields = [
     "email",
     "mobile",
-    "ownerName",
+    "organiserName",
     "image",
     "title",
     "description",
@@ -128,5 +172,27 @@ export const updateEventService = async (eventId, payload) => {
     success: true,
     message: "Event updated successfully.",
     data: updated[0],
+  };
+};
+
+export const requestToJoinEvent = async (userId, eventId) => {
+  const eventRequest = await EventRequest.findOne({
+    where: {
+      userId,
+      eventId,
+    },
+  });
+
+  if (eventRequest) {
+    return {
+      success: false,
+      error: "User already has raised request to register for this event.",
+    };
+  }
+
+  await EventRequest.create({ userId, eventId });
+
+  return {
+    success: true,
   };
 };
