@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
 import User from "../database/models/user";
 import { generateBuyRequestId } from "../utils/generate";
+import FavouriteRequest from "../database/models/favouriteRequest";
 
 export const createBuyRequestService = async (userId: number, data: any) => {
   const newRequest = await BuyRequest.create({
@@ -83,22 +84,41 @@ export const listBuyRequestsService = async (
         attributes: ["id", "name", "email", "mobile", "state", "district"],
         where: Object.keys(userWhere).length ? userWhere : undefined,
       },
+      ...(currentUserId
+        ? [
+            {
+              model: FavouriteRequest,
+              as: "buyFavourites",
+              attributes: ["id"],
+              required: false,
+              where: { userId: currentUserId },
+            },
+          ]
+        : []),
     ],
     limit: Number(perPage),
     offset,
     order: [["createdAt", "DESC"]],
   });
 
+  const requestsWithFavourite = rows.map((req: any) => ({
+    ...req.toJSON(),
+    isFavourite: req.buyFavourites?.length > 0 || false,
+  }));
+
   return {
     page: Number(page),
     perPage: Number(perPage),
     totalPages: Math.ceil(count / Number(perPage)),
     total: count,
-    requests: rows,
+    requests: requestsWithFavourite,
   };
 };
 
-export const listMyBuyRequestsService = async (userId: number, query: any) => {
+export const listMyBuyRequestsService = async (
+  currentUserId: number,
+  query: any
+) => {
   const {
     page = 1,
     perPage = 10,
@@ -110,7 +130,7 @@ export const listMyBuyRequestsService = async (userId: number, query: any) => {
 
   const offset = (Number(page) - 1) * Number(perPage);
 
-  const where: any = { userId };
+  const where: any = { userId: currentUserId };
   const userWhere: any = {};
 
   if (potatoType) {
@@ -138,18 +158,30 @@ export const listMyBuyRequestsService = async (userId: number, query: any) => {
         attributes: ["id", "name", "email", "mobile", "state", "district"],
         where: Object.keys(userWhere).length ? userWhere : undefined,
       },
+      {
+        model: FavouriteRequest,
+        as: "buyFavourites",
+        attributes: ["id"],
+        required: false,
+        where: { userId: currentUserId },
+      },
     ],
     limit: Number(perPage),
     offset,
     order: [["createdAt", "DESC"]],
   });
 
+  const requestsWithFavourite = rows.map((req: any) => ({
+    ...req.toJSON(),
+    isFavourite: req.buyFavourites && req.buyFavourites.length > 0,
+  }));
+
   return {
     page: Number(page),
     perPage: Number(perPage),
     totalPages: Math.ceil(count / Number(perPage)),
     total: count,
-    requests: rows,
+    requests: requestsWithFavourite,
   };
 };
 
@@ -203,8 +235,11 @@ export const listAdminBuyRequestsService = async (query: any) => {
   };
 };
 
-export const getBuyRequestByIdService = async (id: number) => {
-  return await BuyRequest.findOne({
+export const getBuyRequestByIdService = async (
+  id: number,
+  currentUserId: number
+) => {
+  const request = await BuyRequest.findOne({
     where: { id },
     include: [
       {
@@ -212,8 +247,26 @@ export const getBuyRequestByIdService = async (id: number) => {
         as: "user",
         attributes: ["id", "name", "email", "mobile"],
       },
+      ...(currentUserId
+        ? [
+            {
+              model: FavouriteRequest,
+              as: "buyFavourites",
+              attributes: ["id"],
+              required: false,
+              where: { userId: currentUserId },
+            },
+          ]
+        : []),
     ],
   });
+
+  if (!request) return null;
+
+  return {
+    ...request.toJSON(),
+    isFavourite: request.buyFavourites?.length > 0 || false,
+  };
 };
 
 export const deleteBuyRequestService = async (id: number) => {

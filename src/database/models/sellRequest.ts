@@ -7,6 +7,7 @@ import {
 } from "sequelize";
 import sequelize from "./db";
 import User from "./user";
+import FavouriteRequest from "./favouriteRequest";
 
 export enum SELL_REQUEST_STATUS {
   AVAILABLE = "Available",
@@ -42,6 +43,7 @@ class SellRequest extends Model<
   declare organicCerified: boolean;
   declare isVerified: boolean;
   declare status: SELL_REQUEST_STATUS;
+  declare sellFavourites?: FavouriteRequest[];
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
