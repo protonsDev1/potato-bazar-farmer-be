@@ -9,7 +9,7 @@ import {
   showBuyRequest,
   updateBuyRequest,
 } from "../controller/buyRequestController";
-import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
+import { authMiddleware, checkPermissionMiddleware, optionalAuthMiddleware } from "../utils/userAuth";
 import { PERMISSIONS } from "../utils/constants/permissions";
 import {
   createBuyRequestSchema,
@@ -25,7 +25,7 @@ router.post(
   validator.body(createBuyRequestSchema),
   createBuyRequest
 );
-router.get("/list", authMiddleware, listBuyRequests);
+router.get("/list", optionalAuthMiddleware, listBuyRequests);
 
 router.get("/my_list", authMiddleware, listMyBuyRequests);
 

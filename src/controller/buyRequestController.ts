@@ -28,7 +28,7 @@ export const createBuyRequest = async (req, res) => {
 
 export const listBuyRequests = async (req, res) => {
   try {
-    const requests = await listBuyRequestsService(req.query);
+    const requests = await listBuyRequestsService(req.query, req.user?.id);
     return res.json({
       success: true,
       message: "Buy Requests fetched successfully",
