@@ -4,6 +4,8 @@ import { createValidator } from "express-joi-validation";
 import {
   createEvent,
   deleteEvent,
+  registerOnEvent,
+  retrieveAllEventRequests,
   retrieveAllEvents,
   retrieveEventDetail,
   updateEvent,
@@ -14,42 +16,33 @@ import {
   updateEventSchema,
   updateEventStatusSchema,
 } from "../validation/eventValidation";
-import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
-import { PERMISSIONS } from "../utils/constants/permissions";
+import { authMiddleware, superAdminMiddleware } from "../utils/userAuth";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  authMiddleware,
+  superAdminMiddleware,
   validator.body(createEventSchema),
   createEvent
 );
-router.get(
-  "/",
-  checkPermissionMiddleware(PERMISSIONS.EVENTS),
-  retrieveAllEvents
-);
-router.get(
-  "/:eventId",
-  checkPermissionMiddleware(PERMISSIONS.EVENTS),
-  retrieveEventDetail
-);
+router.get("/", retrieveAllEvents);
+router.get("/event_requests", retrieveAllEventRequests);
+router.get("/:eventId", retrieveEventDetail);
 router.put(
   "/:eventId",
-  authMiddleware,
+  superAdminMiddleware,
   validator.body(updateEventSchema),
   updateEvent
 );
-router.delete(
-  "/:eventId",
-  checkPermissionMiddleware(PERMISSIONS.EVENTS),
-  deleteEvent
-);
+router.delete("/:eventId", superAdminMiddleware, deleteEvent);
+
+router.post("/join_event/:eventId", authMiddleware, registerOnEvent);
+
 router.put(
-  "/update_status/:eventId",
-  checkPermissionMiddleware(PERMISSIONS.EVENTS),
+  "/update_status/:requestId",
+  superAdminMiddleware,
   validator.body(updateEventStatusSchema),
   updateEventStatus
 );
