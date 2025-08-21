@@ -18,6 +18,7 @@ import {
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
     declare status: String;
+    declare reason: String;
   }
   
   KycDocument.init(
@@ -64,6 +65,10 @@ import {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: 'pending'
+      },
+      reason: {
+        type: DataTypes.STRING,
+        allowNull: true,
       }
       
     },

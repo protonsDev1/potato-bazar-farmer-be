@@ -17,8 +17,8 @@ export const createKyc = async (req, res) => {
 export const approveOrRejectKyc = async (req, res) => {
   try {
     const { id } = req.params;
-    const { isVerified } = req.body;
-    const updated = await updateKycStatusInDB(Number(id), isVerified);
+    const { isVerified,reason } = req.body;
+    const updated = await updateKycStatusInDB(Number(id), isVerified,reason);
     return res.status(200).json({
       success: true,
       message: `KYC ${isVerified ? 'approved' : 'rejected'} successfully`,
