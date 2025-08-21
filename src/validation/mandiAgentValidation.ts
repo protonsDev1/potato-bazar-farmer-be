@@ -15,8 +15,8 @@ export const createMandiAgentSchema = Joi.object({
 });
 
 export const updateMandiAgentSchema = Joi.object({
-  firstName: Joi.string().optional().allow(null, ""),
-  lastName: Joi.string().optional().allow(null, ""),
+  firstName: Joi.string().trim().optional().allow(null, ""),
+  lastName: Joi.string().trim().optional().allow(null, ""),
   email: Joi.string().optional().allow(null, ""),
   mobile: Joi.string().optional().allow(null, ""),
   password: Joi.string().optional().allow(null, ""),
