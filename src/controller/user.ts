@@ -208,21 +208,6 @@ export const verifyOtp = async (req, res) => {
 
 export const UserLoginOnMobile = async (req, res) => {
   try {
-    const { userType } = req.body;
-
-    if (
-      !Array.isArray(userType) ||
-      userType.some(
-        (type) => !Object.values(USER_TYPE).includes(type as USER_TYPE)
-      )
-    )
-      return res.status(400).json({
-        success: false,
-        message: `Invalid User Types. Allowed values: ${Object.values(
-          USER_TYPE
-        ).join(", ")}`,
-      });
-
     const userOnboardedOnMobile = await mobileOnboardingLoginService(req.body);
 
     const token = jwt.sign({ id: userOnboardedOnMobile.id }, JWT_SECRET, {
@@ -232,13 +217,13 @@ export const UserLoginOnMobile = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "User Onboarded on mobile Successfully.",
-      token,
-      user: userOnboardedOnMobile,
+      user: { token, ...userOnboardedOnMobile.toJSON() },
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: error.message || "Failed to onboard on mobile." });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to onboard on mobile.",
+    });
   }
 };
 
