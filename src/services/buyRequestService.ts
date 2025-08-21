@@ -31,7 +31,10 @@ export const createBuyRequestService = async (userId: number, data: any) => {
   return newRequest;
 };
 
-export const listBuyRequestsService = async (query: any) => {
+export const listBuyRequestsService = async (
+  query: any,
+  currentUserId: number
+) => {
   const {
     page = 1,
     perPage = 10,
@@ -46,6 +49,10 @@ export const listBuyRequestsService = async (query: any) => {
 
   const where: any = { status: BUY_REQUEST_STATUS.ACTIVE };
   const userWhere: any = {};
+
+  if (currentUserId) {
+    where.userId = { [Op.ne]: currentUserId };
+  }
 
   if (potatoType) {
     where.potatoType = potatoType;
@@ -156,7 +163,8 @@ export const listAdminBuyRequestsService = async (query: any) => {
   if (search) {
     where[Op.or] = [
       { potatoType: { [Op.iLike]: `%${search}%` } },
-      { tapotatoVariety: { [Op.iLike]: `%${search}%` } },
+      { potatoVariety: { [Op.iLike]: `%${search}%` } },
+      { requestId: { [Op.iLike]: `%${search}%` } },
     ];
   }
 
