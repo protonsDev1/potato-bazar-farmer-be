@@ -48,6 +48,8 @@ import govSchemeRoutes from "./src/routes/govSchemeRoutes";
 import newsRoutes from "./src/routes/newsRoutes";
 import kycRoutes from "./src/routes/kycRoutes";
 import eventRoutes from "./src/routes/eventRoutes";
+import buyRequestRoutes from "./src/routes/buyRequestRoutes";
+import sellRequestRoutes from "./src/routes/sellRequestRoutes";
 
 const cors = require("cors");
 
@@ -107,6 +109,8 @@ app.use("/api/government_schemes", govSchemeRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/kyc", kycRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/buy_requests", buyRequestRoutes);
+app.use("/api/sell_requests", sellRequestRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
