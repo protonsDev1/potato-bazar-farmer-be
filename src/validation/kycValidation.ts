@@ -18,7 +18,8 @@ export const createKycSchema = Joi.object({
 export const updateKycStatusSchema = Joi.object({
   isVerified: Joi.boolean().required().messages({
     "any.required": "Verification status is required"
-  })
+  }),
+  reason: Joi.string().optional()
 });
 
 
