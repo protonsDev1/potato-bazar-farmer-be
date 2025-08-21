@@ -421,11 +421,22 @@ export const updateAgentById = async (agentId: number, updateData: any) => {
     }
   }
 
+  let hasUserChanged = false;
+
   // Update user fields
   if (agent.user) {
-    if (name !== undefined) agent.user.name = name;
-    if (email !== undefined) agent.user.email = email;
-    if (phone !== undefined) agent.user.mobile = phone;
+    if (name !== undefined) {
+      agent.user.name = name;
+      hasUserChanged = true;
+    }
+    if (email !== undefined) {
+      agent.user.email = email;
+      hasUserChanged = true;
+    }
+    if (phone !== undefined) {
+      agent.user.mobile = phone;
+      hasUserChanged = true;
+    }
 
     await agent.user.save();
   }
@@ -437,6 +448,8 @@ export const updateAgentById = async (agentId: number, updateData: any) => {
   if (district !== undefined) agent.district = district;
   if (note !== undefined) agent.note = note;
   if (isActive != undefined) agent.isActive = isActive;
+
+  if (hasUserChanged) agent.changed("updatedAt", true);
 
   await agent.save();
 

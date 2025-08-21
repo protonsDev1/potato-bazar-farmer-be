@@ -14,6 +14,7 @@ class Agent extends Model {
   public note: string;
   public isActive: boolean;
   public isDeleted: boolean;
+  public updatedAt: Date;
 }
 
 Agent.init(
