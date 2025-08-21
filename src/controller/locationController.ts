@@ -10,12 +10,13 @@ export const listStates = async (req, res) => {
     });
 
     return res.json({
+      success: true,
       message: "States fetched successfully",
       states,
     });
   } catch (error) {
     console.error("Error fetching states:", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
 
@@ -44,12 +45,14 @@ export const listCities = async (req, res) => {
     const uniqueCities = Array.from(uniqueMap.values());
 
     return res.json({
+      success: true,
       message: "Cities fetched successfully",
       cities: uniqueCities,
     });
   } catch (error) {
     console.error("Error fetching cities:", error);
     return res.status(500).json({
+      success: false,
       error: error.message,
     });
   }
@@ -69,11 +72,13 @@ export const listDistricts = async (req, res) => {
     });
 
     return res.json({
+      success: true,
       message: "Districts fetched successfully",
       districts,
     });
   } catch (error) {
     return res.status(500).json({
+      success: false,
       error: error.message,
     });
   }

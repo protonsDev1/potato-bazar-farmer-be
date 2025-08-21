@@ -25,23 +25,57 @@ export const addEvent = async (eventData) => {
   };
 };
 
-export const getAllEvents = async (
-  search,
-  page = 1,
-  limit = 10,
-  isFeatured
-) => {
+export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
   const offset = (page - 1) * limit;
 
+  const { isFeatured, category, district, date, dateRange } = filters;
+
   const whereCondition: any = {};
+
+  if (isFeatured) whereCondition.isFeatured = true;
+
+  if (category && category.toLowerCase() !== "all")
+    whereCondition.category = category;
+
+  if (district && district.toLowerCase() !== "all")
+    whereCondition.district = district;
+
+  if (dateRange && dateRange.length === 2) {
+    const [filterStart, filterEnd] = dateRange;
+
+    const startOfDay = new Date(`${filterStart}T00:00:00`);
+    const endOfDay = new Date(`${filterEnd}T23:59:59`);
+
+    whereCondition[Op.and] = [
+      {
+        startDate: { [Op.lte]: endOfDay },
+      },
+      {
+        endDate: { [Op.gte]: startOfDay },
+      },
+    ];
+  }
+
+  if (date) {
+    const startOfDay = new Date(`${date}T00:00:00`);
+    const endOfDay = new Date(`${date}T23:59:59`);
+
+    whereCondition[Op.and] = [
+      {
+        startDate: { [Op.lte]: endOfDay },
+      },
+      {
+        endDate: { [Op.gte]: startOfDay },
+      },
+    ];
+  }
+
   if (search) {
     whereCondition[Op.or] = [
       { title: { [Op.iLike]: `%${search}%` } },
       { location: { [Op.iLike]: `%${search}%` } },
     ];
   }
-
-  if (isFeatured) whereCondition.isFeatured = true;
 
   const { rows: events, count: total } = await Event.findAndCountAll({
     where: { ...whereCondition },
@@ -50,29 +84,61 @@ export const getAllEvents = async (
     order: [["createdAt", "DESC"]],
   });
 
-  const enrichedResults = events.map((entry) => {
-    const start = buildDate(entry.startDate, entry.startTime);
-    const end = buildDate(entry.endDate, entry.endTime);
+  const enrichedResults = await Promise.all(
+    events.map(async (entry) => {
+      const peopleInterested = await EventRequest.count({
+        where: { eventId: entry.id },
+      });
 
-    const now = new Date();
-    const istOffset = 5.5 * 60 * 60 * 1000;
-    const istNow = new Date(now.getTime() + istOffset);
+      const start = buildDate(entry.startDate, entry.startTime);
+      const end = buildDate(entry.endDate, entry.endTime);
 
-    const isEventUpcoming = istNow < start;
-    const isEventGoing = istNow >= start && now <= end;
+      const now = new Date();
+      const istOffset = 5.5 * 60 * 60 * 1000;
+      const istNow = new Date(now.getTime() + istOffset);
 
-    return {
-      ...entry.toJSON(),
-      isEventUpcoming,
-      isEventGoing,
-    };
-  });
+      const isEventUpcoming = istNow < start;
+      const isEventGoing = istNow >= start && now <= end;
+
+      return {
+        ...entry.toJSON(),
+        isEventUpcoming,
+        isEventGoing,
+        peopleInterested,
+      };
+    })
+  );
 
   return {
     data: enrichedResults,
     total,
     currentPage: page,
     totalPages: Math.ceil(total / limit),
+  };
+};
+
+export const getEventDetail = async (eventId) => {
+  const event = await Event.findOne({ where: { id: eventId } });
+
+  const start = buildDate(event.startDate, event.startTime);
+  const end = buildDate(event.endDate, event.endTime);
+
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const istNow = new Date(now.getTime() + istOffset);
+
+  const isEventUpcoming = istNow < start;
+  const isEventGoing = istNow >= start && now <= end;
+
+  const peopleInterested = await EventRequest.count({
+    where: { eventId },
+  });
+
+  return {
+    event,
+    isEventUpcoming,
+    isEventGoing,
+    peopleInterested,
   };
 };
 
@@ -88,15 +154,15 @@ export const getAllEventRequests = async (page = 1, limit = 10, search) => {
   }
 
   const { rows, count } = await EventRequest.findAndCountAll({
-    where: whereCondition,
     include: [
       {
         model: Event,
         as: "events",
+        where: whereCondition,
       },
       {
         model: User,
-        as: "users",
+        as: "requestedByUser",
         attributes: ["id", "name", "email", "mobile"],
       },
     ],
@@ -146,12 +212,15 @@ export const updateEventService = async (eventId, payload) => {
     "mobile",
     "organiserName",
     "image",
+    "category",
     "title",
     "description",
     "startDate",
     "endDate",
     "startTime",
     "endTime",
+    "state",
+    "district",
     "location",
     "document",
     "website",
@@ -175,24 +244,32 @@ export const updateEventService = async (eventId, payload) => {
   };
 };
 
-export const requestToJoinEvent = async (userId, eventId) => {
+export const requestToJoinEvent = async (userId, eventId, name, mobile) => {
   const eventRequest = await EventRequest.findOne({
     where: {
-      userId,
+      requestCreatedBy: userId,
       eventId,
+      mobile,
     },
   });
 
   if (eventRequest) {
     return {
       success: false,
-      error: "User already has raised request to register for this event.",
+      error:
+        "User already has raised request for given user to register for this event.",
     };
   }
 
-  await EventRequest.create({ userId, eventId });
+  const newEventRequest = await EventRequest.create({
+    name,
+    mobile,
+    requestCreatedBy: userId,
+    eventId,
+  });
 
   return {
     success: true,
+    data: newEventRequest,
   };
 };
