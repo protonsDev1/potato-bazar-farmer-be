@@ -422,13 +422,18 @@ export const exportAgents = async (req, res) => {
 
 export const addMonthlyTargetForAgent = async (req, res) => {
   try {
-    const { agentId, year, month, monthlyTarget } = req.body;
+    const { agentId, year, month, monthlyTarget, isEdit } = req.body;
 
     const isExistingTarget = await AgentMonthlyTarget.findOne({
       where: { agentUserId: agentId, year, month },
     });
 
     if (isExistingTarget) {
+      if (!isEdit)
+        return res
+          .status(400)
+          .json({ message: "Agent Target already exist for given month." });
+
       isExistingTarget.update({ monthlyTarget });
 
       return res.status(200).json({

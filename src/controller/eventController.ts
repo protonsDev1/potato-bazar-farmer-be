@@ -4,10 +4,11 @@ import {
   addEvent,
   getAllEventRequests,
   getAllEvents,
+  getEventDetail,
   requestToJoinEvent,
   updateEventService,
 } from "../services/eventServices";
-import { buildDate } from "../utils/parseQuery";
+import { parseFilters } from "../utils/parseQuery";
 
 export const createEvent = async (req, res) => {
   try {
@@ -35,9 +36,11 @@ export const createEvent = async (req, res) => {
 
 export const retrieveAllEvents = async (req, res) => {
   try {
-    const { search, page, perPage: limit, isFeatured } = req.query;
+    const { search, page, perPage: limit } = req.query;
 
-    const response = await getAllEvents(search, page, limit, isFeatured);
+    const filters = parseFilters(req.query);
+
+    const response = await getAllEvents(search, page, limit, filters);
 
     return res.status(200).json({
       success: true,
@@ -58,22 +61,12 @@ export const retrieveEventDetail = async (req, res) => {
   try {
     const { eventId } = req.params;
 
-    const event = await Event.findOne({ where: { id: eventId } });
-
-    const start = buildDate(event.startDate, event.startTime);
-    const end = buildDate(event.endDate, event.endTime);
-
-    const now = new Date();
-    const istOffset = 5.5 * 60 * 60 * 1000;
-    const istNow = new Date(now.getTime() + istOffset);
-
-    const isEventUpcoming = istNow < start;
-    const isEventGoing = istNow >= start && now <= end;
+    const eventDetail = await getEventDetail(eventId);
 
     return res.status(200).json({
       success: true,
       message: "Event detail retrived successfully.",
-      data: { ...event.toJSON(), isEventUpcoming, isEventGoing },
+      data: eventDetail,
     });
   } catch (error) {
     console.error("Failed to retrieve event detail:", error);
@@ -162,8 +155,9 @@ export const registerOnEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
     const { id: userId } = req.user;
+    const { name, mobile } = req.body;
 
-    const response = await requestToJoinEvent(userId, eventId);
+    const response = await requestToJoinEvent(userId, eventId, name, mobile);
 
     if (!response.success)
       return res.status(400).json({
@@ -175,6 +169,7 @@ export const registerOnEvent = async (req, res) => {
       success: response.success,
       message:
         "Request to register on this event has been submitted successfully.",
+      data: response.data,
     });
   } catch (error) {
     console.error("Failed to register on event:", error);
