@@ -4,6 +4,7 @@ import { generateSellRequestId } from "../utils/generate";
 import SellRequest, {
   SELL_REQUEST_STATUS,
 } from "../database/models/sellRequest";
+import FavouriteRequest from "../database/models/favouriteRequest";
 
 export const createSellRequestService = async (userId: number, data: any) => {
   const newRequest = await SellRequest.create({
@@ -85,22 +86,41 @@ export const listSellRequestsService = async (
         attributes: ["id", "name", "email", "mobile", "state", "district"],
         where: Object.keys(userWhere).length ? userWhere : undefined,
       },
+      ...(currentUserId
+        ? [
+            {
+              model: FavouriteRequest,
+              as: "sellFavourites",
+              attributes: ["id"],
+              required: false,
+              where: { userId: currentUserId },
+            },
+          ]
+        : []),
     ],
     limit: Number(perPage),
     offset,
     order: [["createdAt", "DESC"]],
   });
 
+  const requestsWithFavourite = rows.map((req: any) => ({
+    ...req.toJSON(),
+    isFavourite: req.sellFavourites?.length > 0 || false,
+  }));
+
   return {
     page: Number(page),
     perPage: Number(perPage),
     totalPages: Math.ceil(count / Number(perPage)),
     total: count,
-    requests: rows,
+    requests: requestsWithFavourite,
   };
 };
 
-export const listMySellRequestsService = async (userId: number, query: any) => {
+export const listMySellRequestsService = async (
+  currentUserId: number,
+  query: any
+) => {
   const {
     page = 1,
     perPage = 10,
@@ -112,7 +132,7 @@ export const listMySellRequestsService = async (userId: number, query: any) => {
 
   const offset = (Number(page) - 1) * Number(perPage);
 
-  const where: any = { userId };
+  const where: any = { userId: currentUserId };
   const userWhere: any = {};
 
   if (potatoType) {
@@ -140,18 +160,30 @@ export const listMySellRequestsService = async (userId: number, query: any) => {
         attributes: ["id", "name", "email", "mobile", "state", "district"],
         where: Object.keys(userWhere).length ? userWhere : undefined,
       },
+      {
+        model: FavouriteRequest,
+        as: "sellFavourites",
+        attributes: ["id"],
+        required: false,
+        where: { userId: currentUserId },
+      },
     ],
     limit: Number(perPage),
     offset,
     order: [["createdAt", "DESC"]],
   });
 
+  const requestsWithFavourite = rows.map((req: any) => ({
+    ...req.toJSON(),
+    isFavourite: req.sellFavourites && req.sellFavourites.length > 0,
+  }));
+
   return {
     page: Number(page),
     perPage: Number(perPage),
     totalPages: Math.ceil(count / Number(perPage)),
     total: count,
-    requests: rows,
+    requests: requestsWithFavourite,
   };
 };
 
@@ -205,8 +237,11 @@ export const listAdminSellRequestsService = async (query: any) => {
   };
 };
 
-export const getSellRequestByIdService = async (id: number) => {
-  return await SellRequest.findOne({
+export const getSellRequestByIdService = async (
+  id: number,
+  currentUserId: number
+) => {
+  const request = await SellRequest.findOne({
     where: { id },
     include: [
       {
@@ -214,8 +249,25 @@ export const getSellRequestByIdService = async (id: number) => {
         as: "user",
         attributes: ["id", "name", "email", "mobile"],
       },
+      ...(currentUserId
+        ? [
+            {
+              model: FavouriteRequest,
+              as: "sellFavourites",
+              attributes: ["id"],
+              required: false,
+              where: { userId: currentUserId },
+            },
+          ]
+        : []),
     ],
   });
+  if (!request) return null;
+
+  return {
+    ...request.toJSON(),
+    isFavourite: request.sellFavourites?.length > 0 || false,
+  };
 };
 
 export const deleteSellRequestService = async (id: number) => {
