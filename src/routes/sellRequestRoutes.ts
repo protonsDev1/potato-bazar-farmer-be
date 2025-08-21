@@ -9,7 +9,11 @@ import {
   showSellRequest,
   updateSellRequest,
 } from "../controller/sellRequestController";
-import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
+import {
+  authMiddleware,
+  checkPermissionMiddleware,
+  optionalAuthMiddleware,
+} from "../utils/userAuth";
 import { PERMISSIONS } from "../utils/constants/permissions";
 import {
   createSellRequestSchema,
@@ -25,7 +29,7 @@ router.post(
   validator.body(createSellRequestSchema),
   createSellRequest
 );
-router.get("/list", authMiddleware, listSellRequests);
+router.get("/list", optionalAuthMiddleware, listSellRequests);
 
 router.get("/my_list", authMiddleware, listMySellRequests);
 

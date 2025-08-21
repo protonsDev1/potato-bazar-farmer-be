@@ -28,7 +28,7 @@ export const createSellRequest = async (req, res) => {
 
 export const listSellRequests = async (req, res) => {
   try {
-    const requests = await listSellRequestsService(req.query);
+    const requests = await listSellRequestsService(req.query, req.user?.id);
     return res.json({
       success: true,
       message: "Sell Requests fetched successfully",
