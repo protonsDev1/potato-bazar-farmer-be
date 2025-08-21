@@ -35,7 +35,7 @@ router.get(
   listAdminBuyRequests
 );
 
-router.get("/:id", showBuyRequest);
+router.get("/:id", optionalAuthMiddleware, showBuyRequest);
 router.delete(
   "/:id",
   checkPermissionMiddleware(PERMISSIONS.BUY_REQUESTS),
