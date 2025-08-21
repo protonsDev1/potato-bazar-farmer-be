@@ -21,9 +21,11 @@ class EventRequest extends Model<
   InferCreationAttributes<EventRequest>
 > {
   declare id: CreationOptional<number>;
-  declare userId: number;
+  declare requestCreatedBy: number;
   declare eventId: number;
   declare status: string;
+  declare mobile: string;
+  declare name: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -35,7 +37,7 @@ EventRequest.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    userId: {
+    requestCreatedBy: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
@@ -56,6 +58,14 @@ EventRequest.init(
     status: {
       type: DataTypes.STRING,
       defaultValue: EVENT_REQUEST_STATUS.PENDING,
+    },
+    mobile: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -81,20 +91,20 @@ EventRequest.init(
         fields: ["eventId"],
       },
       {
-        fields: ["userId"],
+        fields: ["requestCreatedBy"],
       },
       {
         unique: true,
-        fields: ["userId", "eventId"],
+        fields: ["requestCreatedBy", "eventId"],
       },
     ],
   }
 );
 
-EventRequest.belongsTo(User, { foreignKey: "userId", as: "users"});
-EventRequest.belongsTo(Event, { foreignKey: "eventId", as: "events"});
+EventRequest.belongsTo(User, { foreignKey: "requestCreatedBy", as: "requestedByUser" });
+EventRequest.belongsTo(Event, { foreignKey: "eventId", as: "events" });
 
-User.hasMany(EventRequest, { foreignKey: "userId" });
+User.hasMany(EventRequest, { foreignKey: "requestCreatedBy" });
 Event.hasMany(EventRequest, { foreignKey: "eventId" });
 
 export default EventRequest;

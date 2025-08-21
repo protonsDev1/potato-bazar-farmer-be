@@ -17,12 +17,15 @@ class Event extends Model<
   declare mobile: string;
   declare organiserName: string;
   declare image: string;
+  declare category: string;
   declare title: string;
   declare description: Text;
   declare startDate: CreationOptional<Date>;
   declare endDate: CreationOptional<Date>;
   declare startTime: string;
   declare endTime: string;
+  declare state: string;
+  declare district: string;
   declare location: string;
   declare document: string;
   declare website: string;
@@ -54,6 +57,10 @@ Event.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    category: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     title: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -81,6 +88,14 @@ Event.init(
     location: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    state: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    district: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     document: {
       type: DataTypes.STRING,
