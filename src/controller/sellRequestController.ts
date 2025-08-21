@@ -70,7 +70,10 @@ export const listAdminSellRequests = async (req, res) => {
 
 export const showSellRequest = async (req, res) => {
   try {
-    const request = await getSellRequestByIdService(req.params.id);
+    const request = await getSellRequestByIdService(
+      req.params.id,
+      req.user?.id
+    );
 
     if (!request) {
       return res.status(404).json({
