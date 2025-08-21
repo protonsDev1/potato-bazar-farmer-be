@@ -22,3 +22,15 @@ export const generateUniqueRequirementUid = async () => {
 
   return requirementCode.toString();
 };
+
+export const generateBuyRequestId = (): string => {
+  return `BUY-${Date.now().toString().slice(-5)}-${Math.floor(
+    1000 + Math.random() * 9000
+  )}`;
+};
+
+export const generateSellRequestId = (): string => {
+  return `SELL-${Date.now().toString().slice(-5)}-${Math.floor(
+    1000 + Math.random() * 9000
+  )}`;
+};
