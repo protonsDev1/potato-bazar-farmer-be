@@ -10,6 +10,7 @@ import bcrypt from 'bcrypt';
 import Trader from "../database/models/trader/trader";
 import { formatDate } from "../utils/dateFormat";
 import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboardedUsers";
+import KycDocument from "../database/models/kycDocuments";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -645,3 +646,68 @@ export const getUserRole = async (userId) => {
     role: user.role
   };
 };
+
+export const getMobileUsers = async ({ page, limit, kycStatus, search, activeStatus }) => {
+  try {
+  const offset = (page - 1) * limit;
+  
+  
+  const whereCondition = {
+  role: USER_ROLES.USER,
+  [Op.or]: [
+  { isUserOnBoardedOnMobile: true },
+  { hasStartedUsingMobile: true },
+  ],
+  };
+  
+  if (search) {
+      //@ts-ignore
+  whereCondition.name = { [Op.iLike]: `%${search}%` };
+  }
+  
+  
+  if (activeStatus && activeStatus !== "all") {
+      //@ts-ignore
+  whereCondition.isActive = activeStatus === "active" ? true : false;
+  }
+  
+  
+  const include = [] as any;
+  if (kycStatus && kycStatus !== "all") {
+  include.push({
+  model: KycDocument,
+  as: "kycDocument",
+  where: { status: kycStatus },
+  required: true,
+  });
+  } else {
+  include.push({ model: KycDocument, as: "kycDocument", required: false });
+  }
+  
+  
+  const { count, rows: users } = await User.findAndCountAll({
+  where: whereCondition,
+  include,
+  limit,
+  offset,
+  });
+  
+  
+  return {
+  success: true,
+  message: "Users onboarded on mobile.",
+  users,
+  pagination: {
+  total: count,
+  page,
+  limit,
+  totalPages: Math.ceil(count / limit),
+  },
+  };
+  } catch (error) {
+  return {
+  success: false,
+  error: error.message || "Failed to fetch mobile users.",
+  };
+  }
+  };
