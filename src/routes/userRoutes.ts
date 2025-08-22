@@ -57,7 +57,6 @@ router.post(
 
 router.get(
   "/mobile/list",
-  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
   retrieveMobileUsers
 );
 
