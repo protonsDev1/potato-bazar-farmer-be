@@ -495,7 +495,28 @@ export const updateColdStorageService = async (coldStorageId, payload) => {
       }
     }
 
-    return await ColdStorage.findByPk(coldStorageId, { transaction: t });
+    const updatedColdStorage = await ColdStorage.findByPk(coldStorageId, {
+      transaction: t,
+    });
+
+    await AgentOnboardedUser.update(
+      {
+        userName: updatedColdStorage.ownerName,
+        village: updatedColdStorage.village,
+        district: updatedColdStorage.district,
+        state: updatedColdStorage.state,
+        statusOfRegistration: updatedColdStorage.status,
+      },
+      {
+        where: {
+          userId: updatedColdStorage.userId,
+          userType: USER_TYPE.COLD_STORAGE,
+        },
+        transaction: t,
+      }
+    );
+
+    return updatedColdStorage;
   });
 };
 
