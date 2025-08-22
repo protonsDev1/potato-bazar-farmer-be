@@ -11,6 +11,7 @@ import Trader from "../database/models/trader/trader";
 import { formatDate } from "../utils/dateFormat";
 import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboardedUsers";
 import KycDocument from "../database/models/kycDocuments";
+import { hasValue } from "../utils/parseQuery";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -28,7 +29,6 @@ export const findUserByEmail = async (email: string) => {
     }
   };
 
-
 export const createUserWithAgent = async ({
   name,
   email,
@@ -38,20 +38,25 @@ export const createUserWithAgent = async ({
   district,
   note,
 }: any) => {
-  const existingUser = await User.findOne({
-    where: {
-      [Op.or]: [
-        { email },
-        { mobile: phone },
-      ],
-    },
-  });
+  const whereCondition: any = {};
+  if (email) {
+    whereCondition[Op.or] = [...(whereCondition[Op.or] || []), { email }];
+  }
+  if (phone) {
+    whereCondition[Op.or] = [
+      ...(whereCondition[Op.or] || []),
+      { mobile: phone },
+    ];
+  }
+
+  const existingUser = await User.findOne({ where: whereCondition });
 
   if (existingUser) {
-    if (existingUser.email === email) {
-      throw new Error('User with this email already exists');
-    } else {
-      throw new Error('User with this phone number already exists');
+    if (email && existingUser.email && existingUser.email === email) {
+      throw new Error("User with this email already exists");
+    }
+    if (phone && existingUser.mobile && existingUser.mobile === phone) {
+      throw new Error("User with this phone number already exists");
     }
   }
 
@@ -60,15 +65,16 @@ export const createUserWithAgent = async ({
 
   // Ensure uniqueness of agentId
   const existingAgent = await Agent.findOne({ where: { agentId } });
-  if (existingAgent) throw new Error('Generated agent ID conflict. Please retry.');
+  if (existingAgent)
+    throw new Error("Generated agent ID conflict. Please retry.");
 
   const user = await User.create({
     name,
     email,
     mobile: phone,
     password,
-    role: 'agent',
-    location: address
+    role: "agent",
+    location: address,
   });
 
   const agent = await Agent.create({
@@ -114,17 +120,21 @@ export const getDashboardCounts = async () => {
   const { oneWeekAgo, oneMonthAgo } = getDateRange();
 
   const [totalAgents, agentsLastWeek, agentsLastMonth] = await Promise.all([
-    User.count({ where: { role: 'agent' } }),
-    User.count({ where: { role: 'agent', createdAt: { [Op.gte]: oneWeekAgo } } }),
-    User.count({ where: { role: 'agent', createdAt: { [Op.gte]: oneMonthAgo } } }),
+    Agent.count({ where: { isDeleted: false} }),
+    Agent.count({
+      where: { isDeleted: false, createdAt: { [Op.gte]: oneWeekAgo } },
+    }),
+    Agent.count({
+      where: { isDeleted: false, createdAt: { [Op.gte]: oneMonthAgo } },
+    }),
   ]);
 
   const [agentUsers, adminUsers] = await Promise.all([
-    User.findAll({ where: { role: 'agent' }, attributes: ['id'] }),
-    User.findAll({ where: { role: 'admin' }, attributes: ['id'] }),
+    User.findAll({ where: { role: "agent" }, attributes: ["id"] }),
+    User.findAll({ where: { role: "admin" }, attributes: ["id"] }),
   ]);
-  const agentIds = agentUsers.map(u => u.id);
-  const adminIds = adminUsers.map(u => u.id);
+  const agentIds = agentUsers.map((u) => u.id);
+  const adminIds = adminUsers.map((u) => u.id);
 
   const [
     totalFarmers,
@@ -132,21 +142,34 @@ export const getDashboardCounts = async () => {
     farmersLastMonth,
     farmersByAgents,
     farmersSelfOnboarded,
-    farmersByAdmins, 
+    farmersByAdmins,
   ] = await Promise.all([
-    Farmer.count(),
-    Farmer.count({ where: { createdAt: { [Op.gte]: oneWeekAgo } } }),
-    Farmer.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } }),
-    Farmer.count({ where: { onBoardedBy: { [Op.in]: agentIds } } }),
+    Farmer.count({ where: { isDeleted: false } }),
+    Farmer.count({
+      where: { createdAt: { [Op.gte]: oneWeekAgo }, isDeleted: false },
+    }),
+    Farmer.count({
+      where: { createdAt: { [Op.gte]: oneMonthAgo }, isDeleted: false },
+    }),
+    Farmer.count({
+      where: { onBoardedBy: { [Op.in]: agentIds }, isDeleted: false },
+    }),
     Farmer.count({
       where: {
         [Op.and]: [
           { onBoardedBy: { [Op.not]: null } },
-          Sequelize.where(Sequelize.col("onBoardedBy"), "=", Sequelize.col("userId")),
+          Sequelize.where(
+            Sequelize.col("onBoardedBy"),
+            "=",
+            Sequelize.col("userId")
+          ),
         ],
+        isDeleted: false,
       },
     }),
-    Farmer.count({ where: { onBoardedBy: { [Op.in]: adminIds } } }), // <-- NEW
+    Farmer.count({
+      where: { onBoardedBy: { [Op.in]: adminIds }, isDeleted: false },
+    }), // <-- NEW
   ]);
 
   const [
@@ -157,31 +180,99 @@ export const getDashboardCounts = async () => {
     coldStoragesSelfOnboarded,
     coldStoragesByAdmins,
   ] = await Promise.all([
-    ColdStorage.count(),
-    ColdStorage.count({ where: { createdAt: { [Op.gte]: oneWeekAgo } } }),
-    ColdStorage.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } }),
-    ColdStorage.count({ where: { onBoardedBy: { [Op.in]: agentIds } } }),
+    ColdStorage.count({ where: { isDeleted: false } }),
+    ColdStorage.count({
+      where: { createdAt: { [Op.gte]: oneWeekAgo }, isDeleted: false },
+    }),
+    ColdStorage.count({
+      where: { createdAt: { [Op.gte]: oneMonthAgo }, isDeleted: false },
+    }),
+    ColdStorage.count({
+      where: { onBoardedBy: { [Op.in]: agentIds }, isDeleted: false },
+    }),
     ColdStorage.count({
       where: {
         [Op.and]: [
           { onBoardedBy: { [Op.not]: null } },
-          Sequelize.where(Sequelize.col("onBoardedBy"), "=", Sequelize.col("userId")),
+          Sequelize.where(
+            Sequelize.col("onBoardedBy"),
+            "=",
+            Sequelize.col("userId")
+          ),
         ],
+        isDeleted: false,
       },
     }),
-    ColdStorage.count({ where: { onBoardedBy: { [Op.in]: adminIds } } }), // <-- NEW
+    ColdStorage.count({
+      where: { onBoardedBy: { [Op.in]: adminIds }, isDeleted: false },
+    }), // <-- NEW
+  ]);
+
+  const [
+    totalTraders,
+    tradersLastWeek,
+    tradersLastMonth,
+    tradersByAgents,
+    tradersSelfOnboarded,
+    tradersByAdmins,
+  ] = await Promise.all([
+    Trader.count({ where: { isDeleted: false } }),
+    Trader.count({
+      where: { createdAt: { [Op.gte]: oneWeekAgo }, isDeleted: false },
+    }),
+    Trader.count({
+      where: { createdAt: { [Op.gte]: oneMonthAgo }, isDeleted: false },
+    }),
+    Trader.count({
+      where: { onBoardedBy: { [Op.in]: agentIds }, isDeleted: false },
+    }),
+    Trader.count({
+      where: {
+        [Op.and]: [
+          { onBoardedBy: { [Op.not]: null } },
+          Sequelize.where(
+            Sequelize.col("onBoardedBy"),
+            "=",
+            Sequelize.col("userId")
+          ),
+        ],
+        isDeleted: false,
+      },
+    }),
+    Trader.count({
+      where: { onBoardedBy: { [Op.in]: adminIds }, isDeleted: false },
+    }), // <-- NEW
   ]);
 
   const calcPercent = (count: number, total: number) =>
     total > 0 ? Math.round((count / total) * 100) : 0;
 
   const farmerAgentPercent = calcPercent(farmersByAgents, totalFarmers);
-  const selfOnboardedFarmerPercent = calcPercent(farmersSelfOnboarded, totalFarmers);
+  const selfOnboardedFarmerPercent = calcPercent(
+    farmersSelfOnboarded,
+    totalFarmers
+  );
   const farmerAdminPercent = calcPercent(farmersByAdmins, totalFarmers);
 
-  const coldStorageAgentPercent = calcPercent(coldStoragesByAgents, totalColdStorages);
-  const selfOnboardedColdStoragePercent = calcPercent(coldStoragesSelfOnboarded, totalColdStorages);
-  const coldStorageAdminPercent = calcPercent(coldStoragesByAdmins, totalColdStorages);
+  const coldStorageAgentPercent = calcPercent(
+    coldStoragesByAgents,
+    totalColdStorages
+  );
+  const selfOnboardedColdStoragePercent = calcPercent(
+    coldStoragesSelfOnboarded,
+    totalColdStorages
+  );
+  const coldStorageAdminPercent = calcPercent(
+    coldStoragesByAdmins,
+    totalColdStorages
+  );
+
+  const traderAgentPercent = calcPercent(tradersByAgents, totalTraders);
+  const selfOnboardedTraderPercent = calcPercent(
+    tradersSelfOnboarded,
+    totalTraders
+  );
+  const traderAdminPercent = calcPercent(tradersByAdmins, totalTraders);
 
   return {
     agents: {
@@ -195,11 +286,11 @@ export const getDashboardCounts = async () => {
       lastMonth: farmersLastMonth,
       byAgents: farmersByAgents,
       selfOnboarded: farmersSelfOnboarded,
-      byAdmins: farmersByAdmins, 
+      byAdmins: farmersByAdmins,
       onboardingRatio: {
         agentOnboarded: `${farmersByAgents} (${farmerAgentPercent}%)`,
         selfOnboarded: `${farmersSelfOnboarded} (${selfOnboardedFarmerPercent}%)`,
-        adminOnboarded: `${farmersByAdmins} (${farmerAdminPercent}%)`, 
+        adminOnboarded: `${farmersByAdmins} (${farmerAdminPercent}%)`,
       },
     },
     coldStorages: {
@@ -215,9 +306,21 @@ export const getDashboardCounts = async () => {
         adminOnboarded: `${coldStoragesByAdmins} (${coldStorageAdminPercent}%)`,
       },
     },
+    traders: {
+      total: totalTraders,
+      lastWeek: tradersLastWeek,
+      lastMonth: tradersLastMonth,
+      byAgents: tradersByAgents,
+      selfOnboarded: tradersSelfOnboarded,
+      byAdmins: tradersByAdmins,
+      onboardingRatio: {
+        agentOnboarded: `${tradersByAgents} (${traderAgentPercent}%)`,
+        selfOnboarded: `${tradersSelfOnboarded} (${selfOnboardedTraderPercent}%)`,
+        adminOnboarded: `${tradersByAdmins} (${traderAdminPercent}%)`,
+      },
+    },
   };
 };
-
 
 export const checkExistingUser = async (mobile) =>{
   return await User.findOne({ where: { mobile } });
@@ -711,3 +814,56 @@ export const getMobileUsers = async ({ page, limit, kycStatus, search, activeSta
   };
   }
   };
+export const updateMobileService = async (userId, payload) => {
+  let { firstName, lastName, email } = payload;
+
+  const user = await User.findByPk(userId);
+  if (!user)
+    return {
+      success: false,
+      error: "User not found.",
+    };
+
+  if (
+    (hasValue(firstName) && !hasValue(lastName)) ||
+    (!hasValue(firstName) && hasValue(lastName))
+  ) {
+    return {
+      success: false,
+      error:
+        "First name and last name should either both be updated, or neither.",
+    };
+  }
+
+  if (hasValue(email)) {
+    const isEmailTaken = await User.findOne({ where: { email } });
+    if (isEmailTaken && user.email !== email) {
+      return { success: false, error: "Email to be updated already exists." };
+    }
+  }
+
+  const updatableFields = [
+    "email",
+    "cityOrVillage",
+    "state",
+    "pinCode",
+    "location",
+    "bio",
+    "profilePicture"
+  ];
+
+  const updateData: Record<string, any> = {};
+  for (const key of updatableFields) {
+    if (key in payload) updateData[key] = payload[key];
+  }
+
+  if (hasValue(firstName) && hasValue(lastName))
+    updateData["name"] = `${firstName} ${lastName}`;
+
+  const updatedData = await user.update(updateData, { returning: true });
+
+  return {
+    success: true,
+    data: updatedData,
+  };
+};

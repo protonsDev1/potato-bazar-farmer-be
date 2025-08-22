@@ -22,7 +22,7 @@ export enum USER_ROLES {
   SUB_ADMIN = "sub_admin",
   AGENT = "agent",
   USER = "user",
-  MANDI_AGENT = "mandi_agent"
+  MANDI_AGENT = "mandi_agent",
 }
 
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
@@ -45,6 +45,8 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare userType: string[];
   declare isUserOnBoardedOnMobile: boolean;
   declare hasStartedUsingMobile: boolean;
+  declare profilePicture: string;
+  declare bio: string;
   declare isActive: boolean;
   declare permissions?: SubAdminPermission[];
   declare createdAt: CreationOptional<Date>;
@@ -139,6 +141,14 @@ User.init(
     hasStartedUsingMobile: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    profilePicture: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    bio: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     isActive: {
       type: DataTypes.BOOLEAN,
