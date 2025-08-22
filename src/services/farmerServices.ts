@@ -332,6 +332,7 @@ export const updateFarmerDetails = async (
     ];
 
     const updateData: Record<string, any> = {};
+
     for (const key of updatableFields) {
       if (key in payload) updateData[key] = payload[key];
     }
@@ -381,6 +382,24 @@ export const updateFarmerDetails = async (
     }
 
     const updatedFarmer = await Farmer.findByPk(farmerId, { transaction: t });
+
+    await AgentOnboardedUser.update(
+      {
+        userName: updatedFarmer.name,
+        village: updatedFarmer.village,
+        district: updatedFarmer.district,
+        state: updatedFarmer.state,
+        statusOfRegistration: updatedFarmer.status,
+      },
+      {
+        where: {
+          userId: updatedFarmer.userId,
+          userType: USER_TYPE.FARMER,
+        },
+        transaction: t,
+      }
+    );
+
     return updatedFarmer;
   });
 };

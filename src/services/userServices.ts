@@ -1,4 +1,4 @@
-import User, { REGISTRATION_STATUS } from "../database/models/user";
+import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import Agent from '../database/models/agent';
 import { generateAgentId, generateRandomPassword } from '../utils/generate';
 import Farmer from "../database/models/farmer";
@@ -572,14 +572,15 @@ export const updateRegistrationStatus = async (status, userType, userId) => {
     };
   }
 
-   const agentOnboardedUser = await AgentOnboardedUser.findOne({
+  const agentOnboardedUser = await AgentOnboardedUser.findOne({
     where: { userId: user.userId, userType },
   });
 
-  if(!agentOnboardedUser)
-  {
+  const onboardedByRole = await getUserRole(user.onBoardedBy);
+
+  if (!agentOnboardedUser && onboardedByRole.role === USER_ROLES.AGENT) {
     return {
-      success:false,
+      success: false,
       error: `${userType} not found in agentOnboardUser.`,
     };
   }
@@ -595,7 +596,9 @@ export const updateRegistrationStatus = async (status, userType, userId) => {
   }
 
   await user.update({ status });
-  await agentOnboardedUser.update({ statusOfRegistration: status });
+
+  if (agentOnboardedUser)
+    await agentOnboardedUser.update({ statusOfRegistration: status });
 
   return {
     success: true,

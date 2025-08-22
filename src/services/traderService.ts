@@ -250,6 +250,23 @@ export async function updateTraderService(traderId, payload) {
       await safeUpsert(TraderDocument, traderId, payload.traderDocuments, t);
     }
 
+    await AgentOnboardedUser.update(
+      {
+        userName: trader.fullName,
+        village: trader.cityOrVillage,
+        district: trader.district,
+        state: trader.state,
+        statusOfRegistration: trader.status,
+      },
+      {
+        where: {
+          userId: trader.userId,
+          userType: USER_TYPE.TRADER,
+        },
+        transaction: t,
+      }
+    );
+
     return trader;
   });
 }
