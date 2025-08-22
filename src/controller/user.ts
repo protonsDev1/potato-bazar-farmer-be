@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, getMobileUsers } from '../services/userServices';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
@@ -440,23 +440,28 @@ export const adminUpdateRegistrationStatus = async (req, res) => {
 
 export const retrieveMobileUsers = async (req, res) => {
   try {
-    const users = await User.findAll({
-      where: {
-        role: USER_ROLES.USER,
-        [Op.or]: [
-          { isUserOnBoardedOnMobile: true },
-          { hasStartedUsingMobile: true },
-        ],
-      },
-    });
-
-    return res
-      .status(200)
-      .json({ success: true, message: "Users onboarded on mobile.", users });
+  const { page = 1, limit = 10, kycStatus, search = "", activeStatus } = req.query;
+  
+  
+  const response = await getMobileUsers({
+  page: parseInt(page, 10),
+  limit: parseInt(limit, 10),
+  kycStatus,
+  search,
+  activeStatus,
+  });
+  
+  
+  if (!response.success)
+  return res.status(400).json({ message: response.error });
+  
+  
+  return res.status(200).json(response);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message || "Failed in retrieving mobile users.",
-    });
+  res.status(500).json({
+  success: false,
+  message: error.message || "Failed in retrieving mobile users.",
+  });
   }
-};
+  };
+
