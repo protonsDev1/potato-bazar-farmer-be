@@ -266,13 +266,13 @@ export const retrieveAgentDashboardStats = async (agentId) => {
       weeklyNewTraders,
     ] = await Promise.all([
       Farmer.count({
-        where: { onBoardedBy: agentId },
+        where: { onBoardedBy: agentId, isDeleted: false },
       }),
       ColdStorage.count({
-        where: { onBoardedBy: agentId },
+        where: { onBoardedBy: agentId, isDeleted: false },
       }),
       Trader.count({
-        where: { onBoardedBy: agentId },
+        where: { onBoardedBy: agentId, isDeleted: false },
       }),
       Farmer.count({
         where: {
@@ -280,6 +280,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
           createdAt: {
             [Op.between]: [startOfWeek, endOfWeek],
           },
+          isDeleted: false,
         },
       }),
       ColdStorage.count({
@@ -288,6 +289,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
           createdAt: {
             [Op.between]: [startOfWeek, endOfWeek],
           },
+          isDeleted: false,
         },
       }),
       Trader.count({
@@ -296,6 +298,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
           createdAt: {
             [Op.between]: [startOfWeek, endOfWeek],
           },
+          isDeleted: false,
         },
       }),
     ]);

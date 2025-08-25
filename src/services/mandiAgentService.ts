@@ -234,10 +234,14 @@ export const updateMandiAgentService = async (
       error: "Password and confirm password do not match",
     };
   }
-  if (hasValue(firstName) && !hasValue(lastName)) {
+  if (
+    (hasValue(firstName) && !hasValue(lastName)) ||
+    (!hasValue(firstName) && hasValue(lastName))
+  ) {
     return {
       success: false,
-      error: "Last name is required when updating first name",
+      error:
+        "First name and last name should either both be updated, or neither.",
     };
   }
 
