@@ -15,7 +15,9 @@ class AgentMonthlyTarget extends Model<
   declare agentUserId: number;
   declare year: number;
   declare month: string;
-  declare monthlyTarget: number;
+  declare farmerMonthlyTarget: number;
+  declare coldStorageMonthlyTarget: number;
+  declare traderMonthlyTarget: number;
   declare updatedAt?: Date;
   declare createdAt?: Date;
 }
@@ -44,7 +46,17 @@ AgentMonthlyTarget.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    monthlyTarget: {
+    farmerMonthlyTarget: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    coldStorageMonthlyTarget: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    traderMonthlyTarget: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       allowNull: false,
