@@ -32,6 +32,8 @@ export const agentMonthlyTargetSchema = Joi.object({
       "Nov",
       "Dec"
     ),
-  monthlyTarget: Joi.number().required(),
+  farmerMonthlyTarget: Joi.number().optional(),
+  coldStorageMonthlyTarget: Joi.number().optional(),
+  traderMonthlyTarget: Joi.number().optional(),
   isEdit: Joi.boolean().optional().default(false),
 });

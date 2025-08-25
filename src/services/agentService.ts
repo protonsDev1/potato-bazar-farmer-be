@@ -211,29 +211,67 @@ export const retrieveAgentPerformance = async (
       where: { agentUserId: agentId, year },
     });
 
-    const targetMap: Record<string, number> = {};
+    const targetMap: Record<
+      string,
+      { farmer: number; coldStorage: number; trader: number }
+    > = {};
 
     allMonthsTarget.forEach((target) => {
       const label = dayjs(`${year}-${target.month}`, "YYYY-MMM").format("MMM");
-      targetMap[label] = target.monthlyTarget;
+      targetMap[label] = {
+        farmer: target.farmerMonthlyTarget || 0,
+        coldStorage: target.coldStorageMonthlyTarget || 0,
+        trader: target.traderMonthlyTarget || 0,
+      };
     });
 
     const monthlyPerformance = monthList.map((fullMonthLabel) => {
       const shortMonth = dayjs(fullMonthLabel, "YYYY-MMM").format("MMM");
 
-      const total =
-        (farmerMap[fullMonthLabel] || 0) +
-        (coldStorageMap[fullMonthLabel] || 0) +
-        (traderMap[fullMonthLabel] || 0);
+      const farmerCount = farmerMap[fullMonthLabel] || 0;
+      const coldStorageCount = coldStorageMap[fullMonthLabel] || 0;
+      const traderCount = traderMap[fullMonthLabel] || 0;
 
-      const monthlyTarget = targetMap[shortMonth] || 0;
+      const targets = targetMap[shortMonth] || {
+        farmer: 0,
+        coldStorage: 0,
+        trader: 0,
+      };
+
+      const totalRegistrations = farmerCount + coldStorageCount + traderCount;
+      const totalTarget = targets.farmer + targets.coldStorage + targets.trader;
 
       return {
         month: shortMonth,
-        monthlyRegistrations: total,
-        monthlyTarget,
-        completionOfMonthlyTargetPercentage:
-          monthlyTarget === 0 ? 0 : (total / monthlyTarget) * 100,
+        farmerRegistrations: farmerCount,
+        coldStorageRegistrations: coldStorageCount,
+        traderRegistrations: traderCount,
+        farmerTarget: targets.farmer,
+        coldStorageTarget: targets.coldStorage,
+        traderTarget: targets.trader,
+        totalRegistrations,
+        totalTarget,
+        farmerCompletionPercentage:
+          targets.farmer === 0
+            ? 0
+            : parseFloat(((farmerCount / targets.farmer) * 100).toFixed(2)),
+
+        coldStorageCompletionPercentage:
+          targets.coldStorage === 0
+            ? 0
+            : parseFloat(
+                ((coldStorageCount / targets.coldStorage) * 100).toFixed(2)
+              ),
+
+        traderCompletionPercentage:
+          targets.trader === 0
+            ? 0
+            : parseFloat(((traderCount / targets.trader) * 100).toFixed(2)),
+
+        totalCompletionPercentage:
+          totalTarget === 0
+            ? 0
+            : parseFloat(((totalRegistrations / totalTarget) * 100).toFixed(2)),
       };
     });
 
@@ -557,29 +595,67 @@ export const retrieveAllAgentPerformance = async (
     where: { agentUserId: agentId, year },
   });
 
-  const targetMap: Record<string, number> = {};
+  const targetMap: Record<
+    string,
+    { farmer: number; coldStorage: number; trader: number }
+  > = {};
 
   allMonthsTarget.forEach((target) => {
     const label = dayjs(`${year}-${target.month}`, "YYYY-MMM").format("MMM");
-    targetMap[label] = target.monthlyTarget;
+    targetMap[label] = {
+      farmer: target.farmerMonthlyTarget || 0,
+      coldStorage: target.coldStorageMonthlyTarget || 0,
+      trader: target.traderMonthlyTarget || 0,
+    };
   });
 
   const monthlyPerformance = monthList.map((fullMonthLabel) => {
     const shortMonth = dayjs(fullMonthLabel, "YYYY-MMM").format("MMM");
 
-    const total =
-      (farmerMap[fullMonthLabel] || 0) +
-      (coldStorageMap[fullMonthLabel] || 0) +
-      (traderMap[fullMonthLabel] || 0);
+    const farmerCount = farmerMap[fullMonthLabel] || 0;
+    const coldStorageCount = coldStorageMap[fullMonthLabel] || 0;
+    const traderCount = traderMap[fullMonthLabel] || 0;
 
-    const monthlyTarget = targetMap[shortMonth] || 0;
+    const targets = targetMap[shortMonth] || {
+      farmer: 0,
+      coldStorage: 0,
+      trader: 0,
+    };
+
+    const totalRegistrations = farmerCount + coldStorageCount + traderCount;
+    const totalTarget = targets.farmer + targets.coldStorage + targets.trader;
 
     return {
       month: shortMonth,
-      monthlyRegistrations: total,
-      monthlyTarget,
-      completionOfMonthlyTargetPercentage:
-        monthlyTarget === 0 ? 0 : (total / monthlyTarget) * 100,
+      farmerRegistrations: farmerCount,
+      coldStorageRegistrations: coldStorageCount,
+      traderRegistrations: traderCount,
+      farmerTarget: targets.farmer,
+      coldStorageTarget: targets.coldStorage,
+      traderTarget: targets.trader,
+      totalRegistrations,
+      totalTarget,
+      farmerCompletionPercentage:
+        targets.farmer === 0
+          ? 0
+          : parseFloat(((farmerCount / targets.farmer) * 100).toFixed(2)),
+
+      coldStorageCompletionPercentage:
+        targets.coldStorage === 0
+          ? 0
+          : parseFloat(
+              ((coldStorageCount / targets.coldStorage) * 100).toFixed(2)
+            ),
+
+      traderCompletionPercentage:
+        targets.trader === 0
+          ? 0
+          : parseFloat(((traderCount / targets.trader) * 100).toFixed(2)),
+
+      totalCompletionPercentage:
+        totalTarget === 0
+          ? 0
+          : parseFloat(((totalRegistrations / totalTarget) * 100).toFixed(2)),
     };
   });
 
