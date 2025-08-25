@@ -545,6 +545,7 @@ export async function getFarmerListByAdmin(
       state,
       district,
       potatoVariety,
+      potatoSubVariety,
       taluka,
       ageRange,
       gender,
@@ -581,12 +582,18 @@ export async function getFarmerListByAdmin(
     }
 
     if (potatoVariety && potatoVariety.toLowerCase() !== "all") {
+      let condition = `LOWER("variety") = LOWER('${potatoVariety}')`;
+
+      if (potatoSubVariety && potatoSubVariety.toLowerCase() !== "all") {
+        condition += ` AND LOWER("subVariety") = LOWER('${potatoSubVariety}')`;
+      }
+
       whereCondition.id = {
         [Op.in]: literal(`(
-          SELECT "farmerId"
-          FROM "PotatoVarietyGrown"
-         WHERE LOWER("variety") = LOWER('${potatoVariety}')
-        )`),
+      SELECT "farmerId"
+      FROM "PotatoVarietyGrown"
+      WHERE ${condition}
+    )`),
       };
     }
 
@@ -833,6 +840,7 @@ export async function getAllFarmers(filters: any, search: string) {
     state,
     district,
     potatoVariety,
+    potatoSubVariety,
     taluka,
     ageRange,
     gender,
@@ -869,12 +877,18 @@ export async function getAllFarmers(filters: any, search: string) {
   }
 
   if (potatoVariety && potatoVariety.toLowerCase() !== "all") {
+    let condition = `LOWER("variety") = LOWER('${potatoVariety}')`;
+
+    if (potatoSubVariety && potatoSubVariety.toLowerCase() !== "all") {
+      condition += ` AND LOWER("subVariety") = LOWER('${potatoSubVariety}')`;
+    }
+
     whereCondition.id = {
       [Op.in]: literal(`(
-        SELECT "farmerId"
-        FROM "PotatoVarietyGrown"
-        WHERE LOWER("variety") = LOWER('${potatoVariety}')
-      )`),
+      SELECT "farmerId"
+      FROM "PotatoVarietyGrown"
+      WHERE ${condition}
+    )`),
     };
   }
 
