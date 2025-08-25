@@ -13,6 +13,7 @@ import {
 } from "../services/traderService";
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 import { parseFilters } from "../utils/parseQuery";
+import { verifyOtpFromDB } from "../services/otpServices";
 
 export const createTrader = async (req, res) => {
   try {
@@ -194,27 +195,28 @@ export const deleteTrader = async (req, res) => {
 
 export const exportTraders = async (req, res) => {
   try {
-    const userRole = req.user?.role;
+    const { mobile, otp } = req.body;
 
-    if (userRole !== "admin") {
+    const isValid = await verifyOtpFromDB(mobile, otp);
+    if (!isValid) {
       return res
-        .status(403)
-        .json({ message: "Only admin can export trader data." });
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
     }
 
     const filters = parseFilters(req.query);
     const search = req.query.search || "";
-    const farmers = await getAllTraders(filters, search);
+    const traders = await getAllTraders(filters, search);
 
-    if (!farmers.length) {
+    if (!traders.length) {
       return res.status(404).json({ message: "No traders found." });
     }
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Farmers");
+    const worksheet = workbook.addWorksheet("Traders");
 
     createTraderWorksheetColumns(worksheet);
-    await addTradersToWorksheet(farmers, worksheet);
+    await addTradersToWorksheet(traders, worksheet);
 
     res.setHeader(
       "Content-Type",

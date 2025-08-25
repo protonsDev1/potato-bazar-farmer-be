@@ -26,6 +26,7 @@ import {
 import { parseFilters } from "../utils/parseQuery";
 import AgentMonthlyTarget from "../database/models/agentMonthlyTarget";
 import dayjs from "dayjs";
+import { verifyOtpFromDB } from "../services/otpServices";
 
 export const getAllRegisteredUsers = async (req, res) => {
   try {
@@ -392,7 +393,15 @@ export const getAgentAllTickets = async (req, res) => {
 
 export const exportAgents = async (req, res) => {
   try {
+    const { mobile, otp } = req.body;
     const { search } = req.query;
+
+    const isValid = await verifyOtpFromDB(mobile, otp);
+    if (!isValid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
+    }
 
     const agents = await getAllAgentsWithAssociations(search as string);
 

@@ -33,6 +33,7 @@ import {
   adminReplySchema,
   helpAndSupportSchema,
   updateStatusSchema,
+  verifyOtpSchema,
 } from "../validation/userValidator";
 
 const router = express.Router();
@@ -79,7 +80,12 @@ router.put(
   updateStatusOfTicket
 );
 router.get("/agent_tickets_detail", authMiddleware, getAgentAllTickets);
-router.get("/export", adminMiddleware, exportAgents);
+router.post(
+  "/export",
+  validator.body(verifyOtpSchema),
+  adminMiddleware,
+  exportAgents
+);
 router.post(
   "/month_target",
   validator.body(agentMonthlyTargetSchema),

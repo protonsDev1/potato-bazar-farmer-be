@@ -14,6 +14,7 @@ import {
   onboardTraderSchema,
   updateTraderSchema,
 } from "../validation/traderValidation";
+import { verifyOtpSchema } from "../validation/userValidator";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -44,6 +45,11 @@ router.get("/", adminMiddleware, getTraderList);
 
 router.delete("/delete/:id", adminMiddleware, deleteTrader);
 
-router.get("/export", adminMiddleware, exportTraders);
+router.post(
+  "/export",
+  validator.body(verifyOtpSchema),
+  adminMiddleware,
+  exportTraders
+);
 
 export default router;
