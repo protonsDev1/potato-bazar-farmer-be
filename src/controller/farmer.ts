@@ -13,6 +13,7 @@ import {
 } from "../services/farmerServices";
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 import { parseFilters } from "../utils/parseQuery";
+import { verifyOtpFromDB } from "../services/otpServices";
 
 export const createFarmer = async (req, res) => {
   try {
@@ -186,12 +187,13 @@ export const deleteFarmer = async (req, res) => {
 
 export const exportFarmers = async (req, res) => {
   try {
-    const userRole = req.user?.role;
+    const { mobile, otp } = req.body;
 
-    if (userRole !== "admin") {
+    const isValid = await verifyOtpFromDB(mobile, otp);
+    if (!isValid) {
       return res
-        .status(403)
-        .json({ message: "Only admin can export farmer data." });
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
     }
 
     const filters = parseFilters(req.query);
