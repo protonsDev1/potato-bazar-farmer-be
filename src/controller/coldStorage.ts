@@ -14,6 +14,7 @@ import {
 } from "../services/coldStorageService";
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 import { parseFilters } from "../utils/parseQuery";
+import { verifyOtpFromDB } from "../services/otpServices";
 
 export const createColdStorage = async (req, res) => {
   try {
@@ -139,7 +140,7 @@ export const getColdStorageList = async (req, res) => {
       filters,
       search,
       userId,
-      sortBy,
+      sortBy
     );
 
     return res.status(200).json({
@@ -198,10 +199,13 @@ export const deleteColdStorage = async (req, res) => {
 
 export const exportColdStorages = async (req, res) => {
   try {
-    const userRole = req.user?.role;
+    const { mobile, otp } = req.body;
 
-    if (userRole !== "admin") {
-      return res.status(403).json({ message: "Only admin can export data." });
+    const isValid = await verifyOtpFromDB(mobile, otp);
+    if (!isValid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
     }
 
     const filters = parseFilters(req.query);
@@ -263,4 +267,3 @@ export const likeOrDislikeColdStorage = async (req, res) => {
     });
   }
 };
-
