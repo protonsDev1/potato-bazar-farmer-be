@@ -1,10 +1,7 @@
-import { Request, Response } from 'express';
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, getMobileUsers } from '../services/userServices';
-import bcrypt from 'bcrypt';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
-import { USER_TYPE } from '../database/models/agentOnboardedUsers';
 import { Op } from 'sequelize';
 
 
@@ -112,13 +109,17 @@ export const agentLogin = async (req, res) => {
     }
 
     if (!agent.isActive) {
-      return res
-        .status(403)
-        .json({
-          message: "Agent account is deactivated. Please contact admin.",
-        });
+      return res.status(403).json({
+        message: "Agent account is deactivated. Please contact admin.",
+      });
     }
-    
+
+    if (agent.isDeleted) {
+      return res.status(403).json({
+        message: "Agent account has been deleted by admin.",
+      });
+    }
+
     const isPasswordValid = await agent.user.validatePassword(password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid password" });
@@ -126,7 +127,7 @@ export const agentLogin = async (req, res) => {
 
     agent.user.lastLogin = new Date();
     await agent.user.save();
-    
+
     const token = jwt.sign({ id: agent.user.id }, JWT_SECRET, {
       expiresIn: "24h",
     });
@@ -145,7 +146,7 @@ export const agentLogin = async (req, res) => {
     return res.status(200).json({
       message: "Login successful",
       token,
-      agent: agentResponse
+      agent: agentResponse,
     });
   } catch (err: any) {
     return res.status(500).json({ message: err.message || "Login error" });
@@ -463,5 +464,51 @@ export const retrieveMobileUsers = async (req, res) => {
   message: error.message || "Failed in retrieving mobile users.",
   });
   }
-  };
+};
 
+export const updateMobileUserProfile = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    const response = await updateMobileService(id, req.body);
+
+    if (!response.success)
+      return res
+        .status(400)
+        .json({ success: response.success, message: response.error });
+
+    return res
+      .status(200)
+      .json({
+        success: response.success,
+        message: "User profile updated successfully.",
+        data: response.data,
+      });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed in updating mobile users.",
+    });
+  }
+};
+
+export const getMobileUserProfile = async (req, res) => {
+  try {
+    const { id } = req.user;
+
+    const userDetail = await User.findByPk(id);
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "User detail fetched successfully.",
+        data: userDetail,
+      });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed in retrieving mobile user's profile.",
+    });
+  }
+};

@@ -44,13 +44,13 @@ export const loginSchema = Joi.object({
 
 export const createAgentSchema = Joi.object({
   name: Joi.string().required(),
-  email: Joi.string().email().required(),
+  email: Joi.string().email().optional(),
   phone: Joi.string().optional(),
   address: Joi.string().optional().allow(""),
   district: Joi.string().optional(),
   state: Joi.string().optional(),
   note: Joi.string().optional().allow(""),
-});
+}).or("email", "phone");
 
 export const agentLoginSchema = Joi.object({
   agentId: Joi.string().required(),
@@ -95,7 +95,7 @@ export const verifyOtpSchema = Joi.object({
   mobile: Joi.string()
     .required()
     .pattern(/^[6-9]\d{9}$/),
-  otp: Joi.string().required().length(4),
+  otp: Joi.string().required().length(6),
 });
 
 export const resetPasswordSchema = Joi.object({
@@ -148,9 +148,21 @@ export const mobileLoginSchema = Joi.object({
   firstName: Joi.string().trim().required(),
   lastName: Joi.string().trim().required(),
   userType: Joi.array().items(Joi.string()).optional(),
-  location: Joi.string().optional().allow(null,""),
+  location: Joi.string().optional().allow(null, ""),
   state: Joi.string().required(),
   district: Joi.string().required(),
   cityOrVillage: Joi.string().required(),
   pinCode: Joi.string().required(),
+});
+
+export const mobileUpdateSchema = Joi.object({
+  firstName: Joi.string().trim().optional().allow(null, ""),
+  lastName: Joi.string().trim().optional().allow(null, ""),
+  location: Joi.string().optional().allow(null, ""),
+  state: Joi.string().optional().allow(null, ""),
+  cityOrVillage: Joi.string().optional().allow(null, ""),
+  pinCode: Joi.string().optional().allow(null, ""),
+  email: Joi.string().optional().allow(null, ""),
+  bio: Joi.string().optional().allow(null, ""),
+  profilePicture: Joi.string().optional().allow(null, ""),
 });
