@@ -15,6 +15,7 @@ import {
   exportColdStorages,
   likeOrDislikeColdStorage,
 } from "../controller/coldStorage";
+import { verifyOtpSchema } from "../validation/userValidator";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -42,7 +43,12 @@ router.put(
 );
 router.get("/", authMiddleware, getColdStorageList);
 router.delete("/delete/:id", adminMiddleware, deleteColdStorage);
-router.get("/export", adminMiddleware, exportColdStorages);
+router.post(
+  "/export",
+  validator.body(verifyOtpSchema),
+  adminMiddleware,
+  exportColdStorages
+);
 router.post("/like", authMiddleware, likeOrDislikeColdStorage);
 
 export default router;
