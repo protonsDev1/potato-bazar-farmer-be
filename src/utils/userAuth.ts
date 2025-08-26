@@ -170,6 +170,43 @@ export const checkPermissionMiddleware = (permission: string) => {
   };
 };
 
+export const mandiAgentAndSuperAdminMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Access Denied: No Token Provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+
+    const user = await User.findByPk(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (
+      user.role !== USER_ROLES.SUPER_ADMIN &&
+      user.role != USER_ROLES.MANDI_AGENT
+    )
+      return res
+        .status(403)
+        .json({
+          message:
+            "Access Denied: You are neither a mandi agent nor a super admin.",
+        });
+
+    // Attach user to request object
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or Expired Token" });
+  }
+};
+
 export const checkOtpVerified = async (req, res, next) => {
   const { mobile } = req.body;
 
