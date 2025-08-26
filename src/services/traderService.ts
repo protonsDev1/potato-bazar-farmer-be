@@ -1,4 +1,4 @@
-import { Model, ModelStatic, Op, Sequelize } from "sequelize";
+import { literal, Model, ModelStatic, Op, Sequelize } from "sequelize";
 import sequelize from "../database/models/db";
 
 import BankDetail from "../database/models/trader/bankDetail";
@@ -358,7 +358,8 @@ export const getTraderListByAdmin = async (
   page = 1,
   limit = 10,
   filters,
-  search?: string
+  search?: string,
+  sortBy?: string
 ) => {
   try {
     const offset = (page - 1) * limit;
@@ -430,6 +431,31 @@ export const getTraderListByAdmin = async (
       ];
     }
 
+    let order: any[] = [["updatedAt", "DESC"]];
+
+    if (sortBy) {
+      switch (sortBy.toLowerCase()) {
+        case "name_asc":
+          order = [["fullName", "ASC"]];
+          break;
+        case "name_desc":
+          order = [["fullName", "DESC"]];
+          break;
+        case "acres_asc":
+          order = [["acres", "ASC"]];
+          break;
+        case "acres_desc":
+          order = [[literal('"acres" DESC NULLS LAST')]];
+          break;
+        case "created_asc":
+          order = [["createdAt", "ASC"]];
+          break;
+        case "created_desc":
+          order = [["createdAt", "DESC"]];
+          break;
+      }
+    }
+
     const { count, rows }: any = await Trader.findAndCountAll({
       where: whereCondition,
       attributes: [
@@ -446,6 +472,7 @@ export const getTraderListByAdmin = async (
         "pinCode",
         "digiPin",
         "geoLocation",
+        "acres",
         "createdAt",
         "updatedAt",
         "onBoardedBy",
@@ -470,7 +497,7 @@ export const getTraderListByAdmin = async (
       ],
       limit,
       offset,
-      order: [["updatedAt", "DESC"]],
+      order,
       distinct: true,
     });
 
@@ -487,6 +514,7 @@ export const getTraderListByAdmin = async (
       pinCode: trader.pinCode,
       digiPin: trader.digiPin,
       geoLocation: trader.geoLocation,
+      acres: trader.acres,
       onboardingDate: trader.createdAt.toISOString().split("T")[0],
       user: trader.user,
       onBoardedBy: trader.onBoardedByUser,

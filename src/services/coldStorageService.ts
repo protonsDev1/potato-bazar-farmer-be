@@ -782,11 +782,23 @@ export async function getColdStorage(
             ["updatedAt", "DESC"],
           ];
           break;
+        case "name_asc":
+          order = [["name", "ASC"]];
+          break;
+        case "name_desc":
+          order = [["name", "DESC"]];
+          break;
         case "capacity_high":
           order = [["totalCapacityMt", "DESC"]];
           break;
         case "capacity_low":
           order = [["totalCapacityMt", "ASC"]];
+          break;
+        case "created_asc":
+          order = [["createdAt", "ASC"]];
+          break;
+        case "created_desc":
+          order = [["createdAt", "DESC"]];
           break;
         default:
           order = [["updatedAt", "DESC"]];

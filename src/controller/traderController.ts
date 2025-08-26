@@ -151,7 +151,7 @@ export const selfOnboardedTrader = async (req, res) => {
 
 export const getTraderList = async (req, res) => {
   try {
-    const { page, perPage, search } = req.query;
+    const { page, perPage, search, sortBy } = req.query;
 
     const filters = parseFilters(req.query);
 
@@ -159,7 +159,8 @@ export const getTraderList = async (req, res) => {
       page,
       perPage,
       filters,
-      search
+      search,
+      sortBy
     );
 
     return res.status(200).json({
