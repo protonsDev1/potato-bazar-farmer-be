@@ -221,6 +221,7 @@ export const updateEventService = async (eventId, payload) => {
     "endTime",
     "state",
     "district",
+    "city",
     "location",
     "document",
     "website",
