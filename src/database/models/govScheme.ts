@@ -13,6 +13,8 @@ export enum GOVERNMENT_TYPE {
 }
 
 export enum GOV_SCHEME_CATEGORY {
+  FARM_RELATED = "Farm Related",
+  COLD_STORAGE = "Cold Storage",
   AGRICULTURE = "Agriculture",
   INSURANCE = "Insurance",
   SUBSIDY = "Subsidy",
@@ -21,7 +23,7 @@ export enum GOV_SCHEME_CATEGORY {
   TECHNOLOGY = "Technology",
   MARKETING = "Marketing",
   STORAGE = "Storage",
-  PROCESSING = "Processing",
+  PROCESSING_RELATED = "Processing Related",
   EXPORT = "Export",
 }
 
