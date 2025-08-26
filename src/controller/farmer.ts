@@ -123,11 +123,17 @@ export const updateFarmer = async (req, res) => {
 
 export const getFarmerList = async (req, res) => {
   try {
-    const { page, perPage: limit, search } = req.query;
+    const { page, perPage: limit, search, sortBy } = req.query;
 
     const filters = parseFilters(req.query);
 
-    const farmerList = await getFarmerListByAdmin(page, limit, filters, search);
+    const farmerList = await getFarmerListByAdmin(
+      page,
+      limit,
+      filters,
+      search,
+      sortBy
+    );
 
     return res.status(200).json({
       message: "Farmer List",
