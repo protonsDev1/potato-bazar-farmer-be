@@ -16,7 +16,7 @@ class Event extends Model<
   declare email: string;
   declare mobile: string;
   declare organiserName: string;
-  declare image: string;
+  declare image: string[];
   declare category: string;
   declare title: string;
   declare description: Text;
@@ -26,8 +26,9 @@ class Event extends Model<
   declare endTime: string;
   declare state: string;
   declare district: string;
+  declare city: string;
   declare location: string;
-  declare document: string;
+  declare document: string[];
   declare website: string;
   declare isFeatured: boolean;
   declare createdAt: CreationOptional<Date>;
@@ -54,7 +55,7 @@ Event.init(
       allowNull: true,
     },
     image: {
-      type: DataTypes.STRING,
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
     },
     category: {
@@ -97,8 +98,12 @@ Event.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    document: {
+    city: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    document: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
     },
     website: {
