@@ -359,7 +359,8 @@ export const retrieveAgentDashboardStats = async (agentId) => {
 export const getPaginatedAgents = async (
   page: number,
   limit: number,
-  search
+  search?: string,
+  sortBy?: string
 ) => {
   const offset = (page - 1) * limit;
 
@@ -373,6 +374,25 @@ export const getPaginatedAgents = async (
         ],
       }
     : {};
+
+  let order: any[] = [["updatedAt", "DESC"]];
+
+  if (sortBy) {
+    switch (sortBy.toLowerCase()) {
+      case "name_asc":
+        order = [[{ model: User, as: "user" }, "name", "ASC"]];
+        break;
+      case "name_desc":
+        order = [[{ model: User, as: "user" }, "name", "DESC"]];
+        break;
+      case "created_asc":
+        order = [["createdAt", "ASC"]];
+        break;
+      case "created_desc":
+        order = [["createdAt", "DESC"]];
+        break;
+    }
+  }
 
   const { rows: agents, count: total } = await Agent.findAndCountAll({
     where: {
@@ -389,7 +409,7 @@ export const getPaginatedAgents = async (
     ],
     limit,
     offset,
-    order: [["updatedAt", "DESC"]],
+    order,
   });
 
   return {

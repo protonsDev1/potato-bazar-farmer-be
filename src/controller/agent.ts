@@ -119,12 +119,13 @@ export const listAgents = async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const perPage = parseInt(req.query.perPage as string) || 10;
-    const search = req.query.search;
+    const { search, sortBy } = req.query;
 
     const { agents, pagination } = await getPaginatedAgents(
       page,
       perPage,
-      search
+      search,
+      sortBy
     );
 
     return res.status(200).json({
