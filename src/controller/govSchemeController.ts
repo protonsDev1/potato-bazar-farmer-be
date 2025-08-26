@@ -22,6 +22,7 @@ export const listGovSchemes = async (req, res) => {
       page = 1,
       perPage = 10,
       governmentType,
+      category,
       isActive,
     } = req.query;
 
@@ -30,6 +31,7 @@ export const listGovSchemes = async (req, res) => {
       page: Number(page),
       limit: Number(perPage),
       governmentType,
+      category,
       isActive,
     });
 

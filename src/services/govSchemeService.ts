@@ -16,6 +16,7 @@ export const listGovSchemesService = async ({
   page,
   limit,
   governmentType,
+  category,
   isActive,
 }) => {
   const whereClause: any = {};
@@ -30,6 +31,10 @@ export const listGovSchemesService = async ({
 
   if (governmentType) {
     whereClause.governmentType = governmentType;
+  }
+
+  if (category) {
+    whereClause.category = category;
   }
 
   if (typeof isActive !== "undefined") {
