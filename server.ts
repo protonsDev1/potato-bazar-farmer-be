@@ -51,6 +51,7 @@ import eventRoutes from "./src/routes/eventRoutes";
 import buyRequestRoutes from "./src/routes/buyRequestRoutes";
 import sellRequestRoutes from "./src/routes/sellRequestRoutes";
 import favRequestRoutes from "./src/routes/favRequestRoutes";
+import mandiPriceRoutes from "./src/routes/mandiPriceRoutes";
 
 const cors = require("cors");
 
@@ -113,6 +114,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/buy_requests", buyRequestRoutes);
 app.use("/api/sell_requests", sellRequestRoutes);
 app.use("/api/favourite", favRequestRoutes);
+app.use("/api/mandi_prices", mandiPriceRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
