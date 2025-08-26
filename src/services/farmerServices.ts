@@ -534,7 +534,8 @@ export async function getFarmerListByAdmin(
   page = 1,
   limit = 10,
   filters: any,
-  search
+  search?: string,
+  sortBy?: string
 ) {
   try {
     const offset = (page - 1) * limit;
@@ -715,6 +716,35 @@ export async function getFarmerListByAdmin(
       ];
     }
 
+    let order: any = [["updatedAt", "DESC"]];
+
+    if (sortBy) {
+      switch (sortBy.toLowerCase()) {
+        case "name_asc":
+          order = [["name", "ASC"]];
+          break;
+        case "name_desc":
+          order = [["name", "DESC"]];
+          break;
+        case "created_asc":
+          order = [["createdAt", "ASC"]];
+          break;
+        case "created_desc":
+          order = [["createdAt", "DESC"]];
+          break;
+        case "land_owned_acres_asc":
+          order = [
+            [{ model: LandDetail, as: "LandDetail" }, "landOwnedAcres", "ASC"],
+          ];
+          break;
+        case "land_owned_acres_desc":
+          order = [
+            [{ model: LandDetail, as: "LandDetail" }, "landOwnedAcres", "DESC"],
+          ];
+          break;
+      }
+    }
+
     const { count, rows }: any = await Farmer.findAndCountAll({
       where: whereCondition,
       attributes: [
@@ -776,7 +806,7 @@ export async function getFarmerListByAdmin(
       ],
       limit,
       offset,
-      order: [["updatedAt", "DESC"]],
+      order,
       distinct: true,
     });
 
