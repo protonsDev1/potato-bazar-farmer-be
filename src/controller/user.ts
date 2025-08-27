@@ -4,6 +4,7 @@ import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
 import SubAdminWebPermission from '../database/models/subAdminWebPermission';
 import { buildPermissionsResponse } from '../utils/commonCode';
+import KycDocument from '../database/models/kycDocuments';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -531,10 +532,15 @@ export const getMobileUserProfileByAdmin = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const userDetail = await User.findByPk(userId);
+    const userDetail = await User.findOne({
+      where: { id: userId },
+      include: [{ model: KycDocument, as: "kycDocument" }],
+    });
 
-    if(!userDetail)
-      return res.status(400).json({success: false, message: "User not found."});
+    if (!userDetail)
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found." });
 
     if (
       userDetail.role !== USER_ROLES.USER ||
