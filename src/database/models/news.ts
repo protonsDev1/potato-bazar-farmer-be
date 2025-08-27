@@ -36,6 +36,8 @@ class News extends Model<InferAttributes<News>, InferCreationAttributes<News>> {
   declare isFeatured: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare createdBy: string;       
+  declare source: string | null;  
 }
 
 News.init(
@@ -77,6 +79,14 @@ News.init(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    createdBy: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    source: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -84,7 +94,7 @@ News.init(
     updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-    },
+    }
   },
   {
     sequelize,
