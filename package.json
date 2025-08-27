@@ -12,6 +12,7 @@
     "import:locations": "ts-node src/scripts/importLocations.ts",
     "seed": "ts-node src/scripts/seed.ts",
     "backfill": "ts-node src/scripts/backFillExistingUsers.ts",
+    "populate-cities": "ts-node src/scripts/seedCitiesData.ts",
     "db:migrate:create": "sequelize-cli migration:generate --name",
     "db:migrate:undo": "sequelize-cli db:migrate:undo"
   },
@@ -21,6 +22,7 @@
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
+    "country-state-city": "^3.2.1",
     "crypto": "^1.0.1",
     "csv-parser": "^3.2.0",
     "dayjs": "^1.11.13",
