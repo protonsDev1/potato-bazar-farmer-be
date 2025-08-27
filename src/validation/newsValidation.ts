@@ -13,6 +13,8 @@ export const createNewsSchema = Joi.object({
   images: Joi.array().items(Joi.string().uri()).optional(),
   tags: Joi.array().items(Joi.string().trim()).required(),
   isFeatured: Joi.boolean().default(false),
+  createdBy: Joi.string().trim().optional(), 
+  source: Joi.string().trim().optional(),
 });
 
 export const updateNewsSchema = Joi.object({
