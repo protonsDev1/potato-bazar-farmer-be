@@ -8,6 +8,7 @@ import {
 
 export const createNews = async (req, res) => {
   try {
+    req.body.createdBy= req.user.role;
     const result = await createNewsService(req.body);
     return res.status(result.statusCode).json(result);
   } catch (err) {
@@ -58,6 +59,15 @@ export const updateNews = async (req, res) => {
 export const deleteNews = async (req, res) => {
   try {
     const result = await deleteNewsService(req.params.id);
+    return res.status(result.statusCode).json(result);
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const createNewsAI = async (req, res) => {
+  try {
+    const result = await createNewsService(req.body);
     return res.status(result.statusCode).json(result);
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });

@@ -15,6 +15,7 @@ import {
   getNewsById,
   updateNews,
   deleteNews,
+  createNewsAI,
 } from "../controller/newsController";
 
 const router = express.Router();
@@ -36,6 +37,11 @@ router.put(
   superAdminMiddleware,
   validator.body(updateNewsSchema),
   updateNews
+);
+router.post(
+  "/api-news",
+  validator.body(createNewsSchema),
+  createNewsAI
 );
 
 router.delete("/:id", superAdminMiddleware, deleteNews);
