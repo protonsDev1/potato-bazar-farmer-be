@@ -81,7 +81,7 @@ News.init(
     },
     createdBy: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     source: {
       type: DataTypes.STRING,
