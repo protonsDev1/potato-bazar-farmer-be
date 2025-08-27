@@ -71,7 +71,7 @@ router.put(
 router.get("/mobile/user_profile", authMiddleware, getMobileUserProfile);
 router.get(
   "/mobile/user_profile/:userId",
-  superAdminMiddleware,
+  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
   getMobileUserProfileByAdmin
 );
 router.delete("/mobile/:userId", superAdminMiddleware, deleteMobileUserByAdmin);
