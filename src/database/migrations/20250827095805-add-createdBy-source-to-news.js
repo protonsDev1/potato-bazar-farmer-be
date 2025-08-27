@@ -4,7 +4,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.addColumn('news', 'createdBy', {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     });
 
     await queryInterface.addColumn('news', 'source', {
