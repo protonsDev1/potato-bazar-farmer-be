@@ -11,3 +11,31 @@ export const PERMISSIONS = {
 } as const;
 
 export type PermissionType = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
+
+export const WEB_MODULES = {
+  FARMER: "farmer",
+  TRADER: "trader",
+  COLD_STORAGE: "coldStorage",
+  AGENT: "agent",
+  DROPDOWN_MANAGEMENT: "dropdownManagement",
+} as const;
+
+export const WEB_ACTIONS = {
+  ALL: "all",
+  CREATE: "create",
+  VIEW: "view",
+  UPDATE: "update",
+  DELETE: "delete",
+  REVIEW: "review",
+} as const;
+
+export const WEB_PERMISSIONS = {
+  farmer: ["create", "view", "update", "delete", "review"],
+  trader: ["create", "view", "update", "delete", "review"],
+  coldStorage: ["create", "view", "update", "delete", "review"],
+  agent: ["create", "view", "update", "delete"],
+  dropdownManagement: ["all"],
+} as const;
+
+export const VALID_MODULES = Object.values(WEB_MODULES);
+export const VALID_ACTIONS = Object.values(WEB_ACTIONS);

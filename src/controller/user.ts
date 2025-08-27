@@ -2,7 +2,8 @@ import { changePasswordService, checkExistingUser, createUserInDB, createUserWit
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
-import { Op } from 'sequelize';
+import SubAdminWebPermission from '../database/models/subAdminWebPermission';
+import { buildPermissionsResponse } from '../utils/commonCode';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -59,6 +60,17 @@ export const login = async (req, res) => {
         { expiresIn: "24h" } // Token expires in 1 day
       );
   
+      let permissions = null;
+      if (user.role === USER_ROLES.SUB_ADMIN_WEB) {
+        const subAdminPermissions = await SubAdminWebPermission.findAll({
+          where: { userId: user.id },
+          attributes: ["module", "action"],
+        });
+
+        const allowed = subAdminPermissions.map((p) => `${p.module}:${p.action}`);
+        permissions = buildPermissionsResponse(allowed);
+      }
+
       // Return the success response with the token
       return res.status(200).json({
         message: 'Login successful',
@@ -70,6 +82,7 @@ export const login = async (req, res) => {
           email: user.email,
           role: user.role,
           mobile: user.mobile,
+          permissions,
         },
       });
     } catch (error) {

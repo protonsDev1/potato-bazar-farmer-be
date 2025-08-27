@@ -9,6 +9,7 @@ import bcrypt from "bcrypt";
 import sequelize from "./db";
 import Agent from "./agent";
 import SubAdminPermission from "./subAdminPermission";
+import SubAdminWebPermission from "./subAdminWebPermission";
 
 export enum REGISTRATION_STATUS {
   APPROVED = "approved",
@@ -20,6 +21,7 @@ export enum USER_ROLES {
   SUPER_ADMIN = "super_admin",
   ADMIN = "admin",
   SUB_ADMIN = "sub_admin",
+  SUB_ADMIN_WEB = "sub_admin_web",
   AGENT = "agent",
   USER = "user",
   MANDI_AGENT = "mandi_agent",
@@ -49,6 +51,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare bio: string;
   declare isActive: boolean;
   declare permissions?: SubAdminPermission[];
+  declare webPermissions?: SubAdminWebPermission[];
   declare createdAt: CreationOptional<Date>;
   declare passwordUpdatedAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
