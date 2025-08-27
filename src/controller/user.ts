@@ -513,3 +513,67 @@ export const getMobileUserProfile = async (req, res) => {
     });
   }
 };
+
+export const getMobileUserProfileByAdmin = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const userDetail = await User.findByPk(userId);
+
+    if(!userDetail)
+      return res.status(400).json({success: false, message: "User not found."});
+
+    if (
+      userDetail.role !== USER_ROLES.USER ||
+      (userDetail.hasStartedUsingMobile === false &&
+        userDetail.isUserOnBoardedOnMobile === false)
+    )
+      return res.status(400).json({
+        success: false,
+        message: "Only Mobile user's profile can be viewed here.",
+      });
+
+    return res.status(200).json({
+      success: true,
+      message: "User detail fetched successfully.",
+      data: userDetail,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed in retrieving mobile user's profile.",
+    });
+  }
+};
+
+export const deleteMobileUserByAdmin = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const userDetail = await User.findByPk(userId);
+
+    if(!userDetail)
+      return res.status(400).json({success: false, message: "User not found."});
+
+    if (
+      userDetail.role !== USER_ROLES.USER ||
+      (userDetail.hasStartedUsingMobile === false &&
+        userDetail.isUserOnBoardedOnMobile === false)
+    )
+      return res.status(400).json({
+        success: false,
+        message: "Only Mobile user can be deleted here.",
+      });
+
+    await User.destroy({ where: { id: userId } });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Mobile user deleted successfully." });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed in deleting mobile user.",
+    });
+  }
+};

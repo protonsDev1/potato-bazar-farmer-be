@@ -1,8 +1,8 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
 import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile } from "../controller/user";
-import { adminMiddleware, authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin } from "../controller/user";
+import { adminMiddleware, authMiddleware, checkPermissionMiddleware, superAdminMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 import { PERMISSIONS } from "../utils/constants/permissions";
 
@@ -69,6 +69,12 @@ router.put(
 );
 
 router.get("/mobile/user_profile", authMiddleware, getMobileUserProfile);
+router.get(
+  "/mobile/user_profile/:userId",
+  superAdminMiddleware,
+  getMobileUserProfileByAdmin
+);
+router.delete("/mobile/:userId", superAdminMiddleware, deleteMobileUserByAdmin);
 
 export default router;
 
