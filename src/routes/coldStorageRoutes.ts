@@ -1,6 +1,11 @@
 import express from "express";
 import { createValidator } from "express-joi-validation";
-import { adminMiddleware, authMiddleware } from "../utils/userAuth";
+import {
+  adminMiddleware,
+  adminOrSubAdminMiddleware,
+  authMiddleware,
+  checkWebPermissionMiddleware,
+} from "../utils/userAuth";
 import {
   coldStorageSchema,
   updateColdStorageSchema,
@@ -16,14 +21,19 @@ import {
   likeOrDislikeColdStorage,
 } from "../controller/coldStorage";
 import { verifyOtpSchema } from "../validation/userValidator";
+import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/create",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.COLD_STORAGE,
+    WEB_ACTIONS.CREATE,
+    true
+  ),
   validator.body(coldStorageSchema),
-  authMiddleware,
   createColdStorage
 );
 
@@ -33,16 +43,36 @@ router.post(
   selfOnboardColdStorage
 );
 
-router.get("/profile/:id", authMiddleware, getColdStorageProfile);
+router.get(
+  "/profile/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.COLD_STORAGE,
+    WEB_ACTIONS.VIEW,
+    true
+  ),
+  getColdStorageProfile
+);
 
 router.put(
   "/update/:coldStorageId",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.COLD_STORAGE,
+    WEB_ACTIONS.UPDATE,
+    true
+  ),
   validator.body(updateColdStorageSchema),
   updateColdStorage
 );
-router.get("/", authMiddleware, getColdStorageList);
-router.delete("/delete/:id", adminMiddleware, deleteColdStorage);
+router.get("/", adminOrSubAdminMiddleware, getColdStorageList);
+router.delete(
+  "/delete/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.COLD_STORAGE,
+    WEB_ACTIONS.DELETE,
+    false
+  ),
+  deleteColdStorage
+);
 router.post(
   "/export",
   validator.body(verifyOtpSchema),

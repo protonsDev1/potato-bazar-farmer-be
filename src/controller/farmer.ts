@@ -14,6 +14,7 @@ import {
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 import { parseFilters } from "../utils/parseQuery";
 import { verifyOtpFromDB } from "../services/otpServices";
+import { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 
 export const createFarmer = async (req, res) => {
   try {
@@ -86,14 +87,18 @@ export const updateFarmer = async (req, res) => {
       return res.status(404).json({ message: "Farmer not found" });
     }
 
-    if (role !== "admin" && role !== "agent") {
+    if (
+      role !== USER_ROLES.ADMIN &&
+      role !== USER_ROLES.AGENT &&
+      role !== USER_ROLES.SUB_ADMIN_WEB
+    ) {
       return res.status(403).json({
         message:
-          "Only Admins and Agents are authorized to update farmer profiles.",
+          "Only Admins, Sub Admins and Agents are authorized to update farmer profiles.",
       });
     }
 
-    if (role === "agent") {
+    if (role === USER_ROLES.AGENT) {
       const isOnboardedByAgent = farmer.onBoardedBy === id;
       const isWithin24Hours =
         Date.now() - new Date(farmer.createdAt).getTime() <=
@@ -102,7 +107,7 @@ export const updateFarmer = async (req, res) => {
       if (!isOnboardedByAgent || !isWithin24Hours) {
         return res.status(403).json({
           message:
-            "Only Admins or the Agent who onboarded the farmer within the last 24 hours can update the profile.",
+            "Only Admins, Sub Admins or the Agent who onboarded the farmer within the last 24 hours can update the profile.",
         });
       }
     }
@@ -126,6 +131,10 @@ export const getFarmerList = async (req, res) => {
     const { page, perPage: limit, search, sortBy } = req.query;
 
     const filters = parseFilters(req.query);
+
+    if (req.user.role === USER_ROLES.SUB_ADMIN_WEB) {
+      filters.status = REGISTRATION_STATUS.PENDING;
+    }
 
     const farmerList = await getFarmerListByAdmin(
       page,

@@ -14,6 +14,7 @@ import {
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 import { parseFilters } from "../utils/parseQuery";
 import { verifyOtpFromDB } from "../services/otpServices";
+import { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 
 export const createTrader = async (req, res) => {
   try {
@@ -48,14 +49,18 @@ export const updateTrader = async (req, res) => {
     });
     if (!trader) return res.status(404).json({ message: "Trader not found" });
 
-    if (role !== "admin" && role !== "agent") {
+    if (
+      role !== USER_ROLES.ADMIN &&
+      role !== USER_ROLES.AGENT &&
+      role !== USER_ROLES.SUB_ADMIN_WEB
+    ) {
       return res.status(403).json({
         message:
-          "Only Admins and Agents are authorized to update trader profiles.",
+          "Only Admins, Sub Admins and Agents are authorized to update trader profiles.",
       });
     }
 
-    if (role === "agent") {
+    if (role === USER_ROLES.AGENT) {
       const isOnboardedByAgent = trader.onBoardedBy === id;
       const isWithin24Hours =
         Date.now() - new Date(trader.createdAt).getTime() <=
@@ -64,7 +69,7 @@ export const updateTrader = async (req, res) => {
       if (!isOnboardedByAgent || !isWithin24Hours) {
         return res.status(403).json({
           message:
-            "Only Admins or the Agent who onboarded the trader within the last 24 hours can update the profile.",
+            "Only Admins, Sub Admins or the Agent who onboarded the trader within the last 24 hours can update the profile.",
         });
       }
     }
@@ -98,10 +103,14 @@ export const getTraderProfileOverview = async (req, res) => {
       return res.status(404).json({ message: "Trader not found." });
     }
 
-    if (role !== "admin" && trader.onBoardedBy !== loggedInUserId) {
+    if (
+      role !== USER_ROLES.ADMIN &&
+      role !== USER_ROLES.SUB_ADMIN &&
+      trader.onBoardedBy !== loggedInUserId
+    ) {
       return res.status(403).json({
         message:
-          "Only Admins or Agents who onboarded the trader are authorized to view this profile.",
+          "Only Admins, Sub Admins or Agents who onboarded the trader are authorized to view this profile.",
       });
     }
 
@@ -154,6 +163,10 @@ export const getTraderList = async (req, res) => {
     const { page, perPage, search, sortBy } = req.query;
 
     const filters = parseFilters(req.query);
+
+    if (req.user.role === USER_ROLES.SUB_ADMIN_WEB) {
+      filters.status = REGISTRATION_STATUS.PENDING;
+    }
 
     const traderList = await getTraderListByAdmin(
       page,

@@ -13,7 +13,7 @@ export const createSubAdminWebSchema = Joi.object({
           .required(),
         actions: Joi.array()
           .items(Joi.string().valid(...VALID_ACTIONS))
-          .min(1)
+          .min(0) // allow empty array
           .required(),
       })
     )
@@ -33,7 +33,7 @@ export const updateSubAdminWebSchema = Joi.object({
           .required(),
         actions: Joi.array()
           .items(Joi.string().valid(...VALID_ACTIONS))
-          .min(1)
+          .min(0) // allow empty array
           .required(),
       })
     )

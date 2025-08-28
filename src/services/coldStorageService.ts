@@ -686,6 +686,7 @@ export async function getColdStorage(
       capacityRange,
       registrationDate,
       onboardedByUser,
+      status,
     } = filters;
 
     whereCondition.isDeleted = false;
@@ -695,6 +696,10 @@ export async function getColdStorage(
     //     [Op.ne]: userId,
     //   };
     // }
+
+    if (status) {
+      whereCondition.status = status;
+    }
 
     if (verified && verified.toString() === "true") {
       whereCondition.status = REGISTRATION_STATUS.APPROVED;

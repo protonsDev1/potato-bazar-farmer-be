@@ -27,6 +27,7 @@ import { parseFilters } from "../utils/parseQuery";
 import AgentMonthlyTarget from "../database/models/agentMonthlyTarget";
 import dayjs from "dayjs";
 import { verifyOtpFromDB } from "../services/otpServices";
+import { USER_ROLES } from "../database/models/user";
 
 export const getAllRegisteredUsers = async (req, res) => {
   try {
@@ -35,7 +36,7 @@ export const getAllRegisteredUsers = async (req, res) => {
 
     const filters = parseFilters(req.query);
 
-    if (role !== "agent")
+    if (role !== USER_ROLES.AGENT)
       return res.status(400).json({
         message: "Only Agents are authorized to retrieve users under them.",
       });
@@ -55,7 +56,7 @@ export const getRecentRegisteredUsers = async (req, res) => {
     const { id, role } = req.user;
     const { page, perPage: limit } = req.query;
 
-    if (role !== "agent")
+    if (role !== USER_ROLES.AGENT)
       return res.status(400).json({
         message:
           "Only Agents are authorized to retrieve recent registered users under them.",
