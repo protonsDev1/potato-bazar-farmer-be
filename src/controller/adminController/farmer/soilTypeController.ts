@@ -9,14 +9,7 @@ import {
 
 export const addSoilType = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add soil types.",
-      });
-    }
 
     const response = await createRecord(AdminSoilType, data);
 
@@ -81,15 +74,8 @@ export const getActiveSoilType = async (req, res) => {
 
 export const updateSoilType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update soil types.",
-      });
-    }
 
     const response = await updateRecord(AdminSoilType, id, data);
 
@@ -118,14 +104,7 @@ export const updateSoilType = async (req, res) => {
 
 export const deleteSoilType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete soil types.",
-      });
-    }
 
     const response = await deleteRecord(AdminSoilType, id);
 

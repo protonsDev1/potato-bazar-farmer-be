@@ -9,14 +9,7 @@ import {
 
 export const addElevatorType = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Elevator Type.",
-      });
-    }
 
     const response = await createRecord(AdminElevatorType, data);
 
@@ -81,15 +74,8 @@ export const getActiveElevatorType = async (req, res) => {
 
 export const updateElevatorType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Elevator Type.",
-      });
-    }
 
     const response = await updateRecord(AdminElevatorType, id, data);
 
@@ -118,14 +104,7 @@ export const updateElevatorType = async (req, res) => {
 
 export const deleteElevatorType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Elevator Type.",
-      });
-    }
 
     const response = await deleteRecord(AdminElevatorType, id);
 

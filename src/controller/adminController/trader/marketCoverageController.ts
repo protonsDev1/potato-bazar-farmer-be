@@ -10,12 +10,6 @@ import {
 
 export const addMarketCoverage = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only admins can add market coverage." });
-    }
-
     const response = await createRecord(AdminMarketCoverage, req.body);
 
     if (response?.duplicate) {
@@ -86,12 +80,6 @@ export const getActiveMarketCoverages = async (req, res) => {
 
 export const updateMarketCoverage = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only admins can update market coverage." });
-    }
-
     const response = await updateRecord(
       AdminMarketCoverage,
       req.params.id,
@@ -119,12 +107,6 @@ export const updateMarketCoverage = async (req, res) => {
 
 export const deleteMarketCoverage = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only admins can delete market coverage." });
-    }
-
     const response = await deleteRecord(AdminMarketCoverage, req.params.id);
     if (response.success) {
       return res

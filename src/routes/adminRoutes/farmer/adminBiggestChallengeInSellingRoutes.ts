@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
 
-import { authMiddleware } from "../../../utils/userAuth";
+import { checkWebPermissionMiddleware } from "../../../utils/userAuth";
 import { biggestChallengeInSellingSchema } from "../../../validation/adminValidation";
 import {
   addBiggestChallengeInSelling,
@@ -10,13 +10,18 @@ import {
   getBiggestChallengeInSelling,
   updateBiggestChallengeInSelling,
 } from "../../../controller/adminController/farmer/biggestChallengeInSelling";
+import { WEB_ACTIONS, WEB_MODULES } from "../../../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(biggestChallengeInSellingSchema),
   addBiggestChallengeInSelling
 );
@@ -25,8 +30,24 @@ router.get("/", getBiggestChallengeInSelling);
 
 router.get("/active", getActiveBiggestChallengeInSelling);
 
-router.put("/:id", authMiddleware, updateBiggestChallengeInSelling);
+router.put(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  updateBiggestChallengeInSelling
+);
 
-router.delete("/:id", authMiddleware, deleteBiggestChallengeInSelling);
+router.delete(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  deleteBiggestChallengeInSelling
+);
 
 export default router;

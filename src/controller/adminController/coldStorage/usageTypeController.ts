@@ -9,14 +9,7 @@ import {
 
 export const addUsageType = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add usage types.",
-      });
-    }
 
     const response = await createRecord(AdminUsageType, data);
 
@@ -81,15 +74,8 @@ export const getActiveUsageType = async (req, res) => {
 
 export const updateUsageType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update usage types.",
-      });
-    }
 
     const response = await updateRecord(AdminUsageType, id, data);
 
@@ -118,14 +104,7 @@ export const updateUsageType = async (req, res) => {
 
 export const deleteUsageType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete usage types.",
-      });
-    }
 
     const response = await deleteRecord(AdminUsageType, id);
 

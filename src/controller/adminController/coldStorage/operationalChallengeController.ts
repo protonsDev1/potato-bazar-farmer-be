@@ -9,14 +9,7 @@ import {
 
 export const addOperationalChallenge = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add operational challenges.",
-      });
-    }
 
     const response = await createRecord(AdminOperationalChallenge, data);
 
@@ -85,15 +78,8 @@ export const getActiveOperationalChallenge = async (req, res) => {
 
 export const updateOperationalChallenge = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update operational challenges.",
-      });
-    }
 
     const response = await updateRecord(AdminOperationalChallenge, id, data);
 
@@ -122,14 +108,7 @@ export const updateOperationalChallenge = async (req, res) => {
 
 export const deleteOperationalChallenge = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete operational challenges.",
-      });
-    }
 
     const response = await deleteRecord(AdminOperationalChallenge, id);
 

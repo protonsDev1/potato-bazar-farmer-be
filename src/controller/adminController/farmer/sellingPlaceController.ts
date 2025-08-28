@@ -9,14 +9,7 @@ import {
 
 export const addSellingPlace = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add selling place.",
-      });
-    }
 
     const response = await createRecord(AdminSellingPlace, data);
 
@@ -81,15 +74,8 @@ export const getActiveSellingPlaces = async (req, res) => {
 
 export const updateSellingPlace = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update selling places.",
-      });
-    }
 
     const response = await updateRecord(AdminSellingPlace, id, data);
 
@@ -118,14 +104,7 @@ export const updateSellingPlace = async (req, res) => {
 
 export const deleteSellingPlace = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete selling places.",
-      });
-    }
 
     const response = await deleteRecord(AdminSellingPlace, id);
 

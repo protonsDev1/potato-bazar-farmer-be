@@ -9,12 +9,6 @@ import {
 } from "../../../services/adminServices/crudOperationService";
 
 export const addTraderVariety = async (req, res) => {
-  if (req.user.role !== "admin") {
-    return res
-      .status(403)
-      .json({ message: "Only admins can add trader variety." });
-  }
-
   const response = await createRecord(AdminTraderVariety, req.body);
 
   if (response?.duplicate) {
@@ -71,16 +65,10 @@ export const getActiveTraderVarieties = async (req, res) => {
 };
 
 export const updateTraderVariety = async (req, res) => {
-  if (req.user.role !== "admin") {
-    return res
-      .status(403)
-      .json({ message: "Only admins can update trader variety." });
-  }
-
   const response = await updateRecord(
     AdminTraderVariety,
     req.params.id,
-    req.body,
+    req.body
   );
 
   if (response?.duplicate) {
@@ -100,12 +88,6 @@ export const updateTraderVariety = async (req, res) => {
 };
 
 export const deleteTraderVariety = async (req, res) => {
-  if (req.user.role !== "admin") {
-    return res
-      .status(403)
-      .json({ message: "Only admins can delete trader variety." });
-  }
-
   const response = await deleteRecord(AdminTraderVariety, req.params.id);
   if (response.success) {
     return res

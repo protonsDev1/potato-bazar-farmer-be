@@ -10,16 +10,7 @@ import {
 
 export const addTraderInterest = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only admins can add trader interest." });
-    }
-
-    const response = await createRecord(
-      AdminTraderInterest,
-      req.body,
-    );
+    const response = await createRecord(AdminTraderInterest, req.body);
 
     if (response?.duplicate) {
       return res.status(409).json({
@@ -89,16 +80,10 @@ export const getActiveTraderInterests = async (req, res) => {
 
 export const updateTraderInterest = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only admins can update trader interest." });
-    }
-
     const response = await updateRecord(
       AdminTraderInterest,
       req.params.id,
-      req.body,
+      req.body
     );
 
     if (response?.duplicate) {
@@ -122,12 +107,6 @@ export const updateTraderInterest = async (req, res) => {
 
 export const deleteTraderInterest = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only admins can delete trader interest." });
-    }
-
     const response = await deleteRecord(AdminTraderInterest, req.params.id);
     if (response.success) {
       return res
