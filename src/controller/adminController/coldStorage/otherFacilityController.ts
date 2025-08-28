@@ -9,14 +9,7 @@ import {
 
 export const addOtherFacility = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Other Facility.",
-      });
-    }
 
     const response = await createRecord(AdminOtherFacility, data);
 
@@ -81,15 +74,8 @@ export const getActiveOtherFacility = async (req, res) => {
 
 export const updateOtherFacility = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Other Facility.",
-      });
-    }
 
     const response = await updateRecord(AdminOtherFacility, id, data);
 
@@ -118,14 +104,7 @@ export const updateOtherFacility = async (req, res) => {
 
 export const deleteOtherFacility = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Other Facility.",
-      });
-    }
 
     const response = await deleteRecord(AdminOtherFacility, id);
 

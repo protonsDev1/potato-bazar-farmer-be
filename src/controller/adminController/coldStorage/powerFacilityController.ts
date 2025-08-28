@@ -9,14 +9,7 @@ import {
 
 export const addPowerFacility = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Power Facility.",
-      });
-    }
 
     const response = await createRecord(AdminPowerFacility, data);
 
@@ -81,15 +74,8 @@ export const getActivePowerFacility = async (req, res) => {
 
 export const updatePowerFacility = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Power Facility.",
-      });
-    }
 
     const response = await updateRecord(AdminPowerFacility, id, data);
 
@@ -118,14 +104,7 @@ export const updatePowerFacility = async (req, res) => {
 
 export const deletePowerFacility = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Power Facility.",
-      });
-    }
 
     const response = await deleteRecord(AdminPowerFacility, id);
 

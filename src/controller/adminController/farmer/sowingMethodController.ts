@@ -9,14 +9,7 @@ import {
 
 export const addSowingMethod = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Sowing Methods.",
-      });
-    }
 
     const response = await createRecord(AdminSowingMethod, data);
 
@@ -81,15 +74,8 @@ export const getActiveSowingMethod = async (req, res) => {
 
 export const updateSowingMethod = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Sowing Methods.",
-      });
-    }
 
     const response = await updateRecord(AdminSowingMethod, id, data);
 
@@ -118,14 +104,7 @@ export const updateSowingMethod = async (req, res) => {
 
 export const deleteSowingMethod = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Sowing Methods.",
-      });
-    }
 
     const response = await deleteRecord(AdminSowingMethod, id);
 

@@ -9,14 +9,7 @@ import {
 
 export const addIrrigationSource = async (req, res) => {
   try {
-    const { role } = req.user;
-
     const irrigationSource = req.body;
-
-    if (role !== "admin")
-      return res.status(403).json({
-        message: "Only Admin are authorized to add irrigation sources.",
-      });
 
     const response = await createRecord(
       AdminIrrigationSource,
@@ -91,13 +84,6 @@ export const updateIrrigationSource = async (req, res) => {
     const data = req.body;
     const id = req.params.id;
 
-    const { role } = req.user;
-
-    if (role !== "admin")
-      return res.status(403).json({
-        message: "Only Admin are authorized to update irrigation sources.",
-      });
-
     const response = await updateRecord(AdminIrrigationSource, id, data);
 
     if (response?.duplicate) {
@@ -126,13 +112,6 @@ export const updateIrrigationSource = async (req, res) => {
 export const deleteIrrigationSource = async (req, res) => {
   try {
     const id = req.params.id;
-
-    const { role } = req.user;
-
-    if (role !== "admin")
-      return res.status(403).json({
-        message: "Only Admin are authorized to delete irrigation sources.",
-      });
 
     const response = await deleteRecord(AdminIrrigationSource, id);
 

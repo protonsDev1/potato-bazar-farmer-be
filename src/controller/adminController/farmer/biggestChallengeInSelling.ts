@@ -9,14 +9,7 @@ import {
 
 export const addBiggestChallengeInSelling = async (req, res) => {
   try {
-    const { role } = req.user;
     const biggestChallenge = req.body;
-
-    if (role !== "admin")
-      return res.status(403).json({
-        message:
-          "Only Admins are authorized to add Biggest Challenge in Selling.",
-      });
 
     const response = await createRecord(
       AdminBiggestChallengeInSelling,
@@ -84,15 +77,8 @@ export const getActiveBiggestChallengeInSelling = async (req, res) => {
 
 export const updateBiggestChallengeInSelling = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin")
-      return res.status(403).json({
-        message:
-          "Only Admins are authorized to update Biggest Challenge in Selling.",
-      });
 
     const response = await updateRecord(
       AdminBiggestChallengeInSelling,
@@ -126,14 +112,7 @@ export const updateBiggestChallengeInSelling = async (req, res) => {
 
 export const deleteBiggestChallengeInSelling = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin")
-      return res.status(403).json({
-        message:
-          "Only Admins are authorized to delete Biggest Challenge in Selling.",
-      });
 
     const response = await deleteRecord(AdminBiggestChallengeInSelling, id);
 

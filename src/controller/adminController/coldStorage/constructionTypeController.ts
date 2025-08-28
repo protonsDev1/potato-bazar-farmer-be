@@ -9,14 +9,7 @@ import {
 
 export const addConstructionType = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Construction Type.",
-      });
-    }
 
     const response = await createRecord(AdminConstructionType, data);
 
@@ -85,15 +78,8 @@ export const getActiveConstructionType = async (req, res) => {
 
 export const updateConstructionType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Construction Type.",
-      });
-    }
 
     const response = await updateRecord(AdminConstructionType, id, data);
 
@@ -122,14 +108,7 @@ export const updateConstructionType = async (req, res) => {
 
 export const deleteConstructionType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Construction Type.",
-      });
-    }
 
     const response = await deleteRecord(AdminConstructionType, id);
 

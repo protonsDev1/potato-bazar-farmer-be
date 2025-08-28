@@ -9,14 +9,7 @@ import {
 
 export const addPriceDiscovery = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Price Discovery.",
-      });
-    }
 
     const response = await createRecord(AdminPriceDiscovery, data);
 
@@ -85,15 +78,8 @@ export const getActivePriceDiscovery = async (req, res) => {
 
 export const updatePriceDiscovery = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Price Discovery.",
-      });
-    }
 
     const response = await updateRecord(AdminPriceDiscovery, id, data);
 
@@ -122,14 +108,7 @@ export const updatePriceDiscovery = async (req, res) => {
 
 export const deletePriceDiscovery = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Price Discovery.",
-      });
-    }
 
     const response = await deleteRecord(AdminPriceDiscovery, id);
 
