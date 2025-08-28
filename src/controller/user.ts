@@ -440,11 +440,19 @@ export const getRecentRegistrationsForAdmin = async (req, res) => {
 export const adminUpdateRegistrationStatus = async (req, res) => {
   try {
     const { status, userType, userId } = req.body;
+    const currentUser = req.user;
 
-    const response = await updateRegistrationStatus(status, userType, userId);
+    const response = await updateRegistrationStatus(
+      status,
+      userType,
+      userId,
+      currentUser
+    );
 
     if (!response.success)
-      return res.status(400).json({ message: response.error });
+      return res
+        .status(response.statusCode || 400)
+        .json({ message: response.error });
 
     return res.status(200).json({ message: response.message });
   } catch (error) {
