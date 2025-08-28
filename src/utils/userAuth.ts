@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import User, { USER_ROLES } from "../database/models/user";
 import SubAdminPermission from "../database/models/subAdminPermission";
+import { WEB_ACTIONS } from "./constants/permissions";
+import SubAdminWebPermission from "../database/models/subAdminWebPermission";
 
 dotenv.config();
 
@@ -218,3 +220,87 @@ export const checkOtpVerified = async (req, res, next) => {
   next();
 };
 
+export const adminOrSubAdminMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Access Denied: No Token Provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+    const user = await User.findByPk(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if user is admin or sub admin web
+    if (![USER_ROLES.ADMIN, USER_ROLES.SUB_ADMIN_WEB].includes(user.role as USER_ROLES)) {
+      return res
+        .status(403)
+        .json({ message: "Access Denied: Unauthorized role" });
+    }
+
+    req.user = user;
+
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or Expired Token" });
+  }
+};
+
+export const checkWebPermissionMiddleware =
+  (module: string, action: string, isAgentAllowed: boolean) => async (req, res, next) => {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Access Denied: No Token Provided" });
+    }
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
+      const user = await User.findByPk(decoded.id);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      req.user = user;
+
+     if (
+      user.role === USER_ROLES.ADMIN ||
+      (isAgentAllowed && user.role === USER_ROLES.AGENT) // agent allowed only when flag is true
+    ) {
+      return next();
+    }
+
+      if (user.role === USER_ROLES.SUB_ADMIN_WEB) {
+        const userPermissions = await SubAdminWebPermission.findAll({ where: { userId: user.id } })
+
+        const hasPermission = userPermissions.some(
+          (p) =>
+            p.module === module &&
+            (p.action === action || p.action === WEB_ACTIONS.ALL)
+        );
+
+        if (!hasPermission) {
+          return res.status(403).json({
+            success: false,
+            message: `Access denied: Missing required action '${action}' in ${module}`,
+          });
+        }
+        return next();
+      }
+
+      return res.status(403).json({
+        message: "Access denied: Unauthorized role",
+      });
+    } catch (error) {
+      return res.status(401).json({ message: "Invalid or Expired Token" });
+    }
+  };

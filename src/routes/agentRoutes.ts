@@ -1,7 +1,12 @@
 import express from "express";
 import { createValidator } from "express-joi-validation";
 
-import { adminMiddleware, authMiddleware } from "../utils/userAuth";
+import {
+  adminMiddleware,
+  adminOrSubAdminMiddleware,
+  authMiddleware,
+  checkWebPermissionMiddleware,
+} from "../utils/userAuth";
 import {
   addMonthlyTargetForAgent,
   createSupportTicket,
@@ -35,6 +40,7 @@ import {
   updateStatusSchema,
   verifyOtpSchema,
 } from "../validation/userValidator";
+import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -43,16 +49,28 @@ router.get("/all_registration", authMiddleware, getAllRegisteredUsers);
 router.get("/recent_registration", authMiddleware, getRecentRegisteredUsers);
 router.get("/performance", authMiddleware, getAgentPerformance);
 router.get("/dashboard_stats", authMiddleware, getAgentDashboardStats);
-router.get("/list", adminMiddleware, listAgents);
-router.get("/details/:id", adminMiddleware, getAgentDetails);
+router.get("/list", adminOrSubAdminMiddleware, listAgents);
+router.get(
+  "/details/:id",
+  checkWebPermissionMiddleware(WEB_MODULES.AGENT, WEB_ACTIONS.VIEW, false),
+  getAgentDetails
+);
 router.put(
   "/update/:id",
-  adminMiddleware,
+  checkWebPermissionMiddleware(WEB_MODULES.AGENT, WEB_ACTIONS.UPDATE, false),
   validateRequest(updateAgentSchema),
   updateAgent
 );
-router.delete("/delete/:id", adminMiddleware, deleteAgent);
-router.post("/:id/reset_password", adminMiddleware, resetPasswordForAgent);
+router.delete(
+  "/delete/:id",
+  checkWebPermissionMiddleware(WEB_MODULES.AGENT, WEB_ACTIONS.DELETE, false),
+  deleteAgent
+);
+router.post(
+  "/:id/reset_password",
+  checkWebPermissionMiddleware(WEB_MODULES.AGENT, WEB_ACTIONS.UPDATE, false),
+  resetPasswordForAgent
+);
 router.get(
   "/all_agent_performance/:agentId",
   adminMiddleware,
