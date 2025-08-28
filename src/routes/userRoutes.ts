@@ -44,7 +44,7 @@ router.get("/recent_registrations", adminMiddleware, getRecentRegistrationsForAd
 
 router.put(
   "/update_status",
-  adminMiddleware,
+  authMiddleware,
   validator.body(updateRegistrationStatusSchema),
   adminUpdateRegistrationStatus
 );
