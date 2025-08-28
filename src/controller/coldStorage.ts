@@ -15,6 +15,7 @@ import {
 import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
 import { parseFilters } from "../utils/parseQuery";
 import { verifyOtpFromDB } from "../services/otpServices";
+import { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 
 export const createColdStorage = async (req, res) => {
   try {
@@ -54,14 +55,18 @@ export const updateColdStorage = async (req, res) => {
       return res.status(404).json({ message: "Cold storage not found" });
     }
 
-    if (role !== "admin" && role !== "agent") {
+    if (
+      role !== USER_ROLES.ADMIN &&
+      role !== USER_ROLES.AGENT &&
+      role !== USER_ROLES.SUB_ADMIN_WEB
+    ) {
       return res.status(403).json({
         message:
-          "Only Admins and Agents are authorized to update cold storage profiles.",
+          "Only Admins, Sub Admins and Agents are authorized to update cold storage profiles.",
       });
     }
 
-    if (role === "agent") {
+    if (role === USER_ROLES.AGENT) {
       const isOnboardedByAgent = coldStorage.onBoardedBy === id;
       const isWithin24Hours =
         Date.now() - new Date(coldStorage.createdAt).getTime() <=
@@ -70,7 +75,7 @@ export const updateColdStorage = async (req, res) => {
       if (!isOnboardedByAgent || !isWithin24Hours) {
         return res.status(403).json({
           message:
-            "Only Admins or the Agent who onboarded the cold storage within the last 24 hours can update the profile.",
+            "Only Admins, Sub Admins or the Agent who onboarded the cold storage within the last 24 hours can update the profile.",
         });
       }
     }
@@ -133,6 +138,10 @@ export const getColdStorageList = async (req, res) => {
     const { id: userId } = req.user;
 
     const filters = parseFilters(req.query);
+
+    if (req.user.role === USER_ROLES.SUB_ADMIN_WEB) {
+      filters.status = REGISTRATION_STATUS.PENDING;
+    }
 
     const coldStorage = await getColdStorage(
       page,

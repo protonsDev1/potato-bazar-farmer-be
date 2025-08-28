@@ -558,9 +558,14 @@ export async function getFarmerListByAdmin(
       irrigationSource,
       registrationDate,
       onboardedByUser,
+      status,
     } = filters;
 
     whereCondition.isDeleted = false;
+
+    if (status) {
+      whereCondition.status = status;
+    }
 
     if (agentId && agentId.toLowerCase() !== "all") {
       whereCondition.onBoardedBy = agentId;
