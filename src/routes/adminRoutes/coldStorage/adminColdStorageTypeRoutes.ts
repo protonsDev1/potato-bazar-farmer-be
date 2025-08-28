@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
 
-import { authMiddleware } from "../../../utils/userAuth";
+import { checkWebPermissionMiddleware } from "../../../utils/userAuth";
 import { adminColdStorageSchema } from "../../../validation/adminValidation";
 import {
   addColdStorageType,
@@ -10,13 +10,18 @@ import {
   getColdStorageType,
   updateColdStorageType,
 } from "../../../controller/adminController/coldStorage/coldStorageTypeController";
+import { WEB_ACTIONS, WEB_MODULES } from "../../../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(adminColdStorageSchema),
   addColdStorageType
 );
@@ -25,8 +30,24 @@ router.get("/", getColdStorageType);
 
 router.get("/active", getActiveColdStorageType);
 
-router.put("/:id", authMiddleware, updateColdStorageType);
+router.put(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  updateColdStorageType
+);
 
-router.delete("/:id", authMiddleware, deleteColdStorageType);
+router.delete(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  deleteColdStorageType
+);
 
 export default router;

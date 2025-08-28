@@ -9,14 +9,7 @@ import {
 
 export const addPotatoType = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add potato types.",
-      });
-    }
 
     const response = await createRecord(AdminPotatoType, data);
 
@@ -81,15 +74,8 @@ export const getActivePotatoType = async (req, res) => {
 
 export const updatePotatoType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update potato types.",
-      });
-    }
 
     const response = await updateRecord(AdminPotatoType, id, data);
 
@@ -118,14 +104,7 @@ export const updatePotatoType = async (req, res) => {
 
 export const deletePotatoType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete potato types.",
-      });
-    }
 
     const response = await deleteRecord(AdminPotatoType, id);
 

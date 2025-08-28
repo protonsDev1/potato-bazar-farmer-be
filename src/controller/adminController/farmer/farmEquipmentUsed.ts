@@ -9,13 +9,7 @@ import {
 
 export const addFarmEquipment = async (req, res) => {
   try {
-    const { role } = req.user;
     const equipmentData = req.body;
-
-    if (role !== "admin")
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Farm Equipments.",
-      });
 
     const response = await createRecord(AdminFarmEquipmentUsed, equipmentData);
 
@@ -77,14 +71,8 @@ export const getActiveFarmEquipment = async (req, res) => {
 
 export const updateFarmEquipment = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin")
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Farm Equipment.",
-      });
 
     const response = await updateRecord(AdminFarmEquipmentUsed, id, data);
 
@@ -113,13 +101,7 @@ export const updateFarmEquipment = async (req, res) => {
 
 export const deleteFarmEquipment = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin")
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Farm Equipment.",
-      });
 
     const response = await deleteRecord(AdminFarmEquipmentUsed, id);
 

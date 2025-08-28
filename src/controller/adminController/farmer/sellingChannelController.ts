@@ -9,14 +9,7 @@ import {
 
 export const addSellingChannel = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add selling channel.",
-      });
-    }
 
     const response = await createRecord(AdminSellingChannel, data);
 
@@ -83,15 +76,8 @@ export const getActiveSellingChannels = async (req, res) => {
 
 export const updateSellingChannel = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update selling channel.",
-      });
-    }
 
     const response = await updateRecord(AdminSellingChannel, id, data);
 
@@ -120,14 +106,7 @@ export const updateSellingChannel = async (req, res) => {
 
 export const deleteSellingChannel = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete selling channel.",
-      });
-    }
 
     const response = await deleteRecord(AdminSellingChannel, id);
 

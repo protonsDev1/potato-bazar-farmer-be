@@ -1,6 +1,6 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { authMiddleware } from "../../../utils/userAuth";
+import { checkWebPermissionMiddleware } from "../../../utils/userAuth";
 import {
   addTraderInterest,
   deleteTraderInterest,
@@ -13,30 +13,47 @@ import {
   traderInterestCreateSchema,
   traderInterestUpdateSchema,
 } from "../../../validation/adminTraderValidation";
+import { WEB_ACTIONS, WEB_MODULES } from "../../../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(traderInterestCreateSchema),
   addTraderInterest
 );
 
-router.get("/", authMiddleware, getTraderInterests);
+router.get("/", getTraderInterests);
 
 router.get("/active", getActiveTraderInterests);
 
-router.get("/:id", authMiddleware, getTraderInterestById);
+router.get("/:id", getTraderInterestById);
 
 router.put(
   "/:id",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(traderInterestUpdateSchema),
   updateTraderInterest
 );
 
-router.delete("/:id", authMiddleware, deleteTraderInterest);
+router.delete(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  deleteTraderInterest
+);
 
 export default router;

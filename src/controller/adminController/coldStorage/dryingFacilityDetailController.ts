@@ -9,14 +9,7 @@ import {
 
 export const addDryingFacilityDetail = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Drying Facility Detail.",
-      });
-    }
 
     const response = await createRecord(AdminDryingFacilityDetail, data);
 
@@ -88,15 +81,8 @@ export const getActiveDryingFacilityDetail = async (req, res) => {
 
 export const updateDryingFacilityDetail = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Drying Facility Detail.",
-      });
-    }
 
     const response = await updateRecord(AdminDryingFacilityDetail, id, data);
 
@@ -125,14 +111,7 @@ export const updateDryingFacilityDetail = async (req, res) => {
 
 export const deleteDryingFacilityDetail = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Drying Facility Detail.",
-      });
-    }
 
     const response = await deleteRecord(AdminDryingFacilityDetail, id);
 

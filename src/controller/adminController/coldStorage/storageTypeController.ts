@@ -9,14 +9,7 @@ import {
 
 export const addStorageType = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add storage types.",
-      });
-    }
 
     const response = await createRecord(AdminStorageType, data);
 
@@ -81,15 +74,8 @@ export const getActiveStorageType = async (req, res) => {
 
 export const updateStorageType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update storage types.",
-      });
-    }
 
     const response = await updateRecord(AdminStorageType, id, data);
 
@@ -118,14 +104,7 @@ export const updateStorageType = async (req, res) => {
 
 export const deleteStorageType = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete storage types.",
-      });
-    }
 
     const response = await deleteRecord(AdminStorageType, id);
 

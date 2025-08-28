@@ -10,13 +10,6 @@ import {
 
 export const addCropTraded = async (req, res) => {
   try {
-    const { role } = req.user;
-    if (role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only admins are allowed to add crop traded." });
-    }
-
     const response = await createRecord(AdminCropTraded, req.body);
 
     if (response?.duplicate) {
@@ -90,19 +83,8 @@ export const getActiveCropsTraded = async (req, res) => {
 
 export const updateCropTraded = async (req, res) => {
   try {
-    const { role } = req.user;
-    if (role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only admins are allowed to update crop traded." });
-    }
-
     const { id } = req.params;
-    const response = await updateRecord(
-      AdminCropTraded,
-      id,
-      req.body,
-    );
+    const response = await updateRecord(AdminCropTraded, id, req.body);
     if (response?.duplicate) {
       return res.status(409).json({
         message: "Crop Traded with this name already exists.",
@@ -123,13 +105,6 @@ export const updateCropTraded = async (req, res) => {
 
 export const deleteCropTraded = async (req, res) => {
   try {
-    const { role } = req.user;
-    if (role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only admins are allowed to delete crop traded." });
-    }
-
     const { id } = req.params;
     const response = await deleteRecord(AdminCropTraded, id);
     if (response.success) {

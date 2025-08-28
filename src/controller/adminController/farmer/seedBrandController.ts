@@ -9,14 +9,7 @@ import {
 
 export const addSeedBrand = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only Admins are authorized to add seed brand." });
-    }
 
     const response = await createRecord(AdminSeedBrand, data);
 
@@ -77,15 +70,8 @@ export const getActiveSeedBrands = async (req, res) => {
 
 export const updateSeedBrand = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only Admins are authorized to update seed brand." });
-    }
 
     const response = await updateRecord(AdminSeedBrand, id, data);
 
@@ -114,14 +100,7 @@ export const updateSeedBrand = async (req, res) => {
 
 export const deleteSeedBrand = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "Only Admins are authorized to delete seed brand." });
-    }
 
     const response = await deleteRecord(AdminSeedBrand, id);
     if (!response?.success) {

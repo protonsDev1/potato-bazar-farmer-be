@@ -9,14 +9,7 @@ import {
 
 export const addBrandPreferenceReason = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add brand preference reason.",
-      });
-    }
 
     const response = await createRecord(AdminBrandPreferenceReason, data);
 
@@ -87,16 +80,8 @@ export const getActiveBrandPreferenceReasons = async (req, res) => {
 
 export const updateBrandPreferenceReason = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message:
-          "Only Admins are authorized to update brand preference reason.",
-      });
-    }
 
     const response = await updateRecord(AdminBrandPreferenceReason, id, data);
 
@@ -125,15 +110,7 @@ export const updateBrandPreferenceReason = async (req, res) => {
 
 export const deleteBrandPreferenceReason = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message:
-          "Only Admins are authorized to delete brand preference reason.",
-      });
-    }
 
     const response = await deleteRecord(AdminBrandPreferenceReason, id);
 

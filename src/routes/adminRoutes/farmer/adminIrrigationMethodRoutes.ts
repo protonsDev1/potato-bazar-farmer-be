@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
 
-import { authMiddleware } from "../../../utils/userAuth";
+import { checkWebPermissionMiddleware } from "../../../utils/userAuth";
 import {
   irrigationMethodCreateSchema,
   irrigationMethodUpdateSchema,
@@ -13,13 +13,18 @@ import {
   getIrrigationMethod,
   updateIrrigationMethod,
 } from "../../../controller/adminController/farmer/irrigationMethodController";
+import { WEB_ACTIONS, WEB_MODULES } from "../../../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(irrigationMethodCreateSchema),
   addIrrigationMethod
 );
@@ -30,11 +35,23 @@ router.get("/active", getActiveIrrigationMethod);
 
 router.put(
   "/:id",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(irrigationMethodUpdateSchema),
   updateIrrigationMethod
 );
 
-router.delete("/:id", authMiddleware, deleteIrrigationMethod);
+router.delete(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  deleteIrrigationMethod
+);
 
 export default router;
