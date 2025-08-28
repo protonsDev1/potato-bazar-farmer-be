@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
 
-import { authMiddleware } from "../../../utils/userAuth";
+import { checkWebPermissionMiddleware } from "../../../utils/userAuth";
 import { adminColdStorageSchema } from "../../../validation/adminValidation";
 import {
   addUsageType,
@@ -10,13 +10,18 @@ import {
   getUsageType,
   updateUsageType,
 } from "../../../controller/adminController/coldStorage/usageTypeController";
+import { WEB_ACTIONS, WEB_MODULES } from "../../../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(adminColdStorageSchema),
   addUsageType
 );
@@ -25,8 +30,24 @@ router.get("/", getUsageType);
 
 router.get("/active", getActiveUsageType);
 
-router.put("/:id", authMiddleware, updateUsageType);
+router.put(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  updateUsageType
+);
 
-router.delete("/:id", authMiddleware, deleteUsageType);
+router.delete(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  deleteUsageType
+);
 
 export default router;

@@ -1,6 +1,6 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { authMiddleware } from "../../../utils/userAuth";
+import { checkWebPermissionMiddleware } from "../../../utils/userAuth";
 import {
   addCropTraded,
   deleteCropTraded,
@@ -13,30 +13,47 @@ import {
   cropTradedCreateSchema,
   cropTradedUpdateSchema,
 } from "../../../validation/adminTraderValidation";
+import { WEB_ACTIONS, WEB_MODULES } from "../../../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(cropTradedCreateSchema),
   addCropTraded
 );
 
-router.get("/", authMiddleware, getCropsTraded);
+router.get("/", getCropsTraded);
 
 router.get("/active", getActiveCropsTraded);
 
-router.get("/:id", authMiddleware, getCropTradedById);
+router.get("/:id", getCropTradedById);
 
 router.put(
   "/:id",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(cropTradedUpdateSchema),
   updateCropTraded
 );
 
-router.delete("/:id", authMiddleware, deleteCropTraded);
+router.delete(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  deleteCropTraded
+);
 
 export default router;

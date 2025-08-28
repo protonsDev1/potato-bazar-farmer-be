@@ -9,14 +9,7 @@ import {
 
 export const addPotatoDisposalSystem = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Potato Disposal System.",
-      });
-    }
 
     const response = await createRecord(AdminPotatoDisposalSystem, data);
 
@@ -88,15 +81,8 @@ export const getActivePotatoDisposalSystem = async (req, res) => {
 
 export const updatePotatoDisposalSystem = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Potato Disposal System.",
-      });
-    }
 
     const response = await updateRecord(AdminPotatoDisposalSystem, id, data);
 
@@ -125,14 +111,7 @@ export const updatePotatoDisposalSystem = async (req, res) => {
 
 export const deletePotatoDisposalSystem = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Potato Disposal System.",
-      });
-    }
 
     const response = await deleteRecord(AdminPotatoDisposalSystem, id);
 

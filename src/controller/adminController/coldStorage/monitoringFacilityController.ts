@@ -9,14 +9,7 @@ import {
 
 export const addMonitoringFacility = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Monitoring Facility.",
-      });
-    }
 
     const response = await createRecord(AdminMonitoringFacility, data);
 
@@ -86,15 +79,8 @@ export const getActiveMonitoringFacility = async (req, res) => {
 
 export const updateMonitoringFacility = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Monitoring Facility.",
-      });
-    }
 
     const response = await updateRecord(AdminMonitoringFacility, id, data);
 
@@ -123,14 +109,7 @@ export const updateMonitoringFacility = async (req, res) => {
 
 export const deleteMonitoringFacility = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Monitoring Facility.",
-      });
-    }
 
     const response = await deleteRecord(AdminMonitoringFacility, id);
 

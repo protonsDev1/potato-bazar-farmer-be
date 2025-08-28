@@ -1,6 +1,9 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { authMiddleware } from "../../../utils/userAuth";
+import {
+  authMiddleware,
+  checkWebPermissionMiddleware,
+} from "../../../utils/userAuth";
 import {
   addSeedBrand,
   deleteSeedBrand,
@@ -12,13 +15,18 @@ import {
   seedBrandCreateSchema,
   seedBrandUpdateSchema,
 } from "../../../validation/adminValidation";
+import { WEB_ACTIONS, WEB_MODULES } from "../../../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(seedBrandCreateSchema),
   addSeedBrand
 );
@@ -26,10 +34,22 @@ router.get("/", authMiddleware, getSeedBrands);
 router.get("/active", getActiveSeedBrands);
 router.put(
   "/:id",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(seedBrandUpdateSchema),
   updateSeedBrand
 );
-router.delete("/:id", authMiddleware, deleteSeedBrand);
+router.delete(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  deleteSeedBrand
+);
 
 export default router;

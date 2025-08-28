@@ -1,5 +1,5 @@
 import express from "express";
-import { authMiddleware } from "../../../utils/userAuth";
+import { checkWebPermissionMiddleware } from "../../../utils/userAuth";
 import {
   addSellingPrice,
   deleteSellingPrice,
@@ -12,24 +12,41 @@ import {
   sellingPriceCreateSchema,
   sellingPriceUpdateSchema,
 } from "../../../validation/adminValidation";
+import { WEB_ACTIONS, WEB_MODULES } from "../../../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(sellingPriceCreateSchema),
   addSellingPrice
 );
-router.get("/", authMiddleware, getSellingPrice);
+router.get("/", getSellingPrice);
 router.get("/active", getActiveSellingPrice);
 router.put(
   "/:id",
-  authMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
   validator.body(sellingPriceUpdateSchema),
   updateSellingPrice
 );
-router.delete("/:id", authMiddleware, deleteSellingPrice);
+router.delete(
+  "/:id",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.DROPDOWN_MANAGEMENT,
+    WEB_ACTIONS.ALL,
+    false
+  ),
+  deleteSellingPrice
+);
 
 export default router;

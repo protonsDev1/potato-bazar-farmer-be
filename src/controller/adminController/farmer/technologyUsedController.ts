@@ -9,14 +9,7 @@ import {
 
 export const addTechnologyUsed = async (req, res) => {
   try {
-    const { role } = req.user;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to add Technology.",
-      });
-    }
 
     const response = await createRecord(AdminTechnologyUsed, data);
 
@@ -81,15 +74,8 @@ export const getActiveTechnologyUsed = async (req, res) => {
 
 export const updateTechnologyUsed = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
     const data = req.body;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to update Technology.",
-      });
-    }
 
     const response = await updateRecord(AdminTechnologyUsed, id, data);
 
@@ -118,14 +104,7 @@ export const updateTechnologyUsed = async (req, res) => {
 
 export const deleteTechnologyUsed = async (req, res) => {
   try {
-    const { role } = req.user;
     const id = req.params.id;
-
-    if (role !== "admin") {
-      return res.status(403).json({
-        message: "Only Admins are authorized to delete Technology.",
-      });
-    }
 
     const response = await deleteRecord(AdminTechnologyUsed, id);
 
