@@ -28,7 +28,7 @@ export const addEvent = async (eventData) => {
 export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
   const offset = (page - 1) * limit;
 
-  const { isFeatured, category, district, date, dateRange } = filters;
+  const { isFeatured, category, district, city, date, dateRange } = filters;
 
   const whereCondition: any = {};
 
@@ -39,6 +39,8 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
 
   if (district && district.toLowerCase() !== "all")
     whereCondition.district = district;
+
+  if (city && city.toLowerCase() !== "all") whereCondition.city = city;
 
   if (dateRange && dateRange.length === 2) {
     const [filterStart, filterEnd] = dateRange;
