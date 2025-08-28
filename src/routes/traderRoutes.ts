@@ -1,6 +1,11 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { adminMiddleware, authMiddleware } from "../utils/userAuth";
+import {
+  adminMiddleware,
+  adminOrSubAdminMiddleware,
+  authMiddleware,
+  checkWebPermissionMiddleware,
+} from "../utils/userAuth";
 import {
   createTrader,
   deleteTrader,
@@ -15,13 +20,14 @@ import {
   updateTraderSchema,
 } from "../validation/traderValidation";
 import { verifyOtpSchema } from "../validation/userValidator";
+import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/create",
-  authMiddleware,
+  checkWebPermissionMiddleware(WEB_MODULES.TRADER, WEB_ACTIONS.CREATE, true),
   validator.body(onboardTraderSchema),
   createTrader
 );
@@ -34,16 +40,24 @@ router.post(
 
 router.put(
   "/update/:traderId",
-  authMiddleware,
+  checkWebPermissionMiddleware(WEB_MODULES.TRADER, WEB_ACTIONS.UPDATE, true),
   validator.body(updateTraderSchema),
   updateTrader
 );
 
-router.get("/profile/:traderId", authMiddleware, getTraderProfileOverview);
+router.get(
+  "/profile/:traderId",
+  checkWebPermissionMiddleware(WEB_MODULES.TRADER, WEB_ACTIONS.VIEW, true),
+  getTraderProfileOverview
+);
 
-router.get("/", adminMiddleware, getTraderList);
+router.get("/", adminOrSubAdminMiddleware, getTraderList);
 
-router.delete("/delete/:id", adminMiddleware, deleteTrader);
+router.delete(
+  "/delete/:id",
+  checkWebPermissionMiddleware(WEB_MODULES.TRADER, WEB_ACTIONS.DELETE, false),
+  deleteTrader
+);
 
 router.post(
   "/export",

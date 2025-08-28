@@ -374,8 +374,13 @@ export const getTraderListByAdmin = async (
       cityOrVillage,
       registrationDate,
       onboardedByUser,
+      status,
     } = filters;
 
+    if (status) {
+      whereCondition.status = status;
+    }
+    
     if (agentId && agentId.toLowerCase() !== "all") {
       whereCondition.onBoardedBy = agentId;
     }

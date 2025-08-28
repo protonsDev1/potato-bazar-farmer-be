@@ -34,18 +34,22 @@ export const createSubAdminWebService = async (
   });
 
   if (Array.isArray(privileges) && privileges.length > 0) {
-    const permissionRecords = privileges.flatMap((permission) =>
-      permission.actions.map((action) => ({
-        userId: subAdminWeb.id,
-        module: permission.module,
-        action,
-      }))
-    );
-    await SubAdminWebPermission.bulkCreate(permissionRecords, {
-      ignoreDuplicates: true,
-    });
-  }
+    for (const permission of privileges) {
+      const { module, actions } = permission;
 
+      // Only create records if actions array is non-empty
+      if (actions && actions.length > 0) {
+        const records = actions.map((action) => ({
+          userId: subAdminWeb.id,
+          module,
+          action,
+        }));
+        await SubAdminWebPermission.bulkCreate(records, {
+          ignoreDuplicates: true,
+        });
+      }
+    }
+  }
   return {
     success: true,
     statusCode: 201,
@@ -139,6 +143,7 @@ export const updateSubAdminWebService = async (id, payload) => {
   const subAdmin = await User.findOne({
     where: { id, role: USER_ROLES.SUB_ADMIN_WEB },
   });
+
   if (!subAdmin) {
     return {
       success: false,
@@ -149,18 +154,49 @@ export const updateSubAdminWebService = async (id, payload) => {
 
   await subAdmin.update(updateFields);
 
-  if (Array.isArray(privileges)) {
-    await SubAdminWebPermission.destroy({ where: { userId: id } });
+  if (Array.isArray(privileges) && privileges.length > 0) {
+    for (const permission of privileges) {
+      const { module, actions } = permission;
 
-    if (privileges.length > 0) {
-      const permissionRecords = privileges.flatMap((permission) =>
-        permission.actions.map((action) => ({
-          userId: id,
-          module: permission.module,
-          action,
-        }))
-      );
-      await SubAdminWebPermission.bulkCreate(permissionRecords);
+      if (!actions || actions.length === 0) {
+        // Remove all actions for this module
+        await SubAdminWebPermission.destroy({
+          where: { userId: id, module },
+        });
+      } else {
+        // Get existing actions for this module
+        const existing = await SubAdminWebPermission.findAll({
+          where: { userId: id, module },
+        });
+
+        const existingActions = existing.map((p) => p.action);
+
+        // Determine which actions to add
+        const actionsToAdd = actions.filter(
+          (action) => !existingActions.includes(action)
+        );
+
+        // Determine which actions to remove
+        const actionsToRemove = existingActions.filter(
+          (action) => !actions.includes(action)
+        );
+
+        if (actionsToRemove.length > 0) {
+          await SubAdminWebPermission.destroy({
+            where: { userId: id, module, action: actionsToRemove },
+          });
+        }
+
+        // Add new actions
+        if (actionsToAdd.length > 0) {
+          const records = actionsToAdd.map((action) => ({
+            userId: id,
+            module,
+            action,
+          }));
+          await SubAdminWebPermission.bulkCreate(records);
+        }
+      }
     }
   }
 
