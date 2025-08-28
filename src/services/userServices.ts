@@ -12,6 +12,8 @@ import { formatDate } from "../utils/dateFormat";
 import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboardedUsers";
 import KycDocument from "../database/models/kycDocuments";
 import { hasValue } from "../utils/parseQuery";
+import SubAdminWebPermission from "../database/models/subAdminWebPermission";
+import { WEB_ACTIONS } from "../utils/constants/permissions";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -636,78 +638,132 @@ export const retrieveRecentRegisteredForAdmin = async () => {
   }
 };
 
-export const updateRegistrationStatus = async (status, userType, userId) => {
-  if (
-    !Object.values(REGISTRATION_STATUS).includes(status as REGISTRATION_STATUS)
-  ) {
-    return {
-      success: false,
-      error: `Invalid status. Allowed values: ${Object.values(
-        REGISTRATION_STATUS
-      ).join(", ")}`,
-    };
-  }
+const normalizeUserType = (userType: string): string | null => {
+  const mapping: Record<string, string> = {
+    farmer: "farmer",
+    trader: "trader",
+    cold_storage: "coldStorage",
+  };
 
-  let Model;
+  return mapping[userType] || null;
+}
 
-  switch (userType) {
-    case USER_TYPE.FARMER:
-      Model = Farmer;
-      break;
-    case USER_TYPE.COLD_STORAGE:
-      Model = ColdStorage;
-      break;
-    case USER_TYPE.TRADER:
-      Model = Trader;
-      break;
-    default:
+export const updateRegistrationStatus = async (
+  status: string,
+  userType: string,
+  userId: number,
+  currentUser: User
+) => {
+  try {
+    if (currentUser.role === USER_ROLES.ADMIN) {
+    } else if (currentUser.role === USER_ROLES.SUB_ADMIN_WEB) {
+      const normalizedUserType = normalizeUserType(userType);
+
+      const hasReviewPermission = await SubAdminWebPermission.findOne({
+        where: {
+          userId: currentUser.id,
+          module: normalizedUserType,
+          action: WEB_ACTIONS.REVIEW,
+        },
+      });
+
+      if (!hasReviewPermission) {
+        return {
+          success: false,
+          statusCode: 403,
+          error: `Access denied: Missing review permission for ${normalizedUserType}`,
+        };
+      }
+    } else {
       return {
         success: false,
-        error: `Invalid user type: ${userType}`,
+        statusCode: 403,
+        error: "Access denied: Unauthorized role",
       };
-  }
+    }
 
-  const user = await Model.findByPk(userId);
+    if (
+      !Object.values(REGISTRATION_STATUS).includes(
+        status as REGISTRATION_STATUS
+      )
+    ) {
+      return {
+        success: false,
+        statusCode: 400,
+        error: `Invalid status. Allowed values: ${Object.values(
+          REGISTRATION_STATUS
+        ).join(", ")}`,
+      };
+    }
 
-  if (!user) {
+    let Model;
+    switch (userType) {
+      case USER_TYPE.FARMER:
+        Model = Farmer;
+        break;
+      case USER_TYPE.COLD_STORAGE:
+        Model = ColdStorage;
+        break;
+      case USER_TYPE.TRADER:
+        Model = Trader;
+        break;
+      default:
+        return {
+          success: false,
+          statusCode: 400,
+          error: `Invalid user type: ${userType}`,
+        };
+    }
+
+    const user = await Model.findByPk(userId);
+    if (!user) {
+      return {
+        success: false,
+        statusCode: 404,
+        error: `${userType} not found.`,
+      };
+    }
+
+    const agentOnboardedUser = await AgentOnboardedUser.findOne({
+      where: { userId: user.userId, userType },
+    });
+
+    const onboardedByRole = await getUserRole(user.onBoardedBy);
+
+    if (!agentOnboardedUser && onboardedByRole.role === USER_ROLES.AGENT) {
+      return {
+        success: false,
+        statusCode: 404,
+        error: `${userType} not found in agentOnboardUser.`,
+      };
+    }
+    if (
+      user.status === REGISTRATION_STATUS.APPROVED ||
+      user.status === REGISTRATION_STATUS.REJECTED
+    ) {
+      return {
+        success: false,
+        statusCode: 400,
+        error: `${userType} is already ${user.status}.`,
+      };
+    }
+
+    await user.update({ status });
+    if (agentOnboardedUser) {
+      await agentOnboardedUser.update({ statusOfRegistration: status });
+    }
+
+    return {
+      success: true,
+      message: `${userType} status updated to ${status}`,
+    };
+  } catch (error) {
     return {
       success: false,
-      error: `${userType} not found.`,
+      statusCode: 500,
+      error: error.message || "Unexpected error occurred while updating status",
     };
   }
-
-  const agentOnboardedUser = await AgentOnboardedUser.findOne({
-    where: { userId: user.userId, userType },
-  });
-
-  const onboardedByRole = await getUserRole(user.onBoardedBy);
-
-  if (!agentOnboardedUser && onboardedByRole.role === USER_ROLES.AGENT) {
-    return {
-      success: false,
-      error: `${userType} not found in agentOnboardUser.`,
-    };
-  }
-
-  if (
-    user.status === REGISTRATION_STATUS.APPROVED ||
-    user.status === REGISTRATION_STATUS.REJECTED
-  ) {
-    return {
-      success: false,
-      error: `${userType} is already ${user.status}.`,
-    };
-  }
-
-  await user.update({ status });
-
-  if (agentOnboardedUser)
-    await agentOnboardedUser.update({ statusOfRegistration: status });
-
-  return {
-    success: true,
-    message: `${userType} status updated to ${status}`,
-  };
 };
 
 export const mobileOnboardingLoginService = async (userData) => {
