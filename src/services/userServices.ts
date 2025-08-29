@@ -4,8 +4,8 @@ import { generateAgentId, generateRandomPassword } from '../utils/generate';
 import Farmer from "../database/models/farmer";
 import ColdStorage from "../database/models/coldStorage";
 import { createOtp } from "./otpServices";
-
 import { Op, Sequelize } from 'sequelize';
+import { formatDistanceToNow } from "date-fns";
 import bcrypt from 'bcrypt';
 import Trader from "../database/models/trader/trader";
 import { formatDate } from "../utils/dateFormat";
@@ -14,6 +14,10 @@ import KycDocument from "../database/models/kycDocuments";
 import { hasValue } from "../utils/parseQuery";
 import SubAdminWebPermission from "../database/models/subAdminWebPermission";
 import { WEB_ACTIONS } from "../utils/constants/permissions";
+import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
+import dayjs from "dayjs";
+import MandiAgent from "../database/models/mandiAgent";
+import SellRequest from "../database/models/sellRequest";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -921,5 +925,177 @@ export const updateMobileService = async (userId, payload) => {
   return {
     success: true,
     data: updatedData,
+  };
+};
+
+export const getAdminDashboardStats = async () => {
+  const { oneWeekAgo, oneMonthAgo } = getDateRange();
+
+  const [
+    pendingKycStats,
+    approvedKycStats,
+    rejectedKycStats,
+    pendingBuyRequestStats,
+    lastWeekBuyRequestStats,
+    activeSellRequestStats,
+    lastWeekActiveSellRequestStats,
+    totalUsersCount,
+    lastMonthTotalUsersCount,
+    mandiAgentsCount,
+    lastMonthMandiAgentsCount,
+  ] = await Promise.all([
+    KycDocument.count({ where: { status: "pending" } }),
+    KycDocument.count({ where: { status: "approved" } }),
+    KycDocument.count({ where: { status: "rejected" } }),
+
+    BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.PENDING } }),
+    BuyRequest.count({
+      where: {
+        status: BUY_REQUEST_STATUS.PENDING,
+        createdAt: { [Op.gte]: oneWeekAgo },
+      },
+    }),
+
+    SellRequest.count({ where: { isActive: true } }),
+    SellRequest.count({
+      where: { isActive: true, createdAt: { [Op.gte]: oneWeekAgo } },
+    }),
+
+    User.count({
+      where: {
+        role: USER_ROLES.USER,
+        [Op.or]: [
+          { isUserOnBoardedOnMobile: true },
+          { hasStartedUsingMobile: true },
+        ],
+        isActive: true,
+      },
+    }),
+    User.count({
+      where: {
+        role: USER_ROLES.USER,
+        [Op.or]: [
+          { isUserOnBoardedOnMobile: true },
+          { hasStartedUsingMobile: true },
+        ],
+        createdAt: { [Op.gte]: oneMonthAgo },
+        isActive: true,
+      },
+    }),
+
+    MandiAgent.count({ where: { isActive: true } }),
+    MandiAgent.count({
+      where: {
+        createdAt: { [Op.gte]: oneMonthAgo },
+        isActive: true,
+      },
+    }),
+  ]);
+
+  const [recentUsers, recentKyc, recentBuyRequests, recentSellRequests] =
+    await Promise.all([
+      User.findAll({
+        where: {
+          role: USER_ROLES.USER,
+          [Op.or]: [
+            { isUserOnBoardedOnMobile: true },
+            { hasStartedUsingMobile: true },
+          ],
+          isActive: true,
+        },
+        limit: 10,
+        order: [["createdAt", "DESC"]],
+        attributes: ["id", "createdAt"],
+      }),
+      KycDocument.findAll({
+        limit: 10,
+        order: [["updatedAt", "DESC"]],
+        attributes: ["id", "status", "updatedAt"],
+      }),
+      BuyRequest.findAll({
+        limit: 10,
+        order: [["createdAt", "DESC"]],
+        attributes: ["id", "status", "createdAt"],
+      }),
+      SellRequest.findAll({
+        limit: 10,
+        order: [["createdAt", "DESC"]],
+        attributes: ["id", "status", "createdAt"],
+      }),
+    ]);
+
+  const activities: any = [
+    ...recentUsers.map((u) => ({
+      message: "New user registered",
+      timeAgo: formatDistanceToNow(new Date(u.createdAt), { addSuffix: true }),
+      createdAt: u.createdAt,
+    })),
+    ...recentKyc.map((k) => ({
+      message: `KYC ${k.isVerified ? "Approved" : "Rejected"} `,
+      timeAgo: formatDistanceToNow(new Date(k.updatedAt), { addSuffix: true }),
+      createdAt: k.updatedAt,
+    })),
+    ...recentBuyRequests.map((b) => ({
+      message: "New Buy Request created",
+      timeAgo: formatDistanceToNow(new Date(b.createdAt), { addSuffix: true }),
+      createdAt: b.createdAt,
+    })),
+    ...recentSellRequests.map((s) => ({
+      message: "New Sell Request created",
+      timeAgo: formatDistanceToNow(new Date(s.createdAt), { addSuffix: true }),
+      createdAt: s.createdAt,
+    })),
+  ];
+
+  activities.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  return {
+    kycStats: {
+      pendingKycStats,
+      approvedKycStats,
+      rejectedKycStats,
+    },
+    buyRequestStats: {
+      pendingBuyRequestStats,
+      lastWeekBuyRequestPercent:
+        pendingBuyRequestStats === 0
+          ? 0
+          : parseFloat(
+              (
+                (lastWeekBuyRequestStats / pendingBuyRequestStats) *
+                100
+              ).toFixed(0)
+            ),
+    },
+
+    sellRequestStats: {
+      activeSellRequestStats,
+      lastWeekActiveSellRequestStats:
+        activeSellRequestStats === 0
+          ? 0
+          : parseFloat(
+              (
+                (lastWeekActiveSellRequestStats / activeSellRequestStats) *
+                100
+              ).toFixed(0)
+            ),
+    },
+
+    mandiAgentStats: {
+      mandiAgentsCount,
+      lastMonthMandiAgentsCount,
+    },
+    userStats: {
+      totalUsersCount,
+      lastMonthTotalUsersPercent:
+        totalUsersCount === 0
+          ? 0
+          : parseFloat(
+              ((lastMonthTotalUsersCount / totalUsersCount) * 100).toFixed(0)
+            ),
+    },
+    recentActivities: activities.slice(0, 5),
   };
 };
