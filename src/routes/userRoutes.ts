@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
 import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin } from "../controller/user";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats } from "../controller/user";
 import { adminMiddleware, authMiddleware, checkPermissionMiddleware, superAdminMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 import { PERMISSIONS } from "../utils/constants/permissions";
@@ -57,24 +57,30 @@ router.post(
 
 router.get(
   "/mobile/list",
-  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
+  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),      // mobile admin users listing
   retrieveMobileUsers
 );
 
 router.put(
   "/mobile/update_profile",
   authMiddleware,
-  validator.body(mobileUpdateSchema),
+  validator.body(mobileUpdateSchema),            // mobile app update profile
   updateMobileUserProfile
 );
 
-router.get("/mobile/user_profile", authMiddleware, getMobileUserProfile);
+router.get("/mobile/user_profile", authMiddleware, getMobileUserProfile);       // mobile app user profile overview
 router.get(
   "/mobile/user_profile/:userId",
-  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
+  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),         // mobile admin user profile overview
   getMobileUserProfileByAdmin
 );
-router.delete("/mobile/:userId", superAdminMiddleware, deleteMobileUserByAdmin);
+router.delete("/mobile/:userId", superAdminMiddleware, deleteMobileUserByAdmin);       //  mobile admin delete user
+
+router.get(
+  "/admin/dash_stats",
+  superAdminMiddleware,          // mobile admin  dashboard stats
+  retrieveAdminDashboardStats
+); 
 
 export default router;
 
