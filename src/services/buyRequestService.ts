@@ -288,7 +288,7 @@ export const getBuyRequestByIdService = async (
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "createAt"],
+        attributes: ["id", "name", "email", "mobile", "createdAt"],
       },
       {
         model: RequestView,
