@@ -3,6 +3,7 @@ import {
   addMandiPriceService,
   getAllMandiPricesService,
   getMandiPriceByIdService,
+  retrieveDashboardStats,
   updateMandiPriceService,
 } from "../services/mandiPriceService";
 import { parseFilters } from "../utils/parseQuery";
@@ -131,6 +132,27 @@ export const deleteMandiPrice = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to delete mandi prices",
+      error: error.message,
+    });
+  }
+};
+
+export const getDashboardStats = async (req, res) => {
+  try {
+    const response = await retrieveDashboardStats();
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Dashboard Staticts retrieved successfully",
+        data: response,
+      });
+  } catch (error) {
+    console.error("Failed to retrieve dashboard statistics:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve dashboard statistics.",
       error: error.message,
     });
   }
