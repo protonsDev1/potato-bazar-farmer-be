@@ -13,8 +13,26 @@ export const createNewsSchema = Joi.object({
   images: Joi.array().items(Joi.string().uri()).optional(),
   tags: Joi.array().items(Joi.string().trim()).required(),
   isFeatured: Joi.boolean().default(false),
-  createdBy: Joi.string().trim().optional(), 
+  createdBy: Joi.string().trim().optional(),
   source: Joi.string().trim().optional(),
+
+  //  AI optional fields
+  introduction: Joi.string().trim().optional(),
+  keyNumbers: Joi.object().pattern(Joi.string(), Joi.any()).optional(), 
+  changesThisWeek: Joi.string().trim().optional(),
+  supplyAnalysis: Joi.string().trim().optional(),
+  demandSignals: Joi.string().trim().optional(),
+  regionalSnapshot: Joi.string().trim().optional(),
+  policyRisks: Joi.string().trim().optional(),
+  faqs: Joi.array()
+    .items(
+      Joi.object({
+        question: Joi.string().trim().required(),
+        answer: Joi.string().trim().required(),
+      })
+    )
+    .optional(),
+  references: Joi.array().items(Joi.string().uri()).optional()
 });
 
 export const updateNewsSchema = Joi.object({

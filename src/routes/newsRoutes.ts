@@ -39,7 +39,7 @@ router.put(
   updateNews
 );
 router.post(
-  "/api-news",
+  "/ai-news",
   validator.body(createNewsSchema),
   createNewsAI
 );
