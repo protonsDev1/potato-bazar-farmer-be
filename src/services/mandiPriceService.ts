@@ -278,3 +278,32 @@ export const updateMandiPriceService = async (payload, mandiPriceId) => {
     data: result,
   };
 };
+
+export const retrieveDashboardStats = async () => {
+  const curDate = new Date();
+  const todayStart = new Date(curDate.setHours(0, 0, 0, 0));
+  const todayEnd = new Date(curDate.setHours(23, 59, 59, 999));
+
+  const [totalEntries, todaysEntries, totalVarieties] = await Promise.all([
+    MandiPrice.count(),
+
+    MandiPrice.count({
+      where: {
+        createdAt: {
+          [Op.between]: [todayStart, todayEnd],
+        },
+      },
+    }),
+
+    MandiPrice.count({
+      distinct: true,
+      col: "variety",
+    }),
+  ]);
+
+  return {
+    totalEntries,
+    todaysEntries,
+    totalVarieties,
+  };
+};

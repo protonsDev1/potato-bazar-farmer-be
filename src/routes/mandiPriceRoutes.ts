@@ -7,6 +7,7 @@ import {
 import {
   createMandiPrice,
   deleteMandiPrice,
+  getDashboardStats,
   retrieveAllMandiPrices,
   retrieveMandiPriceById,
   updateMandiPrice,
@@ -39,5 +40,6 @@ router.delete(
   mandiAgentAndSuperAdminMiddleware,
   deleteMandiPrice
 );
+router.get("/dash_stats", mandiAgentAndSuperAdminMiddleware, getDashboardStats);
 
 export default router;
