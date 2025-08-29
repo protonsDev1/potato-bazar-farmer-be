@@ -34,10 +34,22 @@ class News extends Model<InferAttributes<News>, InferCreationAttributes<News>> {
   declare tags: string[];
   declare views: CreationOptional<number>;
   declare isFeatured: boolean;
+  declare createdBy: string | null;
+  declare source: string | null;
+
+  // New optional fields
+  declare introduction: string | null;
+  declare keyNumbers: object | null;
+  declare changesThisWeek: string | null;
+  declare supplyAnalysis: string | null;
+  declare demandSignals: string | null;
+  declare regionalSnapshot: string | null;
+  declare policyRisks: string | null;
+  declare faqs: object[] | null;
+  declare references: string[] | null;
+
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
-  declare createdBy: string;       
-  declare source: string | null;  
 }
 
 News.init(
@@ -87,6 +99,45 @@ News.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+
+    // ✅ Newly added optional fields
+    introduction: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    keyNumbers: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    changesThisWeek: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    supplyAnalysis: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    demandSignals: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    regionalSnapshot: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    policyRisks: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    faqs: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    references: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+    },
+
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -94,7 +145,7 @@ News.init(
     updatedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
-    }
+    },
   },
   {
     sequelize,
@@ -105,3 +156,4 @@ News.init(
 );
 
 export default News;
+
