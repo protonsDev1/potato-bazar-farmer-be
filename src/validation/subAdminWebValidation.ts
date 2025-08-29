@@ -5,6 +5,7 @@ export const createSubAdminWebSchema = Joi.object({
   name: Joi.string().trim().min(2).max(100).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).max(50).required(),
+  isActive: Joi.boolean().optional(),
   privileges: Joi.array()
     .items(
       Joi.object({

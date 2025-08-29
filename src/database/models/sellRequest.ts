@@ -8,6 +8,7 @@ import {
 import sequelize from "./db";
 import User from "./user";
 import FavouriteRequest from "./favouriteRequest";
+import RequestView from "./requestView";
 
 export enum SELL_REQUEST_STATUS {
   AVAILABLE = "Available",
@@ -28,22 +29,46 @@ class SellRequest extends Model<
   declare quantity: number;
   declare unit: string;
   declare targetPrice: number | null;
-  declare requiredByDate: Date | null;
-  declare qualityGrade: string;
+  declare minOrderQuantity: string | null;
+  declare qualityGrade: string | null;
   declare packagingType: string | null;
   declare delivery: string | null;
   declare size: number | null;
-  declare sugarContent: string;
-  declare skinSet: string;
-  declare fleshColor: string;
-  declare shape: string;
-  declare soilAdherence: string;
-  declare firmness: string;
-  declare sproutingStatus: string;
-  declare organicCerified: boolean;
+  declare sugarContent: string | null;
+  declare skinSet: string | null;
+  declare fleshColor: string | null;
+  declare shape: string | null;
+  declare soilAdherence: string | null;
+  declare firmness: string | null;
+  declare sproutingStatus: string | null;
+  declare skinColor: string | null;
+  declare tpod: number | null;
+  declare uc: number | null;
+  declare tuberSize: string | null;
+  declare dryMatter: number | null;
+  declare healthCondition: string | null;
+  declare additionalComment: string | null;
+  declare storageTemperature: string | null;
+  declare brand: string | null;
+  declare generation: string | null;
+  declare treatmentStatus: string | null;
+  declare seedSourceType: string | null;
+  declare sproutingCondition: string | null;
+  declare physicalCondition: string | null;
+  declare roguingStatus: string | null;
+  declare perTubeWeight: string | null;
+  declare diseaseFreeCertified: string | null;
+  declare productionMethod: string | null;
+  declare productionDate: Date | null;
+  declare organicCertified: boolean;
   declare isVerified: boolean;
   declare status: SELL_REQUEST_STATUS;
+  declare images?: string[];
+  declare location?: string;
+  declare isAdminVerified: boolean;
+  declare isActive: boolean;
   declare sellFavourites?: FavouriteRequest[];
+  declare views?: RequestView[];
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -86,57 +111,102 @@ SellRequest.init(
     },
     targetPrice: {
       type: DataTypes.FLOAT,
-      allowNull: true,
     },
-    requiredByDate: {
-      type: DataTypes.DATE,
-      allowNull: true,
+    minOrderQuantity: {
+      type: DataTypes.STRING,
     },
     qualityGrade: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     packagingType: {
       type: DataTypes.STRING,
-      allowNull: true,
     },
     delivery: {
       type: DataTypes.STRING,
-      allowNull: true,
     },
     size: {
       type: DataTypes.FLOAT,
-      allowNull: true,
     },
     sugarContent: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     skinSet: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     fleshColor: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     shape: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     soilAdherence: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     firmness: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     sproutingStatus: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
-    organicCerified: {
+    skinColor: {
+      type: DataTypes.STRING,
+    },
+    tpod: {
+      type: DataTypes.FLOAT,
+    },
+    uc: {
+      type: DataTypes.FLOAT,
+    },
+    tuberSize: {
+      type: DataTypes.STRING,
+    },
+    dryMatter: {
+      type: DataTypes.FLOAT,
+    },
+    healthCondition: {
+      type: DataTypes.STRING,
+    },
+    additionalComment: {
+      type: DataTypes.TEXT,
+    },
+    storageTemperature: {
+      type: DataTypes.STRING,
+    },
+    brand: {
+      type: DataTypes.STRING,
+    },
+    generation: {
+      type: DataTypes.STRING,
+    },
+    treatmentStatus: {
+      type: DataTypes.STRING,
+    },
+    seedSourceType: {
+      type: DataTypes.STRING,
+    },
+    sproutingCondition: {
+      type: DataTypes.STRING,
+    },
+    physicalCondition: {
+      type: DataTypes.STRING,
+    },
+    roguingStatus: {
+      type: DataTypes.STRING,
+    },
+    perTubeWeight: {
+      type: DataTypes.STRING,
+    },
+    diseaseFreeCertified: {
+      type: DataTypes.STRING,
+      defaultValue: false,
+    },
+    productionMethod: {
+      type: DataTypes.STRING,
+    },
+    productionDate: {
+      type: DataTypes.DATE,
+    },
+    organicCertified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
@@ -147,6 +217,22 @@ SellRequest.init(
     status: {
       type: DataTypes.STRING,
       defaultValue: SELL_REQUEST_STATUS.AVAILABLE,
+    },
+    images: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    isAdminVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
     createdAt: {
       type: DataTypes.DATE,
