@@ -3,6 +3,7 @@ import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
 import User from "../database/models/user";
 import { generateBuyRequestId } from "../utils/generate";
 import FavouriteRequest from "../database/models/favouriteRequest";
+import RequestView from "../database/models/requestView";
 
 export const createBuyRequestService = async (userId: number, data: any) => {
   const newRequest = await BuyRequest.create({
@@ -21,11 +22,30 @@ export const createBuyRequestService = async (userId: number, data: any) => {
     sugarContent: data.sugarContent,
     skinSet: data.skinSet,
     fleshColor: data.fleshColor,
+    skinColor: data.skinColor,
     shape: data.shape,
+    tpod: data.tpod,
+    uc: data.uc,
+    tuberSize: data.tuberSize,
+    dryMatter: data.dryMatter,
     soilAdherence: data.soilAdherence,
     firmness: data.firmness,
     sproutingStatus: data.sproutingStatus,
-    organicCerified: data.organicCerified,
+    healthCondition: data.healthCondition,
+    additionalComment: data.additionalComment,
+    storageTemperature: data.storageTemperature,
+    brand: data.brand,
+    generation: data.generation,
+    treatmentStatus: data.treatmentStatus,
+    seedSourceType: data.seedSourceType,
+    sproutingCondition: data.sproutingCondition,
+    physicalCondition: data.physicalCondition,
+    roguingStatus: data.roguingStatus,
+    perTubeWeight: data.perTubeWeight,
+    diseaseFreeCertified: data.diseaseFreeCertified,
+    productionMethod: data.productionMethod,
+    productionDate: data.productionDate,
+    organicCertified: data.organicCertified,
     status: BUY_REQUEST_STATUS.PENDING,
   });
 
@@ -44,15 +64,24 @@ export const listBuyRequestsService = async (
     qualityGrade,
     district,
     isVerified,
+    userId,
+    currentBuyRequestId,
   } = query;
 
   const offset = (Number(page) - 1) * Number(perPage);
 
-  const where: any = { status: BUY_REQUEST_STATUS.ACTIVE };
+  // const where: any = { status: BUY_REQUEST_STATUS.ACTIVE };
+  const where: any = { isActive: true };
   const userWhere: any = {};
 
-  if (currentUserId) {
+  if (userId) {
+    where.userId = userId;
+  } else if (currentUserId) {
     where.userId = { [Op.ne]: currentUserId };
+  }
+
+  if (currentBuyRequestId) {
+    where.id = { [Op.ne]: currentBuyRequestId };
   }
 
   if (potatoType) {
@@ -171,17 +200,31 @@ export const listMyBuyRequestsService = async (
     order: [["createdAt", "DESC"]],
   });
 
-  const requestsWithFavourite = rows.map((req: any) => ({
-    ...req.toJSON(),
-    isFavourite: req.buyFavourites && req.buyFavourites.length > 0,
-  }));
+  const requestsWithCounts = await Promise.all(
+    rows.map(async (req: any) => {
+      const favCount = await FavouriteRequest.count({
+        where: { buyRequestId: req.id },
+      });
+
+      const viewCount = await RequestView.count({
+        where: { buyRequestId: req.id },
+      });
+
+      return {
+        ...req.toJSON(),
+        isFavourite: req.buyFavourites && req.buyFavourites.length > 0,
+        favCount,
+        viewCount,
+      };
+    })
+  );
 
   return {
     page: Number(page),
     perPage: Number(perPage),
     totalPages: Math.ceil(count / Number(perPage)),
     total: count,
-    requests: requestsWithFavourite,
+    requests: requestsWithCounts,
   };
 };
 
@@ -245,7 +288,12 @@ export const getBuyRequestByIdService = async (
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile"],
+        attributes: ["id", "name", "email", "mobile", "createAt"],
+      },
+      {
+        model: RequestView,
+        as: "views",
+        attributes: ["id", "userId"],
       },
       ...(currentUserId
         ? [
@@ -263,9 +311,29 @@ export const getBuyRequestByIdService = async (
 
   if (!request) return null;
 
+  if (currentUserId) {
+    await RequestView.findOrCreate({
+      where: { userId: currentUserId, buyRequestId: id },
+      defaults: { userId: currentUserId, buyRequestId: id },
+    });
+  }
+
+  const jsonReq = request.toJSON();
+
+  const [viewCount, favCount] = await Promise.all([
+    RequestView.count({
+      where: { buyRequestId: id },
+    }),
+    FavouriteRequest.count({
+      where: { buyRequestId: id },
+    }),
+  ]);
+
   return {
-    ...request.toJSON(),
-    isFavourite: request.buyFavourites?.length > 0 || false,
+    ...jsonReq,
+    isFavourite: jsonReq.buyFavourites?.length > 0 || false,
+    viewCount,
+    favCount,
   };
 };
 

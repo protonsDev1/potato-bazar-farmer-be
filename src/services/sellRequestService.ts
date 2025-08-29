@@ -5,6 +5,7 @@ import SellRequest, {
   SELL_REQUEST_STATUS,
 } from "../database/models/sellRequest";
 import FavouriteRequest from "../database/models/favouriteRequest";
+import RequestView from "../database/models/requestView";
 
 export const createSellRequestService = async (userId: number, data: any) => {
   const newRequest = await SellRequest.create({
@@ -15,7 +16,7 @@ export const createSellRequestService = async (userId: number, data: any) => {
     quantity: data.quantity,
     unit: data.unit,
     targetPrice: data.targetPrice,
-    requiredByDate: data.requiredByDate,
+    minOrderQuantity: data.minOrderQuantity,
     qualityGrade: data.qualityGrade,
     packagingType: data.packagingType,
     delivery: data.delivery,
@@ -23,11 +24,32 @@ export const createSellRequestService = async (userId: number, data: any) => {
     sugarContent: data.sugarContent,
     skinSet: data.skinSet,
     fleshColor: data.fleshColor,
+    skinColor: data.skinColor,
     shape: data.shape,
+    tpod: data.tpod,
+    uc: data.uc,
+    tuberSize: data.tuberSize,
+    dryMatter: data.dryMatter,
     soilAdherence: data.soilAdherence,
     firmness: data.firmness,
     sproutingStatus: data.sproutingStatus,
-    organicCerified: data.organicCerified,
+    healthCondition: data.healthCondition,
+    additionalComment: data.additionalComment,
+    storageTemperature: data.storageTemperature,
+    brand: data.brand,
+    generation: data.generation,
+    treatmentStatus: data.treatmentStatus,
+    seedSourceType: data.seedSourceType,
+    sproutingCondition: data.sproutingCondition,
+    physicalCondition: data.physicalCondition,
+    roguingStatus: data.roguingStatus,
+    perTubeWeight: data.perTubeWeight,
+    diseaseFreeCertified: data.diseaseFreeCertified,
+    productionMethod: data.productionMethod,
+    productionDate: data.productionDate,
+    organicCertified: data.organicCertified,
+    images: data.images,
+    location: data.location,
     status: SELL_REQUEST_STATUS.AVAILABLE,
   });
 
@@ -46,15 +68,24 @@ export const listSellRequestsService = async (
     qualityGrade,
     district,
     isVerified,
+    userId,
+    currentSellRequestId,
   } = query;
 
   const offset = (Number(page) - 1) * Number(perPage);
 
-  const where: any = { status: SELL_REQUEST_STATUS.AVAILABLE };
+  // const where: any = { status: SELL_REQUEST_STATUS.AVAILABLE };
+  const where: any = { isActive: true };
   const userWhere: any = {};
 
-  if (currentUserId) {
+  if (userId) {
+    where.userId = userId;
+  } else if (currentUserId) {
     where.userId = { [Op.ne]: currentUserId };
+  }
+
+  if (currentSellRequestId) {
+    where.id = { [Op.ne]: currentSellRequestId };
   }
 
   if (potatoType) {
@@ -173,17 +204,31 @@ export const listMySellRequestsService = async (
     order: [["createdAt", "DESC"]],
   });
 
-  const requestsWithFavourite = rows.map((req: any) => ({
-    ...req.toJSON(),
-    isFavourite: req.sellFavourites && req.sellFavourites.length > 0,
-  }));
+  const requestsWithCounts = await Promise.all(
+    rows.map(async (req: any) => {
+      const favCount = await FavouriteRequest.count({
+        where: { sellRequestId: req.id },
+      });
+
+      const viewCount = await RequestView.count({
+        where: { sellRequestId: req.id },
+      });
+
+      return {
+        ...req.toJSON(),
+        isFavourite: req.sellFavourites && req.sellFavourites.length > 0,
+        favCount,
+        viewCount,
+      };
+    })
+  );
 
   return {
     page: Number(page),
     perPage: Number(perPage),
     totalPages: Math.ceil(count / Number(perPage)),
     total: count,
-    requests: requestsWithFavourite,
+    requests: requestsWithCounts,
   };
 };
 
@@ -247,7 +292,12 @@ export const getSellRequestByIdService = async (
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile"],
+        attributes: ["id", "name", "email", "mobile", "createdAt"],
+      },
+      {
+        model: RequestView,
+        as: "views",
+        attributes: ["id", "userId"],
       },
       ...(currentUserId
         ? [
@@ -264,9 +314,29 @@ export const getSellRequestByIdService = async (
   });
   if (!request) return null;
 
+  if (currentUserId) {
+    await RequestView.findOrCreate({
+      where: { userId: currentUserId, sellRequestId: id },
+      defaults: { userId: currentUserId, sellRequestId: id },
+    });
+  }
+
+  const jsonReq = request.toJSON();
+
+  const [viewCount, favCount] = await Promise.all([
+    RequestView.count({
+      where: { sellRequestId: id },
+    }),
+    FavouriteRequest.count({
+      where: { sellRequestId: id },
+    }),
+  ]);
+
   return {
-    ...request.toJSON(),
+    ...jsonReq,
     isFavourite: request.sellFavourites?.length > 0 || false,
+    viewCount,
+    favCount,
   };
 };
 
