@@ -1,4 +1,4 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
@@ -601,6 +601,25 @@ export const deleteMobileUserByAdmin = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Failed in deleting mobile user.",
+    });
+  }
+};
+
+export const retrieveAdminDashboardStats = async (req, res) => {
+  try {
+    const dashboarStatistics = await getAdminDashboardStats();
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Admin Dashboard Statistics retrieved successfully.",
+        data: dashboarStatistics,
+      });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed in retrieving dashboard statistics.",
     });
   }
 };
