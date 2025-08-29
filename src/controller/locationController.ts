@@ -67,6 +67,13 @@ export const listDistricts = async (req, res) => {
 
     const districts = await District.findAll({
       where: whereClause,
+      include: [
+        {
+          model: State,
+          as: "state",
+          attributes: ["id", "name"],
+        },
+      ],
       attributes: ["id", "name"],
       order: [["name", "ASC"]],
     });
