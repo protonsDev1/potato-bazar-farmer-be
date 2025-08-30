@@ -488,7 +488,7 @@ export const updateColdStorageSchema = Joi.object({
   slabWiseDiscount: Joi.array()
     .items(
       Joi.object({
-        quantityInMt: Joi.number().optional().allow(null, ""),
+        quantityInMt: Joi.string().max(255).optional().allow(null, ""),
         discount: Joi.number().optional().allow(null, ""),
       })
     )
