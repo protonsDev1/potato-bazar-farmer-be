@@ -14,7 +14,7 @@ class SlabWiseDiscount extends Model<
 > {
   declare id: CreationOptional<number>;
   declare coldStorageId: number;
-  declare quantityInMt: number | null;
+  declare quantityInMt: string | null;
   declare discount: number | null;
 }
 
@@ -27,7 +27,7 @@ SlabWiseDiscount.init(
       references: { model: "coldStorages", key: "id" },
       onDelete: "CASCADE",
     },
-    quantityInMt: { type: DataTypes.DECIMAL, allowNull: true },
+    quantityInMt: { type: DataTypes.STRING, allowNull: true },
     discount: { type: DataTypes.DECIMAL, allowNull: true },
   },
   {
