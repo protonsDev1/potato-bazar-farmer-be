@@ -1,26 +1,26 @@
 import Joi from "joi";
 
 export const onboardTraderSchema = Joi.object({
-  fullName: Joi.string().required(),
-  businessName: Joi.string().required(),
-  businessAddress: Joi.string().optional().allow(null, ""),
+  fullName: Joi.string().max(255).required(),
+  businessName: Joi.string().max(255).required(),
+  businessAddress: Joi.string().max(255).optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).required(),
-  whatsappNumber: Joi.string().max(15).allow(null, ""),
-  email: Joi.string().email().allow(null, ""),
+  whatsappNumber: Joi.string().max(255).max(15).allow(null, ""),
+  email: Joi.string().max(255).email().allow(null, ""),
 
-  state: Joi.string().required(),
-  district: Joi.string().required(),
-  cityOrVillage: Joi.string().required(),
-  taluka: Joi.string().optional().allow(null, ""),
-  pinCode: Joi.string().max(10).required(),
-  digiPin: Joi.string().optional().allow(null, ""),
-  geoLocation: Joi.string().optional().allow(null, ""),
-  languagePreference: Joi.string().optional().allow(null, ""),
+  state: Joi.string().max(255).required(),
+  district: Joi.string().max(255).required(),
+  cityOrVillage: Joi.string().max(255).required(),
+  taluka: Joi.string().max(255).optional().allow(null, ""),
+  pinCode: Joi.string().max(255).max(10).required(),
+  digiPin: Joi.string().max(255).optional().allow(null, ""),
+  geoLocation: Joi.string().max(255).optional().allow(null, ""),
+  languagePreference: Joi.string().max(255).optional().allow(null, ""),
 
   companyRegisteredVendor: Joi.boolean().optional(),
-  mainCompany: Joi.string().allow(null, ""),
+  mainCompany: Joi.string().max(255).allow(null, ""),
 
-  numberOfEmployees: Joi.string().required(),
+  numberOfEmployees: Joi.string().max(255).required(),
   ownPotatoFarming: Joi.boolean().optional(),
   acres: Joi.number().allow(null).optional(),
   yearlyPurchaseVolumeTons: Joi.number().required(),
@@ -31,14 +31,14 @@ export const onboardTraderSchema = Joi.object({
   spotBuying: Joi.boolean().optional().allow(null),
   seedsSales: Joi.boolean().optional().allow(null),
   ownColdStorage: Joi.boolean().optional().allow(null),
-  yearsInTrading: Joi.string().required(),
+  yearsInTrading: Joi.string().max(255).required(),
   averageDailySalesKatta: Joi.number().required(),
   salesOwnPotatoes: Joi.boolean().optional().allow(null),
   onlineAuctionInterest: Joi.boolean().optional().allow(null),
   bankLoanFacility: Joi.boolean().optional().allow(null),
   coldStorageAccess: Joi.boolean().optional().allow(null),
   acceptsOnlinePayments: Joi.boolean().optional().allow(null),
-  subVariety: Joi.array().items(Joi.string()).optional(),
+  subVariety: Joi.array().items(Joi.string().max(255)).optional(),
   // panNumber: Joi.string().length(10).required(),
   // gstNumber: Joi.string().max(30).allow(null, ""),
   // fssaiNumber: Joi.string().max(50).allow(null, ""),
@@ -49,7 +49,7 @@ export const onboardTraderSchema = Joi.object({
   traderInterests: Joi.array()
     .items(
       Joi.object({
-        interest: Joi.string().required(),
+        interest: Joi.string().max(255).required(),
       })
     )
     .min(1)
@@ -58,7 +58,7 @@ export const onboardTraderSchema = Joi.object({
   traderTypes: Joi.array()
     .items(
       Joi.object({
-        type: Joi.string().required(),
+        type: Joi.string().max(255).required(),
       })
     )
     .min(1)
@@ -67,7 +67,7 @@ export const onboardTraderSchema = Joi.object({
   traderVarieties: Joi.array()
     .items(
       Joi.object({
-        variety: Joi.string().required(),
+        variety: Joi.string().max(255).required(),
       })
     )
     .min(1)
@@ -76,7 +76,7 @@ export const onboardTraderSchema = Joi.object({
   cropsTraded: Joi.array()
     .items(
       Joi.object({
-        cropName: Joi.string().required(),
+        cropName: Joi.string().max(255).required(),
       })
     )
     .min(1)
@@ -85,7 +85,7 @@ export const onboardTraderSchema = Joi.object({
   marketCoverages: Joi.array()
     .items(
       Joi.object({
-        name: Joi.string().required(),
+        name: Joi.string().max(255).required(),
       })
     )
     .optional(),
@@ -99,45 +99,45 @@ export const onboardTraderSchema = Joi.object({
   // }).required(),
 
   mandiDetails: Joi.object({
-    mandiName: Joi.string().required(),
-    state: Joi.string().required(),
-    district: Joi.string().required(),
-    cityOrVillage: Joi.string().required(),
-    shopNumber: Joi.string().optional().allow(null, ""),
-    mandiLicenceNo: Joi.string().required(),
+    mandiName: Joi.string().max(100).required(),
+    state: Joi.string().max(100).required(),
+    district: Joi.string().max(255).required(),
+    cityOrVillage: Joi.string().max(100).required(),
+    shopNumber: Joi.string().max(50).optional().allow(null, ""),
+    mandiLicenceNo: Joi.string().max(255).required(),
   }).required(),
 
   traderDocuments: Joi.object({
-    panCardUrl: Joi.string().uri().optional().allow(null, ""),
-    businessCardUrl: Joi.string().uri().optional().allow(null, ""),
-    tradeLicenseUrl: Joi.string().uri().optional().allow(null, ""),
-    recentInvoiceUrl: Joi.string().uri().optional().allow(null, ""),
+    panCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    businessCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    tradeLicenseUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    recentInvoiceUrl: Joi.string().max(255).uri().optional().allow(null, ""),
   }).optional(),
 });
 
 export const updateTraderSchema = Joi.object({
-  fullName: Joi.string().optional().allow(null, ""),
-  businessName: Joi.string().optional().allow(null, ""),
-  businessAddress: Joi.string().optional().allow(null, ""),
+  fullName: Joi.string().max(255).optional().allow(null, ""),
+  businessName: Joi.string().max(255).optional().allow(null, ""),
+  businessAddress: Joi.string().max(255).optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).optional().allow(null, ""),
-  whatsappNumber: Joi.string().max(15).allow(null, ""),
-  email: Joi.string().email().allow(null, ""),
+  whatsappNumber: Joi.string().max(255).max(15).allow(null, ""),
+  email: Joi.string().max(255).email().allow(null, ""),
 
-  state: Joi.string().optional().allow(null, ""),
-  district: Joi.string().optional().allow(null, ""),
-  taluka: Joi.string().optional().allow(null, ""),
-  cityOrVillage: Joi.string().optional().allow(null, ""),
-  pinCode: Joi.string().max(10).optional().allow(null, ""),
-  digiPin: Joi.string().optional().allow(null, ""),
-  geoLocation: Joi.string().optional().allow(null, ""),
-  languagePreference: Joi.string().optional().allow(null, ""),
+  state: Joi.string().max(255).optional().allow(null, ""),
+  district: Joi.string().max(255).optional().allow(null, ""),
+  taluka: Joi.string().max(255).optional().allow(null, ""),
+  cityOrVillage: Joi.string().max(255).optional().allow(null, ""),
+  pinCode: Joi.string().max(255).max(10).optional().allow(null, ""),
+  digiPin: Joi.string().max(255).optional().allow(null, ""),
+  geoLocation: Joi.string().max(255).optional().allow(null, ""),
+  languagePreference: Joi.string().max(255).optional().allow(null, ""),
 
   companyRegisteredVendor: Joi.boolean().optional().allow(null),
-  mainCompany: Joi.string().allow(null, ""),
+  mainCompany: Joi.string().max(255).allow(null, ""),
 
-  numberOfEmployees: Joi.string().optional().allow(null, ""),
+  numberOfEmployees: Joi.string().max(255).optional().allow(null, ""),
   ownPotatoFarming: Joi.boolean().optional().allow(null),
-  acres: Joi.number().allow(null).optional().allow(null),
+  acres: Joi.number().optional().allow(null),
   yearlyPurchaseVolumeTons: Joi.number().optional().allow(null),
   mainProcurementRegion: Joi.string().optional().allow(null, ""),
   geographicalMarketCovered: Joi.string().optional().allow(null, ""),
@@ -146,14 +146,14 @@ export const updateTraderSchema = Joi.object({
   spotBuying: Joi.boolean().optional().allow(null),
   seedsSales: Joi.boolean().optional().allow(null),
   ownColdStorage: Joi.boolean().optional().allow(null),
-  yearsInTrading: Joi.string().optional().allow(null, ""),
+  yearsInTrading: Joi.string().max(255).optional().allow(null, ""),
   averageDailySalesKatta: Joi.number().optional().allow(null),
   salesOwnPotatoes: Joi.boolean().optional().allow(null),
   onlineAuctionInterest: Joi.boolean().optional().allow(null),
   bankLoanFacility: Joi.boolean().optional().allow(null),
   coldStorageAccess: Joi.boolean().optional().allow(null),
   acceptsOnlinePayments: Joi.boolean().optional().allow(null),
-  subVariety: Joi.array().items(Joi.string()).optional(),
+  subVariety: Joi.array().items(Joi.string().max(255)).optional(),
   // panNumber: Joi.string().length(10).optional(),
   // gstNumber: Joi.string().max(30).allow(null, ""),
   // fssaiNumber: Joi.string().max(50).allow(null, ""),
@@ -162,7 +162,7 @@ export const updateTraderSchema = Joi.object({
   traderInterests: Joi.array()
     .items(
       Joi.object({
-        interest: Joi.string().required(),
+        interest: Joi.string().max(255).required(),
       })
     )
     .optional(),
@@ -170,7 +170,7 @@ export const updateTraderSchema = Joi.object({
   traderTypes: Joi.array()
     .items(
       Joi.object({
-        type: Joi.string().required(),
+        type: Joi.string().max(255).required(),
       })
     )
     .optional(),
@@ -178,7 +178,7 @@ export const updateTraderSchema = Joi.object({
   traderVarieties: Joi.array()
     .items(
       Joi.object({
-        variety: Joi.string().required(),
+        variety: Joi.string().max(255).required(),
       })
     )
     .optional(),
@@ -186,7 +186,7 @@ export const updateTraderSchema = Joi.object({
   cropsTraded: Joi.array()
     .items(
       Joi.object({
-        cropName: Joi.string().required(),
+        cropName: Joi.string().max(255).required(),
       })
     )
     .optional(),
@@ -194,7 +194,7 @@ export const updateTraderSchema = Joi.object({
   marketCoverages: Joi.array()
     .items(
       Joi.object({
-        name: Joi.string().required(),
+        name: Joi.string().max(255).required(),
       })
     )
     .optional(),
@@ -208,18 +208,18 @@ export const updateTraderSchema = Joi.object({
   // }).required(),
 
   mandiDetails: Joi.object({
-    mandiName: Joi.string().optional().allow(null, ""),
-    state: Joi.string().optional().allow(null, ""),
-    district: Joi.string().optional().allow(null, ""),
-    cityOrVillage: Joi.string().optional().allow(null, ""),
-    shopNumber: Joi.string().optional().allow(null, ""),
-    mandiLicenceNo: Joi.string().optional().allow(null, ""),
+    mandiName: Joi.string().max(100).optional().allow(null, ""),
+    state: Joi.string().max(100).optional().allow(null, ""),
+    district: Joi.string().max(255).optional().allow(null, ""),
+    cityOrVillage: Joi.string().max(100).optional().allow(null, ""),
+    shopNumber: Joi.string().max(50).optional().allow(null, ""),
+    mandiLicenceNo: Joi.string().max(255).optional().allow(null, ""),
   }).optional(),
 
   traderDocuments: Joi.object({
-    panCardUrl: Joi.string().uri().optional().allow(null, ""),
-    businessCardUrl: Joi.string().uri().optional().allow(null, ""),
-    tradeLicenseUrl: Joi.string().uri().optional().allow(null, ""),
-    recentInvoiceUrl: Joi.string().uri().optional().allow(null, ""),
+    panCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    businessCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    tradeLicenseUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    recentInvoiceUrl: Joi.string().max(255).uri().optional().allow(null, ""),
   }).optional(),
 });
