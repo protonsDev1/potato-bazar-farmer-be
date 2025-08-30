@@ -59,7 +59,7 @@ export const retrieveAllUsers = async (
         where: whereCondition,
         limit,
         offset,
-        order: [["createdAt", "DESC"]],
+        order: [["updatedAt", "DESC"]],
       }
     );
 

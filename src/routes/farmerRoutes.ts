@@ -22,6 +22,8 @@ import {
 } from "../controller/farmer";
 import { verifyOtpSchema } from "../validation/userValidator";
 import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
+import { duplicationCheckMiddleware } from "../middlewares/duplicationCheckMiddleware";
+import Farmer from "../database/models/farmer";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -30,11 +32,13 @@ router.post(
   "/create",
   checkWebPermissionMiddleware(WEB_MODULES.FARMER, WEB_ACTIONS.CREATE, true),
   validator.body(onboardFarmerSchema),
+  duplicationCheckMiddleware(Farmer, "create"),
   createFarmer
 );
 router.post(
   "/self_onboard",
   validator.body(onboardFarmerSchema),
+  duplicationCheckMiddleware(Farmer, "create"),
   selfOnboardFarmer
 );
 router.get(
@@ -46,6 +50,7 @@ router.put(
   "/update/:farmerId",
   checkWebPermissionMiddleware(WEB_MODULES.FARMER, WEB_ACTIONS.UPDATE, true),
   validator.body(updateFarmerSchema),
+  duplicationCheckMiddleware(Farmer, "update", "farmerId"),
   updateFarmer
 );
 router.get("/", adminOrSubAdminMiddleware, getFarmerList);
