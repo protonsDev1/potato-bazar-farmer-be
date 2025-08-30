@@ -22,6 +22,8 @@ import {
 } from "../controller/coldStorage";
 import { verifyOtpSchema } from "../validation/userValidator";
 import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
+import { duplicationCheckMiddleware } from "../middlewares/duplicationCheckMiddleware";
+import ColdStorage from "../database/models/coldStorage";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -34,12 +36,14 @@ router.post(
     true
   ),
   validator.body(coldStorageSchema),
+  duplicationCheckMiddleware(ColdStorage, "create"),
   createColdStorage
 );
 
 router.post(
   "/self_onboard",
   validator.body(coldStorageSchema),
+  duplicationCheckMiddleware(ColdStorage, "create"),
   selfOnboardColdStorage
 );
 
@@ -61,6 +65,7 @@ router.put(
     true
   ),
   validator.body(updateColdStorageSchema),
+  duplicationCheckMiddleware(ColdStorage, "update", "coldStorageId"),
   updateColdStorage
 );
 router.get("/", adminOrSubAdminMiddleware, getColdStorageList);
