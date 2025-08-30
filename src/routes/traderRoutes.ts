@@ -21,6 +21,8 @@ import {
 } from "../validation/traderValidation";
 import { verifyOtpSchema } from "../validation/userValidator";
 import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
+import { duplicationCheckMiddleware } from "../middlewares/duplicationCheckMiddleware";
+import Trader from "../database/models/trader/trader";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -29,12 +31,14 @@ router.post(
   "/create",
   checkWebPermissionMiddleware(WEB_MODULES.TRADER, WEB_ACTIONS.CREATE, true),
   validator.body(onboardTraderSchema),
+  duplicationCheckMiddleware(Trader, "create"),
   createTrader
 );
 
 router.post(
   "/self_onboard",
   validator.body(onboardTraderSchema),
+  duplicationCheckMiddleware(Trader, "create"),
   selfOnboardedTrader
 );
 
@@ -42,6 +46,7 @@ router.put(
   "/update/:traderId",
   checkWebPermissionMiddleware(WEB_MODULES.TRADER, WEB_ACTIONS.UPDATE, true),
   validator.body(updateTraderSchema),
+  duplicationCheckMiddleware(Trader, "update", "traderId"),
   updateTrader
 );
 

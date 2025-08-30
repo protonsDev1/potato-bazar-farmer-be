@@ -27,17 +27,10 @@ import AgentOnboardedUser, {
 import LikeColdStorage from "../database/models/likeColdStorage";
 import { getUserRole } from "./userServices";
 
-const STORAGE_SIZE_RANGES = {
-  small: { min: 0, max: 999 },
-  medium: { min: 1000, max: 5000 },
-  large: { min: 5001, max: Number.MAX_SAFE_INTEGER },
-};
-
 export async function onboardColdStorage(payload: any) {
   try {
-    console.log("payload===>>", payload);
-
     return await sequelize.transaction(async (t) => {
+
       const coldStorage = await ColdStorage.create(
         {
           name: payload.name,
