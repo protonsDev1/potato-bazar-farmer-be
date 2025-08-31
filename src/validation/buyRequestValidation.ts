@@ -10,10 +10,10 @@ export const createBuyRequestSchema = Joi.object({
   qualityGrade: Joi.string().valid("Super", "Good", "Average").optional(),
   packagingType: Joi.string().optional(),
   delivery: Joi.string().valid("Ex Farm", "Ex Cold Storage").optional(),
-  size: Joi.number().optional(),
-  sugarContent: Joi.string().valid("Sugar Free", "Non Sugar Free").optional(),
+  size: Joi.string().optional(),
+  sugarContent: Joi.string().valid("Sugar Free", "Non-Sugar Free").optional(),
   skinSet: Joi.string()
-    .valid("Kaccha (Immature/Early Harvest)", "Pakka (Mature)")
+    .valid("Kaccha (Immature Skin / Early Harvest)", "Pakka (Mature Skin)")
     .optional(),
   fleshColor: Joi.string().optional(),
   skinColor: Joi.string().optional(),
@@ -30,7 +30,7 @@ export const createBuyRequestSchema = Joi.object({
   storageTemperature: Joi.string().optional(),
   brand: Joi.string().optional(),
   generation: Joi.string().valid("G1", "G2", "G3", "G4", "G5").optional(),
-  treatmentStatus: Joi.string().valid("Treatment", "Untreated").optional(),
+  treatmentStatus: Joi.string().valid("Treated", "Untreated").optional(),
   seedSourceType: Joi.string()
     .valid("Tissue Culture", "Breeder Seed")
     .optional(),
@@ -56,10 +56,10 @@ export const updateBuyRequestSchema = Joi.object({
   qualityGrade: Joi.string().valid("Super", "Good", "Average").optional(),
   packagingType: Joi.string().optional(),
   delivery: Joi.string().valid("Ex Farm", "Ex Cold Storage").optional(),
-  size: Joi.number().optional(),
-  sugarContent: Joi.string().valid("Sugar Free", "Non Sugar Free").optional(),
+  size: Joi.string().optional(),
+  sugarContent: Joi.string().valid("Sugar Free", "Non-Sugar Free").optional(),
   skinSet: Joi.string()
-    .valid("Kaccha (Immature/Early Harvest)", "Pakka (Mature)")
+    .valid("Kaccha (Immature Skin / Early Harvest)", "Pakka (Mature Skin)")
     .optional(),
   fleshColor: Joi.string().optional(),
   skinColor: Joi.string().optional(),
@@ -77,7 +77,7 @@ export const updateBuyRequestSchema = Joi.object({
   storageTemperature: Joi.string().optional(),
   brand: Joi.string().optional(),
   generation: Joi.string().valid("G1", "G2", "G3", "G4", "G5").optional(),
-  treatmentStatus: Joi.string().valid("Treatment", "Untreated").optional(),
+  treatmentStatus: Joi.string().valid("Treated", "Untreated").optional(),
   seedSourceType: Joi.string()
     .valid("Tissue Culture", "Breeder Seed")
     .optional(),
