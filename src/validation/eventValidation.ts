@@ -15,7 +15,7 @@ export const createEventSchema = Joi.object({
   endTime: Joi.string().required(),
   state: Joi.string().required(),
   district: Joi.string().required(),
-  city: Joi.string().required(),
+  city: Joi.string().optional().allow(null, ""),
   location: Joi.string().required(),
   document: Joi.array().items(Joi.string()).optional(),
   website: Joi.string().optional().allow(null, ""),
