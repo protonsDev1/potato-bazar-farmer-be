@@ -1,4 +1,4 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
@@ -621,5 +621,100 @@ export const retrieveAdminDashboardStats = async (req, res) => {
       success: false,
       message: error.message || "Failed in retrieving dashboard statistics.",
     });
+  }
+};
+
+export const createTicket = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {  subject, category, priority } = req.body;
+
+    const ticket = await createSupportTicket(userId, subject, category, priority);
+
+    return res.status(201).json({
+      success: true,
+      message: "Support ticket created successfully.",
+      ticket,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to create support ticket.",
+    });
+  }
+};
+
+export const replyToSupportTicket = async (req, res) => {
+  try {
+    const { ticketId, reply } = req.body;
+    const response = await addReplyToTicket(ticketId, reply);
+
+    if (!response.success) {
+      return res.status(404).json({ success: false, message: response.error });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: response.message,
+      ticket: response.ticket
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const updateSupportTicketStatus = async (req, res) => {
+  try {
+    const { ticketId, status } = req.body;
+    const response = await changeTicketStatus(ticketId, status);
+
+    if (!response.success) {
+      return res.status(404).json({ success: false, message: response.error });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: response.message,
+      ticket: response.ticket
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const listSupportTickets = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status, search } = req.query;
+
+    const response = await getSupportTickets(
+      Number(page),
+      Number(limit),
+      status as string,
+      search as string
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Support tickets retrieved successfully.",
+      ...response,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const getTicketDetails = async (req, res) => {
+  try {
+    const { ticketId } = req.query;
+
+    const ticket = await getSupportTicketById(Number(ticketId));
+
+    return res.status(200).json({
+      success: true,
+      message: "Support ticket details retrieved successfully.",
+      ticketDetails: ticket
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
