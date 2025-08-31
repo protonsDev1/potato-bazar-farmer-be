@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers } from "../controller/user";
+import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, createSupportTicketSchema, replyTicketSchema, updateTicketStatusSchema } from "../validation/userValidator";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, createTicket, updateSupportTicketStatus, replyToSupportTicket, listSupportTickets, getTicketDetails } from "../controller/user";
 import { adminMiddleware, authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 import { PERMISSIONS } from "../utils/constants/permissions";
@@ -60,6 +60,21 @@ router.get(
   checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
   retrieveMobileUsers
 );
+
+router.post(
+  "/support",
+  authMiddleware,
+  validator.body(createSupportTicketSchema),
+  createTicket
+);
+
+router.post("/support/reply",adminMiddleware, validator.body(replyTicketSchema), replyToSupportTicket);
+router.post("/support/status", adminMiddleware,validator.body(updateTicketStatusSchema), updateSupportTicketStatus);
+router.get("/support",adminMiddleware, listSupportTickets);
+router.get("/support-details",adminMiddleware, getTicketDetails);
+
+
+
 
 export default router;
 

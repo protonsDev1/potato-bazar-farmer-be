@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { PriorityEnum, StatusEnum } from "../database/models/helpAndSupport";
+import { TICKET_PRIORITY } from "../database/models/userSupport";
 
 // Define the Joi schema for user signup validation
 export const userSchema = Joi.object({
@@ -153,4 +154,23 @@ export const mobileLoginSchema = Joi.object({
   district: Joi.string().required(),
   cityOrVillage: Joi.string().required(),
   pinCode: Joi.string().required(),
+});
+
+
+export const createSupportTicketSchema = Joi.object({
+  subject: Joi.string().trim().required(),
+  category: Joi.string().trim().required(),
+  priority: Joi.string()
+    .valid(...Object.values(TICKET_PRIORITY))
+    .default(TICKET_PRIORITY.MEDIUM),
+});
+
+export const replyTicketSchema = Joi.object({
+  ticketId: Joi.number().required(),
+  reply: Joi.string().trim().required(),
+});
+
+export const updateTicketStatusSchema = Joi.object({
+  ticketId: Joi.number().required(),
+  status: Joi.string().valid("Open", "In Progress", "Resolved", "Closed").required(),
 });
