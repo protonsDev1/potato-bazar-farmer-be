@@ -12,9 +12,7 @@ export const createBuyRequestSchema = Joi.object({
   delivery: Joi.string().valid("Ex Farm", "Ex Cold Storage").optional(),
   size: Joi.string().optional(),
   sugarContent: Joi.string().valid("Sugar Free", "Non-Sugar Free").optional(),
-  skinSet: Joi.string()
-    .valid("Kaccha (Immature Skin / Early Harvest)", "Pakka (Mature Skin)")
-    .optional(),
+  skinSet: Joi.string().optional(),
   fleshColor: Joi.string().optional(),
   skinColor: Joi.string().optional(),
   shape: Joi.string().optional(),
@@ -58,9 +56,7 @@ export const updateBuyRequestSchema = Joi.object({
   delivery: Joi.string().valid("Ex Farm", "Ex Cold Storage").optional(),
   size: Joi.string().optional(),
   sugarContent: Joi.string().valid("Sugar Free", "Non-Sugar Free").optional(),
-  skinSet: Joi.string()
-    .valid("Kaccha (Immature Skin / Early Harvest)", "Pakka (Mature Skin)")
-    .optional(),
+  skinSet: Joi.string().optional(),
   fleshColor: Joi.string().optional(),
   skinColor: Joi.string().optional(),
   tpod: Joi.number().optional(),
