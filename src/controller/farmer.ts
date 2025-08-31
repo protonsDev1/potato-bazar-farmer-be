@@ -11,10 +11,16 @@ import {
   softDeleteFarmerById,
   getAllFarmers,
 } from "../services/farmerServices";
-import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
+import {
+  checkExistingUser,
+  findUserByPkInDB,
+  updateUserInDB,
+} from "../services/userServices";
 import { parseFilters } from "../utils/parseQuery";
-import { verifyOtpFromDB } from "../services/otpServices";
+import { createOtp, verifyOtpFromDB } from "../services/otpServices";
 import { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
+import Trader from "../database/models/trader/trader";
+import ColdStorage from "../database/models/coldStorage";
 
 export const createFarmer = async (req, res) => {
   try {
@@ -238,5 +244,99 @@ export const exportFarmers = async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to export farmers", error: error.message });
+  }
+};
+
+export const requestUpdateFarmer = async (req, res) => {
+  try {
+    const { farmerId } = req.params;
+    const { newMobileNumber } = req.body;
+
+    const farmer = await Farmer.findOne({
+      where: { id: farmerId, isDeleted: false },
+    });
+    if (!farmer)
+      return res
+        .status(404)
+        .json({ success: false, message: "Farmer not found" });
+
+    if (farmer.optionalNumber === newMobileNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "New mobile number is same as the current one",
+      });
+    }
+
+    const existingUser = await checkExistingUser(newMobileNumber);
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Mobile number already in use by another user",
+      });
+    }
+
+    await createOtp(newMobileNumber);
+
+    return res.status(200).json({
+      success: true,
+      message: `OTP sent to ${newMobileNumber}. Please verify to update mobile number.`,
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to request mobile update" });
+  }
+};
+
+export const verifyUpdateFarmer = async (req, res) => {
+  try {
+    const { farmerId } = req.params;
+    const { newMobileNumber, otp } = req.body;
+
+    const farmer = await Farmer.findOne({
+      where: { id: farmerId, isDeleted: false },
+      attributes: ["id", "userId"],
+    });
+
+    if (!farmer) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Farmer not found" });
+    }
+
+    const isValid = await verifyOtpFromDB(newMobileNumber, otp);
+    if (!isValid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    const updates = [
+      Farmer.update(
+        { optionalNumber: newMobileNumber },
+        { where: { id: farmerId } }
+      ),
+      updateUserInDB(farmer.userId, { mobile: newMobileNumber }),
+      Trader.update(
+        { mobileNumber: newMobileNumber },
+        { where: { userId: farmer.userId, isDeleted: false } }
+      ),
+      ColdStorage.update(
+        { mobileNumber: newMobileNumber },
+        { where: { userId: farmer.userId, isDeleted: false } }
+      ),
+    ];
+
+    await Promise.all(updates);
+
+    return res.status(200).json({
+      success: true,
+      message: "Mobile number updated successfully",
+      newMobileNumber,
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to verify mobile update" });
   }
 };
