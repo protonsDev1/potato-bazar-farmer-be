@@ -126,6 +126,12 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
 export const getEventDetail = async (eventId) => {
   const event = await Event.findOne({ where: { id: eventId } });
 
+  if (!event)
+    return {
+      success: false,
+      error: "Event not found.",
+    };
+
   const start = buildDate(event.startDate, event.startTime);
   const end = buildDate(event.endDate, event.endTime);
 
@@ -140,26 +146,54 @@ export const getEventDetail = async (eventId) => {
     where: { eventId },
   });
 
-    // expired events filter
-    const whereCondition:any ={};
+  // expired events filter
+  const whereCondition: any = {};
   whereCondition.endDate = { [Op.gte]: now };
 
   const moreEvents = await Event.findAll({
     where: {
       category: event.category,
       id: { [Op.ne]: eventId },
-      ...whereCondition
+      ...whereCondition,
     },
     order: [["createdAt", "DESC"]],
     limit: 5,
   });
 
+  const enrichedResults = await Promise.all(
+    moreEvents.map(async (entry) => {
+      const peopleInterested = await EventRequest.count({
+        where: { eventId: entry.id },
+      });
+
+      const start = buildDate(entry.startDate, entry.startTime);
+      const end = buildDate(entry.endDate, entry.endTime);
+
+      const now = new Date();
+      const istOffset = 5.5 * 60 * 60 * 1000;
+      const istNow = new Date(now.getTime() + istOffset);
+
+      const isEventUpcoming = istNow < start;
+      const isEventGoing = istNow >= start && now <= end;
+
+      return {
+        ...entry.toJSON(),
+        isEventUpcoming,
+        isEventGoing,
+        peopleInterested,
+      };
+    })
+  );
+
   return {
-    event,
-    isEventUpcoming,
-    isEventGoing,
-    peopleInterested,
-    moreEvents,
+    success: true,
+    event: {
+      ...event.toJSON(),
+      isEventUpcoming,
+      isEventGoing,
+      peopleInterested,
+    },
+    moreEvents: enrichedResults,
   };
 };
 

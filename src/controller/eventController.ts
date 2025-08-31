@@ -63,6 +63,11 @@ export const retrieveEventDetail = async (req, res) => {
 
     const eventDetail = await getEventDetail(eventId);
 
+    if (!eventDetail.success)
+      return res
+        .status(400)
+        .json({ success: false, message: eventDetail.error });
+
     return res.status(200).json({
       success: true,
       message: "Event detail retrived successfully.",
