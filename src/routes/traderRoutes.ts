@@ -12,8 +12,10 @@ import {
   exportTraders,
   getTraderList,
   getTraderProfileOverview,
+  requestUpdateTrader,
   selfOnboardedTrader,
   updateTrader,
+  verifyUpdateTrader,
 } from "../controller/traderController";
 import {
   onboardTraderSchema,
@@ -69,6 +71,18 @@ router.post(
   validator.body(verifyOtpSchema),
   adminMiddleware,
   exportTraders
+);
+
+router.post(
+  "/:traderId/request-mobile-update",
+  checkWebPermissionMiddleware(WEB_MODULES.TRADER, WEB_ACTIONS.UPDATE, false),
+  requestUpdateTrader
+);
+
+router.post(
+  "/:traderId/verify-mobile-update",
+  checkWebPermissionMiddleware(WEB_MODULES.TRADER, WEB_ACTIONS.UPDATE, false),
+  verifyUpdateTrader
 );
 
 export default router;

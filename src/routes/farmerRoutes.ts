@@ -19,6 +19,8 @@ import {
   updateFarmer,
   exportFarmers,
   deleteFarmer,
+  requestUpdateFarmer,
+  verifyUpdateFarmer,
 } from "../controller/farmer";
 import { verifyOtpSchema } from "../validation/userValidator";
 import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
@@ -64,6 +66,17 @@ router.post(
   validator.body(verifyOtpSchema),
   adminMiddleware,
   exportFarmers
+);
+router.post(
+  "/:farmerId/request-mobile-update",
+  checkWebPermissionMiddleware(WEB_MODULES.FARMER, WEB_ACTIONS.UPDATE, false),
+  requestUpdateFarmer
+);
+
+router.post(
+  "/:farmerId/verify-mobile-update",
+  checkWebPermissionMiddleware(WEB_MODULES.FARMER, WEB_ACTIONS.UPDATE, false),
+  verifyUpdateFarmer
 );
 
 export default router;

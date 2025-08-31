@@ -19,6 +19,8 @@ import {
   deleteColdStorage,
   exportColdStorages,
   likeOrDislikeColdStorage,
+  requestUpdateCS,
+  verifyUpdateCS,
 } from "../controller/coldStorage";
 import { verifyOtpSchema } from "../validation/userValidator";
 import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
@@ -85,5 +87,24 @@ router.post(
   exportColdStorages
 );
 router.post("/like", authMiddleware, likeOrDislikeColdStorage);
+router.post(
+  "/:coldStorageId/request-mobile-update",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.COLD_STORAGE,
+    WEB_ACTIONS.UPDATE,
+    false
+  ),
+  requestUpdateCS
+);
+
+router.post(
+  "/:coldStorageId/verify-mobile-update",
+  checkWebPermissionMiddleware(
+    WEB_MODULES.COLD_STORAGE,
+    WEB_ACTIONS.UPDATE,
+    false
+  ),
+  verifyUpdateCS
+);
 
 export default router;
