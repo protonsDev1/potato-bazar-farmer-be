@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats } from "../controller/user";
+import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema, createSupportTicketSchema, replyTicketSchema, updateTicketStatusSchema,  } from "../validation/userValidator";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats, createTicket, replyToSupportTicket, updateSupportTicketStatus, listSupportTickets, getTicketDetails } from "../controller/user";
 import { adminMiddleware, authMiddleware, checkPermissionMiddleware, superAdminMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 import { PERMISSIONS } from "../utils/constants/permissions";
@@ -81,6 +81,17 @@ router.get(
   superAdminMiddleware,          // mobile admin  dashboard stats
   retrieveAdminDashboardStats
 ); 
+router.post(
+  "/support",
+  authMiddleware,
+  validator.body(createSupportTicketSchema),
+  createTicket
+);
+
+router.post("/support/reply",adminMiddleware, validator.body(replyTicketSchema), replyToSupportTicket);
+router.post("/support/status", adminMiddleware,validator.body(updateTicketStatusSchema), updateSupportTicketStatus);
+router.get("/support",adminMiddleware, listSupportTickets);
+router.get("/support-details",adminMiddleware, getTicketDetails);
 
 export default router;
 
