@@ -72,6 +72,10 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
     ];
   }
 
+  // expired events filter
+  const now = new Date();
+  whereCondition.endDate = { [Op.gte]: now };
+
   if (search) {
     whereCondition[Op.or] = [
       { title: { [Op.iLike]: `%${search}%` } },
@@ -136,11 +140,26 @@ export const getEventDetail = async (eventId) => {
     where: { eventId },
   });
 
+    // expired events filter
+    const whereCondition:any ={};
+  whereCondition.endDate = { [Op.gte]: now };
+
+  const moreEvents = await Event.findAll({
+    where: {
+      category: event.category,
+      id: { [Op.ne]: eventId },
+      ...whereCondition
+    },
+    order: [["createdAt", "DESC"]],
+    limit: 5,
+  });
+
   return {
     event,
     isEventUpcoming,
     isEventGoing,
     peopleInterested,
+    moreEvents,
   };
 };
 
