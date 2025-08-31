@@ -18,6 +18,7 @@ import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
 import dayjs from "dayjs";
 import MandiAgent from "../database/models/mandiAgent";
 import SellRequest from "../database/models/sellRequest";
+import UserSupport from "../database/models/userSupport";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -1098,4 +1099,116 @@ export const getAdminDashboardStats = async () => {
     },
     recentActivities: activities.slice(0, 5),
   };
+};
+
+export const createSupportTicket = async (
+  userId: number,
+  subject: string,
+  category: string,
+  priority: string
+) => {
+  return await UserSupport.create({
+    userId,
+    subject,
+    category,
+    //@ts-ignore
+    priority,
+    //@ts-ignore
+    status: "Open", 
+  });
+};
+
+export const addReplyToTicket = async (ticketId: number, reply: string) => {
+  const ticket = await UserSupport.findByPk(ticketId);
+  if (!ticket) return { success: false, error: "Ticket not found" };
+
+  ticket.reply = reply;
+  await ticket.save();
+
+  return { success: true, message: "Reply added successfully", ticket };
+};
+
+export const changeTicketStatus = async (ticketId: number, status: string) => {
+  const ticket = await UserSupport.findByPk(ticketId);
+  if (!ticket) return { success: false, error: "Ticket not found" };
+
+  //@ts-ignore
+  ticket.status = status;
+  await ticket.save();
+
+  return { success: true, message: "Status updated successfully", ticket };
+};
+
+export const getSupportTickets = async (
+  page: number,
+  limit: number,
+  status?: string,
+  search?: string
+) => {
+  const offset = (page - 1) * limit;
+
+  const whereClause: any = {};
+  if (status && status !== "All") {
+    whereClause.status = status;
+  }
+
+  const includeClause: any = [
+    {
+      model: User,
+      as: "User",
+      attributes: ["id", "name", "email"],
+      where: search
+        ? { name: { [Op.iLike]: `%${search}%` } }
+        : undefined,
+    },
+  ];
+
+  const { rows: tickets, count } = await UserSupport.findAndCountAll({
+    where: whereClause,
+    include: includeClause,
+    limit,
+    offset,
+    order: [["createdAt", "DESC"]],
+  });
+
+  const totalTickets = await UserSupport.count();
+  const openTickets = await UserSupport.count({ where: { status: "Open" } });
+  const inProgressTickets = await UserSupport.count({ where: { status: "In Progress" } });
+  const resolvedTickets = await UserSupport.count({ where: { status: "Resolved" } });
+  const closedTickets = await UserSupport.count({ where: { status: "Closed" } });
+
+  return {
+    tickets,
+    pagination: {
+      total: count,
+      page,
+      totalPages: Math.ceil(count / limit),
+    },
+    summary: {
+      totalTickets,
+      openTickets,
+      inProgressTickets,
+      resolvedTickets,
+      closedTickets,
+    },
+  };
+};
+
+export const getSupportTicketById = async (ticketId: number) => {
+  const ticket = await UserSupport.findOne({
+    where: { id: ticketId },
+    include: [
+      {
+        model: User,
+        as: "User",
+        attributes: ["id", "name", "email"]
+      }
+    ],
+  });
+
+  if (!ticket) {
+    throw new Error("Ticket not found");
+  }
+
+  return ticket;
 };
