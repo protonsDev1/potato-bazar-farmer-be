@@ -12,10 +12,16 @@ import {
   getAllColdStorages,
   likeOrDislikeService,
 } from "../services/coldStorageService";
-import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
+import {
+  checkExistingUser,
+  findUserByPkInDB,
+  updateUserInDB,
+} from "../services/userServices";
 import { parseFilters } from "../utils/parseQuery";
-import { verifyOtpFromDB } from "../services/otpServices";
+import { createOtp, verifyOtpFromDB } from "../services/otpServices";
 import { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
+import Farmer from "../database/models/farmer";
+import Trader from "../database/models/trader/trader";
 
 export const createColdStorage = async (req, res) => {
   try {
@@ -274,5 +280,99 @@ export const likeOrDislikeColdStorage = async (req, res) => {
       message: "Failed to like or dislike cold storages",
       error: error.message,
     });
+  }
+};
+
+export const requestUpdateCS = async (req, res) => {
+  try {
+    const { coldStorageId } = req.params;
+    const { newMobileNumber } = req.body;
+
+    const coldStorage = await ColdStorage.findOne({
+      where: { id: coldStorageId, isDeleted: false },
+    });
+    if (!coldStorage)
+      return res
+        .status(404)
+        .json({ success: false, message: "Cold Storage not found" });
+
+    if (coldStorage.mobileNumber === newMobileNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "New mobile number is same as the current one",
+      });
+    }
+
+    const existingUser = await checkExistingUser(newMobileNumber);
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Mobile number already in use by another user",
+      });
+    }
+
+    await createOtp(newMobileNumber);
+
+    return res.status(200).json({
+      success: true,
+      message: `OTP sent to ${newMobileNumber}. Please verify to update mobile number.`,
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to request mobile update" });
+  }
+};
+
+export const verifyUpdateCS = async (req, res) => {
+  try {
+    const { coldStorageId } = req.params;
+    const { newMobileNumber, otp } = req.body;
+
+    const coldStorage = await ColdStorage.findOne({
+      where: { id: coldStorageId, isDeleted: false },
+      attributes: ["id", "userId"],
+    });
+
+    if (!coldStorage) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Cold Storage not found" });
+    }
+
+    const isValid = await verifyOtpFromDB(newMobileNumber, otp);
+    if (!isValid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    const updates = [
+      ColdStorage.update(
+        { mobileNumber: newMobileNumber },
+        { where: { id: coldStorageId } }
+      ),
+      updateUserInDB(coldStorage.userId, { mobile: newMobileNumber }),
+      Farmer.update(
+        { optionalNumber: newMobileNumber },
+        { where: { userId: coldStorage.userId, isDeleted: false } }
+      ),
+      Trader.update(
+        { mobileNumber: newMobileNumber },
+        { where: { userId: coldStorage.userId, isDeleted: false } }
+      ),
+    ];
+
+    await Promise.all(updates);
+
+    return res.status(200).json({
+      success: true,
+      message: "Mobile number updated successfully",
+      newMobileNumber,
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to verify mobile update" });
   }
 };
