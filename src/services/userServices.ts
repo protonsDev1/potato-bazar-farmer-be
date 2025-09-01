@@ -668,7 +668,7 @@ export const updateRegistrationStatus = async (
         where: {
           userId: currentUser.id,
           module: normalizedUserType,
-          action: WEB_ACTIONS.REVIEW,
+          action: WEB_ACTIONS.APPROVE_REJECT,
         },
       });
 
@@ -676,7 +676,7 @@ export const updateRegistrationStatus = async (
         return {
           success: false,
           statusCode: 403,
-          error: `Access denied: Missing review permission for ${normalizedUserType}`,
+          error: `Access denied: Missing approve/reject permission for ${normalizedUserType}`,
         };
       }
     } else {

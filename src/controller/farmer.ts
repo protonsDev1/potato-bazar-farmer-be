@@ -56,10 +56,14 @@ export const getProfileOverview = async (req, res) => {
       return res.status(404).json({ message: "Farmer not found" });
     }
 
-    if (role !== "admin" && farmer.onBoardedBy !== id)
+    if (
+      role !== USER_ROLES.ADMIN &&
+      role !== USER_ROLES.SUB_ADMIN_WEB &&
+      farmer.onBoardedBy !== id
+    )
       return res.status(403).json({
         message:
-          "Only Agents those register the farmer or an Admin are authorized to view farmer's profile.",
+          "Only Admins, Sub Admins or Agents who onboarded the trader are authorized to view this profile.",
       });
 
     let isWithin24Hours = true;
