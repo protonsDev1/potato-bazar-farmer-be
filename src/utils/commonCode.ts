@@ -1,4 +1,4 @@
-import { WEB_PERMISSIONS } from "./constants/permissions";
+import { PERMISSIONS, WEB_PERMISSIONS } from "./constants/permissions";
 
 export function buildPermissionsResponse(allowed: string[]) {
   const response: any = {};
@@ -9,6 +9,16 @@ export function buildPermissionsResponse(allowed: string[]) {
       const key = `${role}:${action}`;
       response[role][action] = allowed.includes(key);
     });
+  }
+
+  return response;
+}
+
+export function buildSubAdminPermissionsResponse(allowed: string[]) {
+  const response: any = {};
+
+  for (const [key, value] of Object.entries(PERMISSIONS)) {
+    response[value] = allowed.includes(value);
   }
 
   return response;

@@ -111,7 +111,7 @@ export const getTraderProfileOverview = async (req, res) => {
 
     if (
       role !== USER_ROLES.ADMIN &&
-      role !== USER_ROLES.SUB_ADMIN &&
+      role !== USER_ROLES.SUB_ADMIN_WEB &&
       trader.onBoardedBy !== loggedInUserId
     ) {
       return res.status(403).json({

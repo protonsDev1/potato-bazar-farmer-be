@@ -107,12 +107,16 @@ router.post(
 router.post(
   "/month_target",
   validator.body(agentMonthlyTargetSchema),
-  adminMiddleware,
+  checkWebPermissionMiddleware(
+    WEB_MODULES.AGENT,
+    WEB_ACTIONS.ADD_EDIT_MONTHLY_TARGET,
+    false
+  ),
   addMonthlyTargetForAgent
 );
 router.get(
   "/month_target/:agentId",
-  adminMiddleware,
+  checkWebPermissionMiddleware(WEB_MODULES.AGENT, WEB_ACTIONS.VIEW, false),
   retrieveAgentAllMonthTargets
 );
 

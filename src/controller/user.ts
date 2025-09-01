@@ -3,8 +3,9 @@ import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
 import SubAdminWebPermission from '../database/models/subAdminWebPermission';
-import { buildPermissionsResponse } from '../utils/commonCode';
+import { buildPermissionsResponse, buildSubAdminPermissionsResponse } from '../utils/commonCode';
 import KycDocument from '../database/models/kycDocuments';
+import SubAdminPermission from '../database/models/subAdminPermission';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -70,6 +71,16 @@ export const login = async (req, res) => {
 
         const allowed = subAdminPermissions.map((p) => `${p.module}:${p.action}`);
         permissions = buildPermissionsResponse(allowed);
+      }
+
+      if (user.role === USER_ROLES.SUB_ADMIN) {
+        const subAdminPermissions = await SubAdminPermission.findAll({
+          where: { userId: user.id },
+          attributes: ["permission"],
+        });
+
+        const allowed = subAdminPermissions.map((p) => p.permission);
+        permissions = buildSubAdminPermissionsResponse(allowed);
       }
 
       // Return the success response with the token
