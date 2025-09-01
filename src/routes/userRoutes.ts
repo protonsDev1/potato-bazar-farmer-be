@@ -88,7 +88,7 @@ router.post(
   createTicket
 );
 
-router.post("/support/reply",adminMiddleware, validator.body(replyTicketSchema), replyToSupportTicket);
+router.post("/support/reply",superAdminMiddleware, validator.body(replyTicketSchema), replyToSupportTicket);
 router.post("/support/status", superAdminMiddleware,validator.body(updateTicketStatusSchema), updateSupportTicketStatus);
 router.get("/support",superAdminMiddleware, listSupportTickets);
 router.get("/support-details",superAdminMiddleware, getTicketDetails);
