@@ -21,19 +21,20 @@ export const WEB_MODULES = {
 } as const;
 
 export const WEB_ACTIONS = {
+  ADD_EDIT_MONTHLY_TARGET: "add_edit_monthly_target",
   ALL: "all",
   CREATE: "create",
   VIEW: "view",
   UPDATE: "update",
   DELETE: "delete",
-  REVIEW: "review",
+  APPROVE_REJECT: "approve_reject",
 } as const;
 
 export const WEB_PERMISSIONS = {
-  farmer: ["create", "view", "update", "delete", "review"],
-  trader: ["create", "view", "update", "delete", "review"],
-  coldStorage: ["create", "view", "update", "delete", "review"],
-  agent: ["create", "view", "update", "delete"],
+  farmer: ["create", "view", "update", "delete", "approve_reject"],
+  trader: ["create", "view", "update", "delete", "approve_reject"],
+  coldStorage: ["create", "view", "update", "delete", "approve_reject"],
+  agent: ["add_edit_monthly_target", "create", "view", "update", "delete"],
   dropdownManagement: ["all"],
 } as const;
 

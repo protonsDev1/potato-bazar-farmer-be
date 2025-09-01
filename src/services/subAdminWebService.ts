@@ -92,8 +92,23 @@ export const listSubAdminWebsService = async ({ search, page, limit }) => {
 
   const subAdmins = rows.map((subAdmin) => {
     const permissionCount = subAdmin.webPermissions?.length || 0;
+
+    const sortedPermissions = (subAdmin.webPermissions || [])
+      .slice()
+      .sort((a, b) => {
+        // Compare by module first
+        if (a.module.toLowerCase() < b.module.toLowerCase()) return -1;
+        if (a.module.toLowerCase() > b.module.toLowerCase()) return 1;
+
+        // If same module, compare by action
+        if (a.action.toLowerCase() < b.action.toLowerCase()) return -1;
+        if (a.action.toLowerCase() > b.action.toLowerCase()) return 1;
+        return 0;
+      });
+
     return {
       ...subAdmin.toJSON(),
+      webPermissions: sortedPermissions,
       permissionCount,
       totalPermissions,
     };
