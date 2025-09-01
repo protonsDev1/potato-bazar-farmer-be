@@ -50,6 +50,18 @@ export const listGovSchemesService = async ({
     order: [["createdAt", "DESC"]],
   });
 
+  const schemes = rows.map((scheme) => {
+    const description = scheme.description || "";
+    const shortDescription =
+      description.split(" ").slice(0, 30).join(" ") +
+      (description.split(" ").length > 30 ? "..." : "");
+
+    return {
+      ...scheme.toJSON(),
+      shortDescription,
+    };
+  });
+
   return {
     success: true,
     statusCode: 200,
@@ -58,10 +70,11 @@ export const listGovSchemesService = async ({
       total: count,
       page,
       perPage: limit,
-      schemes: rows,
+      schemes,
     },
   };
 };
+
 
 export const getGovSchemeByIdService = async (id) => {
   const scheme = await GovernmentScheme.findByPk(id);
