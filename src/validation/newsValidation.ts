@@ -1,11 +1,9 @@
 import Joi from "joi";
-import { NEWS_CATEGORY, NEWS_STATUS } from "../database/models/news";
+import { NEWS_STATUS } from "../database/models/news";
 
 export const createNewsSchema = Joi.object({
   title: Joi.string().trim().required(),
-  category: Joi.string()
-    .valid(...Object.values(NEWS_CATEGORY))
-    .required(),
+  category: Joi.string().required(),
   status: Joi.string()
     .valid(...Object.values(NEWS_STATUS))
     .required(),
@@ -18,7 +16,7 @@ export const createNewsSchema = Joi.object({
 
   //  AI optional fields
   introduction: Joi.string().trim().optional(),
-  keyNumbers: Joi.object().pattern(Joi.string(), Joi.any()).optional(), 
+  keyNumbers: Joi.object().pattern(Joi.string(), Joi.any()).optional(),
   changesThisWeek: Joi.string().trim().optional(),
   supplyAnalysis: Joi.string().trim().optional(),
   demandSignals: Joi.string().trim().optional(),
@@ -32,14 +30,12 @@ export const createNewsSchema = Joi.object({
       })
     )
     .optional(),
-  references: Joi.array().items(Joi.string().uri()).optional()
+  references: Joi.array().items(Joi.string().uri()).optional(),
 });
 
 export const updateNewsSchema = Joi.object({
   title: Joi.string().trim().optional(),
-  category: Joi.string()
-    .valid(...Object.values(NEWS_CATEGORY))
-    .optional(),
+  category: Joi.string().optional(),
   status: Joi.string()
     .valid(...Object.values(NEWS_STATUS))
     .optional(),
