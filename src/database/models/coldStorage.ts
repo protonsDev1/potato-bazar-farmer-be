@@ -76,6 +76,8 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare willingOnlineAuction: boolean;
   declare additionalComments: string;
   declare isSlabWiseDiscount: boolean;
+  declare gradingCharges: number;
+  declare otherCharges: number;
   declare awardOrCertificate: string;
   declare photos: string;
   declare onBoardedBy: number | null;
@@ -161,6 +163,14 @@ ColdStorage.init({
   additionalComments: DataTypes.TEXT,
   state: DataTypes.STRING,
   isSlabWiseDiscount: DataTypes.BOOLEAN,
+  gradingCharges: {
+      type: DataTypes.DECIMAL,
+      allowNull: true,
+    },
+  otherCharges: {
+      type: DataTypes.DECIMAL,
+      allowNull: true,
+    },
   awardOrCertificate: {
        type: DataTypes.ARRAY(DataTypes.STRING),
         allowNull: true,
