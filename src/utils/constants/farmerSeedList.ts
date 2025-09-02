@@ -32,10 +32,42 @@ export const potatoTypeList = [
 ];
 
 export const potatoVarietyList = [
-  { name: "Table", position: 1 },
-  { name: "Chips", position: 2 },
-  { name: "Fries", position: 3 },
-  { name: "Flakes", position: 4 },
+  {
+    name: "Table",
+    position: 1,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796556091-i0ws4rd5.png",
+  },
+  {
+    name: "Chips",
+    position: 2,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796238111-bu98tqs5.png",
+  },
+  {
+    name: "Fries",
+    position: 3,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796321886-u9kww2ux.png",
+  },
+  {
+    name: "Flakes",
+    position: 4,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796393172-qhqey698.png",
+  },
+  {
+    name: "Seeds",
+    position: 5,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796458026-mdlpkarw.png",
+  },
+  {
+    name: "Minituber",
+    position: 6,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796505265-4angwnzg.png",
+  },
 ];
 
 export const potatoSubVarietyList = [
@@ -239,6 +271,54 @@ export const potatoSubVarietyList = [
     varietyName: "Flakes",
     name: "Other",
   },
+  { varietyName: "Seeds", name: "Jyoti" },
+  { varietyName: "Seeds", name: "Badshah" },
+  { varietyName: "Seeds", name: "Lauvkar" },
+  { varietyName: "Seeds", name: "Diamond" },
+  { varietyName: "Seeds", name: "Colombo" },
+  { varietyName: "Seeds", name: "Bahar (3797)" },
+  { varietyName: "Seeds", name: "Surya" },
+  { varietyName: "Seeds", name: "Amber Light" },
+  { varietyName: "Seeds", name: "LR" },
+  { varietyName: "Seeds", name: "Chipsona-1" },
+  { varietyName: "Seeds", name: "Chipsona-3" },
+  { varietyName: "Seeds", name: "KCM" },
+  { varietyName: "Seeds", name: "Hermes" },
+  { varietyName: "Seeds", name: "Taurus" },
+  { varietyName: "Seeds", name: "Frysona" },
+  { varietyName: "Seeds", name: "FryOm" },
+  { varietyName: "Seeds", name: "Santana" },
+  { varietyName: "Seeds", name: "Innovator" },
+  { varietyName: "Seeds", name: "HYFM" },
+  { varietyName: "Seeds", name: "Jamania" },
+  { varietyName: "Seeds", name: "Uday" },
+  { varietyName: "Seeds", name: "Mohan" },
+  { varietyName: "Seeds", name: "Other (CPRI)" },
+  { varietyName: "Seeds", name: "Other" },
+  { varietyName: "Minituber", name: "Jyoti" },
+  { varietyName: "Minituber", name: "Badshah" },
+  { varietyName: "Minituber", name: "Lauvkar" },
+  { varietyName: "Minituber", name: "Diamond" },
+  { varietyName: "Minituber", name: "Colombo" },
+  { varietyName: "Minituber", name: "Bahar (3797)" },
+  { varietyName: "Minituber", name: "Surya" },
+  { varietyName: "Minituber", name: "Amber Light" },
+  { varietyName: "Minituber", name: "LR" },
+  { varietyName: "Minituber", name: "Chipsona-1" },
+  { varietyName: "Minituber", name: "Chipsona-3" },
+  { varietyName: "Minituber", name: "KCM" },
+  { varietyName: "Minituber", name: "Hermes" },
+  { varietyName: "Minituber", name: "Taurus" },
+  { varietyName: "Minituber", name: "Frysona" },
+  { varietyName: "Minituber", name: "FryOm" },
+  { varietyName: "Minituber", name: "Santana" },
+  { varietyName: "Minituber", name: "Innovator" },
+  { varietyName: "Minituber", name: "HYFM" },
+  { varietyName: "Minituber", name: "Jamania" },
+  { varietyName: "Minituber", name: "Uday" },
+  { varietyName: "Minituber", name: "Mohan" },
+  { varietyName: "Minituber", name: "Other (CPRI)" },
+  { varietyName: "Minituber", name: "Other" },
 ];
 
 export const farmEquipmentList = [

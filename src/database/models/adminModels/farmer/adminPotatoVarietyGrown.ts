@@ -14,6 +14,7 @@ class AdminPotatoVarietyGrown extends Model<
 > {
   declare id: CreationOptional<number>;
   declare name: string;
+  declare image: string;
   declare isActive: boolean;
   declare position: number;
 }
@@ -22,6 +23,7 @@ AdminPotatoVarietyGrown.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: DataTypes.STRING, allowNull: false },
+    image: { type: DataTypes.STRING, allowNull: true },
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
