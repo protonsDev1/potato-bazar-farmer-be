@@ -26,11 +26,12 @@ import AgentOnboardedUser, {
 } from "../database/models/agentOnboardedUsers";
 import LikeColdStorage from "../database/models/likeColdStorage";
 import { getUserRole } from "./userServices";
+import RealTimeAlertSystem from "../database/models/realTimeAlertSystem";
+import MonitoringLogger from "../database/models/monitoringLogger";
 
 export async function onboardColdStorage(payload: any) {
   try {
     return await sequelize.transaction(async (t) => {
-
       const coldStorage = await ColdStorage.create(
         {
           name: payload.name,
@@ -104,6 +105,8 @@ export async function onboardColdStorage(payload: any) {
           willingOnlineAuction: payload.willingOnlineAuction,
           additionalComments: payload.additionalComments,
           isSlabWiseDiscount: payload.isSlabWiseDiscount,
+          gradingCharges: payload.gradingCharges,
+          otherCharges: payload.otherCharges,
           awardOrCertificate: payload.awardOrCertificate,
           photos: payload.photos,
           userId: payload.userId,
@@ -357,6 +360,30 @@ export async function onboardColdStorage(payload: any) {
         }
       }
 
+      if (Array.isArray(payload.realTimeAlertSystemType)) {
+        for (const alertSystem of payload.realTimeAlertSystemType) {
+          await RealTimeAlertSystem.create(
+            {
+              coldStorageId: coldStorage.id,
+              type: alertSystem.type,
+            },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (Array.isArray(payload.monitoringLoggers)) {
+        for (const loggertype of payload.monitoringLoggers) {
+          await MonitoringLogger.create(
+            {
+              coldStorageId: coldStorage.id,
+              type: loggertype.type,
+            },
+            { transaction: t }
+          );
+        }
+      }
+
       const user = await getUserRole(payload.onBoardedBy);
 
       if (user.role === USER_ROLES.AGENT)
@@ -439,6 +466,8 @@ export const updateColdStorageService = async (coldStorageId, payload) => {
       "isSlabWiseDiscount",
       "awardOrCertificate",
       "photos",
+      "gradingCharges",
+      "otherCharges",
     ];
 
     for (const field of editableFields) {
@@ -475,6 +504,8 @@ export const updateColdStorageService = async (coldStorageId, payload) => {
       storageBookingSystems: StorageBookingSystem,
       seasonWiseBookingSystems: SeasonWiseBookingSystem,
       slabWiseDiscount: SlabWiseDiscount,
+      realTimeAlertSystemType: RealTimeAlertSystem,
+      monitoringLoggers: MonitoringLogger,
     };
 
     for (const [key, Model] of Object.entries(relationMap)) {
@@ -629,6 +660,16 @@ export const retrieveColdStorageProfile = async (
       where: { coldStorageId },
     });
 
+    const realTimeAlertSystem = await RealTimeAlertSystem.findAll({
+      attributes: ["type"],
+      where: { coldStorageId },
+    });
+
+    const monitoringLogger = await MonitoringLogger.findAll({
+      attributes: ["type"],
+      where: { coldStorageId },
+    });
+
     return {
       coldStoragePersonalInfo,
       chamberCapacity,
@@ -649,6 +690,8 @@ export const retrieveColdStorageProfile = async (
       storageBookingSystems,
       seasonWiseBookingSystems,
       slabWiseDiscount,
+      realTimeAlertSystem,
+      monitoringLogger,
       canAgentEdit: isWithin24Hours,
     };
   } catch (err) {
@@ -1054,6 +1097,14 @@ export const createColdStorageWorksheetColumns = (worksheet) => {
     },
     { header: "Slab Wise Discount", key: "slabWiseDiscounts", width: 50 },
     { header: "Unique Features", key: "uniqueFeatures", width: 40 },
+    { header: "Grading Charges", key: "gradingCharges", width: 20 },
+    { header: "Other Charges", key: "otherCharges", width: 20 },
+    {
+      header: "Real Time Alert Systems",
+      key: "realTimeAlertSystems",
+      width: 30,
+    },
+    { header: "Monitoring Loggers", key: "monitoringLoggers", width: 30 },
   ];
 };
 
@@ -1080,6 +1131,8 @@ export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
       storageBookingSystems,
       seasonWiseBookingSystems,
       slabWiseDiscounts,
+      realTimeAlertSystems,
+      monitoringLoggers,
     ] = await Promise.all([
       ChamberCapacity.findAll({ where: { coldStorageId } }),
       ElevatorAndStuffing.findAll({ where: { coldStorageId } }),
@@ -1099,6 +1152,8 @@ export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
       StorageBookingSystem.findAll({ where: { coldStorageId } }),
       SeasonWiseBookingSystem.findAll({ where: { coldStorageId } }),
       SlabWiseDiscount.findAll({ where: { coldStorageId } }),
+      RealTimeAlertSystem.findAll({ where: { coldStorageId } }),
+      MonitoringLogger.findAll({ where: { coldStorageId } }),
     ]);
 
     worksheet.addRow({
@@ -1169,7 +1224,12 @@ export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
         slabWiseDiscounts
           .map((s) => `${s.quantityInMt}MT = ${s.discount}%`)
           .join(" | ") || "",
+      realTimeAlertSystems:
+        realTimeAlertSystems.map((r) => r.type).join(", ") || "",
+      monitoringLoggers: monitoringLoggers.map((m) => m.type).join(", ") || "",
       uniqueFeatures: storage.uniqueFeatures || "",
+      gradingCharges: storage.gradingCharges || "",
+      otherCharges: storage.otherCharges || "",
     });
   }
 };

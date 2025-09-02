@@ -89,6 +89,8 @@ export const coldStorageSchema = Joi.object({
   // willingOnlineAuction: Joi.boolean().required(),
   // additionalComments: Joi.string().allow('', null),
   isSlabWiseDiscount: Joi.boolean().required(),
+  gradingCharges: Joi.number().optional().allow(null),
+  otherCharges: Joi.number().optional().allow(null),
   userId: Joi.number().integer().allow(null),
   awardOrCertificate: Joi.array().items(Joi.string()).optional(),
   photos: Joi.array().items(Joi.string()).optional(),
@@ -246,6 +248,22 @@ export const coldStorageSchema = Joi.object({
       })
     )
     .optional(),
+
+  realTimeAlertSystemType: Joi.array()
+    .items(
+      Joi.object({
+        type: Joi.string().max(255).required(),
+      })
+    )
+    .optional(),
+
+  monitoringLoggers: Joi.array()
+    .items(
+      Joi.object({
+        type: Joi.string().max(255).required(),
+      })
+    )
+    .optional(),
 });
 
 export const updateColdStorageSchema = Joi.object({
@@ -337,6 +355,8 @@ export const updateColdStorageSchema = Joi.object({
   // willingOnlineAuction: Joi.boolean().optional(),
   // additionalComments: Joi.string().allow('', null),
   isSlabWiseDiscount: Joi.boolean().optional().allow(null),
+  gradingCharges: Joi.number().optional().allow(null),
+  otherCharges: Joi.number().optional().allow(null),
   awardOrCertificate: Joi.array().items(Joi.string().max(255)).optional(),
   photos: Joi.array().items(Joi.string().max(255)).optional(),
 
@@ -490,6 +510,22 @@ export const updateColdStorageSchema = Joi.object({
       Joi.object({
         quantityInMt: Joi.string().max(255).optional().allow(null, ""),
         discount: Joi.number().optional().allow(null, ""),
+      })
+    )
+    .optional(),
+
+  realTimeAlertSystemType: Joi.array()
+    .items(
+      Joi.object({
+        type: Joi.string().max(255).required(),
+      })
+    )
+    .optional(),
+
+  monitoringLoggers: Joi.array()
+    .items(
+      Joi.object({
+        type: Joi.string().max(255).required(),
       })
     )
     .optional(),
