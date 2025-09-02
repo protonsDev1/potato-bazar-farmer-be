@@ -73,10 +73,14 @@ router.post(
 );
 router.get(
   "/all_agent_performance/:agentId",
-  adminMiddleware,
+  checkWebPermissionMiddleware(WEB_MODULES.AGENT, WEB_ACTIONS.VIEW, false),
   getAllAgentPerformance
 );
-router.get("/top_performing_agents", adminMiddleware, getTopAgents);
+router.get(
+  "/top_performing_agents",
+  checkWebPermissionMiddleware(WEB_MODULES.AGENT, WEB_ACTIONS.VIEW, false),
+  getTopAgents
+);
 router.post(
   "/create_ticket",
   authMiddleware,
