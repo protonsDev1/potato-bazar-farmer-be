@@ -250,7 +250,7 @@ export const retrieveAgentPerformance = async (
         coldStorageTarget: targets.coldStorage,
         traderTarget: targets.trader,
         totalRegistrations,
-        totalTarget,
+        totalTarget: totalTarget === 0 ? "-" : totalTarget,
         farmerCompletionPercentage:
           targets.farmer === 0
             ? 0
@@ -270,7 +270,7 @@ export const retrieveAgentPerformance = async (
 
         totalCompletionPercentage:
           totalTarget === 0
-            ? 0
+            ? "-"
             : parseFloat(((totalRegistrations / totalTarget) * 100).toFixed(2)),
       };
     });
@@ -654,7 +654,7 @@ export const retrieveAllAgentPerformance = async (
       coldStorageTarget: targets.coldStorage,
       traderTarget: targets.trader,
       totalRegistrations,
-      totalTarget,
+      totalTarget: totalTarget === 0 ? "-" : totalTarget,
       farmerCompletionPercentage:
         targets.farmer === 0
           ? 0
@@ -674,7 +674,7 @@ export const retrieveAllAgentPerformance = async (
 
       totalCompletionPercentage:
         totalTarget === 0
-          ? 0
+          ? "-"
           : parseFloat(((totalRegistrations / totalTarget) * 100).toFixed(2)),
     };
   });
