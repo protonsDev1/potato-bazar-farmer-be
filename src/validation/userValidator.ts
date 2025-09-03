@@ -45,8 +45,8 @@ export const loginSchema = Joi.object({
 
 export const createAgentSchema = Joi.object({
   name: Joi.string().required(),
-  email: Joi.string().email().optional().allow(null, ""),
-  phone: Joi.string().optional().allow(null, ""),
+  email: Joi.string().email().optional().allow(null),
+  phone: Joi.string().optional().allow(null),
   address: Joi.string().optional().allow(null, ""),
   district: Joi.string().optional().allow(null, ""),
   state: Joi.string().optional().allow(null, ""),
