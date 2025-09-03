@@ -35,7 +35,7 @@ export const userSchema = Joi.object({
       "any.only": "Role must be one of [agent, admin, user]",
     }),
 
-  location: Joi.string().optional(),
+  location: Joi.string().optional().allow(null, ""),
 });
 
 export const loginSchema = Joi.object({
@@ -45,12 +45,12 @@ export const loginSchema = Joi.object({
 
 export const createAgentSchema = Joi.object({
   name: Joi.string().required(),
-  email: Joi.string().email().optional(),
-  phone: Joi.string().optional(),
-  address: Joi.string().optional().allow(""),
-  district: Joi.string().optional(),
-  state: Joi.string().optional(),
-  note: Joi.string().optional().allow(""),
+  email: Joi.string().email().optional().allow(null, ""),
+  phone: Joi.string().optional().allow(null, ""),
+  address: Joi.string().optional().allow(null, ""),
+  district: Joi.string().optional().allow(null, ""),
+  state: Joi.string().optional().allow(null, ""),
+  note: Joi.string().optional().allow(null, ""),
 }).or("email", "phone");
 
 export const agentLoginSchema = Joi.object({
@@ -114,10 +114,10 @@ export const changePasswordSchema = Joi.object({
 });
 
 export const updateProfileSchema = Joi.object({
-  name: Joi.string().optional(),
-  email: Joi.string().optional(),
-  mobile: Joi.string().optional(),
-  location: Joi.string().optional(),
+  name: Joi.string().optional().allow(null, ""),
+  email: Joi.string().optional().allow(null, ""),
+  mobile: Joi.string().optional().allow(null, ""),
+  location: Joi.string().optional().allow(null, ""),
 });
 
 export const helpAndSupportSchema = Joi.object({
@@ -183,5 +183,7 @@ export const replyTicketSchema = Joi.object({
 
 export const updateTicketStatusSchema = Joi.object({
   ticketId: Joi.number().required(),
-  status: Joi.string().valid("Open", "In Progress", "Resolved", "Closed").required(),
+  status: Joi.string()
+    .valid("Open", "In Progress", "Resolved", "Closed")
+    .required(),
 });
