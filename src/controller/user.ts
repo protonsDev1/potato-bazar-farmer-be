@@ -387,14 +387,19 @@ export const updateProfile = async (req, res) => {
 
     const data = req.body;
 
-    if (role !== "admin" && role !== "agent") {
-      return res
-        .status(403)
-        .json({
-          message:
-            "Only admins and agents are allowed to update the profile.",
-        });
+    if (
+      role !== USER_ROLES.SUPER_ADMIN &&
+      role !== USER_ROLES.ADMIN &&
+      role !== USER_ROLES.AGENT &&
+      role !== USER_ROLES.SUB_ADMIN &&
+      role !== USER_ROLES.SUB_ADMIN_WEB
+    ) {
+      return res.status(403).json({
+        message: 
+          "Only Super Admin, Admin, Agent, Sub Admin, and Sub Admin Web roles can update the profile."
+      });
     }
+
     const updateResponse = await updateProfileService(data, id, role);
 
     if (!updateResponse.success)

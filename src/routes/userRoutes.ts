@@ -88,10 +88,28 @@ router.post(
   createTicket
 );
 
-router.post("/support/reply",superAdminMiddleware, validator.body(replyTicketSchema), replyToSupportTicket);
-router.post("/support/status", superAdminMiddleware,validator.body(updateTicketStatusSchema), updateSupportTicketStatus);
-router.get("/support",superAdminMiddleware, listSupportTickets);
-router.get("/support-details",superAdminMiddleware, getTicketDetails);
+router.post(
+  "/support/reply",
+  checkPermissionMiddleware(PERMISSIONS.HELP_SUPPORT),
+  validator.body(replyTicketSchema),
+  replyToSupportTicket
+);
+router.post(
+  "/support/status",
+  checkPermissionMiddleware(PERMISSIONS.HELP_SUPPORT),
+  validator.body(updateTicketStatusSchema),
+  updateSupportTicketStatus
+);
+router.get(
+  "/support",
+  checkPermissionMiddleware(PERMISSIONS.HELP_SUPPORT),
+  listSupportTickets
+);
+router.get(
+  "/support-details",
+  checkPermissionMiddleware(PERMISSIONS.HELP_SUPPORT),
+  getTicketDetails
+);
 
 export default router;
 
