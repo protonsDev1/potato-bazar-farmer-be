@@ -1,34 +1,34 @@
 export const irrigationMethodList = [
-  { name: "Drip", position: 1 },
-  { name: "Sprinkler", position: 2 },
-  { name: "Flood", position: 3 },
-  { name: "Manual", position: 4 },
-  { name: "Kund/Nala", position: 5 },
-  { name: "Other", position: 6 },
+  { name: "Drip (ड्रिप/ડ્રિપ/ਡ੍ਰਿਪ)", position: 1 },
+  { name: "Sprinkler (स्प्रिंकलर/સ્પ્રિંકલર/ਸਪ੍ਰਿੰਕਲਰ)", position: 2 },
+  { name: "Flood (बाढ़/પૂર/ਬਾੜ੍ਹ)", position: 3 },
+  { name: "Manual (मैनुअल/હાથથી/ਹੱਥੋਂ)", position: 4 },
+  { name: "Kund/Nala (कुंड/नाला/કુંડ/નાળો/ਕੁੰਡ/ਨਾਲਾ)", position: 5 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 6 },
 ];
 
 export const irrigationSourceList = [
-  { name: "Canal", position: 1 },
-  { name: "Borewell", position: 2 },
-  { name: "Tube well", position: 3 },
-  { name: "River", position: 4 },
-  { name: "Rain-fed", position: 5 },
-  { name: "Other", position: 6 },
+  { name: "Canal (नहर/કેનાલ/ਨਹਿਰ)", position: 1 },
+  { name: "Borewell (बोरवेल/બોરવેલ/ਬੋਰਵੈਲ)", position: 2 },
+  { name: "Tube well (ट्यूबवेल/ટ્યુબવેલ/ਟਿਊਬਵੈਲ)", position: 3 },
+  { name: "River (नदी/નદી/ਨਦੀ)", position: 4 },
+  { name: "Rain-fed (वर्षा आधारित/વરસાદ આધારિત/ਬਰਸਾਤ ਆਧਾਰਿਤ)", position: 5 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 6 },
 ];
 
 export const soilTypeList = [
-  { name: "Sandy", position: 1 },
-  { name: "Loamy", position: 2 },
-  { name: "Clay", position: 3 },
-  { name: "Black Soil", position: 4 },
-  { name: "Red Soil", position: 5 },
-  { name: "Other", position: 6 },
+  { name: "Sandy (बालू मिट्टी/રેતાળી માટી/ਰੇਤਲੀ ਮਿੱਟੀ)", position: 1 },
+  { name: "Loamy (दोमट मिट्टी/દોળિયાળી માટી/ਦੋਮੱਟੀ ਮਿੱਟੀ)", position: 2 },
+  { name: "Clay (चिकनी मिट्टी/ચીકણી માટી/ਚਿਕਣੀ ਮਿੱਟੀ)", position: 3 },
+  { name: "Black Soil (काली मिट्टी/કાળી માટી/ਕਾਲੀ ਮਿੱਟੀ)", position: 4 },
+  { name: "Red Soil (लाल मिट्टी/લાલ માટી/ਲਾਲ ਮਿੱਟੀ)", position: 5 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 6 },
 ];
 
 export const potatoTypeList = [
-  { name: "Table", position: 1 },
-  { name: "Chips", position: 2 },
-  { name: "French Fry", position: 3 },
+  { name: "Table (टेबल/ટેબલ/ਟੇਬਲ)", position: 1 },
+  { name: "Chips (चिप्स/ચિપ્સ/ਚਿਪਸ)", position: 2 },
+  { name: "French Fry (फ्रेंच फ्राई/ફ્રેન્ચ ફ્રાઇ/ਫ੍ਰੈਂਚ ਫਰਾਈ)", position: 3 },
 ];
 
 export const potatoVarietyList = [
@@ -322,79 +322,154 @@ export const potatoSubVarietyList = [
 ];
 
 export const farmEquipmentList = [
-  { name: "Plough", position: 1 },
-  { name: "Trolley", position: 2 },
-  { name: "Ridger", position: 3 },
-  { name: "Weeder", position: 4 },
-  { name: "Irrigation Pump", position: 5 },
-  { name: "Harvester", position: 6 },
-  { name: "Sprayer", position: 7 },
-  { name: "Seed Planter", position: 8 },
-  { name: "Rotavator", position: 9 },
-  { name: "Tractor", position: 10 },
-  { name: "Other", position: 11 },
+  { name: "Plough (हल/હળ/ਹਲ)", position: 1 },
+  { name: "Trolley (ट्रॉली/ટ્રોલી/ਟ੍ਰਾਲੀ)", position: 2 },
+  { name: "Ridger (रिजर/રીજર/ਰਿਜਰ)", position: 3 },
+  { name: "Weeder (निराई यंत्र/નીંદામણ કાપનાર/ਨੀੰਦਣ ਯੰਤਰ)", position: 4 },
+  { name: "Irrigation Pump (सिंचाई पंप/સિંચાઈ પંપ/ਸਿੰਚਾਈ ਪੰਪ)", position: 5 },
+  { name: "Harvester (कटाई यंत्र/કાપણી મશીન/ਕਟਾਈ ਮਸ਼ੀਨ)", position: 6 },
+  { name: "Sprayer (स्प्रेयर/સ્પ્રેયર/ਸਪ੍ਰੇਅਰ)", position: 7 },
+  {
+    name: "Seed Planter (बीज बोने की मशीन/બીજ વાવણી મશીન/ਬੀਜ ਵਾਵਣ ਵਾਲੀ ਮਸ਼ੀਨ)",
+    position: 8,
+  },
+  { name: "Rotavator (रोटावेटर/રોટાવેટર/ਰੋਟਾਵੇਟਰ)", position: 9 },
+  { name: "Tractor (ट्रैक्टर/ટ્રેક્ટર/ਟਰੈਕਟਰ)", position: 10 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 11 },
 ];
 
 export const technologyUsedList = [
-  { name: "Mobile Apps", position: 1 },
-  { name: "Soil Testing Kits", position: 2 },
-  { name: "Drones", position: 3 },
-  { name: "Sensors", position: 4 },
-  { name: "Other", position: 5 },
+  { name: "Mobile Apps (मोबाइल ऐप्स/મોબાઇલ એપ્સ/ਮੋਬਾਈਲ ਐਪਸ)", position: 1 },
+  {
+    name: "Soil Testing Kits (मिट्टी परीक्षण किट/માટી પરીક્ષણ કીટ/ਮਿੱਟੀ ਟੈਸਟਿੰਗ ਕਿਟ)",
+    position: 2,
+  },
+  { name: "Drones (ड्रोन/ડ્રોન/ਡਰੋਨ)", position: 3 },
+  { name: "Sensors (सेंसर/સેન્સર/ਸੈਂਸਰ)", position: 4 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 5 },
 ];
 
 export const sellingChannelList = [
-  { name: "Local Mandi", position: 1 },
-  { name: "Village Trader", position: 2 },
-  { name: "Cold Storage Owner", position: 3 },
-  { name: "Cooperative/FPC", position: 4 },
-  { name: "Retail", position: 5 },
-  { name: "Contract Farming", position: 6 },
-  { name: "Online Platform", position: 7 },
-  { name: "Exporter", position: 8 },
-  { name: "Other", position: 9 },
+  { name: "Local Mandi (स्थानीय मंडी/સ્થાનિક બજાર/ਸਥਾਨਕ ਮੰਡੀ)", position: 1 },
+  { name: "Village Trader (गाँव व्यापारी/ગામ વેપારી/ਪਿੰਡ ਵਪਾਰੀ)", position: 2 },
+  {
+    name: "Cold Storage Owner (कोल्ड स्टोरेज मालिक/કોલ્ડ સ્ટોરેજ માલિક/ਕੋਲਡ ਸਟੋਰੇਜ ਮਾਲਕ)",
+    position: 3,
+  },
+  { name: "Cooperative/FPC (सहकारी/FPC/સહકારી/FPC/ਸਹਿਕਾਰੀ/FPC)", position: 4 },
+  { name: "Retail (खुदरा/રિટેલ/ਰਿਟੇਲ)", position: 5 },
+  {
+    name: "Contract Farming (अनुबंध खेती/કોન્ટ્રાક્ટ ખેતી/ਕਾਨਟ੍ਰੈਕਟ ਖੇਤੀ)",
+    position: 6,
+  },
+  {
+    name: "Online Platform (ऑनलाइन प्लेटफॉर्म/ઑનલાઇન પ્લેટફોર્મ/ਆਨਲਾਈਨ ਪਲੇਟਫਾਰਮ)",
+    position: 7,
+  },
+  { name: "Exporter (निर्यातक/નિકાસકાર/ਨਿਰਯਾਤਕਾਰ)", position: 8 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 9 },
 ];
 
 export const sellingPriceList = [
-  { name: "Refer APMC Rates", position: 1 },
-  { name: "Trader Decides", position: 2 },
-  { name: "Ask other Farmers", position: 3 },
-  { name: "Cold Storage Owner Advice", position: 4 },
-  { name: "Social Media", position: 5 },
-  { name: "Contract farming Rate", position: 6 },
+  {
+    name: "Refer APMC Rates (एपीएमसी दरें/એપીએમસી દરો/ਏਪੀਐਮਸੀ ਦਰਾਂ)",
+    position: 1,
+  },
+  {
+    name: "Trader Decides (व्यापारी तय करता है/વેપારી નક્કી કરે છે/ਵਪਾਰੀ ਫ਼ੈਸਲਾ ਕਰਦਾ ਹੈ)",
+    position: 2,
+  },
+  {
+    name: "Ask other Farmers (अन्य किसानों से पूछें/અન્ય ખેડૂતોને પૂછો/ਹੋਰ ਕਿਸਾਨਾਂ ਤੋਂ ਪੁੱਛੋ)",
+    position: 3,
+  },
+  {
+    name: "Cold Storage Owner Advice (कोल्ड स्टोरेज मालिक की सलाह/કોલ્ડ સ્ટોરેજ માલિકની સલાહ/ਕੋਲਡ ਸਟੋਰੇਜ ਮਾਲਕ ਦੀ ਸਲਾਹ)",
+    position: 4,
+  },
+  { name: "Social Media (सोशल मीडिया/સોશિયલ મીડિયા/ਸੋਸ਼ਲ ਮੀਡੀਆ)", position: 5 },
+  {
+    name: "Contract farming Rate (अनुबंध खेती दर/કોન્ટ્રાક્ટ ખેતી દર/ਕਾਨਟ੍ਰੈਕਟ ਖੇਤੀ ਦਰ)",
+    position: 6,
+  },
 ];
 
 export const priceDiscoveryList = [
-  { name: "Mandi Rates", position: 1 },
-  { name: "Neighbouring Farmers", position: 2 },
-  { name: "Trader's Offer", position: 3 },
-  { name: "Social Media", position: 4 },
-  { name: "Any Other", position: 5 },
+  { name: "Mandi Rates (मंडी दरें/મંડી દરો/ਮੰਡੀ ਦਰਾਂ)", position: 1 },
+  {
+    name: "Neighbouring Farmers (पड़ोसी किसान/પાડોશી ખેડૂતો/ਪੜੋਸੀ ਕਿਸਾਨ)",
+    position: 2,
+  },
+  {
+    name: "Trader's Offer (व्यापारी का प्रस्ताव/વેપારીની ઓફર/ਵਪਾਰੀ ਦੀ ਪੇਸ਼ਕਸ਼)",
+    position: 3,
+  },
+  { name: "Social Media (सोशल मीडिया/સોશિયલ મીડિયા/ਸੋਸ਼ਲ ਮੀਡੀਆ)", position: 4 },
+  { name: "Any Other (कोई अन्य/કોઈ અન્ય/ਕੋਈ ਹੋਰ)", position: 5 },
 ];
 
 export const farmingChallengeList = [
-  { name: "Low Prices", position: 1 },
-  { name: "No Buyers", position: 2 },
-  { name: "High Commission", position: 3 },
-  { name: "Payment Delays", position: 4 },
-  { name: "No Market Info", position: 5 },
-  { name: "High Transport Cost", position: 6 },
-  { name: "Middlemen Dependency", position: 7 },
-  { name: "Storage Issues", position: 8 },
-  { name: "Low Demand", position: 9 },
-  { name: "No Access to Big Buyers", position: 10 },
-  { name: "Farm Labour", position: 11 },
-  { name: "High Cost of Seeds", position: 12 },
-  { name: "High Cost of Fertilizers & Pesticides", position: 13 },
-  { name: "Weather Uncertainty", position: 14 },
-  { name: "Lack of Equipment", position: 15 },
-  { name: "Other", position: 16 },
+  { name: "Low Prices (कम दाम/ઓછા ભાવ/ਘੱਟ ਕੀਮਤਾਂ)", position: 1 },
+  {
+    name: "No Buyers (कोई खरीदार नहीं/કોઈ ખરીદદાર નથી/ਕੋਈ ਖਰੀਦਦਾਰ ਨਹੀਂ)",
+    position: 2,
+  },
+  { name: "High Commission (उच्च कमीशन/ઉચ્ચ કમિશન/ਉੱਚ ਕਮੀਸ਼ਨ)", position: 3 },
+  {
+    name: "Payment Delays (भुगतान में देरी/ચુકવણીમાં વિલંબ/ਭੁਗਤਾਨ ਵਿੱਚ ਦੇਰੀ)",
+    position: 4,
+  },
+  {
+    name: "No Market Info (कोई बाजार जानकारी नहीं/કોઈ બજાર માહિતી નથી/ਕੋਈ ਬਾਜ਼ਾਰ ਜਾਣਕਾਰੀ ਨਹੀਂ)",
+    position: 5,
+  },
+  {
+    name: "High Transport Cost (उच्च परिवहन लागत/ઉચ્ચ પરિવહન ખર્ચ/ਉੱਚ ਆਵਾਜਾਈ ਲਾਗਤ)",
+    position: 6,
+  },
+  {
+    name: "Middlemen Dependency (बिचौलियों पर निर्भरता/દલાલો પર નિર્ભરતા/ਦਲਾਲਾਂ 'ਤੇ ਨਿਰਭਰਤਾ)",
+    position: 7,
+  },
+  {
+    name: "Storage Issues (भंडारण समस्याएँ/ભંડારણ સમસ્યાઓ/ਸਟੋਰੇਜ ਸਮੱਸਿਆਵਾਂ)",
+    position: 8,
+  },
+  { name: "Low Demand (कम मांग/ઓછી માંગ/ਘੱਟ ਮੰਗ)", position: 9 },
+  {
+    name: "No Access to Big Buyers (बड़े खरीदारों तक पहुँच नहीं/મોટા ખરીદદારો સુધી પ્રવેશ નથી/ਵੱਡੇ ਖਰੀਦਦਾਰਾਂ ਤੱਕ ਪਹੁੰਚ ਨਹੀਂ)",
+    position: 10,
+  },
+  { name: "Farm Labour (खेती मजदूर/ખેતી મજૂર/ਖੇਤੀ ਮਜ਼ਦੂਰ)", position: 11 },
+  {
+    name: "High Cost of Seeds (बीज की उच्च लागत/બીજનો ઊંચો ખર્ચ/ਬੀਜ ਦੀ ਉੱਚ ਲਾਗਤ)",
+    position: 12,
+  },
+  {
+    name: "High Cost of Fertilizers & Pesticides (उर्वरक और कीटनाशक की उच्च लागत/ખાતર અને કીટનાશકનો ઊંચો ખર્ચ/ਖਾਦ ਅਤੇ ਕੀਟਨਾਸ਼ਕ ਦੀ ਉੱਚ ਲਾਗਤ)",
+    position: 13,
+  },
+  {
+    name: "Weather Uncertainty (मौसम की अनिश्चितता/હવામાનની અનિશ્ચિતતા/ਮੌਸਮ ਦੀ ਅਨਿਸ਼ਚਿਤਤਾ)",
+    position: 14,
+  },
+  {
+    name: "Lack of Equipment (उपकरणों की कमी/ઉપકરણોની અછત/ਸੰਦਾਂ ਦੀ ਘਾਟ)",
+    position: 15,
+  },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 16 },
 ];
 
 export const brandReasonList = [
-  { name: "Good Quality", position: 1 },
-  { name: "Better Yield", position: 2 },
-  { name: "Affordable Price", position: 3 },
-  { name: "Easily Available", position: 4 },
-  { name: "Other", position: 5 },
+  {
+    name: "Good Quality (अच्छी गुणवत्ता/સારી ગુણવત્તા/ਵਧੀਆ ਗੁਣਵੱਤਾ)",
+    position: 1,
+  },
+  { name: "Better Yield (बेहतर उपज/વધુ ઉપજ/ਵਧੀਆ ਪੈਦਾਵਾਰ)", position: 2 },
+  { name: "Affordable Price (सस्ती कीमत/વાજબી ભાવ/ਵਾਜਿਬ ਕੀਮਤ)", position: 3 },
+  {
+    name: "Easily Available (आसानी से उपलब्ध/સરળતાથી ઉપલબ્ધ/ਆਸਾਨੀ ਨਾਲ ਉਪਲਬਧ)",
+    position: 4,
+  },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 5 },
 ];
