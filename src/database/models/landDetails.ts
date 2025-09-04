@@ -43,6 +43,7 @@ class LandDetail extends Model<
   declare contractPartnerName: string | null;
   declare reasonForTrust: string | null;
   declare preference: string | null;
+  declare suggestions: string | null;
   declare contractFarmingPercent: number | null;
   declare soldInSpotMarketPercent: number | null;
   declare storedInColdStoragePercent: number | null;
@@ -99,6 +100,7 @@ LandDetail.init(
     contractPartnerName: { type: DataTypes.STRING, allowNull: true },
     reasonForTrust: { type: DataTypes.TEXT, allowNull: true },
     preference: { type: DataTypes.TEXT, allowNull: true },
+    suggestions: { type: DataTypes.TEXT, allowNull: true },
     contractFarmingPercent: { type: DataTypes.FLOAT, allowNull: true },
     soldInSpotMarketPercent: { type: DataTypes.FLOAT, allowNull: true },
     storedInColdStoragePercent: { type: DataTypes.FLOAT, allowNull: true },
