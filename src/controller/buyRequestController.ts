@@ -1,3 +1,4 @@
+import { USER_ROLES } from "../database/models/user";
 import {
   createBuyRequestService,
   deleteBuyRequestService,
@@ -10,6 +11,11 @@ import {
 
 export const createBuyRequest = async (req, res) => {
   try {
+    if (req.user.role !== USER_ROLES.USER)
+      return res.status(403).json({
+        message: "Only user is authorized to create buy request.",
+      });
+
     const buyRequest = await createBuyRequestService(req.user.id, req.body);
 
     return res.status(201).json({
