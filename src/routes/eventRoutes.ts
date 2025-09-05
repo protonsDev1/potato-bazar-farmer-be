@@ -16,14 +16,15 @@ import {
   updateEventSchema,
   updateEventStatusSchema,
 } from "../validation/eventValidation";
-import { authMiddleware, superAdminMiddleware } from "../utils/userAuth";
+import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  superAdminMiddleware,
+  checkPermissionMiddleware(PERMISSIONS.EVENTS),
   validator.body(createEventSchema),
   createEvent
 );
@@ -32,17 +33,21 @@ router.get("/event_requests", retrieveAllEventRequests);
 router.get("/:eventId", retrieveEventDetail);
 router.put(
   "/:eventId",
-  superAdminMiddleware,
+  checkPermissionMiddleware(PERMISSIONS.EVENTS),
   validator.body(updateEventSchema),
   updateEvent
 );
-router.delete("/:eventId", superAdminMiddleware, deleteEvent);
+router.delete(
+  "/:eventId",
+  checkPermissionMiddleware(PERMISSIONS.EVENTS),
+  deleteEvent
+);
 
 router.post("/join_event/:eventId", authMiddleware, registerOnEvent);
 
 router.put(
   "/update_status/:requestId",
-  superAdminMiddleware,
+  checkPermissionMiddleware(PERMISSIONS.EVENTS),
   validator.body(updateEventStatusSchema),
   updateEventStatus
 );

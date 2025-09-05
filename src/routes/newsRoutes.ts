@@ -1,9 +1,8 @@
 import express from "express";
 import { createValidator } from "express-joi-validation";
 import {
-  authMiddleware,
+  checkPermissionMiddleware,
   optionalAuthMiddleware,
-  superAdminMiddleware,
 } from "../utils/userAuth";
 import {
   createNewsSchema,
@@ -17,13 +16,14 @@ import {
   deleteNews,
   createNewsAI,
 } from "../controller/newsController";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post(
   "/",
-  superAdminMiddleware,
+  checkPermissionMiddleware(PERMISSIONS.NEWS),
   validator.body(createNewsSchema),
   createNews
 );
@@ -34,16 +34,12 @@ router.get("/:id", optionalAuthMiddleware, getNewsById);
 
 router.put(
   "/:id",
-  superAdminMiddleware,
+  checkPermissionMiddleware(PERMISSIONS.NEWS),
   validator.body(updateNewsSchema),
   updateNews
 );
-router.post(
-  "/ai-news",
-  validator.body(createNewsSchema),
-  createNewsAI
-);
+router.post("/ai-news", validator.body(createNewsSchema), createNewsAI);
 
-router.delete("/:id", superAdminMiddleware, deleteNews);
+router.delete("/:id", checkPermissionMiddleware(PERMISSIONS.NEWS), deleteNews);
 
 export default router;
