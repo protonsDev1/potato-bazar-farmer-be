@@ -29,6 +29,8 @@ import { getUserRole } from "./userServices";
 
 interface Payload {
   name: string;
+  firstName: string;
+  lastName: string;
   age: number;
   gender: string;
   optionalNumber?: string;
@@ -89,7 +91,11 @@ export async function onboardFarmer(payload: Payload) {
 
       const farmer = await Farmer.create(
         {
-          name: payload.name,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          name: payload.name
+            ? payload.name
+            : `${payload.firstName || ""} ${payload.lastName || ""}`.trim(),
           age: payload.age,
           gender: payload.gender,
           optionalNumber: payload.optionalNumber,

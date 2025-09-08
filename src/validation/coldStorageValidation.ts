@@ -1,7 +1,9 @@
 import Joi from "joi";
 
 export const coldStorageSchema = Joi.object({
-  name: Joi.string().max(255).required(),
+  name: Joi.string().max(255).optional(),
+  firstName: Joi.string().max(255).required(),
+  lastName: Joi.string().max(255).required(),
   ownerName: Joi.string().max(255).required(),
   mobileNumber: Joi.string().max(255).required(),
   optionalNumber: Joi.string().max(255).allow("", null),
@@ -268,6 +270,8 @@ export const coldStorageSchema = Joi.object({
 
 export const updateColdStorageSchema = Joi.object({
   name: Joi.string().max(255).optional().allow("", null),
+  firstName: Joi.string().max(255).optional().allow(null, ""),
+  lastName: Joi.string().max(255).optional().allow(null, ""),
   ownerName: Joi.string().max(255).optional().allow("", null),
   mobileNumber: Joi.string().max(255).optional().allow("", null),
   optionalNumber: Joi.string().max(255).allow("", null),

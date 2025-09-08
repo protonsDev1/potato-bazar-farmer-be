@@ -6,6 +6,8 @@ import User, { REGISTRATION_STATUS } from './user';
 class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttributes<ColdStorage>> {
   declare id: CreationOptional<number>;
   declare name: string;
+  declare firstName: string;
+  declare lastName: string;
   declare ownerName: string;
   declare mobileNumber: string;
   declare optionalNumber: string;
@@ -92,6 +94,8 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
 ColdStorage.init({
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   name: DataTypes.STRING,
+  firstName: { type: DataTypes.STRING, allowNull: true },
+  lastName: { type: DataTypes.STRING, allowNull: true },
   ownerName: DataTypes.STRING,
   mobileNumber: DataTypes.STRING,
   optionalNumber: DataTypes.STRING,
