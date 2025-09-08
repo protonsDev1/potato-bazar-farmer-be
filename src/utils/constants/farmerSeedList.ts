@@ -409,7 +409,10 @@ export const priceDiscoveryList = [
 ];
 
 export const farmingChallengeList = [
-  { name: "Low Prices (कम दाम/ઓછા ભાવ/ਘੱਟ ਕੀਮਤਾਂ)", position: 1 },
+  {
+    name: "Price Fluctuation (कीमत में उतार-चढ़ाव/ભાવમાં ઉતાર-ચઢાવ/ਕੀਮਤਾਂ ਵਿੱਚ ਉਤਾਰ-ਚੜ੍ਹਾਵ)",
+    position: 1,
+  },
   {
     name: "No Buyers (कोई खरीदार नहीं/કોઈ ખરીદદાર નથી/ਕੋਈ ਖਰੀਦਦਾਰ ਨਹੀਂ)",
     position: 2,
