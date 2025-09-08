@@ -425,6 +425,8 @@ export const updateColdStorageService = async (coldStorageId, payload) => {
 
     const updateData: Record<string, any> = {};
     const editableFields = [
+      "firstName",
+      "lastName",
       "name",
       "ownerName",
       "mobileNumber",

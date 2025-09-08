@@ -170,6 +170,8 @@ export async function updateTraderService(traderId, payload) {
       throw new Error("Trader not found");
     }
     const updatableFields = [
+      "firstName",
+      "lastName",
       "fullName",
       "businessName",
       "businessAddress",
