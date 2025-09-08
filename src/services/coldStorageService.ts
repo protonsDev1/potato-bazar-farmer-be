@@ -34,12 +34,12 @@ export async function onboardColdStorage(payload: any) {
     return await sequelize.transaction(async (t) => {
       const coldStorage = await ColdStorage.create(
         {
+          name: payload.name,
           firstName: payload.firstName,
           lastName: payload.lastName,
-          name: payload.name
-            ? payload.name
+          ownerName: payload.ownerName
+            ? payload.ownerName
             : `${payload.firstName || ""} ${payload.lastName || ""}`.trim(),
-          ownerName: payload.ownerName,
           mobileNumber: payload.mobileNumber,
           optionalNumber: payload.optionalNumber,
           whatsappNumber: payload.whatsappNumber,
@@ -425,9 +425,9 @@ export const updateColdStorageService = async (coldStorageId, payload) => {
 
     const updateData: Record<string, any> = {};
     const editableFields = [
+      "name",
       "firstName",
       "lastName",
-      "name",
       "ownerName",
       "mobileNumber",
       "optionalNumber",
