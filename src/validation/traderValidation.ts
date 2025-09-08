@@ -1,7 +1,9 @@
 import Joi from "joi";
 
 export const onboardTraderSchema = Joi.object({
-  fullName: Joi.string().max(255).required(),
+  fullName: Joi.string().max(255).optional(),
+  firstName: Joi.string().max(255).required(),
+  lastName: Joi.string().max(255).required(),
   businessName: Joi.string().max(255).required(),
   businessAddress: Joi.string().max(255).optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).required(),
@@ -117,6 +119,8 @@ export const onboardTraderSchema = Joi.object({
 
 export const updateTraderSchema = Joi.object({
   fullName: Joi.string().max(255).optional().allow(null, ""),
+  firstName: Joi.string().max(255).optional().allow(null, ""),
+  lastName: Joi.string().max(255).optional().allow(null, ""),
   businessName: Joi.string().max(255).optional().allow(null, ""),
   businessAddress: Joi.string().max(255).optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).optional().allow(null, ""),
