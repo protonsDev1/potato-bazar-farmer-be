@@ -318,6 +318,8 @@ export const updateFarmerDetails = async (
     if (!farmer) throw new Error("Farmer not found");
 
     const updatableFields = [
+      "firstName",
+      "lastName",
       "name",
       "age",
       "gender",
