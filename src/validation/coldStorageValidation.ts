@@ -1,10 +1,10 @@
 import Joi from "joi";
 
 export const coldStorageSchema = Joi.object({
-  name: Joi.string().max(255).optional(),
+  name: Joi.string().max(255).required(),
   firstName: Joi.string().max(255).required(),
   lastName: Joi.string().max(255).required(),
-  ownerName: Joi.string().max(255).required(),
+  ownerName: Joi.string().max(255).optional(),
   mobileNumber: Joi.string().max(255).required(),
   optionalNumber: Joi.string().max(255).allow("", null),
   whatsappNumber: Joi.string().max(255).optional().allow("", null),

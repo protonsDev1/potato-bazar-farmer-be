@@ -1,15 +1,14 @@
 export const coldStorageTypeList = [
-  { name: "Standalone (स्टैंडअलोन/સ્ટૅન્ડઅલોન/ਸਟੈਂਡਅਲੋਨ)", position: 1 },
   {
     name: "Integrated with grading/processing (ग्रेडिंग/प्रोसेसिंग सहित/ગ્રેડિંગ/પ્રોસેસિંગ સાથે/ਗ੍ਰੇਡਿੰਗ/ਪ੍ਰੋਸੈਸਿੰਗ ਨਾਲ)",
-    position: 2,
+    position: 1,
   },
-  { name: "Multi-purpose (बहुउद्देशीय/બહુપયોગી/ਬਹੁ-ਉਦੇਸ਼ੀ)", position: 3 },
+  { name: "Multi-purpose (बहुउद्देशीय/બહુપયોગી/ਬਹੁ-ਉਦੇਸ਼ੀ)", position: 2 },
   {
     name: "Potato-specific (आलू विशेष/બટાકા માટે વિશિષ્ટ/ਆਲੂ-ਵਿਸ਼ੇਸ਼)",
-    position: 4,
+    position: 3,
   },
-  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 5 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 4 },
 ];
 
 export const storageTypeList = [
@@ -46,14 +45,7 @@ export const storageFeatureList = [
     name: "Insulated walls (इंसुलेटेड दीवारें/ઇન્સ્યુલેટેડ દિવાલો/ਇਨਸੂਲੇਟ ਕੀਤੀਆਂ ਦੀਵਾਰਾਂ)",
     position: 4,
   },
-  {
-    name: "Pest control mechanism (कीट नियंत्रण प्रणाली/કિટ નિયંત્રણ સિસ્ટમ/ਕੀਟ ਨਿਯੰਤਰਣ ਪ੍ਰਣਾਲੀ)",
-    position: 5,
-  },
-  {
-    name: "FIFO stock management (FIFO स्टॉक प्रबंधन/FIFO સ્ટોક મેનેજમેન્ટ/FIFO ਸਟਾਕ ਪ੍ਰਬੰਧਨ)",
-    position: 6,
-  },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 5 },
 ];
 
 export const dryingFacilityDetailsList = [
@@ -71,6 +63,7 @@ export const dryingFacilityDetailsList = [
     position: 4,
   },
   { name: "None (कोई नहीं/કોઈ નથી/ਕੋਈ ਨਹੀਂ)", position: 5 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 6 },
 ];
 
 export const elevatorTypeLIst = [
@@ -81,6 +74,7 @@ export const elevatorTypeLIst = [
     position: 3,
   },
   { name: "Not available (उपलब्ध नहीं/ઉપલબ્ધ નથી/ਉਪਲਬਧ ਨਹੀਂ)", position: 4 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 5 },
 ];
 
 export const monitoringFacilityList = [
@@ -96,14 +90,7 @@ export const monitoringFacilityList = [
     name: "Temperature/Humidity loggers (तापमान/नमी लॉगर/તાપમાન/ભેજ લોગર/ਤਾਪਮਾਨ/ਨਮੀ ਲਾਗਰ)",
     position: 3,
   },
-  {
-    name: "Mobile alerts (मोबाइल अलर्ट/મોબાઇલ એલર્ટ/ਮੋਬਾਈਲ ਅਲਰਟ)",
-    position: 4,
-  },
-  {
-    name: "Central control panel (केंद्रीय नियंत्रण पैनल/કેન્દ્રિય નિયંત્રણ પેનલ/ਕੇਂਦਰੀ ਨਿਯੰਤਰਣ ਪੈਨਲ)",
-    position: 5,
-  },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 4 },
 ];
 
 export const otherFacilityList = [
@@ -121,16 +108,20 @@ export const otherFacilityList = [
     position: 4,
   },
   { name: "Cafeteria (कैफेटेरिया/કૅફેટેરિયા/ਕੈਫੇਟੇਰੀਆ)", position: 5 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 6 },
 ];
 
 export const constructionTypeList = [
-  { name: "RCC (आरसीसी/આરસીસી/ਆਰ.ਸੀ.ਸੀ.)", position: 1 },
   {
-    name: "Pre-fabricated (पूर्व-निर्मित/પ્રી-ફેબ્રિકેટેડ/ਪ੍ਰੀ-ਫੈਬਰੀਕੇਟਡ)",
+    name: "Civil with Puff (सिविल विद पफ/સિવિલ વિથ પફ/ਸਿਵਲ ਵਿਦ ਪਫ)",
+    position: 1,
+  },
+  {
+    name: "Civil with Thermocol (सिविल विद थर्माकोल/સિવિલ વિથ થર્મોકોલ/ਸਿਵਲ ਵਿਦ ਥਰਮੋਕੋਲ)",
     position: 2,
   },
-  { name: "Steel (इस्पात/સ્ટીલ/ਸਟੀਲ)", position: 3 },
-  { name: "Brick (ईंट/ઇંટ/ਇੱਟ)", position: 4 },
+  { name: "Only Puff (केवल पफ/ફક્ત પફ/ਸਿਰਫ਼ ਪਫ)", position: 3 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 4 },
 ];
 
 export const roofTypeList = [
@@ -139,6 +130,7 @@ export const roofTypeList = [
   { name: "Insulated (इंसुलेटेड/ઇન્સ્યુલેટેડ/ਇਨਸੂਲੇਟ ਕੀਤਾ)", position: 3 },
   { name: "Tin (टिन/ટિન/ਟਿਨ)", position: 4 },
   { name: "RCC (आरसीसी/આરસીસી/ਆਰ.ਸੀ.ਸੀ.)", position: 5 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 6 },
 ];
 
 export const operationalChallengeList = [
@@ -176,6 +168,7 @@ export const potatoDisposalList = [
     name: "No disposal mechanism (कोई निपटान तंत्र नहीं/કોઈ નિકાલ સિસ્ટમ નથી/ਕੋਈ ਨਿਪਟਾਰਾ ਪ੍ਰਣਾਲੀ ਨਹੀਂ)",
     position: 4,
   },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 5 },
 ];
 
 export const shedTypeList = [
