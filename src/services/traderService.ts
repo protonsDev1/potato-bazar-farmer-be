@@ -22,7 +22,11 @@ export async function onboardTrader(payload) {
     return await sequelize.transaction(async (t) => {
       const trader = await Trader.create(
         {
-          fullName: payload.fullName,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          fullName: payload.fullName
+            ? payload.fullName
+            : `${payload.firstName || ""} ${payload.lastName || ""}`.trim(),
           businessName: payload.businessName,
           businessAddress: payload.businessAddress,
           mobileNumber: payload.mobileNumber,
@@ -380,7 +384,7 @@ export const getTraderListByAdmin = async (
     if (status) {
       whereCondition.status = status;
     }
-    
+
     if (agentId && agentId.toLowerCase() !== "all") {
       whereCondition.onBoardedBy = agentId;
     }

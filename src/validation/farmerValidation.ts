@@ -1,7 +1,9 @@
 import Joi from "joi";
 
 export const onboardFarmerSchema = Joi.object({
-  name: Joi.string().max(255).required(),
+  name: Joi.string().max(255).optional(),
+  firstName: Joi.string().max(255).required(),
+  lastName: Joi.string().max(255).required(),
   userId: Joi.number().required(),
   age: Joi.number().integer().min(1).required(),
   gender: Joi.string().valid("male", "female", "other").required(),
@@ -237,6 +239,8 @@ export const onboardFarmerSchema = Joi.object({
 
 export const updateFarmerSchema = Joi.object({
   name: Joi.string().max(255).optional().allow(null, ""),
+  firstName: Joi.string().max(255).optional().allow(null, ""),
+  lastName: Joi.string().max(255).optional().allow(null, ""),
   age: Joi.number().integer().min(1).optional().allow(null),
   gender: Joi.string().max(255).valid("male", "female", "other").optional(),
   optionalNumber: Joi.string().max(255).optional().allow(null, ""),
