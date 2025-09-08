@@ -15,6 +15,8 @@ class Trader extends Model<
 > {
   declare id: CreationOptional<number>;
   declare fullName: string;
+  declare firstName: string;
+  declare lastName: string;
   declare businessName: string;
   declare businessAddress: string;
   declare mobileNumber: string;
@@ -70,6 +72,8 @@ Trader.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    firstName: { type: DataTypes.STRING, allowNull: true },
+    lastName: { type: DataTypes.STRING, allowNull: true },
     businessName: {
       type: DataTypes.STRING,
       allowNull: false,
