@@ -207,9 +207,7 @@ export const verifyOtp = async (req, res) => {
         await existingUser.update({ hasStartedUsingMobile: true });
       }
       
-      const token = jwt.sign({ id: existingUser.id }, JWT_SECRET, {
-        expiresIn: "24h",
-      });
+      const token = jwt.sign({ id: existingUser.id }, JWT_SECRET);
       return res
         .status(200)
         .json({
@@ -237,9 +235,7 @@ export const UserLoginOnMobile = async (req, res) => {
   try {
     const userOnboardedOnMobile = await mobileOnboardingLoginService(req.body);
 
-    const token = jwt.sign({ id: userOnboardedOnMobile.id }, JWT_SECRET, {
-      expiresIn: "24h",
-    });
+    const token = jwt.sign({ id: userOnboardedOnMobile.id }, JWT_SECRET);
 
     return res.status(200).json({
       success: true,

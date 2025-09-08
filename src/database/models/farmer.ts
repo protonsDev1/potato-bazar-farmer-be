@@ -23,6 +23,8 @@ class Farmer extends Model<
 > {
   declare id: CreationOptional<number>;
   declare name: string;
+  declare firstName: string;
+  declare lastName: string;
   declare age: number;
   declare gender: string;
   declare optionalNumber: string | null;
@@ -51,6 +53,8 @@ Farmer.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: DataTypes.STRING, allowNull: false },
+    firstName: { type: DataTypes.STRING, allowNull: true },
+    lastName: { type: DataTypes.STRING, allowNull: true },
     age: { type: DataTypes.INTEGER, allowNull: false },
     gender: { type: DataTypes.STRING, allowNull: false },
     optionalNumber: { type: DataTypes.STRING, allowNull: true },
@@ -91,9 +95,9 @@ Farmer.init(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    status:{
+    status: {
       type: DataTypes.STRING,
-      defaultValue: REGISTRATION_STATUS.PENDING
+      defaultValue: REGISTRATION_STATUS.PENDING,
     },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
