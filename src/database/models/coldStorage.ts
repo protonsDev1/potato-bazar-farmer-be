@@ -52,6 +52,7 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare refrigerationType: string;
   declare refrigerationMake: string;
   declare machineCount: number;
+  declare machineCapacityArray: number[]; 
   declare machineCapacity: number;
   declare machineMake: string;
   declare hasAmmoniaDetector: boolean;
@@ -140,6 +141,10 @@ ColdStorage.init({
   refrigerationType: DataTypes.STRING,
   refrigerationMake: DataTypes.STRING,
   machineCount: DataTypes.INTEGER,
+  machineCapacityArray: {
+     type: DataTypes.ARRAY(DataTypes.DECIMAL),
+      allowNull: true,
+  },
   machineCapacity: DataTypes.DECIMAL,
   machineMake: DataTypes.STRING,
   hasAmmoniaDetector: DataTypes.BOOLEAN,
