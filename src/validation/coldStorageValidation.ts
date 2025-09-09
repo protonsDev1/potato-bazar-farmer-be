@@ -55,7 +55,8 @@ export const coldStorageSchema = Joi.object({
   refrigerationType: Joi.string().max(255).required(),
   refrigerationMake: Joi.string().max(255).required(),
   machineCount: Joi.number().integer().required(),
-  machineCapacity: Joi.number().required(),
+  machineCapacityArray: Joi.array().items(Joi.number()).optional(),
+  machineCapacity: Joi.number().optional().allow(null),
   // machineMake: Joi.string().required(),
   // hasAmmoniaDetector: Joi.boolean().required(),
   // hasRemoteMonitoring: Joi.boolean().required(),
@@ -135,7 +136,7 @@ export const coldStorageSchema = Joi.object({
       Joi.object({
         capacityMt: Joi.number().integer().min(0).required(),
         noOfFloors: Joi.number().integer().optional().allow(null),
-        sizePerChamberSqft: Joi.number().required(),
+        capacityInBags: Joi.number().required(),
         description: Joi.string().max(255).optional().allow("", null),
       })
     )
@@ -323,6 +324,7 @@ export const updateColdStorageSchema = Joi.object({
   refrigerationType: Joi.string().max(255).optional().allow("", null),
   refrigerationMake: Joi.string().max(255).optional().allow("", null),
   machineCount: Joi.number().integer().optional().allow(null),
+  machineCapacityArray: Joi.array().items(Joi.number()).optional(),
   machineCapacity: Joi.number().optional().allow(null),
   // machineMake: Joi.string().optional(),
   // hasAmmoniaDetector: Joi.boolean().optional(),
@@ -402,7 +404,7 @@ export const updateColdStorageSchema = Joi.object({
       Joi.object({
         capacityMt: Joi.number().integer().min(0).required(),
         noOfFloors: Joi.number().integer().optional().allow(null),
-        sizePerChamberSqft: Joi.number().required(),
+        capacityInBags: Joi.number().required(),
         description: Joi.string().max(255).optional().allow("", null),
       })
     )
