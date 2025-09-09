@@ -471,6 +471,8 @@ export const getTraderListByAdmin = async (
       where: whereCondition,
       attributes: [
         "id",
+        "firstName",
+        "lastName",
         "fullName",
         "businessName",
         "businessAddress",
@@ -514,6 +516,8 @@ export const getTraderListByAdmin = async (
 
     const data = rows.map((trader) => ({
       id: trader.id,
+      firstName: trader.firstName,
+      lastName: trader.lastName,
       fullName: trader.fullName,
       businessName: trader.businessName,
       businessAddress: trader.businessAddress,
