@@ -43,6 +43,7 @@ export async function onboardTrader(payload) {
           companyRegisteredVendor: payload.companyRegisteredVendor,
           mainCompany: payload.mainCompany,
           numberOfEmployees: payload.numberOfEmployees,
+          annualTurnover: payload.annualTurnover,
           ownPotatoFarming: payload.ownPotatoFarming,
           acres: payload.acres,
           yearlyPurchaseVolumeTons: payload.yearlyPurchaseVolumeTons,
@@ -62,6 +63,7 @@ export async function onboardTrader(payload) {
           panNumber: payload.panNumber,
           gstNumber: payload.gstNumber,
           fssaiNumber: payload.fssaiNumber,
+          marketCoverageStates: payload.marketCoverageStates,
           userId: payload.userId,
           onBoardedBy: payload.onBoardedBy,
           subVariety: payload.subVariety,
@@ -189,6 +191,7 @@ export async function updateTraderService(traderId, payload) {
       "companyRegisteredVendor",
       "mainCompany",
       "numberOfEmployees",
+      "annualTurnover",
       "ownPotatoFarming",
       "acres",
       "yearlyPurchaseVolumeTons",
@@ -206,6 +209,7 @@ export async function updateTraderService(traderId, payload) {
       "coldStorageAccess",
       "acceptsOnlinePayments",
       "subVariety",
+      "marketCoverageStates"
     ];
 
     const updateData: Record<string, any> = {};
@@ -658,7 +662,9 @@ export const getAllTraders = async (filters, search) => {
 export const createTraderWorksheetColumns = (worksheet) => {
   worksheet.columns = [
     { header: "Trader ID", key: "id", width: 10 },
-    { header: "Name", key: "fullName", width: 25 },
+    { header: "First Name", key: "firstName", width: 20 },
+    { header: "Last Name", key: "lastName", width: 20 },
+    { header: "Full Name", key: "fullName", width: 25 },
     { header: "Business Name", key: "businessName", width: 30 },
     { header: "Business Address", key: "businessAddress", width: 30 },
     { header: "Mobile", key: "mobileNumber", width: 20 },
@@ -675,6 +681,7 @@ export const createTraderWorksheetColumns = (worksheet) => {
     { header: "Sub Varieties", key: "subVariety", width: 20 },
     { header: "Language", key: "languagePreference", width: 20 },
     { header: "Employees", key: "numberOfEmployees", width: 20 },
+    { header: "Annual Turnover", key: "annualTurnover", width: 20 },
     { header: "Own Potato Farming", key: "ownPotatoFarming", width: 20 },
     { header: "Contract Farming", key: "contractFarming", width: 20 },
     { header: "Spot Buying", key: "spotBuying", width: 20 },
@@ -698,6 +705,7 @@ export const createTraderWorksheetColumns = (worksheet) => {
     { header: "Crops Traded", key: "cropsTraded", width: 50 },
     { header: "Trader Interests", key: "traderInterests", width: 50 },
     { header: "Market Coverage", key: "marketCoverages", width: 50 },
+    { header: "Market Coverage State", key: "marketCoverageStates", width: 50 },
     { header: "Mandi Details", key: "mandiDetail", width: 80 },
   ];
 };
@@ -727,6 +735,8 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
 
     worksheet.addRow({
       id: trader.id,
+      firstName: trader.firstName,
+      lastName: trader.lastName,
       fullName: trader.fullName,
       businessName: trader.businessName,
       businessAddress: trader.businessAddress,
@@ -744,6 +754,7 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       subVariety: trader.subVariety,
       languagePreference: trader.languagePreference || "",
       numberOfEmployees: trader.numberOfEmployees || "",
+      annualTurnover: trader.annualTurnover || "",
       ownPotatoFarming: trader.ownPotatoFarming ? "Yes" : "No",
       contractFarming: trader.contractFarming ? "Yes" : "No",
       spotBuying: trader.spotBuying ? "Yes" : "No",
@@ -759,6 +770,7 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       cropsTraded: cropsTraded.map((c) => c.cropName).join(", "),
       traderInterests: traderInterests.map((i) => i.interest).join(", "),
       marketCoverages: marketCoverages.map((m) => m.name).join(", "),
+      marketCoverageStates: trader.marketCoverageStates || "",
       mandiDetail: mandiDetail
         ? `Mandi: ${mandiDetail.mandiName}, Shop: ${mandiDetail.shopNumber}, Licence: ${mandiDetail.mandiLicenceNo}`
         : "",

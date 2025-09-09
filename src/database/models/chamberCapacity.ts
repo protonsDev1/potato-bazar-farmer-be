@@ -15,7 +15,7 @@ class ChamberCapacity extends Model<
   declare id: CreationOptional<number>;
   declare coldStorageId: number;
   declare noOfFloors: number | null;
-  declare sizePerChamberSqft: number | null;
+  declare capacityInBags: number | null;
   declare capacityMt: number | null;
   declare description: string | null;
 }
@@ -30,7 +30,7 @@ ChamberCapacity.init(
       onDelete: "CASCADE",
     },
     noOfFloors: { type: DataTypes.INTEGER, allowNull: true },
-    sizePerChamberSqft: { type: DataTypes.DECIMAL, allowNull: true },
+    capacityInBags: { type: DataTypes.DECIMAL, allowNull: true },
     capacityMt: { type: DataTypes.DECIMAL, allowNull: true },
     description: { type: DataTypes.STRING, allowNull: true },
   },
