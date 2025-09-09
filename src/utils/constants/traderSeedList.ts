@@ -1,7 +1,7 @@
 export const marketCoverageList = [
   { name: "Local Mandi (लोकल मंडी/લોકલ માંડી/ਲੋਕਲ ਮੰਡੀ)", position: 1 },
-  { name: "District (जिला/જિલ્લો/ਜ਼ਿਲ੍ਹਾ)", position: 2 },
-  { name: "Major State (प्रमुख राज्य/મુખ્ય રાજ્ય/ਮੁੱਖ ਰਾਜ)", position: 3 },
+  { name: "Within State (राज्य के भीतर/રાજ્યની અંદર/ਰਾਜ ਅੰਦਰ)", position: 2 },
+  { name: "Out of State (राज्य के बाहर/રાજ્ય બહાર/ਰਾਜ ਤੋਂ ਬਾਹਰ)", position: 3 },
 ];
 
 export const traderTypeList = [
@@ -42,5 +42,17 @@ export const traderVarietyList = [
     name: "French Fries (फ्रेंच फ्राइज़/ફ્રેન્ચ ફ્રાઈઝ/ਫ੍ਰੈਂਚ ਫ੍ਰਾਈਜ਼)",
     position: 3,
   },
-  { name: "Seed (बीज/બીજ/ਬੀਜ)", position: 4 },
+  {
+    name: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    position: 4,
+  },
+  { name: "Seed (बीज/બીજ/ਬੀਜ)", position: 5 },
+  {
+    name: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨੀਟਿਊਬਰ)",
+    position: 6,
+  },
+  {
+    name: "Other (अन्य/અન્ય/ਹੋਰ)",
+    position: 7,
+  },
 ];

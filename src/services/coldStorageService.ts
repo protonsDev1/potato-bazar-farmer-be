@@ -857,6 +857,8 @@ export async function getColdStorage(
       attributes: [
         "id",
         "name",
+        "firstName",
+        "lastName",
         "ownerName",
         "mobileNumber",
         "state",
@@ -905,6 +907,8 @@ export async function getColdStorage(
     const data = rows.map((item) => ({
       id: item.id,
       coldStorageName: item.name,
+      firstName: item.firstName,
+      lastName: item.lastName,
       ownerName: item.ownerName,
       mobileNumber: item.mobileNumber,
       state: item.state,
