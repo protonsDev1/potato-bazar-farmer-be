@@ -392,6 +392,7 @@ export const sellingPriceList = [
     name: "Contract farming Rate (अनुबंध खेती दर/કોન્ટ્રાક્ટ ખેતી દર/ਕਾਨਟ੍ਰੈਕਟ ਖੇਤੀ ਦਰ)",
     position: 6,
   },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 7 },
 ];
 
 export const priceDiscoveryList = [
