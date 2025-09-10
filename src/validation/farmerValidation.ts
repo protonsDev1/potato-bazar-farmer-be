@@ -5,7 +5,7 @@ export const onboardFarmerSchema = Joi.object({
   firstName: Joi.string().max(255).required(),
   lastName: Joi.string().max(255).required(),
   userId: Joi.number().required(),
-  age: Joi.number().integer().min(1).required(),
+  age: Joi.number().integer().min(1).max(150).required(),
   gender: Joi.string().valid("male", "female", "other").required(),
   optionalNumber: Joi.string().max(255).optional().allow(null, ""),
   caste: Joi.string().max(255).optional().allow(null, ""),
@@ -15,9 +15,9 @@ export const onboardFarmerSchema = Joi.object({
   district: Joi.string().max(255).optional().allow(null, ""),
   state: Joi.string().max(255).optional().allow(null, ""),
   geoLocation: Joi.string().max(255).optional().allow(null, ""),
-  pinCode: Joi.string().max(255).optional().allow(null, ""),
+  pinCode: Joi.string().max(10).optional().allow(null, ""),
   digiPin: Joi.string().max(255).optional().allow(null, ""),
-  whatsappNumber: Joi.string().max(255).optional().allow(null, ""),
+  whatsappNumber: Joi.string().max(15).optional().allow(null, ""),
   isAadhaarCard: Joi.boolean().optional().allow(null),
   aadhaarNumber: Joi.string()
     .max(255)
@@ -32,12 +32,28 @@ export const onboardFarmerSchema = Joi.object({
   landDetails: Joi.array()
     .items(
       Joi.object({
-        landOwnedAcres: Joi.number().required(),
-        landLeasedAcres: Joi.number().required(),
-        totalLandUnderCultivation: Joi.number().optional().allow(null),
-        landForPotatoFarming: Joi.number().optional().allow(null),
-        areaUnderDrip: Joi.number().optional().allow(null),
-        storageCapacityAtFarm: Joi.number().optional().allow(null),
+        landOwnedAcres: Joi.number().min(0).max(1000000000).required(),
+        landLeasedAcres: Joi.number().min(0).max(1000000000).required(),
+        totalLandUnderCultivation: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
+        landForPotatoFarming: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
+        areaUnderDrip: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
+        storageCapacityAtFarm: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
         irrigationEquipmentModel: Joi.string()
           .max(255)
           .optional()
@@ -67,7 +83,11 @@ export const onboardFarmerSchema = Joi.object({
             otherwise: Joi.optional().allow(null, ""),
           }),
         soilType: Joi.string().max(255).optional().allow(null, ""),
-        averageYieldPerAcre: Joi.number().optional().allow(null),
+        averageYieldPerAcre: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
         sowingMonth: Joi.string().max(255).optional().allow(null, ""),
         harvestMonth: Joi.string().max(255).optional().allow(null, ""),
         sowingMethod: Joi.string().max(255).optional().allow(null, ""),
@@ -82,8 +102,8 @@ export const onboardFarmerSchema = Joi.object({
         isGradingMachineAtFarm: Joi.boolean().optional().allow(null),
         isShadeAtFarmGate: Joi.boolean().optional().allow(null),
         isUnderContractFarming: Joi.boolean().optional().allow(null),
-        contractPercent: Joi.number().optional().allow(null),
-        spotPercent: Joi.number().optional().allow(null),
+        contractPercent: Joi.number().min(0).max(100).optional().allow(null),
+        spotPercent: Joi.number().min(0).max(100).optional().allow(null),
         contractPartnerName: Joi.string().max(255).optional().allow(null, ""),
         reasonForTrust: Joi.string().optional().allow(null, ""),
         preference: Joi.string().optional().allow(null, ""),
@@ -241,7 +261,7 @@ export const updateFarmerSchema = Joi.object({
   name: Joi.string().max(255).optional().allow(null, ""),
   firstName: Joi.string().max(255).optional().allow(null, ""),
   lastName: Joi.string().max(255).optional().allow(null, ""),
-  age: Joi.number().integer().min(1).optional().allow(null),
+  age: Joi.number().integer().min(1).max(150).optional().allow(null),
   gender: Joi.string().max(255).valid("male", "female", "other").optional(),
   optionalNumber: Joi.string().max(255).optional().allow(null, ""),
   caste: Joi.string().max(255).optional().allow(null, ""),
@@ -251,9 +271,9 @@ export const updateFarmerSchema = Joi.object({
   district: Joi.string().max(255).optional().allow(null, ""),
   state: Joi.string().max(255).optional().allow(null, ""),
   geoLocation: Joi.string().max(255).optional().allow(null, ""),
-  pinCode: Joi.string().max(255).optional().allow(null, ""),
+  pinCode: Joi.string().max(10).optional().allow(null, ""),
   digiPin: Joi.string().max(255).optional().allow(null, ""),
-  whatsappNumber: Joi.string().max(255).optional().allow(null, ""),
+  whatsappNumber: Joi.string().max(15).optional().allow(null, ""),
   isAadhaarCard: Joi.boolean().optional().allow(null),
   aadhaarNumber: Joi.string()
     .max(255)
@@ -268,12 +288,36 @@ export const updateFarmerSchema = Joi.object({
   landDetails: Joi.array()
     .items(
       Joi.object({
-        landOwnedAcres: Joi.number().optional().allow(null),
-        landLeasedAcres: Joi.number().optional().allow(null),
-        totalLandUnderCultivation: Joi.number().optional().allow(null),
-        landForPotatoFarming: Joi.number().optional().allow(null),
-        areaUnderDrip: Joi.number().optional().allow(null),
-        storageCapacityAtFarm: Joi.number().optional().allow(null),
+        landOwnedAcres: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
+        landLeasedAcres: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
+        totalLandUnderCultivation: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
+        landForPotatoFarming: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
+        areaUnderDrip: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
+        storageCapacityAtFarm: Joi.number()
+          .min(0)
+          .max(1000000000)
+          .optional()
+          .allow(null),
         irrigationEquipmentModel: Joi.string()
           .max(255)
           .optional()
@@ -317,8 +361,8 @@ export const updateFarmerSchema = Joi.object({
         isGradingMachineAtFarm: Joi.boolean().optional().allow(null),
         isShadeAtFarmGate: Joi.boolean().optional().allow(null),
         isUnderContractFarming: Joi.boolean().optional().allow(null),
-        contractPercent: Joi.number().optional().allow(null),
-        spotPercent: Joi.number().optional().allow(null),
+        contractPercent: Joi.number().min(0).max(100).optional().allow(null),
+        spotPercent: Joi.number().min(0).max(100).optional().allow(null),
         contractPartnerName: Joi.string().max(255).optional().allow(null, ""),
         reasonForTrust: Joi.string().optional().allow(null, ""),
         preference: Joi.string().optional().allow(null, ""),

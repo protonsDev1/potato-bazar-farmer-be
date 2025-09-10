@@ -6,7 +6,7 @@ export const listStates = async (req, res) => {
   try {
     const states = await State.findAll({
       attributes: ["id", "name"],
-      order: [["position", "ASC"]],
+      order: [["name", "ASC"]],
     });
 
     return res.json({
