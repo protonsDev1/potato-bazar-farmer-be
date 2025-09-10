@@ -120,7 +120,7 @@ Trader.init(
     geoLocation: { type: DataTypes.STRING, allowNull: true },
     languagePreference: {
       type: DataTypes.STRING(50),
-      allowNull: false,
+      allowNull: true,
     },
     companyRegisteredVendor: {
       type: DataTypes.BOOLEAN,
@@ -134,7 +134,7 @@ Trader.init(
       type: DataTypes.STRING(50),
       allowNull: false,
     },
-     annualTurnover: {
+    annualTurnover: {
       type: DataTypes.STRING,
       allowNull: true,
     },
@@ -215,7 +215,7 @@ Trader.init(
       allowNull: true,
     },
     marketCoverageStates: {
-         type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
     },
     userId: {
