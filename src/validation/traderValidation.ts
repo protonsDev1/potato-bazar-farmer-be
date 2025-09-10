@@ -7,14 +7,14 @@ export const onboardTraderSchema = Joi.object({
   businessName: Joi.string().max(255).required(),
   businessAddress: Joi.string().max(255).optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).required(),
-  whatsappNumber: Joi.string().max(255).max(15).allow(null, ""),
+  whatsappNumber: Joi.string().max(15).allow(null, ""),
   email: Joi.string().max(255).email().allow(null, ""),
 
   state: Joi.string().max(255).required(),
   district: Joi.string().max(255).required(),
   cityOrVillage: Joi.string().max(255).required(),
   taluka: Joi.string().max(255).optional().allow(null, ""),
-  pinCode: Joi.string().max(255).max(10).required(),
+  pinCode: Joi.string().max(10).required(),
   digiPin: Joi.string().max(255).optional().allow(null, ""),
   geoLocation: Joi.string().max(255).optional().allow(null, ""),
   languagePreference: Joi.string().max(255).optional().allow(null, ""),
@@ -25,8 +25,8 @@ export const onboardTraderSchema = Joi.object({
   numberOfEmployees: Joi.string().max(255).required(),
   annualTurnover: Joi.string().max(255).optional().allow(null, ""),
   ownPotatoFarming: Joi.boolean().optional(),
-  acres: Joi.number().allow(null).optional(),
-  yearlyPurchaseVolumeTons: Joi.number().required(),
+  acres: Joi.number().min(0).max(1000000000).allow(null).optional(),
+  yearlyPurchaseVolumeTons: Joi.number().min(0).max(1000000000).required(),
   mainProcurementRegion: Joi.string().required(),
   geographicalMarketCovered: Joi.string().optional().allow(null, ""),
 
@@ -35,7 +35,7 @@ export const onboardTraderSchema = Joi.object({
   seedsSales: Joi.boolean().optional().allow(null),
   ownColdStorage: Joi.boolean().optional().allow(null),
   yearsInTrading: Joi.string().max(255).required(),
-  averageDailySalesKatta: Joi.number().required(),
+  averageDailySalesKatta: Joi.number().min(0).max(1000000000).required(),
   salesOwnPotatoes: Joi.boolean().optional().allow(null),
   onlineAuctionInterest: Joi.boolean().optional().allow(null),
   bankLoanFacility: Joi.boolean().optional().allow(null),
@@ -129,14 +129,14 @@ export const updateTraderSchema = Joi.object({
   businessName: Joi.string().max(255).optional().allow(null, ""),
   businessAddress: Joi.string().max(255).optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).optional().allow(null, ""),
-  whatsappNumber: Joi.string().max(255).max(15).allow(null, ""),
+  whatsappNumber: Joi.string().max(15).allow(null, ""),
   email: Joi.string().max(255).email().allow(null, ""),
 
   state: Joi.string().max(255).optional().allow(null, ""),
   district: Joi.string().max(255).optional().allow(null, ""),
   taluka: Joi.string().max(255).optional().allow(null, ""),
   cityOrVillage: Joi.string().max(255).optional().allow(null, ""),
-  pinCode: Joi.string().max(255).max(10).optional().allow(null, ""),
+  pinCode: Joi.string().max(10).optional().allow(null, ""),
   digiPin: Joi.string().max(255).optional().allow(null, ""),
   geoLocation: Joi.string().max(255).optional().allow(null, ""),
   languagePreference: Joi.string().max(255).optional().allow(null, ""),
@@ -147,8 +147,12 @@ export const updateTraderSchema = Joi.object({
   numberOfEmployees: Joi.string().max(255).optional().allow(null, ""),
   annualTurnover: Joi.string().max(255).optional().allow(null, ""),
   ownPotatoFarming: Joi.boolean().optional().allow(null),
-  acres: Joi.number().optional().allow(null),
-  yearlyPurchaseVolumeTons: Joi.number().optional().allow(null),
+  acres: Joi.number().min(0).max(1000000000).optional().allow(null),
+  yearlyPurchaseVolumeTons: Joi.number()
+    .min(0)
+    .max(1000000000)
+    .optional()
+    .allow(null),
   mainProcurementRegion: Joi.string().optional().allow(null, ""),
   geographicalMarketCovered: Joi.string().optional().allow(null, ""),
 
@@ -157,7 +161,11 @@ export const updateTraderSchema = Joi.object({
   seedsSales: Joi.boolean().optional().allow(null),
   ownColdStorage: Joi.boolean().optional().allow(null),
   yearsInTrading: Joi.string().max(255).optional().allow(null, ""),
-  averageDailySalesKatta: Joi.number().optional().allow(null),
+  averageDailySalesKatta: Joi.number()
+    .min(0)
+    .max(1000000000)
+    .optional()
+    .allow(null),
   salesOwnPotatoes: Joi.boolean().optional().allow(null),
   onlineAuctionInterest: Joi.boolean().optional().allow(null),
   bankLoanFacility: Joi.boolean().optional().allow(null),
