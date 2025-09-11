@@ -574,12 +574,7 @@ export const retrieveColdStorageProfile = async (
     });
 
     const chamberCapacity = await ChamberCapacity.findAll({
-      attributes: [
-        "capacityMt",
-        "noOfFloors",
-        "capacityInBags",
-        "description",
-      ],
+      attributes: ["capacityMt", "noOfFloors", "capacityInBags", "description"],
       where: { coldStorageId },
     });
 
@@ -949,10 +944,12 @@ export const softDeleteColdStorageById = async (coldStorageId: number) => {
   });
 
   coldStorage.isDeleted = true;
-  agentOnboardedCs.isDeleted = true;
-
   await coldStorage.save();
-  await agentOnboardedCs.save();
+
+  if (agentOnboardedCs) {
+    agentOnboardedCs.isDeleted = true;
+    await agentOnboardedCs.save();
+  }
 
   return { success: true, data: coldStorage };
 };
@@ -1068,8 +1065,8 @@ export const createColdStorageWorksheetColumns = (worksheet) => {
   worksheet.columns = [
     { header: "Cold Storage ID", key: "id", width: 10 },
     { header: "Cold Storage Name", key: "name", width: 30 },
-    { header: "Owner's first Name", key: "firstName", width: 20},
-    { header: "Owner's last Name", key: "lastName", width: 20},
+    { header: "Owner's first Name", key: "firstName", width: 20 },
+    { header: "Owner's last Name", key: "lastName", width: 20 },
     { header: "Owner's full Name", key: "ownerName", width: 25 },
     { header: "Mobile Number", key: "mobileNumber", width: 20 },
     { header: "State", key: "state", width: 20 },
@@ -1100,22 +1097,46 @@ export const createColdStorageWorksheetColumns = (worksheet) => {
     { header: "Storage Types", key: "storageTypes", width: 30 },
     { header: "Has Air Cutter", key: "hasAirCutter", width: 30 },
     { header: "Has Insect Trap", key: "hasInsectTrap", width: 30 },
-    { header: "Is Grading Area Available", key: "gradingAreaAvailable", width: 30 },
-    { header: "Is Grading Machine Available", key: "gradingMachineAvailable", width: 30 },
+    {
+      header: "Is Grading Area Available",
+      key: "gradingAreaAvailable",
+      width: 30,
+    },
+    {
+      header: "Is Grading Machine Available",
+      key: "gradingMachineAvailable",
+      width: 30,
+    },
     { header: "Grading Machine TPH", key: "gradingMachineTph", width: 30 },
-    { header: "Is Manual Grading Area Available", key: "manualGradingAreaAvailable", width: 30 },
+    {
+      header: "Is Manual Grading Area Available",
+      key: "manualGradingAreaAvailable",
+      width: 30,
+    },
     { header: "Number of Kattas", key: "numberOfKattas", width: 20 },
     { header: "Grading Charges", key: "gradingCharges", width: 20 },
     { header: "Other Charges", key: "otherCharges", width: 20 },
     { header: "CO2 Controller", key: "co2Controller", width: 20 },
     { header: "Humidity Controller", key: "humidityController", width: 20 },
-    { header: "Temperature Controller", key: "temperatureController", width: 20 },
+    {
+      header: "Temperature Controller",
+      key: "temperatureController",
+      width: 20,
+    },
     { header: "Has Weigh Bridge", key: "weighBridge", width: 20 },
-    { header: "Weigh Bridge Capacity", key: "weighbridgeCapacityLength", width: 20 },
+    {
+      header: "Weigh Bridge Capacity",
+      key: "weighbridgeCapacityLength",
+      width: 20,
+    },
     { header: "Has Lorry Shades", key: "hasLorryShades", width: 20 },
     { header: "Lorry Shade Capacity", key: "lorryShadeCapacity", width: 20 },
     { header: "Has Labour for Grading", key: "hasLabourForGrading", width: 20 },
-    { header: "No of Labour in Peak Season", key: "noOfLabourInPeakSeason", width: 20 },
+    {
+      header: "No of Labour in Peak Season",
+      key: "noOfLabourInPeakSeason",
+      width: 20,
+    },
     { header: "Usage Types", key: "usageTypes", width: 50 },
     { header: "Drying Facility", key: "dryingFacilityDetails", width: 50 },
     { header: "Features", key: "featureOfStorages", width: 50 },
@@ -1138,8 +1159,12 @@ export const createColdStorageWorksheetColumns = (worksheet) => {
     },
     { header: "Referigeration Type", key: "refrigerationType", width: 30 },
     { header: "Referigeration Make", key: "referigerationMake", width: 30 },
-    { header: "No. of Unit in Referigeration System", key: "machineCount", width: 30 },
-    { header: "Machine Capacities", key: "machineCapacityArray", width: 40},
+    {
+      header: "No. of Unit in Referigeration System",
+      key: "machineCount",
+      width: 30,
+    },
+    { header: "Machine Capacities", key: "machineCapacityArray", width: 40 },
     { header: "Monitoring Loggers", key: "monitoringLoggers", width: 30 },
   ];
 };
@@ -1234,21 +1259,23 @@ export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
       operationalChallenges:
         operationalChallenges.map((c) => c.challenge).join(", ") || "",
       storageTypes: storageTypes.map((s) => s.storageType).join(", ") || "",
-      hasAirCutter: storage.hasAirCutter? "Yes": "No",
-      hasInsectTrap: storage.hasInsectTrap? "Yes": "No",
-      gradingAreaAvailable: storage.gradingAreaAvailable? "Yes": "No",
-      gradingMachineAvailable: storage.gradingMachineAvailable? "Yes": "No",
+      hasAirCutter: storage.hasAirCutter ? "Yes" : "No",
+      hasInsectTrap: storage.hasInsectTrap ? "Yes" : "No",
+      gradingAreaAvailable: storage.gradingAreaAvailable ? "Yes" : "No",
+      gradingMachineAvailable: storage.gradingMachineAvailable ? "Yes" : "No",
       gradingMachineTph: storage.gradingMachineTph || "",
-      manualGradingAreaAvailable: storage.manualGradingAreaAvailable? "Yes": "No",
+      manualGradingAreaAvailable: storage.manualGradingAreaAvailable
+        ? "Yes"
+        : "No",
       numberOfKattas: storage.numberOfKattas || "",
       co2Controller: storage.co2Controller || "",
       humidityController: storage.humidityController || "",
       temperatureController: storage.temperatureController || "",
-      weighBridge: storage.weighBridge? "Yes": "No",
+      weighBridge: storage.weighBridge ? "Yes" : "No",
       weighbridgeCapacityLength: storage.weighbridgeCapacityLength || "",
-      hasLorryShades: storage.hasLorryShades? "Yes": "No",
+      hasLorryShades: storage.hasLorryShades ? "Yes" : "No",
       lorryShadeCapacity: storage.lorryShadeCapacity || "",
-      hasLabourForGrading: storage.hasLabourForGrading? "Yes": "No",
+      hasLabourForGrading: storage.hasLabourForGrading ? "Yes" : "No",
       noOfLabourInPeakSeason: storage.noOfLabourInPeakSeason || "",
       usageTypes:
         usageTypes.map((u) => `${u.type}: ${u.capacity}MT`).join(" | ") || "",

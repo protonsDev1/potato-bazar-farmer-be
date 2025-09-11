@@ -870,10 +870,12 @@ export const softDeleteFarmerById = async (farmerId: number) => {
   });
 
   farmer.isDeleted = true;
-  agentOnboardedFarmer.isDeleted = true;
-
   await farmer.save();
-  await agentOnboardedFarmer.save();
+
+  if (agentOnboardedFarmer) {
+    agentOnboardedFarmer.isDeleted = true;
+    await agentOnboardedFarmer.save();
+  }
 
   return { success: true, data: farmer };
 };
