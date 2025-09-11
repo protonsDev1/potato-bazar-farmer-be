@@ -209,7 +209,7 @@ export async function updateTraderService(traderId, payload) {
       "coldStorageAccess",
       "acceptsOnlinePayments",
       "subVariety",
-      "marketCoverageStates"
+      "marketCoverageStates",
     ];
 
     const updateData: Record<string, any> = {};
@@ -565,10 +565,12 @@ export const softDeleteTraderById = async (traderId: number) => {
   });
 
   trader.isDeleted = true;
-  agentOnboardedTrader.isDeleted = true;
-
   await trader.save();
-  await agentOnboardedTrader.save();
+
+  if (agentOnboardedTrader) {
+    agentOnboardedTrader.isDeleted = true;
+    await agentOnboardedTrader.save();
+  }
 
   return { success: true, data: trader };
 };
