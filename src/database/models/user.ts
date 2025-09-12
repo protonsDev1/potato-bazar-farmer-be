@@ -35,6 +35,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare password_hash: string;
   declare role: string;
   declare mobile: string;
+  declare secondaryMobile: string | null;
   declare registration_types: string[] | null;
   declare otpVerified: boolean;
   declare agentProfile?: Agent;
@@ -95,6 +96,10 @@ User.init(
     mobile: {
       type: DataTypes.STRING,
       unique: true,
+      allowNull: true,
+    },
+    secondaryMobile: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
     registration_types: {
