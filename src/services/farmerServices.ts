@@ -763,6 +763,8 @@ export async function getFarmerListByAdmin(
       attributes: [
         "id",
         "gender",
+        "firstName",
+        "lastName",
         "name",
         "age",
         "state",
@@ -827,6 +829,8 @@ export async function getFarmerListByAdmin(
       id: item.id,
       gender: item.gender,
       name: item.name,
+      firstName: item.firstName,
+      lastName: item.lastName,
       age: item.age,
       village: item.village,
       taluka: item.taluka,
@@ -866,10 +870,12 @@ export const softDeleteFarmerById = async (farmerId: number) => {
   });
 
   farmer.isDeleted = true;
-  agentOnboardedFarmer.isDeleted = true;
-
   await farmer.save();
-  await agentOnboardedFarmer.save();
+
+  if (agentOnboardedFarmer) {
+    agentOnboardedFarmer.isDeleted = true;
+    await agentOnboardedFarmer.save();
+  }
 
   return { success: true, data: farmer };
 };
@@ -1070,6 +1076,8 @@ export async function getAllFarmers(filters: any, search: string) {
 export const createFarmerWorksheetColumns = (worksheet: Worksheet) => {
   worksheet.columns = [
     { header: "Farmer ID", key: "id", width: 10 },
+    { header: "First Name", key: "firstName", width: 20 },
+    { header: "Last Name", key: "lastName", width: 20 },
     { header: "Name", key: "name", width: 20 },
     { header: "Gender", key: "gender", width: 10 },
     { header: "Age", key: "age", width: 10 },
@@ -1249,6 +1257,8 @@ export const addFarmersToWorksheet = async (
 
     worksheet.addRow({
       id: farmer.id,
+      firstName: farmer.firstName,
+      lastName: farmer.lastName,
       name: farmer.name,
       gender: farmer.gender,
       age: farmer.age,

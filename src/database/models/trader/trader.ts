@@ -33,6 +33,7 @@ class Trader extends Model<
   declare companyRegisteredVendor: boolean;
   declare mainCompany: string | null;
   declare numberOfEmployees: string;
+  declare annualTurnover: string | null;
   declare ownPotatoFarming: boolean;
   declare acres: number | null;
   declare yearlyPurchaseVolumeTons: number;
@@ -52,6 +53,7 @@ class Trader extends Model<
   declare panNumber: string;
   declare gstNumber: string | null;
   declare fssaiNumber: string | null;
+  declare marketCoverageStates: string[];
   declare userId: number | null;
   declare onBoardedBy: ForeignKey<User["id"]> | null;
   declare isDeleted: boolean;
@@ -118,7 +120,7 @@ Trader.init(
     geoLocation: { type: DataTypes.STRING, allowNull: true },
     languagePreference: {
       type: DataTypes.STRING(50),
-      allowNull: false,
+      allowNull: true,
     },
     companyRegisteredVendor: {
       type: DataTypes.BOOLEAN,
@@ -131,6 +133,10 @@ Trader.init(
     numberOfEmployees: {
       type: DataTypes.STRING(50),
       allowNull: false,
+    },
+    annualTurnover: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     ownPotatoFarming: {
       type: DataTypes.BOOLEAN,
@@ -206,6 +212,10 @@ Trader.init(
     },
     fssaiNumber: {
       type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+    marketCoverageStates: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
     },
     userId: {
