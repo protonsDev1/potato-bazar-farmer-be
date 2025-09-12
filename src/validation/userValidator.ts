@@ -62,6 +62,11 @@ export const otpSendSchema = Joi.object({
   mobile: Joi.string().required(),
 });
 
+export const otpExportSendSchema = Joi.object({
+  mobile: Joi.string().required(),
+  secondaryMobile: Joi.string().required(),
+});
+
 export const otpVerifySchema = Joi.object({
   mobile: Joi.string()
     .required()
@@ -96,7 +101,11 @@ export const verifyOtpSchema = Joi.object({
   mobile: Joi.string()
     .required()
     .pattern(/^[6-9]\d{9}$/),
-  otp: Joi.string().required().length(6),
+  mobileOtp: Joi.string().required().length(6),
+  secondaryMobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
+  secondaryMobileOtp: Joi.string().required().length(6),
 });
 
 export const resetPasswordSchema = Joi.object({
