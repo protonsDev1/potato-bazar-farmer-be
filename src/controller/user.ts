@@ -94,6 +94,7 @@ export const login = async (req, res) => {
           email: user.email,
           role: user.role,
           mobile: user.mobile,
+          secondaryMobie: user.secondaryMobile,
           permissions,
         },
       });
@@ -228,6 +229,42 @@ export const verifyOtp = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: err.message || "OTP verification failed" });
+  }
+};
+
+export const resendOtp = async (req, res) => {
+  try {
+    const { mobile } = req.body;
+
+    const otpRecord = await createOtp(mobile);
+    return res.status(200).json({ success: true, message: 'OTP resent successfully', otp: otpRecord.otp }); // for demo
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message || 'Failed to resend OTP' });
+  }
+};
+
+export const sendExportOtps = async (req, res) => {
+  try {
+    const { mobile, secondaryMobile } = req.body;
+    const { mobile: userMobile, secondaryMobile: userSecondaryMobile } = req.user;
+
+    if (mobile !== userMobile || secondaryMobile !== userSecondaryMobile) {
+      return res.status(403).json({
+        success: false,
+        message: "Provided mobile numbers do not match the admin account records",
+      });
+    }
+
+    const mobileOtp = await createOtp(mobile);
+    const secondaryMobileOtp = await createOtp(secondaryMobile);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTPs sent to both registered mobile numbers",
+      otp: { mobileOtp: mobileOtp.otp, secondaryMobileOtp: secondaryMobileOtp.otp },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message || "Failed to send OTPs" });
   }
 };
 

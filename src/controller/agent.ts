@@ -28,6 +28,7 @@ import AgentMonthlyTarget from "../database/models/agentMonthlyTarget";
 import dayjs from "dayjs";
 import { verifyOtpFromDB } from "../services/otpServices";
 import { USER_ROLES } from "../database/models/user";
+import Otp from "../database/models/otp";
 
 export const getAllRegisteredUsers = async (req, res) => {
   try {
@@ -395,15 +396,37 @@ export const getAgentAllTickets = async (req, res) => {
 
 export const exportAgents = async (req, res) => {
   try {
-    const { mobile, otp } = req.body;
+    const { mobile, mobileOtp, secondaryMobile, secondaryMobileOtp } = req.body;
     const { search } = req.query;
 
-    const isValid = await verifyOtpFromDB(mobile, otp);
-    if (!isValid) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid or expired OTP" });
+    const isPrimaryValid = await verifyOtpFromDB(mobile, mobileOtp, false);
+    const isSecondaryValid = await verifyOtpFromDB(
+      secondaryMobile,
+      secondaryMobileOtp,
+      false
+    );
+
+    if (!isPrimaryValid && !isSecondaryValid) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid or expired OTPs for both primary and secondary mobile",
+      });
     }
+    if (!isPrimaryValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP for primary mobile",
+      });
+    }
+    if (!isSecondaryValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP for secondary mobile",
+      });
+    }
+
+    await Otp.destroy({ where: { mobile: [mobile, secondaryMobile] } });
 
     const agents = await getAllAgentsWithAssociations(search as string);
 
