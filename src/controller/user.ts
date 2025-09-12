@@ -94,7 +94,7 @@ export const login = async (req, res) => {
           email: user.email,
           role: user.role,
           mobile: user.mobile,
-          secondaryMobie: user.secondaryMobile,
+          secondaryMobile: user.secondaryMobile,
           permissions,
         },
       });
