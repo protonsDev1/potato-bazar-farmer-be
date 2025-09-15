@@ -1,7 +1,7 @@
-import User, { USER_ROLES } from "../database/models/user";
-import SubAdminPermission from "../database/models/subAdminPermission";
 import { Op } from "sequelize";
-import { PERMISSIONS, WEB_PERMISSIONS } from "../utils/constants/permissions";
+
+import User, { USER_ROLES } from "../database/models/user";
+import { WEB_PERMISSIONS } from "../utils/constants/permissions";
 import SubAdminWebPermission from "../database/models/subAdminWebPermission";
 
 interface PrivilegePayload {
@@ -12,6 +12,7 @@ interface PrivilegePayload {
 interface CreateSubAdminWebPayload {
   name: string;
   email: string;
+  mobile: string;
   password: string;
   privileges?: PrivilegePayload[];
 }
@@ -19,16 +20,26 @@ interface CreateSubAdminWebPayload {
 export const createSubAdminWebService = async (
   payload: CreateSubAdminWebPayload
 ) => {
-  const { name, email, password, privileges } = payload;
+  const { name, email, mobile, password, privileges } = payload;
 
   const existingEmailUser = await User.findOne({ where: { email } });
   if (existingEmailUser) {
     return { success: false, statusCode: 409, message: "Email already exists" };
   }
 
+  const existingMobileUser = await User.findOne({ where: { mobile } });
+  if (existingMobileUser) {
+    return {
+      success: false,
+      statusCode: 409,
+      message: "Mobile already exists",
+    };
+  }
+
   const subAdminWeb = await User.create({
     name,
     email,
+    mobile,
     password,
     role: USER_ROLES.SUB_ADMIN_WEB,
   });
@@ -165,6 +176,32 @@ export const updateSubAdminWebService = async (id, payload) => {
       statusCode: 404,
       message: "Sub admin web not found",
     };
+  }
+
+  if (updateFields.email) {
+    const existingEmailUser = await User.findOne({
+      where: { email: updateFields.email, id: { [Op.ne]: id } },
+    });
+    if (existingEmailUser) {
+      return {
+        success: false,
+        statusCode: 409,
+        message: "Email already exists",
+      };
+    }
+  }
+
+  if (updateFields.mobile) {
+    const existingMobileUser = await User.findOne({
+      where: { mobile: updateFields.mobile, id: { [Op.ne]: id } },
+    });
+    if (existingMobileUser) {
+      return {
+        success: false,
+        statusCode: 409,
+        message: "Mobile already exists",
+      };
+    }
   }
 
   await subAdmin.update(updateFields);

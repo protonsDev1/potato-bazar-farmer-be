@@ -4,6 +4,9 @@ import { VALID_ACTIONS, VALID_MODULES } from "../utils/constants/permissions";
 export const createSubAdminWebSchema = Joi.object({
   name: Joi.string().trim().min(2).max(100).required(),
   email: Joi.string().email().required(),
+  mobile: Joi.string()
+    .pattern(/^[6-9]\d{9}$/)
+    .required(),
   password: Joi.string().min(6).max(50).required(),
   isActive: Joi.boolean().optional(),
   privileges: Joi.array()
@@ -24,6 +27,9 @@ export const createSubAdminWebSchema = Joi.object({
 export const updateSubAdminWebSchema = Joi.object({
   name: Joi.string().trim().min(2).max(100).optional(),
   email: Joi.string().email().optional(),
+  mobile: Joi.string()
+    .pattern(/^[6-9]\d{9}$/)
+    .optional(),
   password: Joi.string().min(6).max(50).optional(),
   isActive: Joi.boolean().optional(),
   privileges: Joi.array()
