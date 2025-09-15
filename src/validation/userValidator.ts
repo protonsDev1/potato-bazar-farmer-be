@@ -196,3 +196,9 @@ export const updateTicketStatusSchema = Joi.object({
     .valid("Open", "In Progress", "Resolved", "Closed")
     .required(),
 });
+
+export const verifyAndUpdateMobileNumberSchema = Joi.object({
+  mobile: Joi.string().required(),
+  otp: Joi.string().required(),
+  mobileNumberType: Joi.string().required(),
+});
