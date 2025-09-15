@@ -562,6 +562,13 @@ export const updateProfileService = async (data, userId, role) => {
     }
 
     if (mobile) {
+
+       if(role === USER_ROLES.ADMIN)
+         return {
+           success: false,
+           error: "Admin is not allowed to update mobile number without verification.",
+         };
+
       const user = await checkExistingUser(mobile);
       if (user && user.id !== userId)
         return { success: false, error: "Mobile number already exist." };
@@ -570,7 +577,7 @@ export const updateProfileService = async (data, userId, role) => {
     await User.update({ ...data }, { where: { id: userId } });
 
     // Update Agent
-    if (role === "agent") {
+    if (role === USER_ROLES.AGENT) {
       const existingAgent = await Agent.findOne({ where: { userId } });
       if (existingAgent) {
         await Agent.update(
