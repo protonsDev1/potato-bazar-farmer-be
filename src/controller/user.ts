@@ -6,6 +6,7 @@ import SubAdminWebPermission from '../database/models/subAdminWebPermission';
 import { buildPermissionsResponse, buildSubAdminPermissionsResponse } from '../utils/commonCode';
 import KycDocument from '../database/models/kycDocuments';
 import SubAdminPermission from '../database/models/subAdminPermission';
+import MobileUpdateSession, { MOBILE_TYPE } from '../database/models/mobileUpdateSession';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -765,5 +766,116 @@ export const getTicketDetails = async (req, res) => {
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const verifyOldMobileNumberForUpdate = async (req, res) => {
+  try {
+    let { mobile, otp, mobileNumberType } = req.body;
+    const { id } = req.user;
+
+    if (
+      (mobileNumberType === MOBILE_TYPE.PRIMARY &&
+        mobile !== req.user.mobile) ||
+      (mobileNumberType === MOBILE_TYPE.SECONDARY &&
+        mobile !== req.user.secondaryMobile)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Mobile number entered is incorrect.",
+      });
+    }
+
+    const isValid = await verifyOtpFromDB(mobile, otp);
+    if (!isValid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    const isMobileUpdateSessionExists = await MobileUpdateSession.findOne({
+      where: { userId: id, type: mobileNumberType },
+    });
+
+    if (isMobileUpdateSessionExists) {
+      await MobileUpdateSession.update(
+        {
+          currentNumberLastVerifiedAt: new Date(),
+        },
+        { where: { userId: id } }
+      );
+    } else {
+      await MobileUpdateSession.create({
+        userId: id,
+        type: mobileNumberType,
+        currentMobile: mobile,
+        currentNumberLastVerifiedAt: new Date(),
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Current mobile number verified successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const verifyNewMobileNumberBeforeUpdate = async (req, res) => {
+  try {
+    let { mobile, mobileNumberType, otp } = req.body;
+    const { id } = req.user;
+
+    const user = await checkExistingUser(mobile);
+    if (user && user.id !== id)
+      return res
+        .status(400)
+        .json({ success: false, message: "Mobile number already exist." });
+
+    const mobileSessionData: any = await MobileUpdateSession.findOne({
+      where: { userId: id, type: mobileNumberType },
+    });
+
+    if (!mobileSessionData)
+      return res.status(400).json({
+        success: false,
+        message: "Current mobile number is not verified.",
+      });
+
+    const diff =
+      Date.now() -
+      new Date(mobileSessionData.currentNumberLastVerifiedAt).getTime();
+
+    if (diff > 20 * 60 * 1000) {
+      return res.status(400).json({
+        success: false,
+        message: "Current Number verification expired. Please verify again.",
+      });
+    }
+
+    const isValid = await verifyOtpFromDB(mobile, otp);
+    if (!isValid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    await MobileUpdateSession.destroy({
+      where: { userId: id, type: mobileNumberType },
+    });
+
+    const isSecondaryMobile =
+      mobileNumberType === MOBILE_TYPE.SECONDARY ? true : false;
+
+    if (isSecondaryMobile)
+      await User.update({ secondaryMobile: mobile }, { where: { id } });
+    else await User.update({ mobile }, { where: { id } });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Mobile Number updated successfully." });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
