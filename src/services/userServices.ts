@@ -914,10 +914,12 @@ export const updateMobileService = async (userId, payload) => {
     "email",
     "cityOrVillage",
     "state",
+    "district",
     "pinCode",
     "location",
     "bio",
-    "profilePicture"
+    "profilePicture",
+    "userType"
   ];
 
   const updateData: Record<string, any> = {};

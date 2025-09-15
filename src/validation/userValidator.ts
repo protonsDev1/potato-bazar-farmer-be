@@ -175,6 +175,8 @@ export const mobileUpdateSchema = Joi.object({
   email: Joi.string().optional().allow(null, ""),
   bio: Joi.string().optional().allow(null, ""),
   profilePicture: Joi.string().optional().allow(null, ""),
+  userType: Joi.array().items(Joi.string()).optional(),
+  district: Joi.string().optional().allow(null, ""),
 });
 
 export const createSupportTicketSchema = Joi.object({
