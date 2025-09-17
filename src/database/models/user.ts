@@ -30,6 +30,8 @@ export enum USER_ROLES {
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare id: string;
   declare name: string;
+  declare firstName: string | null;
+  declare lastName: string | null;
   declare email: string;
   declare password?: string; // virtual
   declare password_hash: string;
@@ -71,6 +73,14 @@ User.init(
     },
     name: {
       type: DataTypes.STRING,
+    },
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     email: {
       type: DataTypes.STRING,
