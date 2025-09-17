@@ -59,12 +59,16 @@ export const agentLoginSchema = Joi.object({
 });
 
 export const otpSendSchema = Joi.object({
-  mobile: Joi.string().required(),
+  mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
 });
 
 export const otpExportSendSchema = Joi.object({
-  mobile: Joi.string().required(),
-  secondaryMobile: Joi.string().required(),
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
+  secondaryMobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
 });
 
 export const otpVerifySchema = Joi.object({
@@ -95,6 +99,13 @@ export const forgotPasswordSchema = Joi.object({
   mobile: Joi.string()
     .required()
     .pattern(/^[6-9]\d{9}$/),
+});
+
+export const forgotPasswordVerifyOtpSchema = Joi.object({
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
+  otp: Joi.string().required().length(6),
 });
 
 export const verifyOtpSchema = Joi.object({
@@ -200,7 +211,9 @@ export const updateTicketStatusSchema = Joi.object({
 });
 
 export const verifyAndUpdateMobileNumberSchema = Joi.object({
-  mobile: Joi.string().required(),
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
   otp: Joi.string().required(),
   mobileNumberType: Joi.string().required(),
 });
