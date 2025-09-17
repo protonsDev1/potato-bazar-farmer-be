@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import sequelize from "../database/models/db";
 import MandiGradePrice from "../database/models/mandiGradePrice";
 import MandiPrice from "../database/models/mandiPrice";
+import City from "../database/models/city";
 
 interface MandiPriceResponse {
   success: boolean;
@@ -15,38 +16,46 @@ export const addMandiPriceService = async (
 ): Promise<MandiPriceResponse> => {
   const {
     mandiName,
-    date,
+    startDate,   
+    endDate,    
     variety,
     category,
     arrivalStatus,
-    state,
-    city,
+    cityId,
     totalArrivalBags,
     normalMandiArrivalBags,
     gradeWisePricing,
   } = data;
 
-  const isMandiPriceDataExist = await MandiPrice.findOne({
-    where: { city, variety, category },
-  });
 
-  if (isMandiPriceDataExist)
+  const isMandiPriceDataExist = await MandiPrice.findOne({
+    where: {
+      cityId,
+      mandiName,
+      [Op.and]: [
+        { startDate: { [Op.lte]: endDate } },  
+        { endDate: { [Op.gte]: startDate } },  
+      ],
+    },
+  });
+  if (isMandiPriceDataExist) {
     return {
       success: false,
       error:
-        "Mandi Price record already exist with combination of given city, variety and category.",
+        "Mandi Price record already exists with this combination of city, mandi name and date.",
     };
+  }
 
   return await sequelize.transaction(async (t) => {
     const mandiPrice = await MandiPrice.create(
       {
         mandiName,
-        date,
+        startDate,  
+        endDate,    
         variety,
         category,
         arrivalStatus,
-        state,
-        city,
+        cityId,
         totalArrivalBags,
         normalMandiArrivalBags,
       },
@@ -73,6 +82,8 @@ export const addMandiPriceService = async (
     };
   });
 };
+
+
 
 export const getAllMandiPricesService = async (
   search,
@@ -159,11 +170,11 @@ export const getAllMandiPricesService = async (
   const data = rows.map((item) => ({
     id: item.id,
     mandiName: item.mandiName,
-    date: item.date,
+    startDate: item.startDate,
+    endDate: item.endDate,
     variety: item.variety,
     category: item.category,
     arrivalStatus: item.arrivalStatus,
-    state: item.state,
     city: item.city,
     totalArrivalBags: item.totalArrivalBags,
     normalMandiArrivalBags: item.normalMandiArrivalBags,
@@ -204,7 +215,7 @@ export const updateMandiPriceService = async (payload, mandiPriceId) => {
 
   const isMandiPriceDataExist = await MandiPrice.findOne({
     where: {
-      city: payload.city,
+      // city: payload.city,
       variety: payload.variety,
       category: payload.category,
     },
@@ -307,3 +318,47 @@ export const retrieveDashboardStats = async () => {
     totalVarieties,
   };
 };
+
+export const listCitiesWithMandis = async (page, limit) => {
+  const offset = (page - 1) * limit;
+
+  const { rows: citiesWithMandis, count } = await City.findAndCountAll({
+    include: [
+      {
+        model: MandiPrice,
+        as: "mandiPrices",
+        attributes: ["id", "mandiName"],
+        required: true, 
+        where: {
+          isActive: true,
+          isDeleted: false,
+        },
+      },
+    ],
+    attributes: ["id", "name"],
+    offset,
+    limit,
+    order: [["name", "ASC"]],
+    distinct: true, 
+  });
+
+  const data = citiesWithMandis.map((city) => ({
+    cityId: city.id,
+    cityName: city.name,
+    //@ts-ignore
+    mandis: city.mandiPrices.map((mandi) => ({
+      id: mandi.id,
+      mandiName: mandi.mandiName,
+    })),
+  }));
+
+  return {
+    data,
+    total: count,
+    page,
+    limit,
+  };
+};
+
+
+

@@ -7,6 +7,7 @@ import {
 import {
   createMandiPrice,
   deleteMandiPrice,
+  getCitiesWithMandisController,
   getDashboardStats,
   retrieveAllMandiPrices,
   retrieveMandiPriceById,
@@ -41,5 +42,7 @@ router.delete(
   deleteMandiPrice
 );
 router.get("/dash_stats", mandiAgentAndSuperAdminMiddleware, getDashboardStats);
+router.get("/city-list", getCitiesWithMandisController);
+
 
 export default router;
