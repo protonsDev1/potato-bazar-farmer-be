@@ -1,10 +1,16 @@
-import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
-import sequelize from './db'; // Update path if needed
+import {
+  Model,
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from "sequelize";
+import sequelize from "./db"; // Update path if needed
 
 class Otp extends Model<InferAttributes<Otp>, InferCreationAttributes<Otp>> {
   declare id: CreationOptional<number>;
   declare mobile: string;
-  declare otp: string;
+  declare otpHash: string;
   declare expiresAt: Date;
   declare isUsed: boolean;
   declare createdAt: CreationOptional<Date>;
@@ -22,7 +28,7 @@ Otp.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    otp: {
+    otpHash: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -45,8 +51,8 @@ Otp.init(
   },
   {
     sequelize,
-    modelName: 'Otp',
-    tableName: 'otps',
+    modelName: "Otp",
+    tableName: "otps",
     timestamps: true,
   }
 );
