@@ -3,6 +3,7 @@ import {
   addMandiPriceService,
   getAllMandiPricesService,
   getMandiPriceByIdService,
+  listCitiesWithMandis,
   retrieveDashboardStats,
   updateMandiPriceService,
 } from "../services/mandiPriceService";
@@ -153,6 +154,33 @@ export const getDashboardStats = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to retrieve dashboard statistics.",
+      error: error.message,
+    });
+  }
+};
+
+export const getCitiesWithMandisController = async (req, res ) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = (page - 1) * limit;
+
+    const allCities = await listCitiesWithMandis(page,limit);
+
+   
+
+    return res.status(200).json({
+      success: true,
+      message: "Cities with mandis retrieved successfully",
+      page,
+      limit,
+      data: allCities
+    });
+  } catch (error: any) {
+    console.error("Failed to retrieve cities with mandis:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve cities with mandis.",
       error: error.message,
     });
   }

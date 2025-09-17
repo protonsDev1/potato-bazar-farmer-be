@@ -4,9 +4,12 @@ import {
   InferAttributes,
   InferCreationAttributes,
   CreationOptional,
+  ForeignKey,
+  NonAttribute,
 } from "sequelize";
 import sequelize from "./db";
 import MandiGradePrice from "./mandiGradePrice";
+import City from "./city";
 
 export enum ARRIVAL_STATUS {
   HIGH = "high",
@@ -20,18 +23,21 @@ class MandiPrice extends Model<
 > {
   declare id: number;
   declare mandiName: string;
-  declare date: Date;
+  declare startDate: Date;   
+  declare endDate: Date;
   declare variety: string;
   declare category: string;
   declare arrivalStatus: string;
-  declare state: string;
-  declare city: string;
   declare totalArrivalBags: number;
   declare normalMandiArrivalBags: number;
+  declare cityId: ForeignKey<City["id"]>;
   declare isActive: boolean;
   declare isDeleted: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+
+  // Associations
+  declare city?: NonAttribute<City>;
   declare grades?: MandiGradePrice;
 }
 
@@ -46,7 +52,11 @@ MandiPrice.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    date: {
+    startDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    endDate: {
       type: DataTypes.DATE,
       allowNull: false,
     },
@@ -55,14 +65,6 @@ MandiPrice.init(
       allowNull: false,
     },
     category: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    state: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    city: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -75,6 +77,10 @@ MandiPrice.init(
       allowNull: false,
     },
     normalMandiArrivalBags: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    cityId: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -102,8 +108,7 @@ MandiPrice.init(
     tableName: "mandiPrices",
     timestamps: true,
     indexes: [
-      { fields: ["state"] },
-      { fields: ["city"] },
+      { fields: ["cityId"] },
       { fields: ["mandiName"] },
       { fields: ["variety"] },
       { fields: ["isActive"] },
@@ -111,5 +116,9 @@ MandiPrice.init(
     ],
   }
 );
+
+// Associations
+MandiPrice.belongsTo(City, { foreignKey: "cityId", as: "city" });
+City.hasMany(MandiPrice, { foreignKey: "cityId", as: "mandiPrices" });
 
 export default MandiPrice;
