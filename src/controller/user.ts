@@ -186,7 +186,7 @@ export const sendOtp = async (req, res) => {
     const { mobile } = req.body;
 
     const otpRecord = await createOtp(mobile);
-    return res.status(200).json({ success: true, message: 'OTP sent', otp: otpRecord.otp }); // for demo
+    return res.status(200).json({ success: true, message: 'OTP sent', otp: otpRecord.otp }); 
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message || 'Failed to send OTP' });
   }
@@ -238,7 +238,7 @@ export const resendOtp = async (req, res) => {
     const { mobile } = req.body;
 
     const otpRecord = await createOtp(mobile);
-    return res.status(200).json({ success: true, message: 'OTP resent successfully', otp: otpRecord.otp }); // for demo
+    return res.status(200).json({ success: true, message: 'OTP resent successfully', otp: otpRecord.otp }); 
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message || 'Failed to resend OTP' });
   }
