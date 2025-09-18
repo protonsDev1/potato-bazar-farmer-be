@@ -721,7 +721,6 @@ export async function getColdStorage(
       verified,
       agentId,
       storageType,
-      storageSize,
       capacityRange,
       registrationDate,
       onboardedByUser,
