@@ -937,6 +937,10 @@ export const createAgentWorksheetColumns = (worksheet: Worksheet) => {
     { header: "Address", key: "address", width: 60 },
     { header: "Joined Date", key: "createdAt", width: 20 },
   ];
+
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+  });
 };
 
 export const addAgentsToWorksheet = (agents: any[], worksheet: Worksheet) => {
