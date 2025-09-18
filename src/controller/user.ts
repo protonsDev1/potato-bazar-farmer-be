@@ -185,10 +185,12 @@ export const sendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
 
-    const otpRecord = await createOtp(mobile);
-    return res.status(200).json({ success: true, message: 'OTP sent', otp: otpRecord.otp }); 
+    await createOtp(mobile);
+    return res.status(200).json({ success: true, message: "OTP has been sent successfully." });
   } catch (err: any) {
-    return res.status(500).json({ success: false, message: err.message || 'Failed to send OTP' });
+    return res
+      .status(500)
+      .json({ success: false, message: err.message || "Failed to send OTP" });
   }
 };
 
@@ -237,10 +239,14 @@ export const resendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
 
-    const otpRecord = await createOtp(mobile);
-    return res.status(200).json({ success: true, message: 'OTP resent successfully', otp: otpRecord.otp }); 
+    await createOtp(mobile);
+    return res
+      .status(200)
+      .json({ success: true, message: "OTP resent successfully" });
   } catch (err: any) {
-    return res.status(500).json({ success: false, message: err.message || 'Failed to resend OTP' });
+    return res
+      .status(500)
+      .json({ success: false, message: err.message || "Failed to resend OTP" });
   }
 };
 
@@ -256,13 +262,12 @@ export const sendExportOtps = async (req, res) => {
       });
     }
 
-    const mobileOtp = await createOtp(mobile);
-    const secondaryMobileOtp = await createOtp(secondaryMobile);
+    await createOtp(mobile);
+    await createOtp(secondaryMobile);
 
     return res.status(200).json({
       success: true,
       message: "OTPs sent to both registered mobile numbers",
-      otp: { mobileOtp: mobileOtp.otp, secondaryMobileOtp: secondaryMobileOtp.otp },
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message || "Failed to send OTPs" });
@@ -338,7 +343,7 @@ export const forgotPassword = async (req, res) => {
 
     return res.status(200).json({
       message:
-        "Otp has been sent successfully.Please contact support team if you have not received the otp.",
+        "OTP has been sent successfully.",
     });
   } catch (error) {
     return res

@@ -35,18 +35,20 @@ const sendOtpService = async (mobile, otp) => {
 };
 
 export const createOtp = async (mobile: string) => {
-  const otp = generateOtp();
+  let otp: string;
 
-  await sendOtpService(mobile, otp);
+  if (process.env.NODE_ENV === "production") {
+    otp = generateOtp();
+    await sendOtpService(mobile, otp);
+  } else {
+    otp = "123456";
+  }
 
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
   const hashedOtp = await bcrypt.hash(otp, 10);
 
   await Otp.create({ mobile, otpHash: hashedOtp, expiresAt });
-  return {
-    otp,
-  };
 };
 
 export const verifyOtpFromDB = async (
