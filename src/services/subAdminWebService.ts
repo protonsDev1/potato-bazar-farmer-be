@@ -155,6 +155,7 @@ export const listSubAdminWebsService = async ({ search, page, limit }) => {
       total: count,
       page,
       perPage: limit,
+      totalPages: Math.ceil(count / limit),
       totalSubAdmins,
       activeCount,
       recentAdditions,
