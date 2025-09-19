@@ -5,6 +5,9 @@ import sequelize from "../database/models/db";
 import MandiAgent from "../database/models/mandiAgent";
 import User, { USER_ROLES } from "../database/models/user";
 import { hasValue } from "../utils/parseQuery";
+import MandiAllotedToMandiAgent from "../database/models/mandiAllotedToMandiAgent";
+import MandiList from "../database/models/mandiList";
+import City from "../database/models/city";
 
 interface MandiAgentResponse {
   success: boolean;
@@ -28,6 +31,7 @@ export const addMandiAgent = async (
     city,
     pinCode,
     licenseNumber,
+    mandiIds,
   } = mandiAgentData;
 
   if (password !== confirmPassword)
@@ -86,6 +90,18 @@ export const addMandiAgent = async (
       },
       { transaction: t }
     );
+
+    if (Array.isArray(mandiIds)) {
+      for (const id of mandiIds) {
+        await MandiAllotedToMandiAgent.create(
+          {
+            mandiAgentId: mandiAgentDetail.id,
+            mandiId: id,
+          },
+          { transaction: t }
+        );
+      }
+    }
 
     return {
       success: true,
@@ -168,6 +184,22 @@ export const getProfileOverview = async (mandiAgentId) => {
         model: User,
         as: "user",
       },
+      {
+        model: MandiAllotedToMandiAgent,
+        as: "allotedMandisToAgent",
+        include: [
+          {
+            model: MandiList,
+            as: "mandiName",
+            include: [
+              {
+                model: City,
+                as: "city",
+              },
+            ],
+          },
+        ],
+      },
     ],
   });
 
@@ -192,6 +224,7 @@ export const updateMandiAgentService = async (
     district,
     city,
     pinCode,
+    mandiIds,
   } = updateFields;
 
   const mandiUser = await MandiAgent.findOne({
@@ -294,6 +327,7 @@ export const updateMandiAgentService = async (
   const result = await sequelize.transaction(async (t) => {
     let updatedMandiAgentRow = null;
     let updatedMandiUserRow = null;
+    let updatedAllotedMandis = [];
 
     if (Object.keys(mandiAgentUpdates).length) {
       const [, updated] = await MandiAgent.update(mandiAgentUpdates, {
@@ -313,9 +347,27 @@ export const updateMandiAgentService = async (
       updatedMandiUserRow = updated[0] || null;
     }
 
+    if (Array.isArray(mandiIds)) {
+      await MandiAllotedToMandiAgent.destroy({
+        where: { mandiAgentId },
+        transaction: t,
+      });
+
+      const newRows = mandiIds.map((mandiId) => ({
+        mandiAgentId,
+        mandiId,
+      }));
+
+      updatedAllotedMandis = await MandiAllotedToMandiAgent.bulkCreate(
+        newRows,
+        { transaction: t }
+      );
+    }
+
     return {
       mandiAgent: updatedMandiAgentRow,
       mandiUser: updatedMandiUserRow,
+      allotedMandis: updatedAllotedMandis,
     };
   });
 
