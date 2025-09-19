@@ -26,7 +26,6 @@ router.post(
 );
 router.get(
   "/:cityId",
-  checkPermissionMiddleware(PERMISSIONS.MANDI_AGENTS),
   getAllMandiByCity
 );
 
