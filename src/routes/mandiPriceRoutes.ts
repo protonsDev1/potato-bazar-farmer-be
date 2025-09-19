@@ -10,6 +10,8 @@ import {
   getCitiesWithMandisController,
   getDashboardStats,
   retrieveAllMandiPrices,
+  retrieveAllMandiPricesForMobileUsers,
+  retrieveAllMandisAllotedToAgent,
   retrieveMandiPriceById,
   updateMandiPrice,
 } from "../controller/mandiPriceController";
@@ -24,7 +26,10 @@ router.post(
   validator.body(createMandiPriceSchema),
   createMandiPrice
 );
-router.get("/", mandiAgentAndSuperAdminMiddleware, retrieveAllMandiPrices);
+router.get("/", mandiAgentAndSuperAdminMiddleware, retrieveAllMandiPrices); // for mobile admin
+
+router.get("/mobile/:mandiId", retrieveAllMandiPricesForMobileUsers); //   for mobile app
+
 router.get(
   "/profile/:mandiPriceId",
   mandiAgentAndSuperAdminMiddleware,
@@ -42,7 +47,11 @@ router.delete(
   deleteMandiPrice
 );
 router.get("/dash_stats", mandiAgentAndSuperAdminMiddleware, getDashboardStats);
+router.get(
+  "/alloted_mandi",
+  mandiAgentAndSuperAdminMiddleware,
+  retrieveAllMandisAllotedToAgent
+);
 router.get("/city-list", getCitiesWithMandisController);
-
 
 export default router;

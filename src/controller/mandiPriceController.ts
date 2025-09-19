@@ -1,6 +1,11 @@
+import City from "../database/models/city";
+import MandiAgent from "../database/models/mandiAgent";
+import MandiAllotedToMandiAgent from "../database/models/mandiAllotedToMandiAgent";
+import MandiList from "../database/models/mandiList";
 import MandiPrice from "../database/models/mandiPrice";
 import {
   addMandiPriceService,
+  getAllMandiPricesByMandiId,
   getAllMandiPricesService,
   getMandiPriceByIdService,
   listCitiesWithMandis,
@@ -11,7 +16,9 @@ import { parseFilters } from "../utils/parseQuery";
 
 export const createMandiPrice = async (req, res) => {
   try {
-    const response = await addMandiPriceService(req.body);
+    const { id: userId } = req.user;
+
+    const response = await addMandiPriceService(req.body, userId);
 
     if (!response.success)
       return res.status(400).json({ success: false, message: response.error });
@@ -34,6 +41,7 @@ export const createMandiPrice = async (req, res) => {
 export const retrieveAllMandiPrices = async (req, res) => {
   try {
     const { search, page, perPage: limit } = req.query;
+    const { id: userId } = req.user;
 
     const filters = parseFilters(req.query);
 
@@ -41,7 +49,8 @@ export const retrieveAllMandiPrices = async (req, res) => {
       search,
       filters,
       page,
-      limit
+      limit,
+      userId
     );
 
     return res.status(200).json({
@@ -54,6 +63,29 @@ export const retrieveAllMandiPrices = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to retrieve all mandi prices",
+      error: error.message,
+    });
+  }
+};
+
+export const retrieveAllMandiPricesForMobileUsers = async (req, res) => {
+  try {
+    const { mandiId } = req.params;
+
+    const filters = parseFilters(req.query);
+
+    const data = await getAllMandiPricesByMandiId(filters, mandiId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Mandi Price data retrieved successfully.",
+      data,
+    });
+  } catch (error) {
+    console.error("Failed to retrieve mandi price data:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve mandi price data",
       error: error.message,
     });
   }
@@ -83,10 +115,12 @@ export const retrieveMandiPriceById = async (req, res) => {
 export const updateMandiPrice = async (req, res) => {
   try {
     const { mandiPriceId } = req.params;
+    const { id: userId } = req.user;
 
     const updatedResponse = await updateMandiPriceService(
       req.body,
-      mandiPriceId
+      mandiPriceId,
+      userId
     );
 
     if (!updatedResponse.success)
@@ -142,13 +176,11 @@ export const getDashboardStats = async (req, res) => {
   try {
     const response = await retrieveDashboardStats();
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Dashboard Staticts retrieved successfully",
-        data: response,
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Dashboard Staticts retrieved successfully",
+      data: response,
+    });
   } catch (error) {
     console.error("Failed to retrieve dashboard statistics:", error);
     return res.status(500).json({
@@ -159,28 +191,66 @@ export const getDashboardStats = async (req, res) => {
   }
 };
 
-export const getCitiesWithMandisController = async (req, res ) => {
+export const getCitiesWithMandisController = async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const offset = (page - 1) * limit;
 
-    const allCities = await listCitiesWithMandis(page,limit);
-
-   
+    const allCities = await listCitiesWithMandis(page, limit);
 
     return res.status(200).json({
       success: true,
       message: "Cities with mandis retrieved successfully",
-      page,
-      limit,
-      data: allCities
+      data: allCities,
     });
   } catch (error: any) {
     console.error("Failed to retrieve cities with mandis:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to retrieve cities with mandis.",
+      error: error.message,
+    });
+  }
+};
+
+export const retrieveAllMandisAllotedToAgent = async (req, res) => {
+  const { id } = req.user;
+
+  try {
+    const mandiAgent = await MandiAgent.findOne({
+      where: {
+        userId: id,
+      },
+    });
+
+    const allotedMandis = await MandiAllotedToMandiAgent.findAll({
+      where: { mandiAgentId: mandiAgent.id },
+      include: [
+        {
+          model: MandiList,
+          as: "mandiName",
+          include: [
+            {
+              model: City,
+              as: "city",
+            },
+          ],
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      message: "Mandis alloted to agent fetched successfully.",
+      data: {
+        success: true,
+        allotedMandis,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to retrieve alloted mandis:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve alloted mandis.",
       error: error.message,
     });
   }

@@ -53,6 +53,7 @@ import sellRequestRoutes from "./src/routes/sellRequestRoutes";
 import favRequestRoutes from "./src/routes/favRequestRoutes";
 import mandiPriceRoutes from "./src/routes/mandiPriceRoutes";
 import subAdminWebRoutes from "./src/routes/subAdminWebRoutes";
+import mandiListRoutes from "./src/routes/mandiListRoutes";
 
 const cors = require("cors");
 
@@ -117,6 +118,7 @@ app.use("/api/sell_requests", sellRequestRoutes);
 app.use("/api/favourite", favRequestRoutes);
 app.use("/api/mandi_prices", mandiPriceRoutes);
 app.use("/api/web_sub_admins", subAdminWebRoutes);
+app.use("/api/mandi", mandiListRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
