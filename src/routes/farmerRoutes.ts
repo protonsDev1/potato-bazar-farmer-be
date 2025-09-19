@@ -26,6 +26,7 @@ import { verifyOtpSchema } from "../validation/userValidator";
 import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
 import { duplicationCheckMiddleware } from "../middlewares/duplicationCheckMiddleware";
 import Farmer from "../database/models/farmer";
+import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -70,6 +71,7 @@ router.post(
 router.post(
   "/:farmerId/request-mobile-update",
   checkWebPermissionMiddleware(WEB_MODULES.FARMER, WEB_ACTIONS.UPDATE, false),
+  limitOtpMiddleware,
   requestUpdateFarmer
 );
 
