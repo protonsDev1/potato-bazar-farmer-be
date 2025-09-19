@@ -26,6 +26,7 @@ import { verifyOtpSchema } from "../validation/userValidator";
 import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
 import { duplicationCheckMiddleware } from "../middlewares/duplicationCheckMiddleware";
 import ColdStorage from "../database/models/coldStorage";
+import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -94,6 +95,7 @@ router.post(
     WEB_ACTIONS.UPDATE,
     false
   ),
+  limitOtpMiddleware,
   requestUpdateCS
 );
 
