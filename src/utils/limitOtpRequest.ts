@@ -3,13 +3,21 @@ import Otp from "../database/models/otp";
 
 export const limitOtpMiddleware = async (req, res, next) => {
   try {
-    const { mobile } = req.body;
+    const { mobile, newMobileNumber } = req.body;
+    const targetMobile = mobile || newMobileNumber;
+
+    if (!targetMobile) {
+      return res.status(400).json({
+        success: false,
+        message: "Mobile number is required.",
+      });
+    }
 
     const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
 
     const otps = await Otp.findAll({
       where: {
-        mobile,
+        mobile: targetMobile,
         createdAt: { [Op.gte]: twentyMinutesAgo },
       },
     });
