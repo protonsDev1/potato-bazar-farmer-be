@@ -4,12 +4,11 @@ import {
   InferAttributes,
   InferCreationAttributes,
   CreationOptional,
-  ForeignKey,
-  NonAttribute,
 } from "sequelize";
 import sequelize from "./db";
 import MandiGradePrice from "./mandiGradePrice";
-import City from "./city";
+import MandiList from "./mandiList";
+import User from "./user";
 
 export enum ARRIVAL_STATUS {
   HIGH = "high",
@@ -22,23 +21,24 @@ class MandiPrice extends Model<
   InferCreationAttributes<MandiPrice>
 > {
   declare id: number;
-  declare mandiName: string;
-  declare startDate: Date;   
+  declare mandiId: number;
+  declare startDate: Date;
   declare endDate: Date;
   declare variety: string;
   declare category: string;
   declare arrivalStatus: string;
   declare totalArrivalBags: number;
   declare normalMandiArrivalBags: number;
-  declare cityId: ForeignKey<City["id"]>;
   declare isActive: boolean;
   declare isDeleted: boolean;
+  declare createdByMandiAgentUserId: number;
+  declare lastUpdatedByMandiAgentUserId: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
   // Associations
-  declare city?: NonAttribute<City>;
   declare grades?: MandiGradePrice;
+  declare mandi?: MandiList;
 }
 
 MandiPrice.init(
@@ -48,9 +48,15 @@ MandiPrice.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    mandiName: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    mandiId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: MandiList,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
     },
     startDate: {
       type: DataTypes.DATE,
@@ -80,10 +86,6 @@ MandiPrice.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    cityId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
@@ -92,6 +94,26 @@ MandiPrice.init(
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
+    },
+    createdByMandiAgentUserId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
+    },
+    lastUpdatedByMandiAgentUserId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: User,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -108,17 +130,23 @@ MandiPrice.init(
     tableName: "mandiPrices",
     timestamps: true,
     indexes: [
-      { fields: ["cityId"] },
-      { fields: ["mandiName"] },
+      { fields: ["mandiId"] },
       { fields: ["variety"] },
       { fields: ["isActive"] },
       { fields: ["isDeleted"] },
+      { fields: ["createdByMandiAgentUserId"] },
+      { fields: ["lastUpdatedByMandiAgentUserId"] },
     ],
   }
 );
 
-// Associations
-MandiPrice.belongsTo(City, { foreignKey: "cityId", as: "city" });
-City.hasMany(MandiPrice, { foreignKey: "cityId", as: "mandiPrices" });
+MandiPrice.belongsTo(MandiList, {
+  foreignKey: "mandiId",
+  as: "mandi",
+});
+MandiList.hasMany(MandiPrice, {
+  foreignKey: "mandiId",
+  as: "mandiPrices",
+});
 
 export default MandiPrice;
