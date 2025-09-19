@@ -710,6 +710,10 @@ export const createTraderWorksheetColumns = (worksheet) => {
     { header: "Market Coverage State", key: "marketCoverageStates", width: 50 },
     { header: "Mandi Details", key: "mandiDetail", width: 80 },
   ];
+
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+  });
 };
 
 export const addTradersToWorksheet = async (traders, worksheet) => {

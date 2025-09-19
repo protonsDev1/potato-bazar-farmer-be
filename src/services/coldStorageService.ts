@@ -721,7 +721,6 @@ export async function getColdStorage(
       verified,
       agentId,
       storageType,
-      storageSize,
       capacityRange,
       registrationDate,
       onboardedByUser,
@@ -1167,6 +1166,10 @@ export const createColdStorageWorksheetColumns = (worksheet) => {
     { header: "Machine Capacities", key: "machineCapacityArray", width: 40 },
     { header: "Monitoring Loggers", key: "monitoringLoggers", width: 30 },
   ];
+
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+  });
 };
 
 export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {

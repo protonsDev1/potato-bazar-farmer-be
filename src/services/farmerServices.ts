@@ -1192,6 +1192,10 @@ export const createFarmerWorksheetColumns = (worksheet: Worksheet) => {
     { header: "Potato Types", key: "potatoTypes", width: 40 },
     { header: "Other Crops", key: "otherCrops", width: 50 },
   ];
+
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true };
+  });
 };
 
 export const addFarmersToWorksheet = async (

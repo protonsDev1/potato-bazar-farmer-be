@@ -59,7 +59,16 @@ export const agentLoginSchema = Joi.object({
 });
 
 export const otpSendSchema = Joi.object({
-  mobile: Joi.string().required(),
+  mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
+});
+
+export const otpExportSendSchema = Joi.object({
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
+  secondaryMobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
 });
 
 export const otpVerifySchema = Joi.object({
@@ -92,11 +101,22 @@ export const forgotPasswordSchema = Joi.object({
     .pattern(/^[6-9]\d{9}$/),
 });
 
-export const verifyOtpSchema = Joi.object({
+export const forgotPasswordVerifyOtpSchema = Joi.object({
   mobile: Joi.string()
     .required()
     .pattern(/^[6-9]\d{9}$/),
   otp: Joi.string().required().length(6),
+});
+
+export const verifyOtpSchema = Joi.object({
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
+  mobileOtp: Joi.string().required().length(6),
+  secondaryMobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
+  secondaryMobileOtp: Joi.string().required().length(6),
 });
 
 export const resetPasswordSchema = Joi.object({
@@ -166,6 +186,8 @@ export const mobileUpdateSchema = Joi.object({
   email: Joi.string().optional().allow(null, ""),
   bio: Joi.string().optional().allow(null, ""),
   profilePicture: Joi.string().optional().allow(null, ""),
+  userType: Joi.array().items(Joi.string()).optional(),
+  district: Joi.string().optional().allow(null, ""),
 });
 
 export const createSupportTicketSchema = Joi.object({
@@ -186,4 +208,12 @@ export const updateTicketStatusSchema = Joi.object({
   status: Joi.string()
     .valid("Open", "In Progress", "Resolved", "Closed")
     .required(),
+});
+
+export const verifyAndUpdateMobileNumberSchema = Joi.object({
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
+  otp: Joi.string().required(),
+  mobileNumberType: Joi.string().required(),
 });

@@ -30,11 +30,14 @@ export enum USER_ROLES {
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare id: string;
   declare name: string;
+  declare firstName: string | null;
+  declare lastName: string | null;
   declare email: string;
   declare password?: string; // virtual
   declare password_hash: string;
   declare role: string;
   declare mobile: string;
+  declare secondaryMobile: string | null;
   declare registration_types: string[] | null;
   declare otpVerified: boolean;
   declare agentProfile?: Agent;
@@ -71,6 +74,14 @@ User.init(
     name: {
       type: DataTypes.STRING,
     },
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     email: {
       type: DataTypes.STRING,
       unique: true,
@@ -95,6 +106,10 @@ User.init(
     mobile: {
       type: DataTypes.STRING,
       unique: true,
+      allowNull: true,
+    },
+    secondaryMobile: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
     registration_types: {

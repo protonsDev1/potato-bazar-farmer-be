@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, verifyOtpSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema, createSupportTicketSchema, replyTicketSchema, updateTicketStatusSchema,  } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats, createTicket, replyToSupportTicket, updateSupportTicketStatus, listSupportTickets, getTicketDetails } from "../controller/user";
+import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema, createSupportTicketSchema, replyTicketSchema, updateTicketStatusSchema, otpExportSendSchema, verifyAndUpdateMobileNumberSchema, forgotPasswordVerifyOtpSchema,  } from "../validation/userValidator";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats, createTicket, replyToSupportTicket, updateSupportTicketStatus, listSupportTickets, getTicketDetails, sendExportOtps, resendOtp, verifyOldMobileNumberForUpdate, verifyNewMobileNumberBeforeUpdate } from "../controller/user";
 import { adminMiddleware, authMiddleware, checkPermissionMiddleware, superAdminMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 import { PERMISSIONS } from "../utils/constants/permissions";
@@ -18,9 +18,13 @@ router.post('/agents', adminMiddleware, validator.body(createAgentSchema), creat
 
 router.post('/agent-login',validator.body(agentLoginSchema), agentLogin);
 
-router.post('/send-otp', validator.body(otpSendSchema), sendOtp);
+router.post('/send-otp', validator.body(otpSendSchema), limitOtpMiddleware, sendOtp);
 
 router.post('/verify-otp', validator.body(otpVerifySchema), verifyOtp);
+
+router.post('/resend-otp', validator.body(otpSendSchema), limitOtpMiddleware, resendOtp);
+
+router.post('/export/send-otps', validator.body(otpExportSendSchema), adminMiddleware, sendExportOtps);
 
 router.get('/get-dash-stats', adminMiddleware, getDashboardStats);
 
@@ -30,7 +34,7 @@ router.get('/user-profile', authMiddleware,  getUserProfile);
 
 router.post('/forgot_password',validator.body(forgotPasswordSchema),limitOtpMiddleware,forgotPassword);
 
-router.post('/forgot_password/verify_otp',validator.body(verifyOtpSchema),verifyForgotPasswordOtp);
+router.post('/forgot_password/verify_otp',validator.body(forgotPasswordVerifyOtpSchema),verifyForgotPasswordOtp);
 
 router.post("/reset_password",validator.body(resetPasswordSchema),resetPassword);
 
@@ -109,6 +113,18 @@ router.get(
   "/support-details",
   checkPermissionMiddleware(PERMISSIONS.HELP_SUPPORT),
   getTicketDetails
+);
+router.post(
+  "/verify_current_number",
+  adminMiddleware,
+  validator.body(verifyAndUpdateMobileNumberSchema),
+  verifyOldMobileNumberForUpdate
+);
+router.post(
+  "/verify_and_update",
+  adminMiddleware,
+  validator.body(verifyAndUpdateMobileNumberSchema),
+  verifyNewMobileNumberBeforeUpdate
 );
 
 export default router;

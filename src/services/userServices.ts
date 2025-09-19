@@ -562,6 +562,13 @@ export const updateProfileService = async (data, userId, role) => {
     }
 
     if (mobile) {
+
+       if(role === USER_ROLES.ADMIN)
+         return {
+           success: false,
+           error: "Admin is not allowed to update mobile number without verification.",
+         };
+
       const user = await checkExistingUser(mobile);
       if (user && user.id !== userId)
         return { success: false, error: "Mobile number already exist." };
@@ -570,7 +577,7 @@ export const updateProfileService = async (data, userId, role) => {
     await User.update({ ...data }, { where: { id: userId } });
 
     // Update Agent
-    if (role === "agent") {
+    if (role === USER_ROLES.AGENT) {
       const existingAgent = await Agent.findOne({ where: { userId } });
       if (existingAgent) {
         await Agent.update(
@@ -791,6 +798,8 @@ export const mobileOnboardingLoginService = async (userData) => {
   }
 
   const updatedUser = await user.update({
+    firstName,
+    lastName,
     name: `${firstName} ${lastName}`,
     location,
     state,
@@ -885,16 +894,6 @@ export const updateMobileService = async (userId, payload) => {
       error: "User not found.",
     };
 
-  if (
-    (hasValue(firstName) && !hasValue(lastName)) ||
-    (!hasValue(firstName) && hasValue(lastName))
-  ) {
-    return {
-      success: false,
-      error:
-        "First name and last name should either both be updated, or neither.",
-    };
-  }
 
   if (hasValue(email)) {
     const isEmailTaken = await User.findOne({ where: { email } });
@@ -904,13 +903,17 @@ export const updateMobileService = async (userId, payload) => {
   }
 
   const updatableFields = [
+    "firstName",
+    "lastName",
     "email",
     "cityOrVillage",
     "state",
+    "district",
     "pinCode",
     "location",
     "bio",
-    "profilePicture"
+    "profilePicture",
+    "userType"
   ];
 
   const updateData: Record<string, any> = {};
@@ -918,8 +921,11 @@ export const updateMobileService = async (userId, payload) => {
     if (key in payload) updateData[key] = payload[key];
   }
 
-  if (hasValue(firstName) && hasValue(lastName))
-    updateData["name"] = `${firstName} ${lastName}`;
+  if (hasValue(firstName) || hasValue(lastName)) {
+    const newFirstName = hasValue(firstName) ? firstName : user.firstName;
+    const newLastName = hasValue(lastName) ? lastName : user.lastName;
+    updateData["name"] = `${newFirstName} ${newLastName}`.trim();
+  }
 
   const updatedData = await user.update(updateData, { returning: true });
 
