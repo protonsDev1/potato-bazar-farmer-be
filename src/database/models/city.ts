@@ -14,6 +14,7 @@ import State from "./state";
 class City extends Model<InferAttributes<City>, InferCreationAttributes<City>> {
   declare id: CreationOptional<number>;
   declare name: string;
+  declare image: string | null;
   declare stateId: ForeignKey<State["id"]>;
   declare state?: NonAttribute<State>;
   declare createdAt: CreationOptional<Date>;
@@ -30,6 +31,10 @@ City.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     stateId: {
       type: DataTypes.INTEGER,

@@ -508,6 +508,7 @@ export const listCitiesWithMandis = async (page = 1, limit = 10) => {
   const cities = citiesWithMandis.map((city) => ({
     cityId: city.id,
     cityName: city.name,
+    cityImage: city.image
   }));
 
   return {
