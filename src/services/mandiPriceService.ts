@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, fn, col, where } from "sequelize";
 import sequelize from "../database/models/db";
 import MandiGradePrice from "../database/models/mandiGradePrice";
 import MandiPrice from "../database/models/mandiPrice";
@@ -20,8 +20,7 @@ export const addMandiPriceService = async (
 ): Promise<MandiPriceResponse> => {
   const {
     mandiId,
-    startDate,
-    endDate,
+    date,
     variety,
     category,
     arrivalStatus,
@@ -35,10 +34,7 @@ export const addMandiPriceService = async (
       mandiId,
       variety,
       category,
-      [Op.and]: [
-        { startDate: { [Op.lte]: endDate } },
-        { endDate: { [Op.gte]: startDate } },
-      ],
+      [Op.and]: [where(fn("DATE", col("date")), date)],
     },
   });
   if (isMandiPriceDataExist) {
@@ -69,8 +65,7 @@ export const addMandiPriceService = async (
     const mandiPrice = await MandiPrice.create(
       {
         mandiId,
-        startDate,
-        endDate,
+        date,
         variety,
         category,
         arrivalStatus,
@@ -114,7 +109,10 @@ export const getAllMandiPricesService = async (
 
   const whereCondition: any = {};
 
-  const { category, variety, grade, date, arrival } = filters;
+  const today = new Date();
+  const defaultDate = today.toISOString().split("T")[0];
+
+  const { category, variety, grade, date = defaultDate, arrival } = filters;
 
   const mandiAgent = await MandiAgent.findOne({ where: { userId } });
 
@@ -146,9 +144,7 @@ export const getAllMandiPricesService = async (
   }
 
   if (date) {
-    const givenDate = new Date(date);
-    whereCondition.startDate = { [Op.lte]: givenDate };
-    whereCondition.endDate = { [Op.gte]: givenDate };
+    whereCondition[Op.and] = [where(fn("DATE", col("date")), date)];
   }
 
   if (grade) {
@@ -221,8 +217,7 @@ export const getAllMandiPricesService = async (
     id: item.id,
     mandiId: item.mandiId,
     mandiDetail: item?.mandi,
-    startDate: item.startDate,
-    endDate: item.endDate,
+    date: item.date,
     variety: item.variety,
     category: item.category,
     arrivalStatus: item.arrivalStatus,
@@ -244,7 +239,10 @@ export const getAllMandiPricesByMandiId = async (filters, mandiId) => {
 
   whereCondition.mandiId = mandiId;
 
-  const { category, variety, date, arrival } = filters;
+  const today = new Date();
+  const defaultDate = today.toISOString().split("T")[0];
+
+  const { category, variety, date = defaultDate, arrival } = filters;
 
   if (variety) {
     whereCondition.variety = { [Op.eq]: variety };
@@ -255,9 +253,7 @@ export const getAllMandiPricesByMandiId = async (filters, mandiId) => {
   }
 
   if (date) {
-    const givenDate = new Date(date);
-    whereCondition.startDate = { [Op.lte]: givenDate };
-    whereCondition.endDate = { [Op.gte]: givenDate };
+    whereCondition[Op.and] = [where(fn("DATE", col("date")), date)];
   }
 
   if (arrival) {
@@ -290,8 +286,7 @@ export const getAllMandiPricesByMandiId = async (filters, mandiId) => {
     id: item.id,
     mandiId: item.mandiId,
     mandiDetail: item?.mandi,
-    startDate: item.startDate,
-    endDate: item.endDate,
+    date: item.date,
     variety: item.variety,
     category: item.category,
     arrivalStatus: item.arrivalStatus,
@@ -356,13 +351,18 @@ export const updateMandiPriceService = async (
       variety: payload.variety || mandiPrice.variety,
       category: payload.category || mandiPrice.category,
       [Op.and]: [
-        { startDate: { [Op.lte]: payload.endDate || mandiPrice.endDate } },
-        { endDate: { [Op.gte]: payload.startDate || mandiPrice.startDate } },
+        where(
+          fn("DATE", col("date")),
+          payload.date
+            ? payload.date
+            : mandiPrice.date.toISOString().split("T")[0]
+        ),
+        { id: { [Op.ne]: mandiPriceId } },
       ],
     },
   });
 
-  if (isMandiPriceDataExist && isMandiPriceDataExist.id != mandiPriceId)
+  if (isMandiPriceDataExist)
     return {
       success: false,
       error:
@@ -375,8 +375,6 @@ export const updateMandiPriceService = async (
     "variety",
     "category",
     "arrivalStatus",
-    "state",
-    "city",
     "totalArrivalBags",
     "normalMandiArrivalBags",
   ];
@@ -508,7 +506,7 @@ export const listCitiesWithMandis = async (page = 1, limit = 10) => {
   const cities = citiesWithMandis.map((city) => ({
     cityId: city.id,
     cityName: city.name,
-    cityImage: city.image
+    cityImage: city.image,
   }));
 
   return {

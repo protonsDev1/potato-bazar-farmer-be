@@ -22,8 +22,7 @@ class MandiPrice extends Model<
 > {
   declare id: number;
   declare mandiId: number;
-  declare startDate: Date;
-  declare endDate: Date;
+  declare date: Date;
   declare variety: string;
   declare category: string;
   declare arrivalStatus: string;
@@ -58,11 +57,7 @@ MandiPrice.init(
       onDelete: "CASCADE",
       onUpdate: "CASCADE",
     },
-    startDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    endDate: {
+    date: {
       type: DataTypes.DATE,
       allowNull: false,
     },

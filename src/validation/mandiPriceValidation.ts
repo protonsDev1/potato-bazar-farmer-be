@@ -4,14 +4,13 @@ import { MANDI_GRADE_TYPE } from "../database/models/mandiGradePrice";
 
 export const createMandiPriceSchema = Joi.object({
   mandiId: Joi.number().integer().required(),
-  startDate: Joi.date().iso().required(),   
-  endDate: Joi.date().iso().required(), 
-   variety: Joi.string().required(),
+  date: Joi.date().iso().required(),
+  variety: Joi.string().required(),
   category: Joi.string().required(),
   arrivalStatus: Joi.string()
     .valid(...Object.values(ARRIVAL_STATUS))
     .required(),
-    totalArrivalBags: Joi.number().integer().required(),
+  totalArrivalBags: Joi.number().integer().required(),
   normalMandiArrivalBags: Joi.number().integer().required(),
   gradeWisePricing: Joi.array()
     .items(
@@ -34,8 +33,6 @@ export const updateMandiPriceSchema = Joi.object({
   arrivalStatus: Joi.string()
     .valid(...Object.values(ARRIVAL_STATUS))
     .optional(),
-  state: Joi.string().optional(),
-  city: Joi.string().optional(),
   totalArrivalBags: Joi.number().integer().optional(),
   normalMandiArrivalBags: Joi.number().integer().optional(),
   gradeWisePricing: Joi.array()
