@@ -37,7 +37,10 @@ const sendOtpService = async (mobile, otp) => {
 export const createOtp = async (mobile: string) => {
   let otp: string;
 
-  if (process.env.NODE_ENV === "production") {
+  if (
+    process.env.NODE_ENV === "production" ||
+    process.env.NODE_ENV === "staging"
+  ) {
     otp = generateOtp();
     await sendOtpService(mobile, otp);
   } else {
