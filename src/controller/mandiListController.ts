@@ -6,6 +6,17 @@ export const addMandi = async (req, res) => {
   try {
     const { cityId, mandiName } = req.body;
 
+    const isDuplicateMandi = await MandiList.findOne({
+      where: { cityId, mandiName },
+    });
+
+    if (isDuplicateMandi)
+      return res.status(400).json({
+        success: false,
+        message:
+          "Another mandi with the same name already exists in this city.",
+      });
+
     await MandiList.create({
       cityId,
       mandiName,
@@ -83,6 +94,29 @@ export const updateMandi = async (req, res) => {
 
     const { mandiName } = req.body;
 
+    const isMandiExist = await MandiList.findByPk(id);
+
+    if (!isMandiExist)
+      return res
+        .status(400)
+        .json({ success: false, message: "Mandi with given id do not exists." });
+
+    const isDuplicateMandi = await MandiList.findOne({
+      where: {
+        cityId: isMandiExist.cityId,
+        mandiName,
+        id: { [Op.ne]: id },
+      },
+    });
+
+    if (isDuplicateMandi) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Another mandi with the same name already exists in this city.",
+      });
+    }
+
     await MandiList.update({ mandiName }, { where: { id } });
 
     return res.status(200).json({
@@ -102,6 +136,14 @@ export const updateMandi = async (req, res) => {
 export const deleteMandi = async (req, res) => {
   try {
     const { id } = req.params;
+
+    const isMandiExist = await MandiList.findByPk(id);
+
+    if (!isMandiExist)
+      return res.status(400).json({
+        success: false,
+        message: "Mandi with given id do not exists.",
+      });
 
     await MandiList.destroy({ where: { id } });
 
