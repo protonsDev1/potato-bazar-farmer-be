@@ -8,10 +8,12 @@ import {
   addMandi,
   deleteMandi,
   getAllMandiByCity,
+  retrieveAllMandisByCityArray,
   updateMandi,
 } from "../controller/mandiListController";
 import {
   createMandiSchema,
+  retrieveAllMandisByCityArraySchema,
   updateMandiSchema,
 } from "../validation/mandiListValidation";
 
@@ -24,10 +26,15 @@ router.post(
   validator.body(createMandiSchema),
   addMandi
 );
-router.get(
-  "/:cityId",
-  getAllMandiByCity
+
+router.post(
+  "/list_by_city_ids",
+  checkPermissionMiddleware(PERMISSIONS.MANDI_AGENTS),
+  validator.body(retrieveAllMandisByCityArraySchema),
+  retrieveAllMandisByCityArray
 );
+
+router.get("/:cityId", getAllMandiByCity);
 
 router.put(
   "/:id",
