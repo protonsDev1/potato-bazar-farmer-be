@@ -29,7 +29,7 @@ export const listCities = async (req, res) => {
 
     const cities = await City.findAll({
       where: whereClause,
-      attributes: ["id", "name"],
+      attributes: ["id", "name", "image"],
       order: [["name", "ASC"]],
     });
 
@@ -84,6 +84,37 @@ export const listDistricts = async (req, res) => {
       districts,
     });
   } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+export const updateCityImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { image } = req.body;
+
+    const city = await City.findByPk(id);
+
+    if (!city) {
+      return res.status(404).json({
+        success: false,
+        message: "City not found",
+      });
+    }
+
+    city.image = image;
+    await city.save();
+
+    return res.json({
+      success: true,
+      message: "City image updated successfully",
+      city,
+    });
+  } catch (error) {
+    console.error("Error updating city image:", error);
     return res.status(500).json({
       success: false,
       error: error.message,
