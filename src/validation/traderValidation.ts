@@ -27,7 +27,6 @@ export const onboardTraderSchema = Joi.object({
   ownPotatoFarming: Joi.boolean().optional(),
   acres: Joi.number().min(0).max(1000000000).allow(null).optional(),
   yearlyPurchaseVolumeTons: Joi.number().min(0).max(1000000000).required(),
-  mainProcurementRegion: Joi.string().required(),
   geographicalMarketCovered: Joi.string().optional().allow(null, ""),
 
   contractFarming: Joi.boolean().optional().allow(null),
@@ -93,7 +92,16 @@ export const onboardTraderSchema = Joi.object({
     )
     .optional(),
 
+  procurementRegions: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().max(255).required(),
+      })
+    )
+    .optional(),
+
   marketCoverageStates: Joi.array().items(Joi.string().max(255)).optional(),
+  procurementRegionStates: Joi.array().items(Joi.string().max(255)).optional(),
 
   // bankDetails: Joi.object({
   //   bankName: Joi.string().required(),
@@ -153,7 +161,6 @@ export const updateTraderSchema = Joi.object({
     .max(1000000000)
     .optional()
     .allow(null),
-  mainProcurementRegion: Joi.string().optional().allow(null, ""),
   geographicalMarketCovered: Joi.string().optional().allow(null, ""),
 
   contractFarming: Joi.boolean().optional().allow(null),
@@ -217,7 +224,16 @@ export const updateTraderSchema = Joi.object({
     )
     .optional(),
 
+  procurementRegions: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().max(255).required(),
+      })
+    )
+    .optional(),
+
   marketCoverageStates: Joi.array().items(Joi.string().max(255)).optional(),
+  procurementRegionStates: Joi.array().items(Joi.string().max(255)).optional(),
 
   // bankDetails: Joi.object({
   //   bankName: Joi.string().required(),

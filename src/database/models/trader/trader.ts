@@ -37,7 +37,6 @@ class Trader extends Model<
   declare ownPotatoFarming: boolean;
   declare acres: number | null;
   declare yearlyPurchaseVolumeTons: number;
-  declare mainProcurementRegion: string;
   declare geographicalMarketCovered: string;
   declare contractFarming: boolean;
   declare spotBuying: boolean;
@@ -54,6 +53,7 @@ class Trader extends Model<
   declare gstNumber: string | null;
   declare fssaiNumber: string | null;
   declare marketCoverageStates: string[];
+  declare procurementRegionStates: string[];
   declare userId: number | null;
   declare onBoardedBy: ForeignKey<User["id"]> | null;
   declare isDeleted: boolean;
@@ -150,10 +150,6 @@ Trader.init(
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    mainProcurementRegion: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
     geographicalMarketCovered: {
       type: DataTypes.TEXT,
       allowNull: false,
@@ -215,6 +211,10 @@ Trader.init(
       allowNull: true,
     },
     marketCoverageStates: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+    },
+    procurementRegionStates: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
     },

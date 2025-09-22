@@ -16,6 +16,7 @@ import AgentOnboardedUser, {
 } from "../database/models/agentOnboardedUsers";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
 import { getUserRole } from "./userServices";
+import ProcurementRegion from "../database/models/trader/procurementRegions";
 
 export async function onboardTrader(payload) {
   try {
@@ -47,7 +48,6 @@ export async function onboardTrader(payload) {
           ownPotatoFarming: payload.ownPotatoFarming,
           acres: payload.acres,
           yearlyPurchaseVolumeTons: payload.yearlyPurchaseVolumeTons,
-          mainProcurementRegion: payload.mainProcurementRegion,
           geographicalMarketCovered: payload.geographicalMarketCovered,
           contractFarming: payload.contractFarming,
           spotBuying: payload.spotBuying,
@@ -64,6 +64,7 @@ export async function onboardTrader(payload) {
           gstNumber: payload.gstNumber,
           fssaiNumber: payload.fssaiNumber,
           marketCoverageStates: payload.marketCoverageStates,
+          procurementRegionStates: payload.procurementRegionStates,
           userId: payload.userId,
           onBoardedBy: payload.onBoardedBy,
           subVariety: payload.subVariety,
@@ -110,6 +111,15 @@ export async function onboardTrader(payload) {
       if (payload.marketCoverages) {
         for (const { name } of payload.marketCoverages) {
           await MarketCoverage.create(
+            { traderId: trader.id, name },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (payload.procurementRegions) {
+        for (const { name } of payload.procurementRegions) {
+          await ProcurementRegion.create(
             { traderId: trader.id, name },
             { transaction: t }
           );
@@ -195,7 +205,6 @@ export async function updateTraderService(traderId, payload) {
       "ownPotatoFarming",
       "acres",
       "yearlyPurchaseVolumeTons",
-      "mainProcurementRegion",
       "geographicalMarketCovered",
       "contractFarming",
       "spotBuying",
@@ -210,6 +219,7 @@ export async function updateTraderService(traderId, payload) {
       "acceptsOnlinePayments",
       "subVariety",
       "marketCoverageStates",
+      "procurementRegionStates",
     ];
 
     const updateData: Record<string, any> = {};
@@ -235,6 +245,7 @@ export async function updateTraderService(traderId, payload) {
       traderVarieties: TraderVariety,
       cropsTraded: CropTraded,
       marketCoverages: MarketCoverage,
+      procurementRegions: ProcurementRegion,
     };
 
     for (const [key, Model] of Object.entries(relationMap)) {
@@ -293,6 +304,7 @@ export const retrieveTraderProfile = async (
       traderDocuments,
       interests,
       marketCoverages,
+      procurementRegions,
       types,
       varieties,
       cropsTraded,
@@ -323,6 +335,10 @@ export const retrieveTraderProfile = async (
         attributes: ["name"],
         where: { traderId },
       }),
+      ProcurementRegion.findAll({
+        attributes: ["name"],
+        where: { traderId },
+      }),
       TraderType.findAll({
         attributes: ["type"],
         where: { traderId },
@@ -344,6 +360,7 @@ export const retrieveTraderProfile = async (
       traderDocuments,
       interests,
       marketCoverages,
+      procurementRegions,
       types,
       varieties,
       cropsTraded,
@@ -694,7 +711,6 @@ export const createTraderWorksheetColumns = (worksheet) => {
       key: "yearlyPurchaseVolumeTons",
       width: 25,
     },
-    { header: "Main Region", key: "mainProcurementRegion", width: 30 },
     {
       header: "Geographical Market",
       key: "geographicalMarketCovered",
@@ -706,8 +722,18 @@ export const createTraderWorksheetColumns = (worksheet) => {
     { header: "Trader Varieties", key: "traderVarieties", width: 50 },
     { header: "Crops Traded", key: "cropsTraded", width: 50 },
     { header: "Trader Interests", key: "traderInterests", width: 50 },
+    { header: "Procurement Regions", key: "procurementRegions", width: 50 },
+    {
+      header: "Procurement Region States",
+      key: "procurementRegionStates",
+      width: 50,
+    },
     { header: "Market Coverage", key: "marketCoverages", width: 50 },
-    { header: "Market Coverage State", key: "marketCoverageStates", width: 50 },
+    {
+      header: "Market Coverage States",
+      key: "marketCoverageStates",
+      width: 50,
+    },
     { header: "Mandi Details", key: "mandiDetail", width: 80 },
   ];
 
@@ -726,6 +752,7 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       cropsTraded,
       traderInterests,
       marketCoverages,
+      procurementRegions,
       mandiDetail,
     ] = await Promise.all([
       TraderType.findAll({ where: { traderId }, attributes: ["type"] }),
@@ -733,6 +760,7 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       CropTraded.findAll({ where: { traderId }, attributes: ["cropName"] }),
       TraderInterest.findAll({ where: { traderId }, attributes: ["interest"] }),
       MarketCoverage.findAll({ where: { traderId }, attributes: ["name"] }),
+      ProcurementRegion.findAll({ where: { traderId }, attributes: ["name"] }),
       MandiDetail.findOne({
         where: { traderId },
         attributes: ["mandiName", "shopNumber", "mandiLicenceNo"],
@@ -767,7 +795,6 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       seedsSales: trader.seedsSales ? "Yes" : "No",
       ownColdStorage: trader.ownColdStorage ? "Yes" : "No",
       yearlyPurchaseVolumeTons: trader.yearlyPurchaseVolumeTons || "",
-      mainProcurementRegion: trader.mainProcurementRegion || "",
       geographicalMarketCovered: trader.geographicalMarketCovered || "",
       yearsInTrading: trader.yearsInTrading || "",
       averageDailySalesKatta: trader.averageDailySalesKatta || "",
@@ -775,6 +802,8 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       traderVarieties: traderVarieties.map((v) => v.variety).join(", "),
       cropsTraded: cropsTraded.map((c) => c.cropName).join(", "),
       traderInterests: traderInterests.map((i) => i.interest).join(", "),
+      procurementRegions: procurementRegions.map((m) => m.name).join(", "),
+      procurementRegionStates: trader.procurementRegionStates || "",
       marketCoverages: marketCoverages.map((m) => m.name).join(", "),
       marketCoverageStates: trader.marketCoverageStates || "",
       mandiDetail: mandiDetail
