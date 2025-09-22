@@ -1,3 +1,5 @@
+import { Op } from "sequelize";
+import City from "../database/models/city";
 import MandiList from "../database/models/mandiList";
 
 export const addMandi = async (req, res) => {
@@ -22,11 +24,43 @@ export const addMandi = async (req, res) => {
   }
 };
 
+export const retrieveAllMandisByCityArray = async (req, res) => {
+  try {
+    const { cityIds } = req.body;
+
+    const mandiList = await MandiList.findAll({
+      where: { cityId: { [Op.in]: cityIds } },
+      include: [{ model: City, as: "city" }],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "All Mandis retrieved by cityIds successfully.",
+      data: mandiList,
+    });
+  } catch (error) {
+    console.error("Failed to retrieve all mandis by array of cities:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve all mandis by array of cities.",
+      error: error.message,
+    });
+  }
+};
+
 export const getAllMandiByCity = async (req, res) => {
   try {
     const { cityId } = req.params;
 
-    const mandiList = await MandiList.findAll({ where: { cityId } });
+    const mandiList = await MandiList.findAll({
+      where: { cityId },
+      include: [
+        {
+          model: City,
+          as: "city",
+        },
+      ],
+    });
 
     return res.status(200).json({
       success: true,
