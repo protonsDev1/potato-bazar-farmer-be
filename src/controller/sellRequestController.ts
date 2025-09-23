@@ -101,19 +101,9 @@ export const showSellRequest = async (req, res) => {
 
 export const deleteSellRequest = async (req, res) => {
   try {
-    const deleted = await deleteSellRequestService(req.params.id);
+    const result = await deleteSellRequestService(req.user, req.params.id);
 
-    if (!deleted) {
-      return res.status(404).json({
-        success: false,
-        message: "Sell request not found",
-      });
-    }
-
-    return res.json({
-      success: true,
-      message: "Sell request deleted successfully",
-    });
+    return res.status(result.statusCode).json(result);
   } catch (err: any) {
     console.error(err);
     return res.status(500).json({ success: false, message: err.message });
