@@ -25,7 +25,7 @@ import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
 import LikeColdStorage from "../database/models/likeColdStorage";
-import { getUserRole } from "./userServices";
+import { getRegistrationTypes, getUserRole } from "./userServices";
 import RealTimeAlertSystem from "../database/models/realTimeAlertSystem";
 import MonitoringLogger from "../database/models/monitoringLogger";
 
@@ -558,7 +558,7 @@ export const retrieveColdStorageProfile = async (
 ) => {
   try {
     const coldStoragePersonalInfo = await ColdStorage.findOne({
-      where: { id: coldStorageId, isDeleted: false },
+      where: { id: coldStorageId },
       include: [
         {
           model: User,
@@ -726,8 +726,6 @@ export async function getColdStorage(
       onboardedByUser,
       status,
     } = filters;
-
-    whereCondition.isDeleted = false;
 
     // if (userId) {
     //   whereCondition.onBoardedBy = {
@@ -931,10 +929,10 @@ export async function getColdStorage(
   }
 }
 
-export const softDeleteColdStorageById = async (coldStorageId: number) => {
+export const deleteColdStorageById = async (coldStorageId: number) => {
   const coldStorage = await ColdStorage.findByPk(coldStorageId);
 
-  if (!coldStorage || coldStorage.isDeleted) {
+  if (!coldStorage) {
     return { success: false, status: 404, message: "Cold Storage not found" };
   }
 
@@ -942,13 +940,17 @@ export const softDeleteColdStorageById = async (coldStorageId: number) => {
     where: { userId: coldStorage.userId, userType: USER_TYPE.COLD_STORAGE },
   });
 
-  coldStorage.isDeleted = true;
-  await coldStorage.save();
+  await ColdStorage.destroy({ where: { id: coldStorageId } });
 
   if (agentOnboardedCs) {
-    agentOnboardedCs.isDeleted = true;
-    await agentOnboardedCs.save();
+    await AgentOnboardedUser.destroy({ where: { id: agentOnboardedCs.id } });
   }
+
+  const { isFarmerOnboarded, isColdStorageOnboarded, isTraderOnboarded } =
+    await getRegistrationTypes(coldStorage.mobileNumber);
+
+  if (!isFarmerOnboarded && !isColdStorageOnboarded && !isTraderOnboarded)
+    await User.destroy({ where: { id: coldStorage.userId } });
 
   return { success: true, data: coldStorage };
 };
@@ -962,13 +964,10 @@ export async function getAllColdStorages(filters: any, search: string) {
       district,
       agentId,
       storageType,
-      storageSize,
       capacityRange,
       registrationDate,
       onboardedByUser,
     } = filters;
-
-    whereCondition.isDeleted = false;
 
     if (agentId && agentId.toLowerCase() !== "all") {
       whereCondition.onBoardedBy = agentId;

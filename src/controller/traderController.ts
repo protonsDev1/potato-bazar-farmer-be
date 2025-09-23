@@ -8,7 +8,7 @@ import {
   getTraderListByAdmin,
   onboardTrader,
   retrieveTraderProfile,
-  softDeleteTraderById,
+  deleteTraderById,
   updateTraderService,
 } from "../services/traderService";
 import {
@@ -52,7 +52,7 @@ export const updateTrader = async (req, res) => {
     const { role, id } = req.user;
 
     const trader = await Trader.findOne({
-      where: { id: traderId, isDeleted: false },
+      where: { id: traderId },
     });
     if (!trader) return res.status(404).json({ message: "Trader not found" });
 
@@ -103,7 +103,7 @@ export const getTraderProfileOverview = async (req, res) => {
     const { role, id: loggedInUserId } = req.user;
 
     const trader = await Trader.findOne({
-      where: { id: traderId, isDeleted: false },
+      where: { id: traderId },
     });
 
     if (!trader) {
@@ -197,7 +197,7 @@ export const getTraderList = async (req, res) => {
 
 export const deleteTrader = async (req, res) => {
   try {
-    const result = await softDeleteTraderById(req.params.id);
+    const result = await deleteTraderById(req.params.id);
     if (!result.success) {
       return res
         .status(result.status)
@@ -283,7 +283,7 @@ export const requestUpdateTrader = async (req, res) => {
     const { newMobileNumber } = req.body;
 
     const trader = await Trader.findOne({
-      where: { id: traderId, isDeleted: false },
+      where: { id: traderId },
     });
     if (!trader)
       return res
@@ -324,7 +324,7 @@ export const verifyUpdateTrader = async (req, res) => {
     const { newMobileNumber, otp } = req.body;
 
     const trader = await Trader.findOne({
-      where: { id: traderId, isDeleted: false },
+      where: { id: traderId },
       attributes: ["id", "userId"],
     });
 
@@ -349,11 +349,11 @@ export const verifyUpdateTrader = async (req, res) => {
       updateUserInDB(trader.userId, { mobile: newMobileNumber }),
       Farmer.update(
         { optionalNumber: newMobileNumber },
-        { where: { userId: trader.userId, isDeleted: false } }
+        { where: { userId: trader.userId } }
       ),
       ColdStorage.update(
         { mobileNumber: newMobileNumber },
-        { where: { userId: trader.userId, isDeleted: false } }
+        { where: { userId: trader.userId } }
       ),
     ];
 

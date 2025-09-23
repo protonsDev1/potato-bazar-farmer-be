@@ -15,7 +15,7 @@ import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
-import { getUserRole } from "./userServices";
+import { getRegistrationTypes, getUserRole } from "./userServices";
 import ProcurementRegion from "../database/models/trader/procurementRegions";
 
 export async function onboardTrader(payload) {
@@ -310,7 +310,7 @@ export const retrieveTraderProfile = async (
       cropsTraded,
     ] = await Promise.all([
       Trader.findOne({
-        where: { id: traderId, isDeleted: false },
+        where: { id: traderId },
         include: [
           {
             model: User,
@@ -391,8 +391,6 @@ export const getTraderListByAdmin = async (
   try {
     const offset = (page - 1) * limit;
     const whereCondition: any = {};
-
-    whereCondition.isDeleted = false;
 
     const {
       agentId,
@@ -570,10 +568,10 @@ export const getTraderListByAdmin = async (
   }
 };
 
-export const softDeleteTraderById = async (traderId: number) => {
+export const deleteTraderById = async (traderId: number) => {
   const trader = await Trader.findByPk(traderId);
 
-  if (!trader || trader.isDeleted) {
+  if (!trader) {
     return { success: false, status: 404, message: "Trader not found" };
   }
 
@@ -581,13 +579,19 @@ export const softDeleteTraderById = async (traderId: number) => {
     where: { userId: trader.userId, userType: USER_TYPE.TRADER },
   });
 
-  trader.isDeleted = true;
-  await trader.save();
+  await Trader.destroy({ where: { id: traderId } });
 
   if (agentOnboardedTrader) {
-    agentOnboardedTrader.isDeleted = true;
-    await agentOnboardedTrader.save();
+    await AgentOnboardedUser.destroy({
+      where: { id: agentOnboardedTrader.id },
+    });
   }
+
+  const { isFarmerOnboarded, isColdStorageOnboarded, isTraderOnboarded } =
+    await getRegistrationTypes(trader.mobileNumber);
+
+  if (!isFarmerOnboarded && !isColdStorageOnboarded && !isTraderOnboarded)
+    await User.destroy({ where: { id: trader.userId } });
 
   return { success: true, data: trader };
 };
@@ -603,8 +607,6 @@ export const getAllTraders = async (filters, search) => {
     registrationDate,
     onboardedByUser,
   } = filters;
-
-  whereCondition.isDeleted = false;
 
   if (agentId && agentId.toLowerCase() !== "all") {
     whereCondition.onBoardedBy = agentId;
