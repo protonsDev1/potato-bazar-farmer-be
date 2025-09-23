@@ -38,7 +38,7 @@ router.get(
 router.get("/:id", optionalAuthMiddleware, showBuyRequest);
 router.delete(
   "/:id",
-  checkPermissionMiddleware(PERMISSIONS.BUY_REQUESTS),
+  authMiddleware,
   deleteBuyRequest
 );
 

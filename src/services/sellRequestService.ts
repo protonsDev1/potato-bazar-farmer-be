@@ -1,11 +1,13 @@
 import { Op } from "sequelize";
-import User from "../database/models/user";
+import User, { USER_ROLES } from "../database/models/user";
 import { generateSellRequestId } from "../utils/generate";
 import SellRequest, {
   SELL_REQUEST_STATUS,
 } from "../database/models/sellRequest";
 import FavouriteRequest from "../database/models/favouriteRequest";
 import RequestView from "../database/models/requestView";
+import SubAdminPermission from "../database/models/subAdminPermission";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 export const createSellRequestService = async (userId: number, data: any) => {
   const newRequest = await SellRequest.create({
@@ -340,13 +342,41 @@ export const getSellRequestByIdService = async (
   };
 };
 
-export const deleteSellRequestService = async (id: number) => {
-  const request = await SellRequest.findOne({ where: { id } });
+export const deleteSellRequestService = async (user: any, requestId: number) => {
+  const request = await SellRequest.findByPk(requestId);
 
-  if (!request) return false;
+  if (!request) {
+    return {
+      statusCode: 404,
+      success: false,
+      message: "Sell request not found",
+    };
+  }
+
+  const canDelete =
+    request.userId === user.id || // owner
+    user.role === USER_ROLES.SUPER_ADMIN || // super admin
+    (user.role === USER_ROLES.SUB_ADMIN &&
+      (await SubAdminPermission.findOne({
+        where: { userId: user.id, permission: PERMISSIONS.SELL_REQUESTS },
+      })));
+
+  if (!canDelete) {
+    return {
+      statusCode: 403,
+      success: false,
+      message:
+        "Only Super Admin, Sub Admin with permission, or the request owner can delete a sell request.",
+    };
+  }
 
   await request.destroy();
-  return true;
+
+  return {
+    statusCode: 200,
+    success: true,
+    message: `Sell request deleted successfully`,
+  };
 };
 
 export const updateSellRequestService = async (

@@ -42,7 +42,7 @@ router.get(
 router.get("/:id", optionalAuthMiddleware, showSellRequest);
 router.delete(
   "/:id",
-  checkPermissionMiddleware(PERMISSIONS.SELL_REQUESTS),
+  authMiddleware,
   deleteSellRequest
 );
 
