@@ -28,6 +28,8 @@ export const createMandiPriceSchema = Joi.object({
 });
 
 export const updateMandiPriceSchema = Joi.object({
+  mandiId: Joi.number().integer().optional(),
+  date: Joi.date().iso().optional(),
   variety: Joi.string().optional(),
   category: Joi.string().optional(),
   arrivalStatus: Joi.string()
