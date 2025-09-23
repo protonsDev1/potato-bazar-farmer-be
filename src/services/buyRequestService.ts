@@ -1,9 +1,11 @@
 import { Op } from "sequelize";
 import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
-import User from "../database/models/user";
+import User, { USER_ROLES } from "../database/models/user";
 import { generateBuyRequestId } from "../utils/generate";
 import FavouriteRequest from "../database/models/favouriteRequest";
 import RequestView from "../database/models/requestView";
+import SubAdminPermission from "../database/models/subAdminPermission";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 export const createBuyRequestService = async (userId: number, data: any) => {
   const newRequest = await BuyRequest.create({
@@ -337,13 +339,41 @@ export const getBuyRequestByIdService = async (
   };
 };
 
-export const deleteBuyRequestService = async (id: number) => {
-  const request = await BuyRequest.findOne({ where: { id } });
+export const deleteBuyRequestService = async (user: any, requestId: number) => {
+  const request = await BuyRequest.findByPk(requestId);
 
-  if (!request) return false;
+  if (!request) {
+    return {
+      statusCode: 404,
+      success: false,
+      message: "Buy request not found",
+    };
+  }
+
+  const canDelete =
+    request.userId === user.id || // owner
+    user.role === USER_ROLES.SUPER_ADMIN || // super admin
+    (user.role === USER_ROLES.SUB_ADMIN &&
+      (await SubAdminPermission.findOne({
+        where: { userId: user.id, permission: PERMISSIONS.BUY_REQUESTS },
+      })));
+
+  if (!canDelete) {
+    return {
+      statusCode: 403,
+      success: false,
+      message:
+        "Only Super Admin, Sub Admin with permission, or the request owner can delete a buy request.",
+    };
+  }
 
   await request.destroy();
-  return true;
+
+  return {
+    statusCode: 200,
+    success: true,
+    message: `Buy request deleted successfully`,
+  };
 };
 
 export const updateBuyRequestService = async (
