@@ -15,7 +15,6 @@ import { hasValue } from "../utils/parseQuery";
 import SubAdminWebPermission from "../database/models/subAdminWebPermission";
 import { WEB_ACTIONS } from "../utils/constants/permissions";
 import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
-import dayjs from "dayjs";
 import MandiAgent from "../database/models/mandiAgent";
 import SellRequest from "../database/models/sellRequest";
 import UserSupport from "../database/models/userSupport";
@@ -151,15 +150,15 @@ export const getDashboardCounts = async () => {
     farmersSelfOnboarded,
     farmersByAdmins,
   ] = await Promise.all([
-    Farmer.count({ where: { isDeleted: false } }),
+    Farmer.count(),
     Farmer.count({
-      where: { createdAt: { [Op.gte]: oneWeekAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneWeekAgo } },
     }),
     Farmer.count({
-      where: { createdAt: { [Op.gte]: oneMonthAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneMonthAgo } },
     }),
     Farmer.count({
-      where: { onBoardedBy: { [Op.in]: agentIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: agentIds } },
     }),
     Farmer.count({
       where: {
@@ -171,11 +170,10 @@ export const getDashboardCounts = async () => {
             Sequelize.col("userId")
           ),
         ],
-        isDeleted: false,
       },
     }),
     Farmer.count({
-      where: { onBoardedBy: { [Op.in]: adminIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: adminIds } },
     }), // <-- NEW
   ]);
 
@@ -187,15 +185,15 @@ export const getDashboardCounts = async () => {
     coldStoragesSelfOnboarded,
     coldStoragesByAdmins,
   ] = await Promise.all([
-    ColdStorage.count({ where: { isDeleted: false } }),
+    ColdStorage.count(),
     ColdStorage.count({
-      where: { createdAt: { [Op.gte]: oneWeekAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneWeekAgo } },
     }),
     ColdStorage.count({
-      where: { createdAt: { [Op.gte]: oneMonthAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneMonthAgo } },
     }),
     ColdStorage.count({
-      where: { onBoardedBy: { [Op.in]: agentIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: agentIds } },
     }),
     ColdStorage.count({
       where: {
@@ -207,11 +205,11 @@ export const getDashboardCounts = async () => {
             Sequelize.col("userId")
           ),
         ],
-        isDeleted: false,
+        
       },
     }),
     ColdStorage.count({
-      where: { onBoardedBy: { [Op.in]: adminIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: adminIds } },
     }), // <-- NEW
   ]);
 
@@ -223,15 +221,15 @@ export const getDashboardCounts = async () => {
     tradersSelfOnboarded,
     tradersByAdmins,
   ] = await Promise.all([
-    Trader.count({ where: { isDeleted: false } }),
+    Trader.count(),
     Trader.count({
-      where: { createdAt: { [Op.gte]: oneWeekAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneWeekAgo } },
     }),
     Trader.count({
-      where: { createdAt: { [Op.gte]: oneMonthAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneMonthAgo } },
     }),
     Trader.count({
-      where: { onBoardedBy: { [Op.in]: agentIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: agentIds } },
     }),
     Trader.count({
       where: {
@@ -243,11 +241,10 @@ export const getDashboardCounts = async () => {
             Sequelize.col("userId")
           ),
         ],
-        isDeleted: false,
       },
     }),
     Trader.count({
-      where: { onBoardedBy: { [Op.in]: adminIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: adminIds } },
     }), // <-- NEW
   ]);
 

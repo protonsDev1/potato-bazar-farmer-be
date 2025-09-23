@@ -32,7 +32,7 @@ export const retrieveAllUsers = async (
 
     const { type, name, village, district, state, registrationDate } = filters;
 
-    const whereCondition: any = { agentId, isDeleted: false };
+    const whereCondition: any = { agentId };
 
     if (type && type !== "all") whereCondition.userType = type;
     if (name) whereCondition.userName = { [Op.iLike]: `%${name}%` };
@@ -120,7 +120,6 @@ export const retrieveRecentRegistered = async (
     const { count, rows } = await AgentOnboardedUser.findAndCountAll({
       where: {
         agentId,
-        isDeleted: false,
         createdAt: {
           [Op.between]: [startOfWeek, endOfWeek],
         },
@@ -304,21 +303,20 @@ export const retrieveAgentDashboardStats = async (agentId) => {
       weeklyNewTraders,
     ] = await Promise.all([
       Farmer.count({
-        where: { onBoardedBy: agentId, isDeleted: false },
+        where: { onBoardedBy: agentId },
       }),
       ColdStorage.count({
-        where: { onBoardedBy: agentId, isDeleted: false },
+        where: { onBoardedBy: agentId },
       }),
       Trader.count({
-        where: { onBoardedBy: agentId, isDeleted: false },
+        where: { onBoardedBy: agentId },
       }),
       Farmer.count({
         where: {
           onBoardedBy: agentId,
           createdAt: {
             [Op.between]: [startOfWeek, endOfWeek],
-          },
-          isDeleted: false,
+          }
         },
       }),
       ColdStorage.count({
@@ -326,8 +324,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
           onBoardedBy: agentId,
           createdAt: {
             [Op.between]: [startOfWeek, endOfWeek],
-          },
-          isDeleted: false,
+          }
         },
       }),
       Trader.count({
@@ -335,8 +332,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
           onBoardedBy: agentId,
           createdAt: {
             [Op.between]: [startOfWeek, endOfWeek],
-          },
-          isDeleted: false,
+          }
         },
       }),
     ]);

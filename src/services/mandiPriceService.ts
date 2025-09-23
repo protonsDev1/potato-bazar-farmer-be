@@ -109,10 +109,7 @@ export const getAllMandiPricesService = async (
 
   const whereCondition: any = {};
 
-  const today = new Date();
-  const defaultDate = today.toISOString().split("T")[0];
-
-  const { category, variety, grade, date = defaultDate, arrival } = filters;
+  const { category, variety, grade, date, arrival } = filters;
 
   const mandiAgent = await MandiAgent.findOne({ where: { userId } });
 
@@ -171,7 +168,6 @@ export const getAllMandiPricesService = async (
     const orConditions: any[] = [
       { variety: { [Op.iLike]: `%${search}%` } },
       { category: { [Op.iLike]: `%${search}%` } },
-      { mandiName: { [Op.iLike]: `%${search}%` } },
     ];
 
     const gradeMatches = await MandiGradePrice.findAll({
