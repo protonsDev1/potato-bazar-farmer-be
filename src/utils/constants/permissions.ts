@@ -1,6 +1,7 @@
 export const PERMISSIONS = {
   USER_MANAGEMENT: "user_management",
   MANDI_AGENTS: "mandi_agents",
+  MANDI_LISTS: "mandi_list",
   KYC_REQUESTS: "kyc_requests",
   BUY_REQUESTS: "buy_requests",
   SELL_REQUESTS: "sell_requests",

@@ -372,6 +372,8 @@ export const updateMandiPriceService = async (
   const updateMandiPriceData: Record<string, any> = {};
 
   const updatableMandiPriceFields = [
+    "mandiId",
+    "date",
     "variety",
     "category",
     "arrivalStatus",
