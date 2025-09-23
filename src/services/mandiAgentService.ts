@@ -56,6 +56,23 @@ export const addMandiAgent = async (
     }
   }
 
+  const existingMandis = await MandiList.findAll({
+    where: { id: { [Op.in]: mandiIds } },
+    attributes: ["id"],
+    raw: true,
+  });
+
+  const existingIds = existingMandis.map((m) => m.id);
+
+  const invalidIds = mandiIds.filter((id) => !existingIds.includes(id));
+
+  if (invalidIds.length > 0) {
+    return {
+      success: false,
+      error: `Invalid mandiId(s): ${invalidIds.join(", ")}`,
+    };
+  }
+
   const isDuplicateLicense = await MandiAgent.findOne({
     where: { licenseNumber },
   });
@@ -305,6 +322,23 @@ export const updateMandiAgentService = async (
         error: "Mandi agent with given license number already exists.",
       };
     }
+  }
+
+  const existingMandis = await MandiList.findAll({
+    where: { id: { [Op.in]: mandiIds } },
+    attributes: ["id"],
+    raw: true,
+  });
+
+  const existingIds = existingMandis.map((m) => m.id);
+
+  const invalidIds = mandiIds.filter((id) => !existingIds.includes(id));
+
+  if (invalidIds.length > 0) {
+    return {
+      success: false,
+      error: `Invalid mandiId(s): ${invalidIds.join(", ")}`,
+    };
   }
 
   const mandiAgentUpdates: any = {};

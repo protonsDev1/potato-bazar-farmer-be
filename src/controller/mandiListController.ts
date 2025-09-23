@@ -88,6 +88,57 @@ export const getAllMandiByCity = async (req, res) => {
   }
 };
 
+export const getAllMandi = async (req, res) => {
+  try {
+    let { search, cityId, page = 1, perPage: limit = 10 } = req.query;
+
+    page = Number(page);
+    limit = Number(limit);
+
+    const offset = (page - 1) * limit;
+
+    const whereCondition: any = {};
+
+    if (search) {
+      whereCondition.mandiName = { [Op.iLike]: `%${search}%` };
+    }
+
+    if (cityId) {
+      whereCondition.cityId = cityId;
+    }
+
+    const { count, rows } = await MandiList.findAndCountAll({
+      where: whereCondition,
+      include: [
+        {
+          model: City,
+          as: "city",
+        },
+      ],
+      limit,
+      offset,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "All Mandis retrieved successfully.",
+      data: {
+        mandiList: rows,
+        currentPage: page,
+        total: count,
+        totalPages: Math.ceil(count / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Failed to get all mandi:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get all mandi.",
+      error: error.message,
+    });
+  }
+};
+
 export const updateMandi = async (req, res) => {
   try {
     const { id } = req.params;
@@ -97,9 +148,10 @@ export const updateMandi = async (req, res) => {
     const isMandiExist = await MandiList.findByPk(id);
 
     if (!isMandiExist)
-      return res
-        .status(400)
-        .json({ success: false, message: "Mandi with given id do not exists." });
+      return res.status(400).json({
+        success: false,
+        message: "Mandi with given id do not exists.",
+      });
 
     const isDuplicateMandi = await MandiList.findOne({
       where: {
