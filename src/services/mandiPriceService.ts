@@ -182,6 +182,10 @@ export const getAllMandiPricesService = async (
       orConditions.push({ id: { [Op.in]: mandiPriceIds } });
     }
 
+    orConditions.push({
+      "$mandi.mandiName$": { [Op.iLike]: `%${search}%` },
+    });
+
     whereCondition[Op.or] = orConditions;
   }
 
@@ -195,6 +199,7 @@ export const getAllMandiPricesService = async (
       {
         model: MandiList,
         as: "mandi",
+        required: true,
         include: [
           {
             model: City,

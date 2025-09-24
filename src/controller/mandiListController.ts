@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import City from "../database/models/city";
 import MandiList from "../database/models/mandiList";
+import State from "../database/models/state";
 
 export const addMandi = async (req, res) => {
   try {
@@ -90,7 +91,7 @@ export const getAllMandiByCity = async (req, res) => {
 
 export const getAllMandi = async (req, res) => {
   try {
-    let { search, cityId, page = 1, perPage: limit = 10 } = req.query;
+    let { search, cityId, stateId, page = 1, perPage: limit = 10 } = req.query;
 
     page = Number(page);
     limit = Number(limit);
@@ -113,6 +114,15 @@ export const getAllMandi = async (req, res) => {
         {
           model: City,
           as: "city",
+          include: [
+            {
+              model: State,
+              as: "state",
+              required: true,
+              ...(stateId && { where: { id: stateId } }),
+            },
+          ],
+          required: true,
         },
       ],
       limit,
