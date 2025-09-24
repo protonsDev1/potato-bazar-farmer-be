@@ -87,6 +87,8 @@ export const addMandiAgent = async (
   return await sequelize.transaction(async (t) => {
     const mandiUser = await User.create(
       {
+        firstName,
+        lastName,
         name: `${firstName} ${lastName}`,
         email,
         mobile,
@@ -147,6 +149,8 @@ export const getAllMandiAgents = async (
       {
         model: User,
         attributes: [
+          "firstName",
+          "lastName",
           "name",
           "mobile",
           "district",
@@ -170,8 +174,8 @@ export const getAllMandiAgents = async (
     return {
       id: entry.id,
       name: mandiUser?.name,
-      firstName: mandiUser.name.split(" ")[0],
-      lastName: mandiUser.name.split(" ")[1],
+      firstName: mandiUser?.firstName || mandiUser?.name.split(" ")[0],
+      lastName: mandiUser?.lastName || mandiUser?.name.split(" ")[1],
       contact: mandiUser?.mobile,
       email: mandiUser?.email,
       location: {
@@ -251,6 +255,8 @@ export const updateMandiAgentService = async (
         model: User,
         attributes: [
           "id",
+          "firstName",
+          "lastName",
           "name",
           "mobile",
           "district",
@@ -284,16 +290,6 @@ export const updateMandiAgentService = async (
       error: "Password and confirm password do not match",
     };
   }
-  if (
-    (hasValue(firstName) && !hasValue(lastName)) ||
-    (!hasValue(firstName) && hasValue(lastName))
-  ) {
-    return {
-      success: false,
-      error:
-        "First name and last name should either both be updated, or neither.",
-    };
-  }
 
   if (hasValue(email)) {
     const isEmailTaken = await User.findOne({ where: { email } });
@@ -324,29 +320,38 @@ export const updateMandiAgentService = async (
     }
   }
 
-  const existingMandis = await MandiList.findAll({
-    where: { id: { [Op.in]: mandiIds } },
-    attributes: ["id"],
-    raw: true,
-  });
+  if (mandiIds && mandiIds.length > 0) {
+    const existingMandis = await MandiList.findAll({
+      where: { id: { [Op.in]: mandiIds } },
+      attributes: ["id"],
+      raw: true,
+    });
 
-  const existingIds = existingMandis.map((m) => m.id);
+    const existingIds = existingMandis.map((m) => m.id);
 
-  const invalidIds = mandiIds.filter((id) => !existingIds.includes(id));
+    const invalidIds = mandiIds.filter((id) => !existingIds.includes(id));
 
-  if (invalidIds.length > 0) {
-    return {
-      success: false,
-      error: `Invalid mandiId(s): ${invalidIds.join(", ")}`,
-    };
+    if (invalidIds.length > 0) {
+      return {
+        success: false,
+        error: `Invalid mandiId(s): ${invalidIds.join(", ")}`,
+      };
+    }
   }
 
   const mandiAgentUpdates: any = {};
   const userUpdates: any = {};
 
   if (hasValue(licenseNumber)) mandiAgentUpdates.licenseNumber = licenseNumber;
+  if (hasValue(firstName)) userUpdates.firstName = firstName;
+  if (hasValue(lastName)) userUpdates.lastName = lastName;
+  if (hasValue(email)) userUpdates.email = email;
   if (hasValue(firstName) || hasValue(lastName)) {
-    userUpdates.name = `${firstName || ""} ${lastName || ""}`.trim();
+    const newFirstName = hasValue(firstName)
+      ? firstName
+      : mandiUser.user.firstName;
+    const newLastName = hasValue(lastName) ? lastName : mandiUser.user.lastName;
+    userUpdates.name = `${newFirstName} ${newLastName}`.trim();
   }
   if (hasValue(email)) userUpdates.email = email;
   if (hasValue(mobile)) userUpdates.mobile = mobile;
