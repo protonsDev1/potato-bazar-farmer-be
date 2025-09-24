@@ -15,12 +15,11 @@ export const traderTypeList = [
 ];
 
 export const cropTradedList = [
-  { name: "Potato (आलू/બટાટા/ਆਲੂ)", position: 1 },
-  { name: "Onion (प्याज़/ડુંગળી/ਪਿਆਜ਼)", position: 2 },
-  { name: "Tomato (टमाटर/ટમેટા/ਟਮਾਟਰ)", position: 3 },
-  { name: "Garlic (लहसुन/લસણ/ਲਹਿਣ)", position: 4 },
-  { name: "Ginger (अदरक/આદુ/ਅਦਰਕ)", position: 5 },
-  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 6 },
+  { name: "Onion (प्याज़/ડુંગળી/ਪਿਆਜ਼)", position: 1 },
+  { name: "Tomato (टमाटर/ટમેટા/ਟਮਾਟਰ)", position: 2 },
+  { name: "Garlic (लहसुन/લસણ/ਲਹਿਣ)", position: 3 },
+  { name: "Ginger (अदरक/આદુ/ਅਦਰਕ)", position: 4 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 5 },
 ];
 
 export const traderInterestList = [
@@ -30,7 +29,7 @@ export const traderInterestList = [
     position: 2,
   },
   {
-    name: "Join Auction (नीलामी में शामिल हों/લિલામીમાં જોડાઓ/ਨੀਲਾਮੀ ਵਿੱਚ ਸ਼ਾਮਲ ਹੋਵੋ)",
+    name: "Join Online Auction (ऑनलाइन नीलामी में शामिल हों/ઓનલાઇન લિલામીમાં જોડાઓ/ਆਨਲਾਈਨ ਨੀਲਾਮੀ ਵਿੱਚ ਸ਼ਾਮਲ ਹੋਵੋ)",
     position: 3,
   },
 ];
