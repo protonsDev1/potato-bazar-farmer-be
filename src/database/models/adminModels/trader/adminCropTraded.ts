@@ -22,7 +22,7 @@ class AdminCropTraded extends Model<
 AdminCropTraded.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-    name: { type: DataTypes.STRING(100), allowNull: false },
+    name: { type: DataTypes.STRING, allowNull: false },
     isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     position: {
       type: DataTypes.INTEGER,

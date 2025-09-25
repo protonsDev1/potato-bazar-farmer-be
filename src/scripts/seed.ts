@@ -1,6 +1,7 @@
 import AdminColdStorageType from "../database/models/adminModels/coldStorage/adminColdStorageType";
 import AdminConstructionType from "../database/models/adminModels/coldStorage/adminConstructionType";
 import AdminDryingFacilityDetail from "../database/models/adminModels/coldStorage/adminDryingFacilityDetails";
+import AdminDryingMethod from "../database/models/adminModels/coldStorage/adminDryingMethods";
 import AdminElevatorType from "../database/models/adminModels/coldStorage/adminElevatorType";
 import AdminMonitoringFacility from "../database/models/adminModels/coldStorage/adminMonitoringFacilities";
 import AdminOperationalChallenge from "../database/models/adminModels/coldStorage/adminOperationalChallenge";
@@ -35,6 +36,7 @@ import {
   coldStorageTypeList,
   constructionTypeList,
   dryingFacilityDetailsList,
+  dryingMethodsAvailableList,
   elevatorTypeLIst,
   monitoringFacilityList,
   operationalChallengeList,
@@ -91,6 +93,12 @@ const seedDatabase = async () => {
       AdminDryingFacilityDetail,
       dryingFacilityDetailsList,
       "Drying Facility Details"
+    );
+
+    await seedData(
+      AdminDryingMethod,
+      dryingMethodsAvailableList,
+      "Drying Methods"
     );
 
     await seedData(AdminElevatorType, elevatorTypeLIst, "Elevator Types");
