@@ -57,13 +57,20 @@ export const dryingFacilityDetailsList = [
     name: "Post-storage drying (भंडारण के बाद सुखाना/ભંડારણ પછી સુકાવવું/ਸਟੋਰੇਜ ਤੋਂ ਬਾਅਦ ਸੁਕਾਉਣਾ)",
     position: 2,
   },
-  { name: "Fan based (पंखा आधारित/પંખો આધારિત/ਪੱਖੇ ਆਧਾਰਿਤ)", position: 3 },
+
+  { name: "None (कोई नहीं/કોઈ નથી/ਕੋਈ ਨਹੀਂ)", position: 3 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 4 },
+];
+
+export const dryingMethodsAvailableList = [
+  { name: "Fan based (पंखा आधारित/પંખો આધારિત/ਪੱਖੇ ਆਧਾਰਿਤ)", position: 1 },
   {
     name: "Natural ventilation (प्राकृतिक वेंटिलेशन/પ્રાકૃતિક હવાનું પ્રવાહ/ਕੁਦਰਤੀ ਹਵਾ ਦਾ ਪ੍ਰਵਾਹ)",
-    position: 4,
+    position: 2,
   },
-  { name: "None (कोई नहीं/કોઈ નથી/ਕੋਈ ਨਹੀਂ)", position: 5 },
-  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 6 },
+
+  { name: "None (कोई नहीं/કોઈ નથી/ਕੋਈ ਨਹੀਂ)", position: 3 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 4 },
 ];
 
 export const elevatorTypeLIst = [

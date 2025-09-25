@@ -196,6 +196,14 @@ export const coldStorageSchema = Joi.object({
     )
     .required(),
 
+  dryingMethods: Joi.array()
+    .items(
+      Joi.object({
+        method: Joi.string().max(255).required(),
+      })
+    )
+    .required(),
+
   featureOfStorage: Joi.array()
     .items(
       Joi.object({
@@ -517,6 +525,14 @@ export const updateColdStorageSchema = Joi.object({
     .items(
       Joi.object({
         facility: Joi.string().max(255).required(),
+      })
+    )
+    .optional(),
+
+  dryingMethods: Joi.array()
+    .items(
+      Joi.object({
+        method: Joi.string().max(255).required(),
       })
     )
     .optional(),

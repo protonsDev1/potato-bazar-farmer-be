@@ -22,11 +22,8 @@ export const onboardFarmerSchema = Joi.object({
   aadhaarNumber: Joi.string()
     .max(255)
     .pattern(/^\d{12}$/)
-    .when("isAadhaarCard", {
-      is: true,
-      then: Joi.required(),
-      otherwise: Joi.optional().allow(null, ""),
-    }),
+    .optional()
+    .allow(null, ""),
   isBankAccount: Joi.boolean().optional().allow(null),
 
   landDetails: Joi.array()
@@ -105,7 +102,7 @@ export const onboardFarmerSchema = Joi.object({
         contractPercent: Joi.number().min(0).max(100).optional().allow(null),
         spotPercent: Joi.number().min(0).max(100).optional().allow(null),
         contractPartnerName: Joi.string().max(255).optional().allow(null, ""),
-        reasonForTrust: Joi.string().optional().allow(null, ""),
+        // reasonForTrust: Joi.string().optional().allow(null, ""),
         preference: Joi.string().optional().allow(null, ""),
         suggestions: Joi.string().optional().allow(null, ""),
         contractFarmingPercent: Joi.number()
@@ -278,11 +275,8 @@ export const updateFarmerSchema = Joi.object({
   aadhaarNumber: Joi.string()
     .max(255)
     .pattern(/^\d{12}$/)
-    .when("isAadhaarCard", {
-      is: true,
-      then: Joi.required(),
-      otherwise: Joi.optional().allow(null, ""),
-    }),
+    .optional()
+    .allow(null, ""),
   isBankAccount: Joi.boolean().optional().allow(null),
 
   landDetails: Joi.array()
@@ -364,7 +358,7 @@ export const updateFarmerSchema = Joi.object({
         contractPercent: Joi.number().min(0).max(100).optional().allow(null),
         spotPercent: Joi.number().min(0).max(100).optional().allow(null),
         contractPartnerName: Joi.string().max(255).optional().allow(null, ""),
-        reasonForTrust: Joi.string().optional().allow(null, ""),
+        // reasonForTrust: Joi.string().optional().allow(null, ""),
         preference: Joi.string().optional().allow(null, ""),
         suggestions: Joi.string().optional().allow(null, ""),
         contractFarmingPercent: Joi.number()
