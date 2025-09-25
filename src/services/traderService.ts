@@ -17,6 +17,7 @@ import AgentOnboardedUser, {
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
 import { getRegistrationTypes, getUserRole } from "./userServices";
 import ProcurementRegion from "../database/models/trader/procurementRegions";
+import ExporterDetail from "../database/models/trader/exporterDetail";
 
 export async function onboardTrader(payload) {
   try {
@@ -136,6 +137,13 @@ export async function onboardTrader(payload) {
       if (payload.mandiDetails) {
         await MandiDetail.create(
           { traderId: trader.id, ...payload.mandiDetails },
+          { transaction: t }
+        );
+      }
+
+      if (payload.exporterDetails) {
+        await ExporterDetail.create(
+          { traderId: trader.id, ...payload.exporterDetails },
           { transaction: t }
         );
       }
@@ -267,6 +275,10 @@ export async function updateTraderService(traderId, payload) {
       await safeUpsert(MandiDetail, traderId, payload.mandiDetails, t);
     }
 
+    if (payload.exporterDetails) {
+      await safeUpsert(ExporterDetail, traderId, payload.exporterDetails, t);
+    }
+
     if (payload.traderDocuments) {
       await safeUpsert(TraderDocument, traderId, payload.traderDocuments, t);
     }
@@ -301,6 +313,7 @@ export const retrieveTraderProfile = async (
       personalInfo,
       bankDetails,
       mandiDetails,
+      exporterDetails,
       traderDocuments,
       interests,
       marketCoverages,
@@ -326,6 +339,7 @@ export const retrieveTraderProfile = async (
       }),
       BankDetail.findOne({ where: { traderId } }),
       MandiDetail.findOne({ where: { traderId } }),
+      ExporterDetail.findOne({ where: { traderId } }),
       TraderDocument.findOne({ where: { traderId } }),
       TraderInterest.findAll({
         attributes: ["interest"],
@@ -357,6 +371,7 @@ export const retrieveTraderProfile = async (
       personalInfo,
       bankDetails,
       mandiDetails,
+      exporterDetails,
       traderDocuments,
       interests,
       marketCoverages,
@@ -737,6 +752,7 @@ export const createTraderWorksheetColumns = (worksheet) => {
       width: 50,
     },
     { header: "Mandi Details", key: "mandiDetail", width: 80 },
+    { header: "Exporter Details", key: "exporterDetail", width: 80 },
   ];
 
   worksheet.getRow(1).eachCell((cell) => {
@@ -756,6 +772,7 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       marketCoverages,
       procurementRegions,
       mandiDetail,
+      exporterDetail,
     ] = await Promise.all([
       TraderType.findAll({ where: { traderId }, attributes: ["type"] }),
       TraderVariety.findAll({ where: { traderId }, attributes: ["variety"] }),
@@ -766,6 +783,10 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       MandiDetail.findOne({
         where: { traderId },
         attributes: ["mandiName", "shopNumber", "mandiLicenceNo"],
+      }),
+      ExporterDetail.findOne({
+        where: { traderId },
+        attributes: ["regions", "potatoVarieties", "quantityPerYear"],
       }),
     ]);
 
@@ -810,6 +831,9 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       marketCoverageStates: trader.marketCoverageStates || "",
       mandiDetail: mandiDetail
         ? `Mandi: ${mandiDetail.mandiName}, Shop: ${mandiDetail.shopNumber}, Licence: ${mandiDetail.mandiLicenceNo}`
+        : "",
+      exporterDetail: exporterDetail
+        ? `Regions: ${exporterDetail.regions}, Potato Varieties: ${exporterDetail.potatoVarieties}, Average export quantity per year: ${exporterDetail.quantityPerYear}`
         : "",
     });
   }

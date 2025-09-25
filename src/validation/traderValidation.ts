@@ -122,8 +122,20 @@ export const onboardTraderSchema = Joi.object({
     .optional()
     .allow(null),
 
+  exporterDetails: Joi.object({
+    regions: Joi.array().items(Joi.string().max(255)).optional(),
+    isCustomRegion: Joi.boolean().optional().allow(null),
+    potatoVarieties: Joi.array().items(Joi.string().max(255)).optional(),
+    isCustomPotatoVariety: Joi.boolean().optional().allow(null),
+    quantityPerYear: Joi.string().max(255).optional().allow(null, ""),
+  })
+    .optional()
+    .allow(null),
+
   traderDocuments: Joi.object({
     panCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    gstUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    fssairl: Joi.string().max(255).uri().optional().allow(null, ""),
     businessCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     tradeLicenseUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     recentInvoiceUrl: Joi.string().max(255).uri().optional().allow(null, ""),
@@ -254,8 +266,20 @@ export const updateTraderSchema = Joi.object({
     .optional()
     .allow(null),
 
+  exporterDetails: Joi.object({
+    regions: Joi.array().items(Joi.string().max(255)).optional(),
+    isCustomRegion: Joi.boolean().optional().allow(null),
+    potatoVarieties: Joi.array().items(Joi.string().max(255)).optional(),
+    isCustomPotatoVariety: Joi.boolean().optional().allow(null),
+    quantityPerYear: Joi.string().max(255).optional().allow(null, ""),
+  })
+    .optional()
+    .allow(null),
+
   traderDocuments: Joi.object({
     panCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    gstUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    fssairl: Joi.string().max(255).uri().optional().allow(null, ""),
     businessCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     tradeLicenseUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     recentInvoiceUrl: Joi.string().max(255).uri().optional().allow(null, ""),

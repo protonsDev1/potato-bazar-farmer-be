@@ -16,6 +16,8 @@ class TraderDocument extends Model<
   declare id: CreationOptional<number>;
   declare traderId: ForeignKey<Trader["id"]>;
   declare panCardUrl: string | null;
+  declare gstCertificateUrl: string | null;
+  declare FSSAICertifiateUrl: string | null;
   declare businessCardUrl: string | null;
   declare tradeLicenseUrl: string | null;
   declare recentInvoiceUrl: string | null;
@@ -34,6 +36,8 @@ TraderDocument.init(
       onDelete: "CASCADE",
     },
     panCardUrl: { type: DataTypes.TEXT },
+    gstCertificateUrl: { type: DataTypes.TEXT },
+    FSSAICertifiateUrl: { type: DataTypes.TEXT },
     businessCardUrl: { type: DataTypes.TEXT },
     tradeLicenseUrl: { type: DataTypes.TEXT },
     recentInvoiceUrl: { type: DataTypes.TEXT },
