@@ -28,6 +28,7 @@ import LikeColdStorage from "../database/models/likeColdStorage";
 import { getRegistrationTypes, getUserRole } from "./userServices";
 import RealTimeAlertSystem from "../database/models/realTimeAlertSystem";
 import MonitoringLogger from "../database/models/monitoringLogger";
+import DryingMethod from "../database/models/dryingMethod";
 
 export async function onboardColdStorage(payload: any) {
   try {
@@ -234,6 +235,18 @@ export async function onboardColdStorage(payload: any) {
             {
               coldStorageId: coldStorage.id,
               facility: dryingFacility.facility,
+            },
+            { transaction: t }
+          );
+        }
+      }
+
+      if (Array.isArray(payload.dryingMethods)) {
+        for (const dryingMethod of payload.dryingMethods) {
+          await DryingMethod.create(
+            {
+              coldStorageId: coldStorage.id,
+              method: dryingMethod.method,
             },
             { transaction: t }
           );
@@ -502,6 +515,7 @@ export const updateColdStorageService = async (coldStorageId, payload) => {
       sheds: Shed,
       coldStorageTypes: ColdStorageType,
       dryingFacilityDetails: DryingFacilityDetail,
+      dryingMethods: DryingMethod,
       constructionTypes: ConstructionType,
       featuresOfStorage: FeatureOfStorage,
       monitoringFacilities: MonitoringFacility,
@@ -608,6 +622,11 @@ export const retrieveColdStorageProfile = async (
       where: { coldStorageId },
     });
 
+    const dryingMethods = await DryingMethod.findAll({
+      attributes: ["method"],
+      where: { coldStorageId },
+    });
+
     const featureOfStorage = await FeatureOfStorage.findAll({
       attributes: ["feature"],
       where: { coldStorageId },
@@ -682,6 +701,7 @@ export const retrieveColdStorageProfile = async (
       storageType,
       usageType,
       dryingFacilityDetail,
+      dryingMethods,
       featureOfStorage,
       monitoringFacilities,
       otherFacilities,
@@ -1137,6 +1157,7 @@ export const createColdStorageWorksheetColumns = (worksheet) => {
     },
     { header: "Usage Types", key: "usageTypes", width: 50 },
     { header: "Drying Facility", key: "dryingFacilityDetails", width: 50 },
+    { header: "Drying Methods", key: "dryingMethods", width: 50 },
     { header: "Features", key: "featureOfStorages", width: 50 },
     { header: "Monitoring Facilities", key: "monitoringFacilities", width: 50 },
     { header: "Other Facilities", key: "otherFacilities", width: 50 },
@@ -1183,6 +1204,7 @@ export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
       storageTypes,
       usageTypes,
       dryingFacilityDetails,
+      dryingMethods,
       featureOfStorages,
       monitoringFacilities,
       otherFacilities,
@@ -1204,6 +1226,7 @@ export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
       StorageType.findAll({ where: { coldStorageId } }),
       UsageType.findAll({ where: { coldStorageId } }),
       DryingFacilityDetail.findAll({ where: { coldStorageId } }),
+      DryingMethod.findAll({ where: { coldStorageId } }),
       FeatureOfStorage.findAll({ where: { coldStorageId } }),
       MonitoringFacility.findAll({ where: { coldStorageId } }),
       OtherFacility.findAll({ where: { coldStorageId } }),
@@ -1283,6 +1306,7 @@ export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
         usageTypes.map((u) => `${u.type}: ${u.capacity}MT`).join(" | ") || "",
       dryingFacilityDetails:
         dryingFacilityDetails.map((d) => d.facility).join(", ") || "",
+      dryingMethods: dryingMethods.map((d) => d.method).join(", ") || "",
       featureOfStorages:
         featureOfStorages.map((f) => f.feature).join(", ") || "",
       monitoringFacilities:
