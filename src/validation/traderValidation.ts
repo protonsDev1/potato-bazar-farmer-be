@@ -134,8 +134,8 @@ export const onboardTraderSchema = Joi.object({
 
   traderDocuments: Joi.object({
     panCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
-    gstUrl: Joi.string().max(255).uri().optional().allow(null, ""),
-    fssairl: Joi.string().max(255).uri().optional().allow(null, ""),
+    gstCertificateUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    FSSAICertificateUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     businessCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     tradeLicenseUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     recentInvoiceUrl: Joi.string().max(255).uri().optional().allow(null, ""),
@@ -278,8 +278,8 @@ export const updateTraderSchema = Joi.object({
 
   traderDocuments: Joi.object({
     panCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
-    gstUrl: Joi.string().max(255).uri().optional().allow(null, ""),
-    fssairl: Joi.string().max(255).uri().optional().allow(null, ""),
+    gstCertificateUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    FSSAICertificateUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     businessCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     tradeLicenseUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     recentInvoiceUrl: Joi.string().max(255).uri().optional().allow(null, ""),
