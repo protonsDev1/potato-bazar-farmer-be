@@ -654,3 +654,7 @@ export const updateColdStorageSchema = Joi.object({
     )
     .optional(),
 });
+
+export const availabilitySchema = Joi.object({
+  isAvailable: Joi.boolean().required(),
+});

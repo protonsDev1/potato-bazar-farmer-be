@@ -141,7 +141,7 @@ export const getColdStorageProfile = async (req, res) => {
 
 export const getColdStorageList = async (req, res) => {
   try {
-    const { page, perPage: limit, search, sortBy } = req.query;
+    const { page, perPage: limit, search, sortBy, listingType } = req.query;
     const { id: userId } = req.user;
 
     const filters = parseFilters(req.query);
@@ -156,7 +156,8 @@ export const getColdStorageList = async (req, res) => {
       filters,
       search,
       userId,
-      sortBy
+      sortBy,
+      listingType
     );
 
     return res.status(200).json({
@@ -397,5 +398,38 @@ export const verifyUpdateCS = async (req, res) => {
     return res
       .status(500)
       .json({ message: err.message || "Failed to verify mobile update" });
+  }
+};
+
+export const updateColdStorageAvailability = async (req, res) => {
+  try {
+    const { coldStorageId } = req.params;
+    const { id } = req.user;
+    const { isAvailable } = req.body;
+
+    const coldStorage = await ColdStorage.findByPk(coldStorageId);
+
+    if (!coldStorage) {
+      return res.status(404).json({ message: "Cold storage not found" });
+    }
+
+    if (coldStorage.userId !== id) {
+      return res.status(403).json({
+        message: "Only the owner of the cold storage can update availability.",
+      });
+    }
+
+    coldStorage.isAvailable = isAvailable;
+    await coldStorage.save();
+
+    return res.status(200).json({
+      message: "Cold storage availability updated successfully",
+      data: { id: coldStorage.id, isAvailable: coldStorage.isAvailable },
+    });
+  } catch (err) {
+    console.error("Update Availability Error:", err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to update availability" });
   }
 };

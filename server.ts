@@ -107,7 +107,7 @@ app.use("/api/admin/irrigation_method", adminIrrigationMethodRoutes);
 app.use("/api/admin/operational_challenge", adminOperationalChallengeRoutes);
 app.use("/api/traders", traderRoutes);
 app.use("/api", uploadRoutes);
-app.use("/api", csRequirementRoutes);
+app.use("/api/requirements", csRequirementRoutes);
 app.use("/api/sub_admins", subAdminRoutes);
 app.use("/api/mandi_agent", mandiAgentRoutes);
 app.use("/api/government_schemes", govSchemeRoutes);
