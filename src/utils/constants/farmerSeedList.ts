@@ -31,6 +31,296 @@ export const potatoTypeList = [
   { name: "French Fry (फ्रेंच फ्राई/ફ્રેન્ચ ફ્રાઇ/ਫ੍ਰੈਂਚ ਫਰਾਈ)", position: 3 },
 ];
 
+export const potatoVarietyListOld = [
+  {
+    name: "Table",
+    position: 1,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796556091-i0ws4rd5.png",
+  },
+  {
+    name: "Chips",
+    position: 2,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796238111-bu98tqs5.png",
+  },
+  {
+    name: "Fries",
+    position: 3,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796321886-u9kww2ux.png",
+  },
+  {
+    name: "Flakes",
+    position: 4,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796393172-qhqey698.png",
+  },
+  {
+    name: "Seeds",
+    position: 5,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796458026-mdlpkarw.png",
+  },
+  {
+    name: "Minituber",
+    position: 6,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796505265-4angwnzg.png",
+  },
+];
+
+export const potatoSubVarietyListOld = [
+  {
+    varietyName: "Table",
+    name: "Jyoti",
+  },
+  {
+    varietyName: "Table",
+    name: "Badshah",
+  },
+  {
+    varietyName: "Table",
+    name: "Lauvkar",
+  },
+  {
+    varietyName: "Table",
+    name: "Diamond",
+  },
+  {
+    varietyName: "Table",
+    name: "Colombo",
+  },
+  {
+    varietyName: "Table",
+    name: "Bahar (3797)",
+  },
+  {
+    varietyName: "Table",
+    name: "Surya",
+  },
+  {
+    varietyName: "Table",
+    name: "Amber Light",
+  },
+  {
+    varietyName: "Table",
+    name: "LR",
+  },
+  {
+    varietyName: "Table",
+    name: "Chipsona-1",
+  },
+  {
+    varietyName: "Table",
+    name: "Chipsona-3",
+  },
+  {
+    varietyName: "Table",
+    name: "KCM",
+  },
+  {
+    varietyName: "Table",
+    name: "Hermes",
+  },
+  {
+    varietyName: "Table",
+    name: "Taurus",
+  },
+  {
+    varietyName: "Table",
+    name: "Frysona",
+  },
+  {
+    varietyName: "Table",
+    name: "FryOm",
+  },
+  {
+    varietyName: "Table",
+    name: "Santana",
+  },
+  {
+    varietyName: "Table",
+    name: "Innovator",
+  },
+  {
+    varietyName: "Table",
+    name: "HYFM",
+  },
+  {
+    varietyName: "Table",
+    name: "Jamania",
+  },
+  {
+    varietyName: "Table",
+    name: "Uday",
+  },
+  {
+    varietyName: "Table",
+    name: "Mohan",
+  },
+  {
+    varietyName: "Table",
+    name: "Other (CPRI)",
+  },
+  {
+    varietyName: "Table",
+    name: "Other",
+  },
+  {
+    varietyName: "Chips",
+    name: "LR",
+  },
+  {
+    varietyName: "Chips",
+    name: "Chipsona-1",
+  },
+  {
+    varietyName: "Chips",
+    name: "Chipsona-3",
+  },
+  {
+    varietyName: "Chips",
+    name: "KCM",
+  },
+  {
+    varietyName: "Chips",
+    name: "Hermes",
+  },
+  {
+    varietyName: "Chips",
+    name: "Taurus",
+  },
+  {
+    varietyName: "Chips",
+    name: "Other",
+  },
+  {
+    varietyName: "Fries",
+    name: "Frysona",
+  },
+  {
+    varietyName: "Fries",
+    name: "FryOm",
+  },
+  {
+    varietyName: "Fries",
+    name: "Santana",
+  },
+  {
+    varietyName: "Fries",
+    name: "Innovator",
+  },
+  {
+    varietyName: "Fries",
+    name: "HYSM",
+  },
+  {
+    varietyName: "Fries",
+    name: "Kennebeck",
+  },
+  {
+    varietyName: "Fries",
+    name: "Other",
+  },
+  {
+    varietyName: "Flakes",
+    name: "LR",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Chipsona-1",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Chipsona-3",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Hermes",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Taurus",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Frysona",
+  },
+  {
+    varietyName: "Flakes",
+    name: "FryOm",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Santana",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Innovator",
+  },
+  {
+    varietyName: "Flakes",
+    name: "HYSM",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Kennebeck",
+  },
+  {
+    varietyName: "Flakes",
+    name: "Other",
+  },
+  { varietyName: "Seeds", name: "Jyoti" },
+  { varietyName: "Seeds", name: "Badshah" },
+  { varietyName: "Seeds", name: "Lauvkar" },
+  { varietyName: "Seeds", name: "Diamond" },
+  { varietyName: "Seeds", name: "Colombo" },
+  { varietyName: "Seeds", name: "Bahar (3797)" },
+  { varietyName: "Seeds", name: "Surya" },
+  { varietyName: "Seeds", name: "Amber Light" },
+  { varietyName: "Seeds", name: "LR" },
+  { varietyName: "Seeds", name: "Chipsona-1" },
+  { varietyName: "Seeds", name: "Chipsona-3" },
+  { varietyName: "Seeds", name: "KCM" },
+  { varietyName: "Seeds", name: "Hermes" },
+  { varietyName: "Seeds", name: "Taurus" },
+  { varietyName: "Seeds", name: "Frysona" },
+  { varietyName: "Seeds", name: "FryOm" },
+  { varietyName: "Seeds", name: "Santana" },
+  { varietyName: "Seeds", name: "Innovator" },
+  { varietyName: "Seeds", name: "HYFM" },
+  { varietyName: "Seeds", name: "Jamania" },
+  { varietyName: "Seeds", name: "Uday" },
+  { varietyName: "Seeds", name: "Mohan" },
+  { varietyName: "Seeds", name: "Other (CPRI)" },
+  { varietyName: "Seeds", name: "Other" },
+  { varietyName: "Minituber", name: "Jyoti" },
+  { varietyName: "Minituber", name: "Badshah" },
+  { varietyName: "Minituber", name: "Lauvkar" },
+  { varietyName: "Minituber", name: "Diamond" },
+  { varietyName: "Minituber", name: "Colombo" },
+  { varietyName: "Minituber", name: "Bahar (3797)" },
+  { varietyName: "Minituber", name: "Surya" },
+  { varietyName: "Minituber", name: "Amber Light" },
+  { varietyName: "Minituber", name: "LR" },
+  { varietyName: "Minituber", name: "Chipsona-1" },
+  { varietyName: "Minituber", name: "Chipsona-3" },
+  { varietyName: "Minituber", name: "KCM" },
+  { varietyName: "Minituber", name: "Hermes" },
+  { varietyName: "Minituber", name: "Taurus" },
+  { varietyName: "Minituber", name: "Frysona" },
+  { varietyName: "Minituber", name: "FryOm" },
+  { varietyName: "Minituber", name: "Santana" },
+  { varietyName: "Minituber", name: "Innovator" },
+  { varietyName: "Minituber", name: "HYFM" },
+  { varietyName: "Minituber", name: "Jamania" },
+  { varietyName: "Minituber", name: "Uday" },
+  { varietyName: "Minituber", name: "Mohan" },
+  { varietyName: "Minituber", name: "Other (CPRI)" },
+  { varietyName: "Minituber", name: "Other" },
+];
+
 export const potatoVarietyList = [
   {
     name: "Table (टेबल/ટેબલ/ਟੇਬਲ)",

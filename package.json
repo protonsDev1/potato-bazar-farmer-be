@@ -12,6 +12,7 @@
     "import:locations": "ts-node src/scripts/importLocations.ts",
     "seed": "ts-node src/scripts/seed.ts",
     "backfill": "ts-node src/scripts/backFillExistingUsers.ts",
+    "update:potato-varieties": "ts-node src/scripts/updateExistingPotatoVarities.ts",
     "populate-cities": "ts-node src/scripts/seedCitiesData.ts",
     "db:migrate:create": "sequelize-cli migration:generate --name",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
