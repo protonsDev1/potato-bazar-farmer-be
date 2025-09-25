@@ -28,7 +28,7 @@ export enum USER_ROLES {
 }
 
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
-  declare id: string;
+  declare id: number;
   declare name: string;
   declare firstName: string | null;
   declare lastName: string | null;

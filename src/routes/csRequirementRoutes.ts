@@ -1,19 +1,38 @@
 import express from "express";
 import { createValidator } from "express-joi-validation";
 import { authMiddleware } from "../utils/userAuth";
-import { createRequirementWithInterests, getMyRequirements } from "../controller/csRequirementController";
-import { createColdStorageRequirementSchema } from "../validation/csRequirementValidation";
+import {
+  createRequirementWithInterests,
+  deleteRequirement,
+  getRequirementById,
+  getRequirements,
+  updateRequirement,
+} from "../controller/csRequirementController";
+import {
+  createColdStorageRequirementSchema,
+  updateColdStorageRequirementSchema,
+} from "../validation/csRequirementValidation";
 
 const router = express.Router();
 const validator = createValidator({});
 
-router.get("/my_requirements", authMiddleware, getMyRequirements);
+router.get("/", authMiddleware, getRequirements);
+
+router.get("/:id", authMiddleware, getRequirementById);
 
 router.post(
-  "/hire_cold_storage",
+  "/",
   authMiddleware,
   validator.body(createColdStorageRequirementSchema),
   createRequirementWithInterests
 );
 
+router.put(
+  "/:id",
+  authMiddleware,
+  validator.body(updateColdStorageRequirementSchema),
+  updateRequirement
+);
+
+router.delete("/:id", authMiddleware, deleteRequirement);
 export default router;
