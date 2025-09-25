@@ -664,7 +664,10 @@ export const updateRegistrationStatus = async (
   currentUser: User
 ) => {
   try {
-    if (currentUser.role === USER_ROLES.ADMIN) {
+    if (
+      currentUser.role === USER_ROLES.ADMIN ||
+      currentUser.role === USER_ROLES.SUPER_ADMIN
+    ) {
     } else if (currentUser.role === USER_ROLES.SUB_ADMIN_WEB) {
       const normalizedUserType = normalizeUserType(userType);
 

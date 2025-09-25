@@ -1,31 +1,45 @@
-import { literal, Op } from "sequelize";
-import ColdStorage from "../database/models/coldStorage";
+import { Op } from "sequelize";
+
 import ColdStorageRequirement from "../database/models/coldStorageRequirement";
 import sequelize from "../database/models/db";
-import InterestRequest from "../database/models/interestRequest";
-import { REGISTRATION_STATUS } from "../database/models/user";
-import StorageType from "../database/models/storageType";
 import { generateUniqueRequirementUid } from "../utils/generate";
+import User from "../database/models/user";
 
-export const getMyRequirementsService = async (userId, page, limit) => {
+export const getRequirementsService = async (
+  userId: number,
+  page: number,
+  limit: number,
+  listingType: "own" | "others" | "all" = "own",
+  filters: { commodityType?: string; verified?: string }
+) => {
   const offset = (page - 1) * limit;
 
+  const whereCondition: any = {};
+
+  if (listingType === "own") {
+    whereCondition.createdBy = userId;
+  } else if (listingType === "others") {
+    whereCondition.createdBy = { [Op.ne]: userId };
+    whereCondition.isActive = true;
+  }
+
+  if (filters.commodityType && filters.commodityType.toLowerCase() !== "all") {
+    whereCondition.commodityType = { [Op.iLike]: filters.commodityType };
+  }
+
+  if (filters.verified) {
+    whereCondition.verified = filters.verified === "true";
+  }
+
   const { rows, count } = await ColdStorageRequirement.findAndCountAll({
-    where: { createdBy: userId },
+    where: whereCondition,
     include: [
       {
-        model: InterestRequest,
-        as: "interestRequests",
-        include: [
-          {
-            model: ColdStorage,
-            as: "coldStorage",
-            attributes: ["id", "name", "state", "district", "totalCapacityMt"],
-          },
-        ],
+        model: User,
+        as: "creator",
+        attributes: ["id", "name", "role", "email", "mobile"],
       },
     ],
-    distinct: true,
     order: [["createdAt", "DESC"]],
     limit,
     offset,
@@ -49,73 +63,80 @@ export const createRequirementAndInterests = async (data) => {
       transaction: t,
     });
 
-    const whereCondition: any = { isDeleted: false };
-
-    if (requirement.verified && requirement.verified.toString() === "true") {
-      whereCondition.status = REGISTRATION_STATUS.APPROVED;
-    }
-
-    if (requirement.state) {
-      whereCondition.state = { [Op.iLike]: requirement.state };
-    }
-
-    if (requirement.district) {
-      whereCondition.district = { [Op.iLike]: requirement.district };
-    }
-
-    if (requirement.capacityMin && requirement.capacityMax) {
-      whereCondition.totalCapacityMt = {
-        [Op.between]: [
-          Number(requirement.capacityMin),
-          Number(requirement.capacityMax),
-        ],
-      };
-    } else if (requirement.capacityMin) {
-      whereCondition.totalCapacityMt = {
-        [Op.gte]: Number(requirement.capacityMin),
-      };
-    } else if (requirement.capacityMax) {
-      whereCondition.totalCapacityMt = {
-        [Op.lte]: Number(requirement.capacityMax),
-      };
-    }
-
-    const normalizedType = (requirement.storageType || "").toLowerCase();
-    if (requirement.storageType && normalizedType !== "all") {
-      whereCondition.id = {
-        [Op.in]: literal(`(
-          SELECT "coldStorageId"
-          FROM "storageTypes"
-           WHERE LOWER("storageType") = LOWER('${requirement.storageType}')
-        )`),
-      };
-    }
-
-    const matchingStorages = await ColdStorage.findAll({
-      where: whereCondition,
-      include: [
-        {
-          model: StorageType,
-          as: "storageTypes",
-          attributes: ["id", "storageType"],
-        },
-      ],
-      transaction: t,
-    });
-
-    const interestRequests = matchingStorages.map((storage) => ({
-      senderUserId: requirement.createdBy,
-      requirementId: requirement.id,
-      coldStorageId: storage.id,
-    }));
-
-    if (interestRequests.length > 0) {
-      await InterestRequest.bulkCreate(interestRequests, { transaction: t });
-    }
-
-    return {
-      requirement,
-      interestRequestsCount: interestRequests.length,
-    };
+    return requirement;
   });
+};
+
+export const getRequirementByIdService = async (id: number, userId: number) => {
+  return await ColdStorageRequirement.findOne({
+    where: { id },
+    include: [
+      {
+        model: User,
+        as: "creator",
+        attributes: ["id", "name", "role", "email", "mobile"],
+      },
+    ],
+  });
+};
+
+export const updateRequirementService = async (
+  id: number,
+  userId: number,
+  data: any
+) => {
+  const requirement = await ColdStorageRequirement.findByPk(id);
+
+  if (!requirement) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "Requirement not found",
+    };
+  }
+
+  if (requirement.createdBy !== userId) {
+    return {
+      success: false,
+      statusCode: 403,
+      message: "You are not allowed to update this requirement",
+    };
+  }
+
+  await requirement.update(data);
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Requirement updated successfully",
+    data: requirement,
+  };
+};
+
+export const deleteRequirementService = async (id: number, userId: number) => {
+  const requirement = await ColdStorageRequirement.findByPk(id);
+
+  if (!requirement) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "Requirement not found",
+    };
+  }
+
+  if (requirement.createdBy !== userId) {
+    return {
+      success: false,
+      statusCode: 403,
+      message: "You are not allowed to delete this requirement",
+    };
+  }
+
+  await requirement.destroy();
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Requirement deleted successfully",
+  };
 };
