@@ -729,7 +729,8 @@ export async function getColdStorage(
   filters,
   search,
   userId,
-  sortBy?: string
+  sortBy?: string,
+  listingType?: string
 ) {
   try {
     const offset = (page - 1) * limit;
@@ -752,6 +753,29 @@ export async function getColdStorage(
     //     [Op.ne]: userId,
     //   };
     // }
+
+    // Self listing
+    if (listingType === "self") {
+      whereCondition.userId = userId;
+    }
+
+    // Other user's available cold storages
+    if (listingType === "others") {
+      whereCondition.userId = { [Op.ne]: userId };
+      whereCondition.isAvailable = true;
+    }
+
+    // Mobile admin listing
+    const userInclude: any = {
+      model: User,
+      as: "user",
+      attributes: ["id", "name", "hasStartedUsingMobile"],
+    };
+
+    if (listingType === "mobileAdmin") {
+      userInclude.where = { hasStartedUsingMobile: true };
+      userInclude.required = true; // ensures inner join
+    }
 
     if (status) {
       whereCondition.status = status;
@@ -882,6 +906,7 @@ export async function getColdStorage(
         "updatedAt",
         "onBoardedBy",
         "status",
+        "isAvailable",
       ],
       where: whereCondition,
       include: [
@@ -894,6 +919,7 @@ export async function getColdStorage(
             : undefined,
           required: Object.keys(onBoardedByUserWhere).length > 0,
         },
+        userInclude,
         {
           model: StorageType,
           as: "storageTypes",
@@ -933,6 +959,7 @@ export async function getColdStorage(
       storageTypes: item.storageTypes,
       onBoardedBy: item.onBoardedBy,
       status: item.status,
+      isAvailable: item.isAvailable,
       isLiked: likedIds.has(item.id),
     }));
 
