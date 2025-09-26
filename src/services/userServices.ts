@@ -342,16 +342,37 @@ export const getRegistrationTypes = async (mobile) => {
     };
   }
 
-  const [isFarmer, isColdStorage, isTrader] = await Promise.all([
-    Farmer.findOne({ where: { userId: user.id } }),
-    ColdStorage.findOne({ where: { userId: user.id } }),
-    Trader.findOne({ where: { userId: user.id } }),
-  ]);
+  const [isFarmer, isColdStorage, isTrader, coldStorageList] =
+    await Promise.all([
+      Farmer.findOne({ where: { userId: user.id } }),
+      ColdStorage.findOne({ where: { userId: user.id } }),
+      Trader.findOne({ where: { userId: user.id } }),
+      ColdStorage.findAll({
+        where: { userId: user.id },
+        attributes: [
+          "id",
+          "name",
+          "firstName",
+          "lastName",
+          "ownerName",
+          "mobileNumber",
+          "state",
+          "district",
+          "totalCapacityMt",
+          "createdAt",
+          "updatedAt",
+          "onBoardedBy",
+          "status",
+          "isAvailable",
+        ],
+      }),
+    ]);
 
   return {
     isFarmerOnboarded: !!isFarmer,
     isColdStorageOnboarded: !!isColdStorage,
     isTraderOnboarded: !!isTrader,
+    coldStorageList: coldStorageList
   };
 };
 
@@ -661,7 +682,7 @@ const normalizeUserType = (userType: string): string | null => {
 export const updateRegistrationStatus = async (
   status: string,
   userType: string,
-  userId: number,
+  entityId: number,
   currentUser: User
 ) => {
   try {
@@ -744,7 +765,7 @@ export const updateRegistrationStatus = async (
         };
     }
 
-    const user = await Model.findByPk(userId);
+    const user = await Model.findByPk(entityId);
     if (!user) {
       return {
         success: false,
@@ -754,7 +775,7 @@ export const updateRegistrationStatus = async (
     }
 
     const agentOnboardedUser = await AgentOnboardedUser.findOne({
-      where: { userId: user.userId, userType },
+      where: { entityId, userType },
     });
 
     const onboardedByRole = await getUserRole(user.onBoardedBy);

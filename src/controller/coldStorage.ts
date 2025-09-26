@@ -375,7 +375,7 @@ export const verifyUpdateCS = async (req, res) => {
     const updates = [
       ColdStorage.update(
         { mobileNumber: newMobileNumber },
-        { where: { id: coldStorageId } }
+        { where: { id: coldStorage.userId } }
       ),
       updateUserInDB(coldStorage.userId, { mobile: newMobileNumber }),
       Farmer.update(

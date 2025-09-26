@@ -1,5 +1,6 @@
 import { Op } from "sequelize";
 import User from "../database/models/user";
+import ColdStorage from "../database/models/coldStorage";
 
 export const duplicationCheckMiddleware =
   (model, type: "create" | "update", idField?: string) =>
@@ -38,48 +39,51 @@ export const duplicationCheckMiddleware =
 
         // 3. check for duplicate entry in tables for same userId.
 
-        const existingData = await model.count({
-          where: { userId },
-        });
-
-        if (existingData) {
-          return res.status(400).json({
-            message: `${model.name} already registered for this user.`,
-          });
-        }
-
-        // 4.  optional check for duplicate mobile number entry among different users.
-
-        if (mobileNumber || optionalNumber) {
-          const isDuplicateMobile = await model.count({
-            where: {
-              [Op.or]: [
-                mobileNumber ? { mobileNumber } : {},
-                optionalNumber ? { optionalNumber } : {},
-              ],
-            },
+        if (model !== ColdStorage) {
+          const existingData = await model.count({
+            where: { userId },
           });
 
-          if (isDuplicateMobile) {
+          if (existingData) {
             return res.status(400).json({
-              message: "Mobile Number is already in use for other user.",
+              message: `${model.name} already registered for this user.`,
             });
           }
+
+          // 4.  optional check for duplicate mobile number entry among different users.
+
+          if (mobileNumber || optionalNumber) {
+            const isDuplicateMobile = await model.count({
+              where: {
+                [Op.or]: [
+                  mobileNumber ? { mobileNumber } : {},
+                  optionalNumber ? { optionalNumber } : {},
+                ],
+              },
+            });
+
+            if (isDuplicateMobile) {
+              return res.status(400).json({
+                message: "Mobile Number is already in use for other user.",
+              });
+            }
+          }
         }
+
         // 5. check for duplicate gst certificate number.
 
-        if (gstOrCertificateNumber) {
-          const isDuplicateGstCertificate = await model.count({
-            where: { gstOrCertificateNumber },
-          });
+        // if (gstOrCertificateNumber) {
+        //   const isDuplicateGstCertificate = await model.count({
+        //     where: { gstOrCertificateNumber },
+        //   });
 
-          if (isDuplicateGstCertificate) {
-            return res.status(400).json({
-              message:
-                "Gst Certificate Number is already in use for other user.",
-            });
-          }
-        }
+        //   if (isDuplicateGstCertificate) {
+        //     return res.status(400).json({
+        //       message:
+        //         "Gst Certificate Number is already in use for other user.",
+        //     });
+        //   }
+        // }
 
         // 6. check for unique email.
 
@@ -116,36 +120,6 @@ export const duplicationCheckMiddleware =
           return res
             .status(400)
             .json({ message: `${model.name} do not exist for given id.` });
-
-        if (mobileNumber) {
-          const isDuplicateMobileNumber = await model.findOne({
-            where: { mobileNumber },
-          });
-
-          if (
-            isDuplicateMobileNumber &&
-            isDuplicateMobileNumber.id != entityId
-          ) {
-            return res.status(400).json({
-              message: "Mobile Number is already in use for another user.",
-            });
-          }
-        }
-
-        if (optionalNumber) {
-          const isDuplicateMobileNumber = await model.findOne({
-            where: { optionalNumber },
-          });
-
-          if (
-            isDuplicateMobileNumber &&
-            isDuplicateMobileNumber.id != entityId
-          ) {
-            return res.status(400).json({
-              message: "Mobile Number is already in use for another user.",
-            });
-          }
-        }
 
         if (gstOrCertificateNumber) {
           const isDuplicateGstCertificate = await model.findOne({
