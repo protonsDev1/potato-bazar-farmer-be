@@ -13,11 +13,12 @@ import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboarded
 import KycDocument from "../database/models/kycDocuments";
 import { hasValue } from "../utils/parseQuery";
 import SubAdminWebPermission from "../database/models/subAdminWebPermission";
-import { WEB_ACTIONS } from "../utils/constants/permissions";
+import { PERMISSIONS, WEB_ACTIONS } from "../utils/constants/permissions";
 import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
 import MandiAgent from "../database/models/mandiAgent";
 import SellRequest from "../database/models/sellRequest";
 import UserSupport from "../database/models/userSupport";
+import SubAdminPermission from "../database/models/subAdminPermission";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -666,7 +667,8 @@ export const updateRegistrationStatus = async (
   try {
     if (
       currentUser.role === USER_ROLES.ADMIN ||
-      currentUser.role === USER_ROLES.SUPER_ADMIN
+      (currentUser.role === USER_ROLES.SUPER_ADMIN &&
+        userType === USER_TYPE.COLD_STORAGE)
     ) {
     } else if (currentUser.role === USER_ROLES.SUB_ADMIN_WEB) {
       const normalizedUserType = normalizeUserType(userType);
@@ -684,6 +686,21 @@ export const updateRegistrationStatus = async (
           success: false,
           statusCode: 403,
           error: `Access denied: Missing approve/reject permission for ${normalizedUserType}`,
+        };
+      }
+    } else if (
+      currentUser.role === USER_ROLES.SUB_ADMIN &&
+      userType === USER_TYPE.COLD_STORAGE
+    ) {
+      const hasPermission = await SubAdminPermission.findOne({
+        where: { userId: currentUser.id, permission: PERMISSIONS.COLD_STORAGE },
+      });
+
+      if (!hasPermission) {
+        return {
+          success: false,
+          statusCode: 403,
+          error: `Access denied: Missing '${PERMISSIONS.COLD_STORAGE}' permission.`,
         };
       }
     } else {

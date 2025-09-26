@@ -11,6 +11,7 @@ import {
   addColdStoragesToWorksheet,
   getAllColdStorages,
   likeOrDislikeService,
+  canUpdateColdStorage,
 } from "../services/coldStorageService";
 import {
   checkExistingUser,
@@ -404,7 +405,6 @@ export const verifyUpdateCS = async (req, res) => {
 export const updateColdStorageAvailability = async (req, res) => {
   try {
     const { coldStorageId } = req.params;
-    const { id } = req.user;
     const { isAvailable } = req.body;
 
     const coldStorage = await ColdStorage.findByPk(coldStorageId);
@@ -413,9 +413,12 @@ export const updateColdStorageAvailability = async (req, res) => {
       return res.status(404).json({ message: "Cold storage not found" });
     }
 
-    if (coldStorage.userId !== id) {
+    const hasAccess = await canUpdateColdStorage(req.user, coldStorage);
+
+    if (!hasAccess) {
       return res.status(403).json({
-        message: "Only the owner of the cold storage can update availability.",
+        message:
+          "Only the owner, a super admin, or an authorized sub admin can update availability.",
       });
     }
 
