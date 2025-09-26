@@ -6,23 +6,23 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
-import ColdStorage from "./coldStorage";
+import ColdStorageRequirement from "./coldStorageRequirement";
 
-class LikeColdStorage extends Model<
-  InferAttributes<LikeColdStorage>,
-  InferCreationAttributes<LikeColdStorage>
+class LikeCSRequirement extends Model<
+  InferAttributes<LikeCSRequirement>,
+  InferCreationAttributes<LikeCSRequirement>
 > {
   declare id: CreationOptional<number>;
-  declare coldStorageId: number;
+  declare requirementId: number;
   declare userId: number;
 }
 
-LikeColdStorage.init(
+LikeCSRequirement.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-    coldStorageId: {
+    requirementId: {
       type: DataTypes.INTEGER,
-      references: { model: "coldStorages", key: "id" },
+      references: { model: "coldStorageRequirements", key: "id" },
       onDelete: "CASCADE",
       allowNull: false,
     },
@@ -35,27 +35,26 @@ LikeColdStorage.init(
   },
   {
     sequelize,
-    modelName: "LikeColdStorage",
-    tableName: "likeColdStorages",
+    modelName: "LikeCSRequirement",
+    tableName: "likeCSRequirements",
     timestamps: true,
     indexes: [
       {
         unique: true,
-        fields: ["userId", "coldStorageId"],
+        fields: ["userId", "requirementId"],
       },
     ],
   }
 );
 
-ColdStorage.hasMany(LikeColdStorage, {
-  foreignKey: "coldStorageId",
+ColdStorageRequirement.hasMany(LikeCSRequirement, {
+  foreignKey: "requirementId",
   as: "likes",
 });
 
-LikeColdStorage.belongsTo(ColdStorage, {
-  foreignKey: "coldStorageId",
-  as: "coldStorage",
+LikeCSRequirement.belongsTo(ColdStorageRequirement, {
+  foreignKey: "requirementId",
+  as: "coldStorageRequirement",
 });
 
-export default LikeColdStorage;
-
+export default LikeCSRequirement;

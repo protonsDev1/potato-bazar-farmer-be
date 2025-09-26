@@ -31,6 +31,7 @@ import MonitoringLogger from "../database/models/monitoringLogger";
 import DryingMethod from "../database/models/dryingMethod";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { PERMISSIONS } from "../utils/constants/permissions";
+import ColdStorageView from "../database/models/coldStorageView";
 
 export async function onboardColdStorage(payload: any) {
   try {
@@ -571,7 +572,9 @@ export const updateColdStorageService = async (coldStorageId, payload) => {
 
 export const retrieveColdStorageProfile = async (
   coldStorageId,
-  isWithin24Hours
+  isWithin24Hours,
+  userId,
+  role
 ) => {
   try {
     const coldStoragePersonalInfo = await ColdStorage.findOne({
@@ -590,110 +593,135 @@ export const retrieveColdStorageProfile = async (
       ],
     });
 
-    const chamberCapacity = await ChamberCapacity.findAll({
-      attributes: ["capacityMt", "noOfFloors", "capacityInBags", "description"],
-      where: { coldStorageId },
-    });
+    const [
+      chamberCapacity,
+      elevatorAndStuffing,
+      operationalChallenge,
+      shed,
+      storageType,
+      usageType,
+      dryingFacilityDetail,
+      dryingMethods,
+      featureOfStorage,
+      monitoringFacilities,
+      otherFacilities,
+      potatoDisposalSystems,
+      powerFacilities,
+      constructionTypes,
+      coldStorageTypes,
+      roofTypes,
+      storageBookingSystems,
+      seasonWiseBookingSystems,
+      slabWiseDiscount,
+      realTimeAlertSystem,
+      monitoringLogger,
+    ] = await Promise.all([
+      ChamberCapacity.findAll({
+        attributes: [
+          "capacityMt",
+          "noOfFloors",
+          "capacityInBags",
+          "description",
+        ],
+        where: { coldStorageId },
+      }),
+      ElevatorAndStuffing.findAll({
+        attributes: ["name"],
+        where: { coldStorageId },
+      }),
+      OperationalChallenge.findAll({
+        attributes: ["challenge"],
+        where: { coldStorageId },
+      }),
+      Shed.findAll({
+        attributes: ["sizeSqMtr", "shedType"],
+        where: { coldStorageId },
+      }),
+      StorageType.findAll({
+        attributes: ["storageType"],
+        where: { coldStorageId },
+      }),
+      UsageType.findAll({
+        attributes: ["type", "capacity"],
+        where: { coldStorageId },
+      }),
+      DryingFacilityDetail.findAll({
+        attributes: ["facility"],
+        where: { coldStorageId },
+      }),
+      DryingMethod.findAll({
+        attributes: ["method"],
+        where: { coldStorageId },
+      }),
+      FeatureOfStorage.findAll({
+        attributes: ["feature"],
+        where: { coldStorageId },
+      }),
+      MonitoringFacility.findAll({
+        attributes: ["facility"],
+        where: { coldStorageId },
+      }),
+      OtherFacility.findAll({
+        attributes: ["facility"],
+        where: { coldStorageId },
+      }),
+      PotatoDisposalSystem.findAll({
+        attributes: ["disposalSystem"],
+        where: { coldStorageId },
+      }),
+      PowerFacility.findAll({
+        attributes: ["facility", "capacityInKw", "backupInHrs", "make"],
+        where: { coldStorageId },
+      }),
+      ConstructionType.findAll({
+        attributes: ["constructionType"],
+        where: { coldStorageId },
+      }),
+      ColdStorageType.findAll({
+        attributes: ["coldStorageType"],
+        where: { coldStorageId },
+      }),
+      RoofType.findAll({ attributes: ["roofType"], where: { coldStorageId } }),
+      StorageBookingSystem.findAll({
+        attributes: ["bookingSystem"],
+        where: { coldStorageId },
+      }),
+      SeasonWiseBookingSystem.findAll({
+        attributes: ["season", "quantityInKg"],
+        where: { coldStorageId },
+      }),
+      SlabWiseDiscount.findAll({
+        attributes: ["quantityInMt", "discount"],
+        where: { coldStorageId },
+      }),
+      RealTimeAlertSystem.findAll({
+        attributes: ["type"],
+        where: { coldStorageId },
+      }),
+      MonitoringLogger.findAll({
+        attributes: ["type"],
+        where: { coldStorageId },
+      }),
+    ]);
 
-    const elevatorAndStuffing = await ElevatorAndStuffing.findAll({
-      attributes: ["name"],
-      where: { coldStorageId },
-    });
+    if (role === USER_ROLES.USER) {
+      await ColdStorageView.findOrCreate({
+        where: { userId, coldStorageId },
+        defaults: { userId, coldStorageId },
+      });
+    }
 
-    const operationalChallenge = await OperationalChallenge.findAll({
-      attributes: ["challenge"],
-      where: { coldStorageId },
-    });
-
-    const shed = await Shed.findAll({
-      attributes: ["sizeSqMtr", "shedType"],
-      where: { coldStorageId },
-    });
-
-    const storageType = await StorageType.findAll({
-      attributes: ["storageType"],
-      where: { coldStorageId },
-    });
-
-    const usageType = await UsageType.findAll({
-      attributes: ["type", "capacity"],
-      where: { coldStorageId },
-    });
-
-    const dryingFacilityDetail = await DryingFacilityDetail.findAll({
-      attributes: ["facility"],
-      where: { coldStorageId },
-    });
-
-    const dryingMethods = await DryingMethod.findAll({
-      attributes: ["method"],
-      where: { coldStorageId },
-    });
-
-    const featureOfStorage = await FeatureOfStorage.findAll({
-      attributes: ["feature"],
-      where: { coldStorageId },
-    });
-
-    const monitoringFacilities = await MonitoringFacility.findAll({
-      attributes: ["facility"],
-      where: { coldStorageId },
-    });
-
-    const otherFacilities = await OtherFacility.findAll({
-      attributes: ["facility"],
-      where: { coldStorageId },
-    });
-
-    const potatoDisposalSystems = await PotatoDisposalSystem.findAll({
-      attributes: ["disposalSystem"],
-      where: { coldStorageId },
-    });
-
-    const powerFacilities = await PowerFacility.findAll({
-      attributes: ["facility", "capacityInKw", "backupInHrs", "make"],
-      where: { coldStorageId },
-    });
-
-    const constructionTypes = await ConstructionType.findAll({
-      attributes: ["constructionType"],
-      where: { coldStorageId },
-    });
-
-    const coldStorageTypes = await ColdStorageType.findAll({
-      attributes: ["coldStorageType"],
-      where: { coldStorageId },
-    });
-
-    const roofTypes = await RoofType.findAll({
-      attributes: ["roofType"],
-      where: { coldStorageId },
-    });
-
-    const storageBookingSystems = await StorageBookingSystem.findAll({
-      attributes: ["bookingSystem"],
-      where: { coldStorageId },
-    });
-
-    const seasonWiseBookingSystems = await SeasonWiseBookingSystem.findAll({
-      attributes: ["season", "quantityInKg"],
-      where: { coldStorageId },
-    });
-
-    const slabWiseDiscount = await SlabWiseDiscount.findAll({
-      attributes: ["quantityInMt", "discount"],
-      where: { coldStorageId },
-    });
-
-    const realTimeAlertSystem = await RealTimeAlertSystem.findAll({
-      attributes: ["type"],
-      where: { coldStorageId },
-    });
-
-    const monitoringLogger = await MonitoringLogger.findAll({
-      attributes: ["type"],
-      where: { coldStorageId },
-    });
+    const [viewCount, likeCount, likedRecord] = await Promise.all([
+      ColdStorageView.count({
+        where: { coldStorageId },
+      }),
+      LikeColdStorage.count({
+        where: { coldStorageId },
+      }),
+      LikeColdStorage.findOne({
+        where: { coldStorageId, userId },
+      }),
+    ]);
 
     return {
       coldStoragePersonalInfo,
@@ -719,6 +747,9 @@ export const retrieveColdStorageProfile = async (
       realTimeAlertSystem,
       monitoringLogger,
       canAgentEdit: isWithin24Hours,
+      isLiked: !!likedRecord,
+      likeCount,
+      viewCount,
     };
   } catch (err) {
     console.error("Error in retrieving cold storage profile", err);
@@ -937,36 +968,42 @@ export async function getColdStorage(
       order,
     });
 
-    const likedColdStorageRecords = await LikeColdStorage.findAll({
-      where: {
-        userId,
-        coldStorageId: { [Op.in]: rows.map((item) => item.id) },
-      },
-      attributes: ["coldStorageId"],
-    });
+    const data = await Promise.all(
+      rows.map(async (item) => {
+        const [viewCount, likeCount, likedRecord] = await Promise.all([
+          ColdStorageView.count({
+            where: { coldStorageId: item.id },
+          }),
+          LikeColdStorage.count({
+            where: { coldStorageId: item.id },
+          }),
+          LikeColdStorage.findOne({
+            where: { coldStorageId: item.id, userId },
+          }),
+        ]);
 
-    const likedIds = new Set(
-      likedColdStorageRecords.map((r) => r.coldStorageId)
+        return {
+          id: item.id,
+          coldStorageName: item.name,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          ownerName: item.ownerName,
+          mobileNumber: item.mobileNumber,
+          state: item.state,
+          district: item.district,
+          totalCapacityMt: item.totalCapacityMt,
+          registrationDate: formatDate(item.createdAt),
+          onBoardedByUser: item.onBoardedByUser,
+          storageTypes: item.storageTypes,
+          onBoardedBy: item.onBoardedBy,
+          status: item.status,
+          isAvailable: item.isAvailable,
+          isLiked: !!likedRecord,
+          likeCount,
+          viewCount,
+        };
+      })
     );
-
-    const data = rows.map((item) => ({
-      id: item.id,
-      coldStorageName: item.name,
-      firstName: item.firstName,
-      lastName: item.lastName,
-      ownerName: item.ownerName,
-      mobileNumber: item.mobileNumber,
-      state: item.state,
-      district: item.district,
-      totalCapacityMt: item.totalCapacityMt,
-      registrationDate: formatDate(item.createdAt),
-      onBoardedByUser: item.onBoardedByUser,
-      storageTypes: item.storageTypes,
-      onBoardedBy: item.onBoardedBy,
-      status: item.status,
-      isAvailable: item.isAvailable,
-      isLiked: likedIds.has(item.id),
-    }));
 
     return {
       data,

@@ -113,7 +113,7 @@ export const getColdStorageProfile = async (req, res) => {
   try {
     const coldStorageId = req.params.id;
 
-    const { role } = req.user;
+    const { id: userId, role } = req.user;
 
     const coldStorage = await ColdStorage.findOne({
       where: { id: coldStorageId },
@@ -129,7 +129,9 @@ export const getColdStorageProfile = async (req, res) => {
 
     const profileDetails = await retrieveColdStorageProfile(
       coldStorageId,
-      isWithin24Hours
+      isWithin24Hours,
+      userId,
+      role
     );
 
     return res.status(200).json({ message: profileDetails });
@@ -286,12 +288,7 @@ export const exportColdStorages = async (req, res) => {
 export const likeOrDislikeColdStorage = async (req, res) => {
   try {
     const { id } = req.user;
-    const { coldStorageId } = req.body;
-
-    if (!coldStorageId)
-      return res
-        .status(400)
-        .json({ message: "cold storage id is a required field!" });
+    const { coldStorageId } = req.params;
 
     const response = await likeOrDislikeService(id, coldStorageId);
 
