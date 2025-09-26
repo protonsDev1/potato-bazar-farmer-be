@@ -80,7 +80,7 @@ router.post(
   adminMiddleware,
   exportColdStorages
 );
-router.post("/like", authMiddleware, likeOrDislikeColdStorage);
+router.post("/:coldStorageId/like", authMiddleware, likeOrDislikeColdStorage);
 router.post(
   "/:coldStorageId/request-mobile-update",
   checkWebPermissionMiddleware(
