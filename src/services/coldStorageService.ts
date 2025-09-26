@@ -29,6 +29,8 @@ import { getRegistrationTypes, getUserRole } from "./userServices";
 import RealTimeAlertSystem from "../database/models/realTimeAlertSystem";
 import MonitoringLogger from "../database/models/monitoringLogger";
 import DryingMethod from "../database/models/dryingMethod";
+import SubAdminPermission from "../database/models/subAdminPermission";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 export async function onboardColdStorage(payload: any) {
   try {
@@ -1394,4 +1396,22 @@ export const likeOrDislikeService = async (userId, coldStorageId) => {
     await LikeColdStorage.create({ userId, coldStorageId });
     return { success: true, data: "Cold Storage liked successfully!" };
   }
+};
+
+export const canUpdateColdStorage = async (user, coldStorage: ColdStorage) => {
+  // Owner
+  if (coldStorage.userId === user.id) return true;
+
+  // Super Admin
+  if (user.role === USER_ROLES.SUPER_ADMIN) return true;
+
+  // Sub Admin with permission
+  if (user.role === USER_ROLES.SUB_ADMIN) {
+    const exists = await SubAdminPermission.findOne({
+      where: { userId: user.id, permission: PERMISSIONS.COLD_STORAGE },
+    });
+    return !!exists;
+  }
+
+  return false;
 };
