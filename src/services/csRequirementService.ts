@@ -4,6 +4,8 @@ import ColdStorageRequirement from "../database/models/coldStorageRequirement";
 import sequelize from "../database/models/db";
 import { generateUniqueRequirementUid } from "../utils/generate";
 import User from "../database/models/user";
+import LikeCSRequirement from "../database/models/likeCSRequirement";
+import CSRequirementView from "../database/models/csRequirementView";
 
 export const getRequirementsService = async (
   userId: number,
@@ -45,12 +47,35 @@ export const getRequirementsService = async (
     offset,
   });
 
+  const requirementsWithCounts = await Promise.all(
+    rows.map(async (req) => {
+      const [viewCount, likeCount, likedRecord] = await Promise.all([
+        CSRequirementView.count({
+          where: { requirementId: req.id },
+        }),
+        LikeCSRequirement.count({
+          where: { requirementId: req.id },
+        }),
+        LikeCSRequirement.findOne({
+          where: { requirementId: req.id, userId },
+        }),
+      ]);
+
+      return {
+        ...req.toJSON(),
+        isLiked: !!likedRecord,
+        likeCount,
+        viewCount,
+      };
+    })
+  );
+
   return {
     total: count,
     page,
     perPage: limit,
     totalPages: Math.ceil(count / limit),
-    requirements: rows,
+    requirements: requirementsWithCounts,
   };
 };
 
@@ -68,7 +93,7 @@ export const createRequirementAndInterests = async (data) => {
 };
 
 export const getRequirementByIdService = async (id: number, userId: number) => {
-  return await ColdStorageRequirement.findOne({
+  const requirement = await ColdStorageRequirement.findOne({
     where: { id },
     include: [
       {
@@ -78,6 +103,36 @@ export const getRequirementByIdService = async (id: number, userId: number) => {
       },
     ],
   });
+
+  if (!requirement) {
+    return null;
+  }
+
+  await CSRequirementView.findOrCreate({
+    where: { userId, requirementId: id },
+    defaults: { userId, requirementId: id },
+  });
+
+  const jsonReq = requirement.toJSON();
+
+  const [viewCount, likeCount, likedRecord] = await Promise.all([
+    CSRequirementView.count({
+      where: { requirementId: id },
+    }),
+    LikeCSRequirement.count({
+      where: { requirementId: id },
+    }),
+    LikeCSRequirement.findOne({
+      where: { requirementId: id, userId },
+    }),
+  ]);
+
+  return {
+    ...jsonReq,
+    isLiked: !!likedRecord,
+    viewCount,
+    likeCount,
+  };
 };
 
 export const updateRequirementService = async (
@@ -139,4 +194,39 @@ export const deleteRequirementService = async (id: number, userId: number) => {
     statusCode: 200,
     message: "Requirement deleted successfully",
   };
+};
+
+export const likeOrDislikeRequirementService = async (
+  userId,
+  requirementId
+) => {
+  const isValidColdStorageRequirement = await ColdStorageRequirement.findByPk(
+    requirementId
+  );
+
+  if (!isValidColdStorageRequirement)
+    return {
+      success: false,
+      error: "Cold Storage Requirement not found!",
+    };
+
+  const isExistingColdStorageRequirementLiked = await LikeCSRequirement.findOne(
+    {
+      where: { userId, requirementId },
+    }
+  );
+
+  if (isExistingColdStorageRequirementLiked) {
+    await LikeCSRequirement.destroy({ where: { userId, requirementId } });
+    return {
+      success: true,
+      data: "Cold Storage Requirement disliked successfully!",
+    };
+  } else {
+    await LikeCSRequirement.create({ userId, requirementId });
+    return {
+      success: true,
+      data: "Cold Storage Requirement liked successfully!",
+    };
+  }
 };

@@ -8,6 +8,7 @@ import {
 import sequelize from "./db";
 import User from "./user";
 import InterestRequest from "./interestRequest";
+import LikeCSRequirement from "./likeCSRequirement";
 
 class ColdStorageRequirement extends Model<
   InferAttributes<ColdStorageRequirement>,
@@ -29,6 +30,7 @@ class ColdStorageRequirement extends Model<
   declare specialcoldStorageRequirements: string | null;
   declare isActive: boolean;
   declare createdBy: number;
+  declare likes?: LikeCSRequirement[];
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }

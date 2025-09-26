@@ -8,16 +8,16 @@ import {
 import sequelize from "./db";
 import ColdStorage from "./coldStorage";
 
-class LikeColdStorage extends Model<
-  InferAttributes<LikeColdStorage>,
-  InferCreationAttributes<LikeColdStorage>
+class ColdStorageView extends Model<
+  InferAttributes<ColdStorageView>,
+  InferCreationAttributes<ColdStorageView>
 > {
   declare id: CreationOptional<number>;
   declare coldStorageId: number;
   declare userId: number;
 }
 
-LikeColdStorage.init(
+ColdStorageView.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     coldStorageId: {
@@ -35,8 +35,8 @@ LikeColdStorage.init(
   },
   {
     sequelize,
-    modelName: "LikeColdStorage",
-    tableName: "likeColdStorages",
+    modelName: "ColdStorageView",
+    tableName: "coldStorageViews",
     timestamps: true,
     indexes: [
       {
@@ -47,15 +47,14 @@ LikeColdStorage.init(
   }
 );
 
-ColdStorage.hasMany(LikeColdStorage, {
+ColdStorage.hasMany(ColdStorageView, {
   foreignKey: "coldStorageId",
-  as: "likes",
+  as: "views",
 });
 
-LikeColdStorage.belongsTo(ColdStorage, {
+ColdStorageView.belongsTo(ColdStorage, {
   foreignKey: "coldStorageId",
   as: "coldStorage",
 });
 
-export default LikeColdStorage;
-
+export default ColdStorageView;
