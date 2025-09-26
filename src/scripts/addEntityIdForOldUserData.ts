@@ -19,17 +19,17 @@ const addEntityIdForOldUser = async () => {
           const farmerData = await Farmer.findOne({
             where: { userId: d.userId },
           });
-          id = farmerData.id;
+          id = farmerData?.id;
         } else if (d.userType === USER_TYPE.COLD_STORAGE) {
           const coldstorageData = await ColdStorage.findOne({
             where: { userId: d.userId },
           });
-          id = coldstorageData.id;
+          id = coldstorageData?.id;
         } else {
           const traderData = await Trader.findOne({
             where: { userId: d.userId },
           });
-          id = traderData.id;
+          id = traderData?.id;
         }
 
         return {
