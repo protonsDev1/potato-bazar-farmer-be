@@ -17,7 +17,8 @@
     "db:migrate:create": "sequelize-cli migration:generate --name",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "subadmin:update": "ts-node src/scripts/updateSubAdminAction.ts",
-    "hard-delete:user": "ts-node src/scripts/deleteSoftDeletedUsers.ts"
+    "hard-delete:user": "ts-node src/scripts/deleteSoftDeletedUsers.ts",
+    "add-entityId:agent": "ts-node src/scripts/addEntityIdForOldUserData.ts"
   },
   "author": "",
   "license": "ISC",

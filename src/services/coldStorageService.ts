@@ -417,6 +417,7 @@ export async function onboardColdStorage(payload: any) {
             district: payload.district,
             state: payload.state,
             statusOfRegistration: REGISTRATION_STATUS.PENDING,
+            entityId: coldStorage.id,
           },
           { transaction: t }
         );
@@ -761,19 +762,21 @@ export async function getColdStorage(
       whereCondition.userId = userId;
     }
 
-    // Other user's available cold storages
-    if (listingType === "others") {
-      whereCondition.userId = { [Op.ne]: userId };
-      whereCondition.isAvailable = true;
-    }
-
-    // Mobile admin listing
     const userInclude: any = {
       model: User,
       as: "user",
       attributes: ["id", "name", "hasStartedUsingMobile"],
     };
 
+    // Other user's available cold storages
+    if (listingType === "others") {
+      whereCondition.userId = { [Op.ne]: userId };
+      whereCondition.isAvailable = true;
+      userInclude.where = { hasStartedUsingMobile: true };
+      userInclude.required = true;
+    }
+
+    // Mobile admin listing
     if (listingType === "mobileAdmin") {
       userInclude.where = { hasStartedUsingMobile: true };
       userInclude.required = true; // ensures inner join
