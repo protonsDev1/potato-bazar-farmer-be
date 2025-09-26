@@ -168,6 +168,7 @@ export async function onboardTrader(payload) {
             district: payload.district,
             state: payload.state,
             statusOfRegistration: REGISTRATION_STATUS.PENDING,
+            entityId: trader.id,
           },
           { transaction: t }
         );

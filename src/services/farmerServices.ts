@@ -297,6 +297,7 @@ export async function onboardFarmer(payload: Payload) {
             district: payload.district,
             state: payload.state,
             statusOfRegistration: REGISTRATION_STATUS.PENDING,
+            entityId: farmer.id,
           },
           { transaction: t }
         );

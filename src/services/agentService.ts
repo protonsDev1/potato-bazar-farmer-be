@@ -16,9 +16,7 @@ import HelpAndSupport, {
   StatusEnum,
 } from "../database/models/helpAndSupport";
 import sequelize from "../database/models/db";
-import AgentOnboardedUser, {
-  USER_TYPE,
-} from "../database/models/agentOnboardedUsers";
+import AgentOnboardedUser from "../database/models/agentOnboardedUsers";
 import AgentMonthlyTarget from "../database/models/agentMonthlyTarget";
 
 export const retrieveAllUsers = async (
@@ -65,20 +63,8 @@ export const retrieveAllUsers = async (
 
     const enrichedResults = await Promise.all(
       onboarded.map(async (entry) => {
-        let profile = null;
-
-        if (entry.userType === USER_TYPE.FARMER) {
-          profile = await Farmer.findOne({ where: { userId: entry.userId } });
-        } else if (entry.userType === USER_TYPE.COLD_STORAGE) {
-          profile = await ColdStorage.findOne({
-            where: { userId: entry.userId },
-          });
-        } else if (entry.userType === USER_TYPE.TRADER) {
-          profile = await Trader.findOne({ where: { userId: entry.userId } });
-        }
-
         return {
-          id: profile.id,
+          id: entry.entityId,
           name: entry.userName,
           village: entry.village,
           district: entry.district,
@@ -131,20 +117,8 @@ export const retrieveRecentRegistered = async (
 
     const enrichedResults = await Promise.all(
       rows.map(async (entry) => {
-        let profile = null;
-
-        if (entry.userType === USER_TYPE.FARMER) {
-          profile = await Farmer.findOne({ where: { userId: entry.userId } });
-        } else if (entry.userType === USER_TYPE.COLD_STORAGE) {
-          profile = await ColdStorage.findOne({
-            where: { userId: entry.userId },
-          });
-        } else if (entry.userType === USER_TYPE.TRADER) {
-          profile = await Trader.findOne({ where: { userId: entry.userId } });
-        }
-
         return {
-          id: profile.id,
+          id: entry.entityId,
           name: entry.userName,
           village: entry.village,
           district: entry.district,
@@ -316,7 +290,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
           onBoardedBy: agentId,
           createdAt: {
             [Op.between]: [startOfWeek, endOfWeek],
-          }
+          },
         },
       }),
       ColdStorage.count({
@@ -324,7 +298,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
           onBoardedBy: agentId,
           createdAt: {
             [Op.between]: [startOfWeek, endOfWeek],
-          }
+          },
         },
       }),
       Trader.count({
@@ -332,7 +306,7 @@ export const retrieveAgentDashboardStats = async (agentId) => {
           onBoardedBy: agentId,
           createdAt: {
             [Op.between]: [startOfWeek, endOfWeek],
-          }
+          },
         },
       }),
     ]);
