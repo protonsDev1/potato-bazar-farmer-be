@@ -4,12 +4,19 @@ import {
   deleteRequirementService,
   getRequirementByIdService,
   getRequirementsService,
+  likeOrDislikeRequirementService,
   updateRequirementService,
 } from "../services/csRequirementService";
 
 export const getRequirements = async (req, res) => {
   try {
-    const { page = 1, perPage = 10, listingType, commodityType, verified } = req.query;
+    const {
+      page = 1,
+      perPage = 10,
+      listingType,
+      commodityType,
+      verified,
+    } = req.query;
     const userId = req.user.id;
 
     const result = await getRequirementsService(
@@ -119,6 +126,26 @@ export const deleteRequirement = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to delete requirement",
+    });
+  }
+};
+
+export const likeOrDislikeCSRequirement = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const { requirementId } = req.params;
+
+    const response = await likeOrDislikeRequirementService(id, requirementId);
+
+    if (!response.success)
+      return res.status(400).json({ message: response.error });
+
+    return res.status(200).json({ message: response.data });
+  } catch (error) {
+    console.error("Like or dislike Cold Storage Requirement error:", error);
+    res.status(500).json({
+      message: "Failed to like or dislike cold storage requirement",
+      error: error.message,
     });
   }
 };

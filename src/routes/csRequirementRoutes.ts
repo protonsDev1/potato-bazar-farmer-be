@@ -6,6 +6,7 @@ import {
   deleteRequirement,
   getRequirementById,
   getRequirements,
+  likeOrDislikeCSRequirement,
   updateRequirement,
 } from "../controller/csRequirementController";
 import {
@@ -35,4 +36,7 @@ router.put(
 );
 
 router.delete("/:id", authMiddleware, deleteRequirement);
+
+router.post("/:requirementId/like", authMiddleware, likeOrDislikeCSRequirement);
+
 export default router;
