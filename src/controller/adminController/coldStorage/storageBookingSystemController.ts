@@ -1,4 +1,5 @@
 import AdminStorageBookingSystem from "../../../database/models/adminModels/coldStorage/adminStorageBookingSystem";
+import StorageBookingSystem from "../../../database/models/storageBookingSystem";
 import {
   createRecord,
   getAllRecords,
@@ -84,7 +85,16 @@ export const updateStorageBookingSystem = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminStorageBookingSystem, id, data);
+    const response = await updateRecord(
+      AdminStorageBookingSystem,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: StorageBookingSystem,
+        targetField: "bookingSystem",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({

@@ -1,4 +1,5 @@
 import AdminFarmEquipmentUsed from "../../../database/models/adminModels/farmer/adminFarmEquipmentUsed";
+import FarmEquipment from "../../../database/models/farmEquipment";
 import {
   createRecord,
   deleteRecord,
@@ -74,7 +75,16 @@ export const updateFarmEquipment = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminFarmEquipmentUsed, id, data);
+    const response = await updateRecord(
+      AdminFarmEquipmentUsed,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: FarmEquipment,
+        targetField: "machine",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({

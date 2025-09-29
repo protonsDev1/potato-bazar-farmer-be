@@ -1,4 +1,5 @@
 import AdminMarketCoverage from "../../../database/models/adminModels/trader/adminMarketCoverage";
+import MarketCoverage from "../../../database/models/trader/marketCoverage";
 import {
   createRecord,
   getAllRecords,
@@ -83,7 +84,12 @@ export const updateMarketCoverage = async (req, res) => {
     const response = await updateRecord(
       AdminMarketCoverage,
       req.params.id,
-      req.body
+      req.body,
+      "name",
+      {
+        relatedModel: MarketCoverage,
+        targetField: "name",
+      }
     );
 
     if (response?.duplicate) {

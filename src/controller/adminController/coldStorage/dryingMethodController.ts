@@ -1,4 +1,5 @@
 import AdminDryingMethod from "../../../database/models/adminModels/coldStorage/adminDryingMethods";
+import DryingMethod from "../../../database/models/dryingMethod";
 import {
   createRecord,
   getAllRecords,
@@ -77,7 +78,10 @@ export const updateDryingMethod = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminDryingMethod, id, data);
+    const response = await updateRecord(AdminDryingMethod, id, data, "name", {
+      relatedModel: DryingMethod,
+      targetField: "method",
+    });
 
     if (response?.duplicate) {
       return res.status(409).json({

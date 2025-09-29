@@ -1,4 +1,5 @@
 import AdminTraderType from "../../../database/models/adminModels/trader/adminTraderType";
+import TraderType from "../../../database/models/trader/traderType";
 import {
   createRecord,
   getAllRecords,
@@ -65,7 +66,16 @@ export const getActiveTraderTypes = async (req, res) => {
 };
 
 export const updateTraderType = async (req, res) => {
-  const response = await updateRecord(AdminTraderType, req.params.id, req.body);
+  const response = await updateRecord(
+    AdminTraderType,
+    req.params.id,
+    req.body,
+    "name",
+    {
+      relatedModel: TraderType,
+      targetField: "type",
+    }
+  );
 
   if (response?.duplicate) {
     return res.status(409).json({
