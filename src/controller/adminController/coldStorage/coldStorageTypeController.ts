@@ -1,4 +1,5 @@
 import AdminColdStorageType from "../../../database/models/adminModels/coldStorage/adminColdStorageType";
+import ColdStorageType from "../../../database/models/coldStorageType";
 import {
   createRecord,
   getAllRecords,
@@ -81,7 +82,16 @@ export const updateColdStorageType = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminColdStorageType, id, data);
+    const response = await updateRecord(
+      AdminColdStorageType,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: ColdStorageType,
+        targetField: "coldStorageType",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({

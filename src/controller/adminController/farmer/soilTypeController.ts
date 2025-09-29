@@ -1,4 +1,5 @@
 import AdminSoilType from "../../../database/models/adminModels/farmer/adminSoilType";
+import LandDetail from "../../../database/models/landDetails";
 import {
   createRecord,
   getAllRecords,
@@ -77,7 +78,10 @@ export const updateSoilType = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminSoilType, id, data);
+    const response = await updateRecord(AdminSoilType, id, data, "name", {
+      relatedModel: LandDetail,
+      targetField: "soilType",
+    });
 
     if (response?.duplicate) {
       return res.status(409).json({

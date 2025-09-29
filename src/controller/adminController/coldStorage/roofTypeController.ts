@@ -1,4 +1,5 @@
 import AdminRoofType from "../../../database/models/adminModels/coldStorage/adminRoofType";
+import RoofType from "../../../database/models/roofType";
 import {
   createRecord,
   getAllRecords,
@@ -77,7 +78,10 @@ export const updateRoofType = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminRoofType, id, data);
+    const response = await updateRecord(AdminRoofType, id, data, "name", {
+      relatedModel: RoofType,
+      targetField: "roofType",
+    });
 
     if (response?.duplicate) {
       return res.status(409).json({

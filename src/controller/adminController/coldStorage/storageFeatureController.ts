@@ -1,4 +1,5 @@
 import AdminStorageFeature from "../../../database/models/adminModels/coldStorage/adminStorageFeature";
+import FeatureOfStorage from "../../../database/models/featureOfStorage";
 import {
   createRecord,
   getAllRecords,
@@ -79,7 +80,10 @@ export const updateStorageFeature = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminStorageFeature, id, data);
+    const response = await updateRecord(AdminStorageFeature, id, data, "name", {
+      relatedModel: FeatureOfStorage,
+      targetField: "feature",
+    });
 
     if (response?.duplicate) {
       return res.status(409).json({

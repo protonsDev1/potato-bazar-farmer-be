@@ -14,7 +14,11 @@ export const updateRecord = async (
   modelClass,
   id,
   data,
-  uniqueField = "name"
+  uniqueField = "name",
+  syncOptions?: {
+    relatedModel: any; // e.g., SellingChannel
+    targetField: string; // field in relatedModel (SellingChannel)
+  }
 ) => {
   try {
     const instance = await modelClass.findByPk(id);
@@ -40,7 +44,23 @@ export const updateRecord = async (
         };
       }
     }
+
+    // Store old value before update
+    const oldValue = instance[uniqueField];
+
+    // Update main record
     const updatedInstance = await updateModelFields(instance, data);
+
+    // Sync related model if provided
+    if (syncOptions && data[uniqueField] && oldValue !== data[uniqueField]) {
+      const { relatedModel, targetField } = syncOptions;
+
+      await relatedModel.update(
+        { [targetField]: data[uniqueField] }, // new value
+        { where: { [targetField]: oldValue } } // match old value
+      );
+    }
+
     return {
       success: true,
       data: updatedInstance,

@@ -1,4 +1,5 @@
 import AdminMonitoringFacility from "../../../database/models/adminModels/coldStorage/adminMonitoringFacilities";
+import MonitoringFacility from "../../../database/models/monitoringFacility";
 import {
   createRecord,
   getAllRecords,
@@ -82,7 +83,16 @@ export const updateMonitoringFacility = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminMonitoringFacility, id, data);
+    const response = await updateRecord(
+      AdminMonitoringFacility,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: MonitoringFacility,
+        targetField: "facility",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({

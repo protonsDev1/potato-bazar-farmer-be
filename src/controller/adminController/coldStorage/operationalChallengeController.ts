@@ -1,4 +1,5 @@
 import AdminOperationalChallenge from "../../../database/models/adminModels/coldStorage/adminOperationalChallenge";
+import OperationalChallenge from "../../../database/models/operationalChallenge";
 import {
   createRecord,
   getAllRecords,
@@ -81,7 +82,16 @@ export const updateOperationalChallenge = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminOperationalChallenge, id, data);
+    const response = await updateRecord(
+      AdminOperationalChallenge,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: OperationalChallenge,
+        targetField: "challenge",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({
