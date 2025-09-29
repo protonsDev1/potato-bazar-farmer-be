@@ -15,6 +15,7 @@ class AdminCropTraded extends Model<
   declare name: string;
   declare isActive: CreationOptional<boolean>;
   declare position: CreationOptional<number>;
+  declare isDeleted: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -27,6 +28,10 @@ AdminCropTraded.init(
     position: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,
