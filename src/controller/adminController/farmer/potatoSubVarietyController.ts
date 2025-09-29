@@ -43,7 +43,9 @@ export const getPotatoSubVarietyGrown = async (req, res) => {
   try {
     const { varietyId } = req.query;
 
-    const whereCondition = varietyId ? { varietyId } : {};
+    const whereCondition = varietyId
+      ? { varietyId, isDeleted: false }
+      : { isDeleted: false };
 
     const response = await AdminPotatoSubVarietyGrown.findAll({
       where: whereCondition,
@@ -76,8 +78,8 @@ export const getActivePotatoSubVarietyGrown = async (req, res) => {
     const { varietyId } = req.query;
 
     const whereCondition = varietyId
-      ? { varietyId, isActive: true }
-      : { isActive: true };
+      ? { varietyId, isActive: true, isDeleted: false }
+      : { isActive: true, isDeleted: false };
 
     const response = await AdminPotatoSubVarietyGrown.findAll({
       where: whereCondition,
