@@ -17,6 +17,7 @@ class AdminMarketCoverage extends Model<
   declare position: CreationOptional<number>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare isDeleted: boolean;
 }
 
 AdminMarketCoverage.init(
@@ -27,6 +28,10 @@ AdminMarketCoverage.init(
     position: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,

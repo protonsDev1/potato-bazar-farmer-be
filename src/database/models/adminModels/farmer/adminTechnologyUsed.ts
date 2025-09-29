@@ -16,6 +16,7 @@ class AdminTechnologyUsed extends Model<
   declare name: string;
   declare isActive: boolean;
   declare position: number;
+  declare isDeleted: boolean;
 }
 
 AdminTechnologyUsed.init(
@@ -29,6 +30,10 @@ AdminTechnologyUsed.init(
     position: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {

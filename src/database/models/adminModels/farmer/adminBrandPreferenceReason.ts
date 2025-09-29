@@ -16,6 +16,7 @@ class AdminBrandPreferenceReason extends Model<
   declare name: string;
   declare isActive: boolean;
   declare position: number;
+  declare isDeleted: boolean;
 }
 
 AdminBrandPreferenceReason.init(
@@ -29,6 +30,10 @@ AdminBrandPreferenceReason.init(
     position: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {

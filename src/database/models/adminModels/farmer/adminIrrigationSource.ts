@@ -17,6 +17,7 @@ class AdminIrrigationSource extends Model<
   declare icon: string | null;
   declare isActive: boolean;
   declare position: number;
+  declare isDeleted: boolean;
 }
 
 AdminIrrigationSource.init(
@@ -34,6 +35,10 @@ AdminIrrigationSource.init(
     position: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {
