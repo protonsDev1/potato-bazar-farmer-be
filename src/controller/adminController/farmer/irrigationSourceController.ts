@@ -1,4 +1,5 @@
 import AdminIrrigationSource from "../../../database/models/adminModels/farmer/adminIrrigationSource";
+import IrrigationSource from "../../../database/models/irrigationSource";
 import {
   createRecord,
   deleteRecord,
@@ -84,7 +85,16 @@ export const updateIrrigationSource = async (req, res) => {
     const data = req.body;
     const id = req.params.id;
 
-    const response = await updateRecord(AdminIrrigationSource, id, data);
+    const response = await updateRecord(
+      AdminIrrigationSource,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: IrrigationSource,
+        targetField: "method",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({

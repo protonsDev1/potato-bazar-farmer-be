@@ -1,4 +1,5 @@
 import AdminSellingPrice from "../../../database/models/adminModels/farmer/adminSellingPrice";
+import SellingPrice from "../../../database/models/sellingPrice";
 import {
   createRecord,
   getAllRecords,
@@ -77,7 +78,10 @@ export const updateSellingPrice = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminSellingPrice, id, data);
+    const response = await updateRecord(AdminSellingPrice, id, data, "name", {
+      relatedModel: SellingPrice,
+      targetField: "price",
+    });
 
     if (response?.duplicate) {
       return res.status(409).json({

@@ -1,4 +1,5 @@
 import AdminUsageType from "../../../database/models/adminModels/coldStorage/adminUsageType";
+import UsageType from "../../../database/models/usageType";
 import {
   createRecord,
   getAllRecords,
@@ -77,7 +78,10 @@ export const updateUsageType = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminUsageType, id, data);
+    const response = await updateRecord(AdminUsageType, id, data, "name", {
+      relatedModel: UsageType,
+      targetField: "type",
+    });
 
     if (response?.duplicate) {
       return res.status(409).json({

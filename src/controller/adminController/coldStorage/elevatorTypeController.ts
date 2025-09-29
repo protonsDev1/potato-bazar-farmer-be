@@ -1,4 +1,5 @@
 import AdminElevatorType from "../../../database/models/adminModels/coldStorage/adminElevatorType";
+import ElevatorAndStuffing from "../../../database/models/elevatorAndStuffing";
 import {
   createRecord,
   getAllRecords,
@@ -77,7 +78,10 @@ export const updateElevatorType = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminElevatorType, id, data);
+    const response = await updateRecord(AdminElevatorType, id, data, "name", {
+      relatedModel: ElevatorAndStuffing,
+      targetField: "name",
+    });
 
     if (response?.duplicate) {
       return res.status(409).json({
