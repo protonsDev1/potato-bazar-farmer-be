@@ -18,6 +18,7 @@ class AdminPotatoSubVarietyGrown extends Model<
   declare name: string;
   declare isActive: boolean;
   declare position: number;
+  declare isDeleted: boolean;
 }
 
 AdminPotatoSubVarietyGrown.init(
@@ -37,6 +38,10 @@ AdminPotatoSubVarietyGrown.init(
     position: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {
