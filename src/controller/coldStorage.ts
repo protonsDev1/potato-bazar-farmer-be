@@ -134,7 +134,7 @@ export const getColdStorageProfile = async (req, res) => {
       role
     );
 
-    return res.status(200).json({ message: profileDetails });
+    return res.status(200).json({ success: true, message: profileDetails });
   } catch (error) {
     res.status(500).json({
       message: error.message || "Failed to retrieve cold storage profile.",
@@ -164,6 +164,7 @@ export const getColdStorageList = async (req, res) => {
     );
 
     return res.status(200).json({
+      success: true,
       message: "Cold storage list",
       data: coldStorage,
     });
