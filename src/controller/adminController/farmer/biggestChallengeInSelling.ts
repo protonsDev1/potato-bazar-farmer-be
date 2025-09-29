@@ -1,4 +1,5 @@
 import AdminBiggestChallengeInSelling from "../../../database/models/adminModels/farmer/adminBiggestChallengeInSelling";
+import SellingChallenge from "../../../database/models/sellingChallenge";
 import {
   createRecord,
   deleteRecord,
@@ -83,7 +84,12 @@ export const updateBiggestChallengeInSelling = async (req, res) => {
     const response = await updateRecord(
       AdminBiggestChallengeInSelling,
       id,
-      data
+      data,
+      "name",
+      {
+        relatedModel: SellingChallenge,
+        targetField: "name",
+      }
     );
 
     if (response?.duplicate) {

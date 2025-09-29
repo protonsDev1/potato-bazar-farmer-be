@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import AdminPotatoSubVarietyGrown from "../../../database/models/adminModels/farmer/adminPotatoSubVariety";
 import AdminPotatoVarietyGrown from "../../../database/models/adminModels/farmer/adminPotatoVarietyGrown";
 import {
@@ -7,6 +8,7 @@ import {
   deleteRecord,
   getActiveRecords,
 } from "../../../services/adminServices/crudOperationService";
+import PotatoVarietyGrown from "../../../database/models/potatoVarietyGrown";
 
 export const addPotatoSubVarietyGrown = async (req, res) => {
   try {
@@ -108,23 +110,52 @@ export const updatePotatoSubVariety = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminPotatoSubVarietyGrown, id, data);
-
-    if (response?.duplicate) {
-      return res.status(409).json({
-        message: "Potato Sub Variety with this name already exists.",
+    const subVariety = await AdminPotatoSubVarietyGrown.findByPk(id);
+    if (!subVariety) {
+      return res.status(404).json({
+        message: "Potato Sub Variety not found.",
       });
     }
 
-    if (!response || response.success === false) {
-      return res.status(404).json({
-        message: response?.error || "Potato Sub Variety not found.",
+    if (data.name) {
+      const duplicate = await AdminPotatoSubVarietyGrown.findOne({
+        where: {
+          name: data.name,
+          id: { [Op.ne]: id },
+        },
       });
+      if (duplicate) {
+        return res.status(409).json({
+          message: "Potato Sub Variety with this name already exists.",
+        });
+      }
+    }
+
+    const oldName = subVariety.name;
+
+    await subVariety.update(data);
+
+    if (data.name && data.name !== oldName) {
+      const parentVariety = await AdminPotatoVarietyGrown.findByPk(
+        subVariety.varietyId
+      );
+
+      if (parentVariety) {
+        await PotatoVarietyGrown.update(
+          { subVariety: data.name },
+          {
+            where: {
+              variety: parentVariety.name,
+              subVariety: oldName,
+            },
+          }
+        );
+      }
     }
 
     return res.status(200).json({
       message: "Potato Sub Variety updated successfully.",
-      data: response.data,
+      data: subVariety,
     });
   } catch (error) {
     return res.status(500).json({

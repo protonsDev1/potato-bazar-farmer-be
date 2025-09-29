@@ -1,4 +1,5 @@
 import AdminDryingFacilityDetail from "../../../database/models/adminModels/coldStorage/adminDryingFacilityDetails";
+import DryingFacilityDetail from "../../../database/models/dryingFacilityDetail";
 import {
   createRecord,
   getAllRecords,
@@ -84,7 +85,16 @@ export const updateDryingFacilityDetail = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminDryingFacilityDetail, id, data);
+    const response = await updateRecord(
+      AdminDryingFacilityDetail,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: DryingFacilityDetail,
+        targetField: "facility",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({

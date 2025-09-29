@@ -1,4 +1,5 @@
 import AdminBrandPreferenceReason from "../../../database/models/adminModels/farmer/adminBrandPreferenceReason";
+import BrandPreferenceReason from "../../../database/models/brandPreferenceReason";
 import {
   createRecord,
   getAllRecords,
@@ -83,7 +84,16 @@ export const updateBrandPreferenceReason = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminBrandPreferenceReason, id, data);
+    const response = await updateRecord(
+      AdminBrandPreferenceReason,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: BrandPreferenceReason,
+        targetField: "reason",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({

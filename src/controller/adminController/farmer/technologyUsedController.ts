@@ -1,4 +1,5 @@
 import AdminTechnologyUsed from "../../../database/models/adminModels/farmer/adminTechnologyUsed";
+import TechnologyUsed from "../../../database/models/technologyUsed";
 import {
   createRecord,
   getAllRecords,
@@ -77,7 +78,10 @@ export const updateTechnologyUsed = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminTechnologyUsed, id, data);
+    const response = await updateRecord(AdminTechnologyUsed, id, data, "name", {
+      relatedModel: TechnologyUsed,
+      targetField: "name",
+    });
 
     if (response?.duplicate) {
       return res.status(409).json({

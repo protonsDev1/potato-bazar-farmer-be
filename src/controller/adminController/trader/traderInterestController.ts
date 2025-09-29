@@ -1,4 +1,5 @@
 import AdminTraderInterest from "../../../database/models/adminModels/trader/adminTraderInterest";
+import TraderInterest from "../../../database/models/trader/traderInterest";
 import {
   createRecord,
   getAllRecords,
@@ -83,7 +84,12 @@ export const updateTraderInterest = async (req, res) => {
     const response = await updateRecord(
       AdminTraderInterest,
       req.params.id,
-      req.body
+      req.body,
+      "name",
+      {
+        relatedModel: TraderInterest,
+        targetField: "interest",
+      }
     );
 
     if (response?.duplicate) {

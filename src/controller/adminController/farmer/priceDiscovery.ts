@@ -1,4 +1,5 @@
 import AdminPriceDiscovery from "../../../database/models/adminModels/farmer/adminPriceDiscovery";
+import PriceDiscoveryMethod from "../../../database/models/priceDiscoveryMethod";
 import {
   createRecord,
   getAllRecords,
@@ -81,7 +82,10 @@ export const updatePriceDiscovery = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminPriceDiscovery, id, data);
+    const response = await updateRecord(AdminPriceDiscovery, id, data, "name", {
+      relatedModel: PriceDiscoveryMethod,
+      targetField: "method",
+    });
 
     if (response?.duplicate) {
       return res.status(409).json({
