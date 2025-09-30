@@ -1,4 +1,4 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, getUserTypeProfileDetails } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
@@ -595,30 +595,18 @@ export const getMobileUserProfileByAdmin = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const userDetail = await User.findOne({
-      where: { id: userId },
-      include: [{ model: KycDocument, as: "kycDocument" }],
-    });
+    const userDetail = await getUserTypeProfileDetails(userId);
 
-    if (!userDetail)
-      return res
-        .status(400)
-        .json({ success: false, message: "User not found." });
-
-    if (
-      userDetail.role !== USER_ROLES.USER ||
-      (userDetail.hasStartedUsingMobile === false &&
-        userDetail.isUserOnBoardedOnMobile === false)
-    )
+    if (!userDetail.success)
       return res.status(400).json({
         success: false,
-        message: "Only Mobile user's profile can be viewed here.",
+        error: userDetail.error,
       });
 
     return res.status(200).json({
       success: true,
       message: "User detail fetched successfully.",
-      data: userDetail,
+      data: userDetail.data,
     });
   } catch (error) {
     res.status(500).json({
