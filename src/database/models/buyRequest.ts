@@ -11,10 +11,9 @@ import FavouriteRequest from "./favouriteRequest";
 import RequestView from "./requestView";
 
 export enum BUY_REQUEST_STATUS {
-  ACTIVE = "Active",
-  PENDING = "Pending",
-  COMPLETED = "Completed",
-  CANCELLED = "Cancelled",
+  APPROVED = "approved",
+  PENDING = "pending",
+  REJECTED = "rejected",
 }
 
 class BuyRequest extends Model<

@@ -52,7 +52,7 @@ export const createSellRequestService = async (userId: number, data: any) => {
     organicCertified: data.organicCertified,
     images: data.images,
     location: data.location,
-    status: SELL_REQUEST_STATUS.AVAILABLE,
+    status: SELL_REQUEST_STATUS.PENDING,
   });
 
   return newRequest;
@@ -76,8 +76,7 @@ export const listSellRequestsService = async (
 
   const offset = (Number(page) - 1) * Number(perPage);
 
-  // const where: any = { status: SELL_REQUEST_STATUS.AVAILABLE };
-  const where: any = { isActive: true };
+  const where: any = { isActive: true, status: SELL_REQUEST_STATUS.APPROVED };
   const userWhere: any = {};
 
   if (userId) {
@@ -239,7 +238,16 @@ export const listAdminSellRequestsService = async (query: any) => {
   const offset = (Number(page) - 1) * Number(perPage);
 
   const where: any = {};
-  if (status) where.status = status;
+
+  if (status) {
+    if (status.toLowerCase() === "active") {
+      where.isActive = true;
+    } else if (status.toLowerCase() === "inactive") {
+      where.isActive = false;
+    } else if (Object.values(SELL_REQUEST_STATUS).includes(status)) {
+      where.status = status;
+    }
+  }
 
   if (search) {
     where[Op.or] = [
@@ -263,12 +271,12 @@ export const listAdminSellRequestsService = async (query: any) => {
     order: [["createdAt", "DESC"]],
   });
 
-  const [totalRequests, availableCount, reservedCount, soldCount] =
+  const [totalRequests, approvedCount, pendingCount, rejectedCount] =
     await Promise.all([
       SellRequest.count(),
-      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.AVAILABLE } }),
-      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.RESERVED } }),
-      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.SOLD } }),
+      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.APPROVED } }),
+      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.PENDING } }),
+      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.REJECTED } }),
     ]);
 
   return {
@@ -277,9 +285,9 @@ export const listAdminSellRequestsService = async (query: any) => {
     totalPages: Math.ceil(count / Number(perPage)),
     total: count,
     totalRequests,
-    availableCount,
-    reservedCount,
-    soldCount,
+    approvedCount,
+    pendingCount,
+    rejectedCount,
     requests: rows,
   };
 };
@@ -342,7 +350,10 @@ export const getSellRequestByIdService = async (
   };
 };
 
-export const deleteSellRequestService = async (user: any, requestId: number) => {
+export const deleteSellRequestService = async (
+  user: any,
+  requestId: number
+) => {
   const request = await SellRequest.findByPk(requestId);
 
   if (!request) {
@@ -410,4 +421,17 @@ export const updateSellRequestService = async (
     message: "Sell request updated successfully",
     data: request,
   };
+};
+
+export const updateSellRequestStatusService = async (requestId, status) => {
+  const sellRequest = await SellRequest.findByPk(requestId);
+
+  if (!sellRequest) {
+    return null;
+  }
+
+  sellRequest.status = status;
+  await sellRequest.save();
+
+  return sellRequest;
 };
