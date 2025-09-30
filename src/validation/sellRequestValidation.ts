@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { SELL_REQUEST_STATUS } from "../database/models/sellRequest";
 
 export const createSellRequestSchema = Joi.object({
   potatoType: Joi.string().required(),
@@ -91,7 +92,10 @@ export const updateSellRequestSchema = Joi.object({
   images: Joi.array().items(Joi.string()).optional(),
   location: Joi.string().optional(),
   isActive: Joi.boolean().optional(),
+});
+
+export const updateSellRequestStatusSchema = Joi.object({
   status: Joi.string()
-    .valid("Available", "Reserved", "Sold", "Expired")
-    .optional(),
+    .valid(...Object.values(SELL_REQUEST_STATUS))
+    .required(),
 });

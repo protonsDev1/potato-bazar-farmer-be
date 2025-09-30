@@ -7,6 +7,7 @@ import {
   listBuyRequestsService,
   listMyBuyRequestsService,
   updateBuyRequestService,
+  updateBuyRequestStatusService,
 } from "../services/buyRequestService";
 
 export const createBuyRequest = async (req, res) => {
@@ -115,4 +116,31 @@ export const updateBuyRequest = async (req, res) => {
   );
 
   return res.status(result.statusCode).json(result);
+};
+
+export const updateBuyRequestStatus = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { status } = req.body;
+
+    const updatedRequest = await updateBuyRequestStatusService(
+      requestId,
+      status
+    );
+
+    if (!updatedRequest) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Buy Request not found" });
+    }
+
+    return res.json({
+      success: true,
+      message: "Buy Request status updated successfully",
+      data: updatedRequest,
+    });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
 };

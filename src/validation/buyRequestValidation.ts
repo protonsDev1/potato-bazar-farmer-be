@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
 
 export const createBuyRequestSchema = Joi.object({
   potatoType: Joi.string().required(),
@@ -87,7 +88,10 @@ export const updateBuyRequestSchema = Joi.object({
   productionMethod: Joi.string().optional(),
   productionDate: Joi.date().optional(),
   isActive: Joi.boolean().optional(),
+});
+
+export const updateBuyRequestStatusSchema = Joi.object({
   status: Joi.string()
-    .valid("Pending", "Active", "Completed", "Cancelled")
-    .optional(),
+    .valid(...Object.values(BUY_REQUEST_STATUS))
+    .required(),
 });
