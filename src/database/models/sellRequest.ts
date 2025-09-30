@@ -11,10 +11,9 @@ import FavouriteRequest from "./favouriteRequest";
 import RequestView from "./requestView";
 
 export enum SELL_REQUEST_STATUS {
-  AVAILABLE = "Available",
-  RESERVED = "Reserved",
-  SOLD = "Sold",
-  EXPIRED = "Expired",
+  APPROVED = "approved",
+  PENDING = "pending",
+  REJECTED = "rejected",
 }
 
 class SellRequest extends Model<
@@ -216,7 +215,7 @@ SellRequest.init(
     },
     status: {
       type: DataTypes.STRING,
-      defaultValue: SELL_REQUEST_STATUS.AVAILABLE,
+      defaultValue: SELL_REQUEST_STATUS.PENDING,
     },
     images: {
       type: DataTypes.ARRAY(DataTypes.STRING),

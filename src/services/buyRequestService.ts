@@ -72,8 +72,7 @@ export const listBuyRequestsService = async (
 
   const offset = (Number(page) - 1) * Number(perPage);
 
-  // const where: any = { status: BUY_REQUEST_STATUS.ACTIVE };
-  const where: any = { isActive: true };
+  const where: any = { isActive: true, status: BUY_REQUEST_STATUS.APPROVED };
   const userWhere: any = {};
 
   if (userId) {
@@ -235,7 +234,16 @@ export const listAdminBuyRequestsService = async (query: any) => {
   const offset = (Number(page) - 1) * Number(perPage);
 
   const where: any = {};
-  if (status) where.status = status;
+
+  if (status) {
+    if (status.toLowerCase() === "active") {
+      where.isActive = true;
+    } else if (status.toLowerCase() === "inactive") {
+      where.isActive = false;
+    } else if (Object.values(BUY_REQUEST_STATUS).includes(status)) {
+      where.status = status;
+    }
+  }
 
   if (search) {
     where[Op.or] = [
@@ -259,12 +267,12 @@ export const listAdminBuyRequestsService = async (query: any) => {
     order: [["createdAt", "DESC"]],
   });
 
-  const [totalRequests, activeCount, pendingCount, completedCount] =
+  const [totalRequests, approvedCount, pendingCount, rejectedCount] =
     await Promise.all([
       BuyRequest.count(),
-      BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.ACTIVE } }),
+      BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.APPROVED } }),
       BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.PENDING } }),
-      BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.COMPLETED } }),
+      BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.REJECTED } }),
     ]);
 
   return {
@@ -273,9 +281,9 @@ export const listAdminBuyRequestsService = async (query: any) => {
     totalPages: Math.ceil(count / Number(perPage)),
     total: count,
     totalRequests,
-    activeCount,
+    approvedCount,
     pendingCount,
-    completedCount,
+    rejectedCount,
     requests: rows,
   };
 };
@@ -407,4 +415,17 @@ export const updateBuyRequestService = async (
     message: "Buy request updated successfully",
     data: request,
   };
+};
+
+export const updateBuyRequestStatusService = async (requestId, status) => {
+  const buyRequest = await BuyRequest.findByPk(requestId);
+
+  if (!buyRequest) {
+    return null;
+  }
+
+  buyRequest.status = status;
+  await buyRequest.save();
+
+  return buyRequest;
 };

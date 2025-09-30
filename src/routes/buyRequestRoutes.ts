@@ -8,12 +8,18 @@ import {
   listMyBuyRequests,
   showBuyRequest,
   updateBuyRequest,
+  updateBuyRequestStatus,
 } from "../controller/buyRequestController";
-import { authMiddleware, checkPermissionMiddleware, optionalAuthMiddleware } from "../utils/userAuth";
+import {
+  authMiddleware,
+  checkPermissionMiddleware,
+  optionalAuthMiddleware,
+} from "../utils/userAuth";
 import { PERMISSIONS } from "../utils/constants/permissions";
 import {
   createBuyRequestSchema,
   updateBuyRequestSchema,
+  updateBuyRequestStatusSchema,
 } from "../validation/buyRequestValidation";
 
 const router = Router();
@@ -36,17 +42,20 @@ router.get(
 );
 
 router.get("/:id", optionalAuthMiddleware, showBuyRequest);
-router.delete(
-  "/:id",
-  authMiddleware,
-  deleteBuyRequest
-);
+router.delete("/:id", authMiddleware, deleteBuyRequest);
 
 router.put(
   "/:id",
   authMiddleware,
   validator.body(updateBuyRequestSchema),
   updateBuyRequest
+);
+
+router.put(
+  "/update_status/:requestId",
+  checkPermissionMiddleware(PERMISSIONS.BUY_REQUESTS),
+  validator.body(updateBuyRequestStatusSchema),
+  updateBuyRequestStatus
 );
 
 export default router;
