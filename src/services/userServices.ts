@@ -19,6 +19,8 @@ import MandiAgent from "../database/models/mandiAgent";
 import SellRequest from "../database/models/sellRequest";
 import UserSupport from "../database/models/userSupport";
 import SubAdminPermission from "../database/models/subAdminPermission";
+import { retrieveFarmerProfile } from "./farmerServices";
+import { retrieveTraderProfile } from "./traderService";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -922,6 +924,7 @@ export const getMobileUsers = async ({ page, limit, kycStatus, search, activeSta
   };
   }
   };
+  
 export const updateMobileService = async (userId, payload) => {
   let { firstName, lastName, email } = payload;
 
@@ -1255,4 +1258,74 @@ export const getSupportTicketById = async (ticketId: number) => {
   }
 
   return ticket;
+};
+
+export const getUserTypeProfileDetails = async (userId) => {
+  const userDetail = await User.findOne({
+    where: { id: userId },
+    include: [{ model: KycDocument, as: "kycDocument" }],
+  });
+
+  if (!userDetail)
+    return {
+      success: false,
+      error: "User not found.",
+    };
+
+  if (
+    userDetail.role !== USER_ROLES.USER ||
+    (userDetail.hasStartedUsingMobile === false &&
+      userDetail.isUserOnBoardedOnMobile === false)
+  )
+    return {
+      success: false,
+      error: "Only Mobile user's profile can be viewed here.",
+    };
+
+  const [isFarmer, isColdStorage, isTrader, coldStorageList] =
+    await Promise.all([
+      Farmer.findOne({ where: { userId } }),
+      ColdStorage.findOne({ where: { userId } }),
+      Trader.findOne({ where: { userId } }),
+      ColdStorage.findAll({
+        where: { userId },
+        attributes: [
+          "id",
+          "name",
+          "firstName",
+          "lastName",
+          "ownerName",
+          "mobileNumber",
+          "state",
+          "district",
+          "totalCapacityMt",
+          "createdAt",
+          "updatedAt",
+          "onBoardedBy",
+          "status",
+          "isAvailable",
+        ],
+      }),
+    ]);
+
+  let farmerProfile, traderProfile;
+
+  if (isFarmer)
+    farmerProfile = await retrieveFarmerProfile(String(isFarmer.id), false);
+
+  if (isTrader)
+    traderProfile = await retrieveTraderProfile(String(isTrader.id), false);
+
+  return {
+    success: true,
+    data: {
+      isFarmerOnboarded: !!isFarmer,
+      isColdStorageOnboarded: !!isColdStorage,
+      isTraderOnboarded: !!isTrader,
+      userDetail,
+      farmerProfile,
+      traderProfile,
+      coldStorageList,
+    },
+  };
 };
