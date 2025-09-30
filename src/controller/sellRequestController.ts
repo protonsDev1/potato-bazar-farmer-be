@@ -7,6 +7,7 @@ import {
   listSellRequestsService,
   listMySellRequestsService,
   updateSellRequestService,
+  updateSellRequestStatusService,
 } from "../services/sellRequestService";
 
 export const createSellRequest = async (req, res) => {
@@ -118,4 +119,31 @@ export const updateSellRequest = async (req, res) => {
   );
 
   return res.status(result.statusCode).json(result);
+};
+
+export const updateSellRequestStatus = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { status } = req.body;
+
+    const updatedRequest = await updateSellRequestStatusService(
+      requestId,
+      status
+    );
+
+    if (!updatedRequest) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Sell Request not found" });
+    }
+
+    return res.json({
+      success: true,
+      message: "Sell Request status updated successfully",
+      data: updatedRequest,
+    });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
 };

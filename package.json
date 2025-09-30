@@ -16,7 +16,7 @@
     "populate-cities": "ts-node src/scripts/seedCitiesData.ts",
     "db:migrate:create": "sequelize-cli migration:generate --name",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
-    "subadmin:update": "ts-node src/scripts/updateSubAdminAction.ts",
+    "buy-sell-statuses:update": "ts-node src/scripts/updateBuySellStatuses.ts",
     "hard-delete:user": "ts-node src/scripts/deleteSoftDeletedUsers.ts",
     "add-entityId:agent": "ts-node src/scripts/addEntityIdForOldUserData.ts"
   },
