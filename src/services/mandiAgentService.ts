@@ -84,6 +84,22 @@ export const addMandiAgent = async (
     };
   }
 
+  const keyMap: Record<number, number> = {};
+  mandiIds.forEach((id) => {
+    keyMap[id] = (keyMap[id] || 0) + 1;
+  });
+
+  for (const id in keyMap) {
+    const count = keyMap[id];
+
+    if (count === 1) continue;
+
+    return {
+      success: false,
+      error: `mandiId ${id} occurs ${count} times`,
+    };
+  }
+
   return await sequelize.transaction(async (t) => {
     const mandiUser = await User.create(
       {
