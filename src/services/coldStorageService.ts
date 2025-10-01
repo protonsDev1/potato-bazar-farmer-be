@@ -583,7 +583,7 @@ export const retrieveColdStorageProfile = async (
         {
           model: User,
           as: "user",
-          attributes: ["id", "name", "role", "email", "mobile"],
+          attributes: ["id", "name", "role", "email", "mobile", "pbVerified"],
         },
         {
           model: User,
@@ -780,6 +780,7 @@ export async function getColdStorage(
       registrationDate,
       onboardedByUser,
       status,
+      pbVerified,
     } = filters;
 
     // if (userId) {
@@ -796,7 +797,7 @@ export async function getColdStorage(
     const userInclude: any = {
       model: User,
       as: "user",
-      attributes: ["id", "name", "hasStartedUsingMobile"],
+      attributes: ["id", "name", "hasStartedUsingMobile", "pbVerified"],
     };
 
     // Other user's available cold storages
@@ -811,6 +812,15 @@ export async function getColdStorage(
     if (listingType === "mobileAdmin") {
       userInclude.where = { hasStartedUsingMobile: true };
       userInclude.required = true; // ensures inner join
+    }
+
+    if (pbVerified && pbVerified.toLowerCase() !== "all") {
+      const pbVerifiedBool = pbVerified === "true";
+      userInclude.where = {
+        ...userInclude.where,
+        pbVerified: pbVerifiedBool,
+      };
+      userInclude.required = true;
     }
 
     if (status) {
@@ -993,6 +1003,7 @@ export async function getColdStorage(
           district: item.district,
           totalCapacityMt: item.totalCapacityMt,
           registrationDate: formatDate(item.createdAt),
+          user: item.user,
           onBoardedByUser: item.onBoardedByUser,
           storageTypes: item.storageTypes,
           onBoardedBy: item.onBoardedBy,

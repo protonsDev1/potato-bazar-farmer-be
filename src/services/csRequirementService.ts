@@ -12,7 +12,7 @@ export const getRequirementsService = async (
   page: number,
   limit: number,
   listingType: "own" | "others" | "all" = "own",
-  filters: { commodityType?: string; verified?: string }
+  filters: { commodityType?: string; verified?: string; pbVerified?: string }
 ) => {
   const offset = (page - 1) * limit;
 
@@ -33,15 +33,20 @@ export const getRequirementsService = async (
     whereCondition.verified = filters.verified === "true";
   }
 
+  const userInclude: any = {
+    model: User,
+    as: "creator",
+    attributes: ["id", "name", "role", "email", "mobile", "pbVerified"],
+  };
+
+  if (filters.pbVerified && filters.pbVerified.toLowerCase() !== "all") {
+    userInclude.where = { pbVerified: filters.pbVerified === "true" };
+    userInclude.required = true;
+  }
+
   const { rows, count } = await ColdStorageRequirement.findAndCountAll({
     where: whereCondition,
-    include: [
-      {
-        model: User,
-        as: "creator",
-        attributes: ["id", "name", "role", "email", "mobile"],
-      },
-    ],
+    include: [userInclude],
     order: [["createdAt", "DESC"]],
     limit,
     offset,
@@ -99,7 +104,7 @@ export const getRequirementByIdService = async (id: number, userId: number) => {
       {
         model: User,
         as: "creator",
-        attributes: ["id", "name", "role", "email", "mobile"],
+        attributes: ["id", "name", "role", "email", "mobile", "pbVerified"],
       },
     ],
   });
