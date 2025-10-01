@@ -12,7 +12,12 @@ export const getRequirementsService = async (
   page: number,
   limit: number,
   listingType: "own" | "others" | "all" = "own",
-  filters: { commodityType?: string; verified?: string; pbVerified?: string }
+  filters: {
+    commodityType?: string;
+    verified?: string;
+    district?: string;
+    pbVerified?: string;
+  }
 ) => {
   const offset = (page - 1) * limit;
 
@@ -31,6 +36,10 @@ export const getRequirementsService = async (
 
   if (filters.verified) {
     whereCondition.verified = filters.verified === "true";
+  }
+
+  if (filters.district && filters.district.toLowerCase() !== "all") {
+    whereCondition.district = { [Op.iLike]: filters.district };
   }
 
   const userInclude: any = {
