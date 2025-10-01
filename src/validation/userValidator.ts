@@ -1,6 +1,7 @@
 import Joi from "joi";
 import { PriorityEnum, StatusEnum } from "../database/models/helpAndSupport";
 import { TICKET_PRIORITY } from "../database/models/userSupport";
+import { PB_VERIFICATION_STATUS } from "../database/models/user";
 
 // Define the Joi schema for user signup validation
 export const userSchema = Joi.object({
@@ -59,7 +60,9 @@ export const agentLoginSchema = Joi.object({
 });
 
 export const otpSendSchema = Joi.object({
-  mobile: Joi.string().required().pattern(/^[6-9]\d{9}$/),
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
 });
 
 export const otpExportSendSchema = Joi.object({
@@ -216,4 +219,10 @@ export const verifyAndUpdateMobileNumberSchema = Joi.object({
     .pattern(/^[6-9]\d{9}$/),
   otp: Joi.string().required(),
   mobileNumberType: Joi.string().required(),
+});
+
+export const mobileUserPBVerificationSchema = Joi.object({
+  pbVerificationStatus: Joi.string()
+    .valid(...Object.values(PB_VERIFICATION_STATUS))
+    .required(),
 });

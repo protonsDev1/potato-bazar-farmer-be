@@ -16,6 +16,7 @@ export const getRequirements = async (req, res) => {
       listingType,
       commodityType,
       verified,
+      pbVerified,
     } = req.query;
     const userId = req.user.id;
 
@@ -24,7 +25,7 @@ export const getRequirements = async (req, res) => {
       Number(page),
       Number(perPage),
       listingType,
-      { commodityType, verified }
+      { commodityType, verified, pbVerified }
     );
 
     return res.status(200).json({

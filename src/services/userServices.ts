@@ -1,4 +1,4 @@
-import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
+import User, { PB_VERIFICATION_STATUS, REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import Agent from '../database/models/agent';
 import { generateAgentId, generateRandomPassword } from '../utils/generate';
 import Farmer from "../database/models/farmer";
@@ -860,71 +860,81 @@ export const getUserRole = async (userId) => {
   };
 };
 
-export const getMobileUsers = async ({ page, limit, kycStatus, search, activeStatus }) => {
-  try {
-  const offset = (page - 1) * limit;
-  
-  
-  const whereCondition = {
-  role: USER_ROLES.USER,
-  [Op.or]: [
-  { isUserOnBoardedOnMobile: true },
-  { hasStartedUsingMobile: true },
-  ],
-  };
-  
-  if (search) {
-      //@ts-ignore
-  whereCondition.name = { [Op.iLike]: `%${search}%` };
-  }
-  
-  
-  if (activeStatus && activeStatus !== "all") {
-      //@ts-ignore
-  whereCondition.isActive = activeStatus === "active" ? true : false;
-  }
-  
-  
-  const include = [] as any;
-  if (kycStatus && kycStatus !== "all") {
-  include.push({
-  model: KycDocument,
-  as: "kycDocument",
-  where: { status: kycStatus },
-  required: true,
-  });
-  } else {
-  include.push({ model: KycDocument, as: "kycDocument", required: false });
-  }
-  
-  
-  const { count, rows: users } = await User.findAndCountAll({
-  where: whereCondition,
-  include,
-  limit,
-  offset,
-  });
-  
-  
-  return {
-  success: true,
-  message: "Users onboarded on mobile.",
-  users,
-  pagination: {
-  total: count,
+export const getMobileUsers = async ({
   page,
   limit,
-  totalPages: Math.ceil(count / limit),
-  },
-  };
+  kycStatus,
+  search,
+  activeStatus,
+  pbVerificationRequested,
+  pbVerificationStatus,
+}) => {
+  try {
+    const offset = (page - 1) * limit;
+
+    const whereCondition: any = {
+      role: USER_ROLES.USER,
+      [Op.or]: [
+        { isUserOnBoardedOnMobile: true },
+        { hasStartedUsingMobile: true },
+      ],
+    };
+
+    if (search) {
+      whereCondition.name = { [Op.iLike]: `%${search}%` };
+    }
+
+    if (activeStatus && activeStatus !== "all") {
+      whereCondition.isActive = activeStatus === "active" ? true : false;
+    }
+
+    if (pbVerificationRequested !== undefined) {
+      whereCondition.pbVerificationRequested =
+        pbVerificationRequested === "true";
+    }
+
+    if (pbVerificationStatus && pbVerificationStatus !== "all") {
+      whereCondition.pbVerificationStatus = pbVerificationStatus;
+    }
+    const include = [] as any;
+    if (kycStatus && kycStatus !== "all") {
+      include.push({
+        model: KycDocument,
+        as: "kycDocument",
+        where: { status: kycStatus },
+        required: true,
+      });
+    } else {
+      include.push({ model: KycDocument, as: "kycDocument", required: false });
+    }
+
+    const { count, rows: users } = await User.findAndCountAll({
+      where: whereCondition,
+      include,
+      limit,
+      offset,
+    });
+
+    return {
+      success: true,
+      message: "Users onboarded on mobile.",
+      pagination: {
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+      },
+      users,
+    };
   } catch (error) {
-  return {
-  success: false,
-  error: error.message || "Failed to fetch mobile users.",
-  };
+    return {
+      success: false,
+      error: error.message || "Failed to fetch mobile users.",
+    };
   }
-  };
   
+};
+
 export const updateMobileService = async (userId, payload) => {
   let { firstName, lastName, email } = payload;
 
@@ -1327,5 +1337,141 @@ export const getUserTypeProfileDetails = async (userId) => {
       traderProfile,
       coldStorageList,
     },
+  };
+};
+
+export const updatePbVerificationService = async (
+  userId,
+  pbVerificationStatus
+) => {
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    return { statusCode: 404, success: false, message: "User not found" };
+  }
+
+  if (
+    user.role !== USER_ROLES.USER ||
+    (user.hasStartedUsingMobile === false &&
+      user.isUserOnBoardedOnMobile === false)
+  )
+    return {
+      statusCode: 403,
+      success: false,
+      message: "PB verification can only be updated for mobile users.",
+    };
+
+  const kyc = await KycDocument.findOne({ where: { userId } });
+
+  if (!kyc) {
+    return {
+      statusCode: 400,
+      success: false,
+      message:
+        "KYC record not found for this user. Ask the user to complete KYC first.",
+    };
+  }
+
+  if (!kyc.isVerified) {
+    return {
+      statusCode: 403,
+      success: false,
+      message:
+        "User's KYC is not verified. PB verification cannot be updated until KYC is approved.",
+    };
+  }
+
+  if (!user.pbVerificationRequested) {
+    return {
+      statusCode: 400,
+      success: false,
+      message:
+        "User has not requested PB verification yet. Cannot update verification status.",
+    };
+  }
+  
+  user.pbVerificationStatus = pbVerificationStatus;
+  user.pbVerified = pbVerificationStatus === PB_VERIFICATION_STATUS.APPROVED;
+
+  await user.save();
+
+  return {
+    statusCode: 200,
+    success: true,
+    message: `PB verification has been marked as ${pbVerificationStatus}.`,
+    data: user,
+  };
+};
+
+export const requestPbVerificationService = async (userId) => {
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    return { statusCode: 404, success: false, message: "User not found" };
+  }
+
+  if (
+    user.role !== USER_ROLES.USER ||
+    (user.hasStartedUsingMobile === false &&
+      user.isUserOnBoardedOnMobile === false)
+  )
+    return {
+      statusCode: 403,
+      success: false,
+      message: "PB verification can only be updated for mobile users.",
+    };
+
+  const kyc = await KycDocument.findOne({ where: { userId } });
+
+  if (!kyc) {
+    return {
+      statusCode: 400,
+      success: false,
+      message:
+        "KYC record not found. Complete KYC before requesting PB verification.",
+    };
+  }
+
+  if (!kyc.isVerified) {
+    return {
+      statusCode: 403,
+      success: false,
+      message:
+        "Your KYC is not verified. PB verification request cannot be made.",
+    };
+  }
+
+  if (user.pbVerificationRequested) {
+    if (user.pbVerificationStatus === PB_VERIFICATION_STATUS.APPROVED) {
+      return {
+        statusCode: 200,
+        success: true,
+        message: "PB verification is already approved.",
+        data: user
+      };
+    } else {
+      return {
+        statusCode: 200,
+        success: true,
+        message:
+          "You have already requested PB verification. Please wait for admin approval.",
+        data: user
+      };
+    }
+  }
+
+  user.pbVerificationRequested = true;
+  user.pbVerificationRequestedAt = new Date();
+  user.pbVerificationStatus = PB_VERIFICATION_STATUS.PENDING;
+  user.pbVerified = false;
+
+  await user.save();
+
+  return {
+    statusCode: 200,
+    success: true,
+    message:
+      "PB verification request submitted successfully. Awaiting admin approval.",
+    data: user,
   };
 };
