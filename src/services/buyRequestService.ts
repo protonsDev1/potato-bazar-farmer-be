@@ -66,6 +66,7 @@ export const listBuyRequestsService = async (
     qualityGrade,
     district,
     isVerified,
+    pbVerified,
     userId,
     currentBuyRequestId,
   } = query;
@@ -105,13 +106,25 @@ export const listBuyRequestsService = async (
     userWhere.district = district;
   }
 
+  if (pbVerified && pbVerified.toLowerCase() !== "all") {
+    userWhere.pbVerified = pbVerified === "true";
+  }
+
   const { rows, count } = await BuyRequest.findAndCountAll({
     where,
     include: [
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "state", "district"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "state",
+          "district",
+          "pbVerified",
+        ],
         where: Object.keys(userWhere).length ? userWhere : undefined,
       },
       ...(currentUserId
@@ -185,7 +198,15 @@ export const listMyBuyRequestsService = async (
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "state", "district"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "state",
+          "district",
+          "pbVerified",
+        ],
         where: Object.keys(userWhere).length ? userWhere : undefined,
       },
       {
@@ -259,7 +280,7 @@ export const listAdminBuyRequestsService = async (query: any) => {
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile"],
+        attributes: ["id", "name", "email", "mobile", "pbVerified"],
       },
     ],
     limit: Number(perPage),
@@ -298,7 +319,14 @@ export const getBuyRequestByIdService = async (
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "createdAt"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "createdAt",
+          "pbVerified",
+        ],
       },
       {
         model: RequestView,

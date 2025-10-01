@@ -27,6 +27,12 @@ export enum USER_ROLES {
   MANDI_AGENT = "mandi_agent",
 }
 
+export enum PB_VERIFICATION_STATUS {
+  APPROVED = "approved",
+  PENDING = "pending",
+  REJECTED = "rejected",
+}
+
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare id: number;
   declare name: string;
@@ -53,6 +59,10 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare profilePicture: string;
   declare bio: string;
   declare isActive: boolean;
+  declare pbVerified: boolean;
+  declare pbVerificationStatus: string | null;
+  declare pbVerificationRequested: boolean;
+  declare pbVerificationRequestedAt: Date;
   declare permissions?: SubAdminPermission[];
   declare webPermissions?: SubAdminWebPermission[];
   declare createdAt: CreationOptional<Date>;
@@ -171,6 +181,22 @@ User.init(
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    pbVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    pbVerificationStatus: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    pbVerificationRequested: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    pbVerificationRequestedAt: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {
