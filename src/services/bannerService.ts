@@ -41,9 +41,10 @@ export const getBannerService = async (onlyActive?: boolean) => {
 
   if (!banner) {
     return {
-      statusCode: 404,
+      statusCode: 200,
       success: false,
       message: "No banner found.",
+      data: null,
     };
   }
 
