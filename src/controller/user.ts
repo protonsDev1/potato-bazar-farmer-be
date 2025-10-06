@@ -1,4 +1,4 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
@@ -622,6 +622,19 @@ export const requestPbVerification = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Failed to request PB verification",
+    });
+  }
+};
+
+export const getPbVerificationStepStatus = async (req, res) => {
+  try {
+    const result = await getPbVerificationStepStatusService(req.user.id);
+
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get PB verification Step Status",
     });
   }
 };
