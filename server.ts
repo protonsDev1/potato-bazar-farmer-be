@@ -55,6 +55,7 @@ import mandiPriceRoutes from "./src/routes/mandiPriceRoutes";
 import subAdminWebRoutes from "./src/routes/subAdminWebRoutes";
 import mandiListRoutes from "./src/routes/mandiListRoutes";
 import adminDryingMethodRoutes from "./src/routes/adminRoutes/coldStorage/adminDryingMethodRoutes";
+import bannerRoutes from "./src/routes/bannerRoutes";
 
 const cors = require("cors");
 
@@ -121,6 +122,7 @@ app.use("/api/mandi_prices", mandiPriceRoutes);
 app.use("/api/web_sub_admins", subAdminWebRoutes);
 app.use("/api/mandi", mandiListRoutes);
 app.use("/api/admin/drying_methods", adminDryingMethodRoutes);
+app.use("/api/banner", bannerRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
