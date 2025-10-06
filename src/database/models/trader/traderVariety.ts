@@ -29,7 +29,7 @@ TraderVariety.init(
       references: { model: "traders", key: "id" },
       onDelete: "CASCADE",
     },
-    variety: { type: DataTypes.STRING(100), allowNull: false },
+    variety: { type: DataTypes.STRING, allowNull: false },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -56,6 +56,9 @@ TraderVariety.init(
 );
 
 TraderVariety.belongsTo(Trader, { foreignKey: "traderId", as: "trader" });
-Trader.hasMany(TraderVariety, { foreignKey: "traderId", as: "traderVarieties" });
+Trader.hasMany(TraderVariety, {
+  foreignKey: "traderId",
+  as: "traderVarieties",
+});
 
 export default TraderVariety;
