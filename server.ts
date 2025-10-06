@@ -58,6 +58,7 @@ import adminDryingMethodRoutes from "./src/routes/adminRoutes/coldStorage/adminD
 import bannerRoutes from "./src/routes/bannerRoutes";
 import advertisementServiceRoutes from "./src/routes/adminRoutes/advertisementServiceRoutes";
 import adverisementRoutes from "./src/routes/advertisementRoutes";
+import contentManagementRoutes from "./src/routes/contentManagementRoutes";
 
 const cors = require("cors");
 
@@ -127,6 +128,7 @@ app.use("/api/admin/drying_methods", adminDryingMethodRoutes);
 app.use("/api/banner", bannerRoutes);
 app.use("/api/admin/advertisement_services", advertisementServiceRoutes);
 app.use("/api/advertisement", adverisementRoutes);
+app.use("/api/content_management", contentManagementRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
