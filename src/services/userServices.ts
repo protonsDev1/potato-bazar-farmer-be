@@ -21,6 +21,7 @@ import UserSupport from "../database/models/userSupport";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { retrieveFarmerProfile } from "./farmerServices";
 import { retrieveTraderProfile } from "./traderService";
+import ColdStorageRequirement from "../database/models/coldStorageRequirement";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -1421,6 +1422,32 @@ export const requestPbVerificationService = async (userId) => {
       message: "PB verification can only be updated for mobile users.",
     };
 
+    const [
+      farmerExists,
+      coldStorageExists,
+      traderExists,
+      coldStoageHirerExists,
+    ] = await Promise.all([
+      Farmer.findOne({ where: { userId } }),
+      ColdStorage.findOne({ where: { userId } }),
+      Trader.findOne({ where: { userId } }),
+      ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
+    ]);
+    const step2Completed =
+      !!farmerExists ||
+      !!coldStorageExists ||
+      !!traderExists ||
+      !!coldStoageHirerExists;
+
+    if (!step2Completed) {
+      return {
+        statusCode: 400,
+        success: false,
+        message:
+          "Complete your role information (farmer, cold storage, trader or cold storage hirer) before requesting PB verification.",
+      };
+    }
+
   const kyc = await KycDocument.findOne({ where: { userId } });
 
   if (!kyc) {
@@ -1473,5 +1500,72 @@ export const requestPbVerificationService = async (userId) => {
     message:
       "PB verification request submitted successfully. Awaiting admin approval.",
     data: user,
+  };
+};
+
+export const getPbVerificationStepStatusService = async (userId: number) => {
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    return { statusCode: 404, success: false, message: "User not found" };
+  }
+
+  const steps: any = {};
+
+  // Step 1: Complete basic information
+  const step1Completed =
+    user.hasStartedUsingMobile && user.isUserOnBoardedOnMobile;
+  steps.step1Completed = step1Completed;
+  steps.step1Message = step1Completed
+    ? "Basic information completed."
+    : "Complete your basic information before requesting PB verification.";
+
+  // Step 2: Complete role information
+  const [farmerExists, coldStorageExists, traderExists, coldStoageHirerExists] =
+    await Promise.all([
+      Farmer.findOne({ where: { userId } }),
+      ColdStorage.findOne({ where: { userId } }),
+      Trader.findOne({ where: { userId } }),
+      ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
+    ]);
+  const step2Completed =
+    !!farmerExists ||
+    !!coldStorageExists ||
+    !!traderExists ||
+    !!coldStoageHirerExists;
+  steps.step2Completed = step2Completed;
+  steps.step2Message = step2Completed
+    ? "Role information completed."
+    : "Complete your role information (farmer, cold storage, trader, or cold storage hirer) before requesting PB verification.";
+
+  // Step 3: Complete KYC upload
+  const kyc = await KycDocument.findOne({ where: { userId } });
+  const step3Completed = !!kyc;
+  steps.step3Completed = step3Completed;
+  steps.step3Message = step3Completed
+    ? "KYC document uploaded."
+    : "Upload KYC document before requesting PB verification.";
+
+  // Step 4: KYC verified
+  const step4Completed = kyc?.isVerified ?? false;
+  steps.step4Completed = step4Completed;
+  steps.step4Message = step4Completed
+    ? "KYC verified."
+    : "Your KYC is not verified. PB verification cannot be requested.";
+
+  // Can request PB verification if all steps completed
+  const canRequestPbVerification =
+    step1Completed && step2Completed && step3Completed && step4Completed;
+
+  return {
+    statusCode: 200,
+    success: true,
+    message: canRequestPbVerification
+      ? "All steps completed. User can request PB verification."
+      : "Some steps are pending. Complete the steps to request PB verification.",
+    data: {
+      steps,
+      canRequestPbVerification,
+    },
   };
 };
