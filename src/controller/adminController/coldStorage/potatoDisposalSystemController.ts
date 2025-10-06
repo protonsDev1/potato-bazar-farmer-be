@@ -1,4 +1,5 @@
 import AdminPotatoDisposalSystem from "../../../database/models/adminModels/coldStorage/adminPotatoDisposableSystem";
+import PotatoDisposalSystem from "../../../database/models/potatoDisposalSystem";
 import {
   createRecord,
   getAllRecords,
@@ -84,7 +85,16 @@ export const updatePotatoDisposalSystem = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminPotatoDisposalSystem, id, data);
+    const response = await updateRecord(
+      AdminPotatoDisposalSystem,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: PotatoDisposalSystem,
+        targetField: "disposalSystem",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({

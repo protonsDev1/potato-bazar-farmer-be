@@ -1,9 +1,11 @@
 import { Op } from "sequelize";
 import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
-import User from "../database/models/user";
+import User, { USER_ROLES } from "../database/models/user";
 import { generateBuyRequestId } from "../utils/generate";
 import FavouriteRequest from "../database/models/favouriteRequest";
 import RequestView from "../database/models/requestView";
+import SubAdminPermission from "../database/models/subAdminPermission";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 export const createBuyRequestService = async (userId: number, data: any) => {
   const newRequest = await BuyRequest.create({
@@ -64,14 +66,14 @@ export const listBuyRequestsService = async (
     qualityGrade,
     district,
     isVerified,
+    pbVerified,
     userId,
     currentBuyRequestId,
   } = query;
 
   const offset = (Number(page) - 1) * Number(perPage);
 
-  // const where: any = { status: BUY_REQUEST_STATUS.ACTIVE };
-  const where: any = { isActive: true };
+  const where: any = { isActive: true, status: BUY_REQUEST_STATUS.APPROVED };
   const userWhere: any = {};
 
   if (userId) {
@@ -104,13 +106,25 @@ export const listBuyRequestsService = async (
     userWhere.district = district;
   }
 
+  if (pbVerified && pbVerified.toLowerCase() !== "all") {
+    userWhere.pbVerified = pbVerified === "true";
+  }
+
   const { rows, count } = await BuyRequest.findAndCountAll({
     where,
     include: [
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "state", "district"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "state",
+          "district",
+          "pbVerified",
+        ],
         where: Object.keys(userWhere).length ? userWhere : undefined,
       },
       ...(currentUserId
@@ -184,7 +198,15 @@ export const listMyBuyRequestsService = async (
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "state", "district"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "state",
+          "district",
+          "pbVerified",
+        ],
         where: Object.keys(userWhere).length ? userWhere : undefined,
       },
       {
@@ -233,7 +255,16 @@ export const listAdminBuyRequestsService = async (query: any) => {
   const offset = (Number(page) - 1) * Number(perPage);
 
   const where: any = {};
-  if (status) where.status = status;
+
+  if (status) {
+    if (status.toLowerCase() === "active") {
+      where.isActive = true;
+    } else if (status.toLowerCase() === "inactive") {
+      where.isActive = false;
+    } else if (Object.values(BUY_REQUEST_STATUS).includes(status)) {
+      where.status = status;
+    }
+  }
 
   if (search) {
     where[Op.or] = [
@@ -249,7 +280,7 @@ export const listAdminBuyRequestsService = async (query: any) => {
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile"],
+        attributes: ["id", "name", "email", "mobile", "pbVerified"],
       },
     ],
     limit: Number(perPage),
@@ -257,12 +288,12 @@ export const listAdminBuyRequestsService = async (query: any) => {
     order: [["createdAt", "DESC"]],
   });
 
-  const [totalRequests, activeCount, pendingCount, completedCount] =
+  const [totalRequests, approvedCount, pendingCount, rejectedCount] =
     await Promise.all([
       BuyRequest.count(),
-      BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.ACTIVE } }),
+      BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.APPROVED } }),
       BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.PENDING } }),
-      BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.COMPLETED } }),
+      BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.REJECTED } }),
     ]);
 
   return {
@@ -271,9 +302,9 @@ export const listAdminBuyRequestsService = async (query: any) => {
     totalPages: Math.ceil(count / Number(perPage)),
     total: count,
     totalRequests,
-    activeCount,
+    approvedCount,
     pendingCount,
-    completedCount,
+    rejectedCount,
     requests: rows,
   };
 };
@@ -288,7 +319,14 @@ export const getBuyRequestByIdService = async (
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "createdAt"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "createdAt",
+          "pbVerified",
+        ],
       },
       {
         model: RequestView,
@@ -337,13 +375,41 @@ export const getBuyRequestByIdService = async (
   };
 };
 
-export const deleteBuyRequestService = async (id: number) => {
-  const request = await BuyRequest.findOne({ where: { id } });
+export const deleteBuyRequestService = async (user: any, requestId: number) => {
+  const request = await BuyRequest.findByPk(requestId);
 
-  if (!request) return false;
+  if (!request) {
+    return {
+      statusCode: 404,
+      success: false,
+      message: "Buy request not found",
+    };
+  }
+
+  const canDelete =
+    request.userId === user.id || // owner
+    user.role === USER_ROLES.SUPER_ADMIN || // super admin
+    (user.role === USER_ROLES.SUB_ADMIN &&
+      (await SubAdminPermission.findOne({
+        where: { userId: user.id, permission: PERMISSIONS.BUY_REQUESTS },
+      })));
+
+  if (!canDelete) {
+    return {
+      statusCode: 403,
+      success: false,
+      message:
+        "Only Super Admin, Sub Admin with permission, or the request owner can delete a buy request.",
+    };
+  }
 
   await request.destroy();
-  return true;
+
+  return {
+    statusCode: 200,
+    success: true,
+    message: `Buy request deleted successfully`,
+  };
 };
 
 export const updateBuyRequestService = async (
@@ -377,4 +443,17 @@ export const updateBuyRequestService = async (
     message: "Buy request updated successfully",
     data: request,
   };
+};
+
+export const updateBuyRequestStatusService = async (requestId, status) => {
+  const buyRequest = await BuyRequest.findByPk(requestId);
+
+  if (!buyRequest) {
+    return null;
+  }
+
+  buyRequest.status = status;
+  await buyRequest.save();
+
+  return buyRequest;
 };

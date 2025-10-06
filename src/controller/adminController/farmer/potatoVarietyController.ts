@@ -1,4 +1,5 @@
 import AdminPotatoVarietyGrown from "../../../database/models/adminModels/farmer/adminPotatoVarietyGrown";
+import PotatoVarietyGrown from "../../../database/models/potatoVarietyGrown";
 import {
   createRecord,
   getAllRecords,
@@ -77,7 +78,16 @@ export const updatePotatoVariety = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminPotatoVarietyGrown, id, data);
+    const response = await updateRecord(
+      AdminPotatoVarietyGrown,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: PotatoVarietyGrown,
+        targetField: "variety",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({

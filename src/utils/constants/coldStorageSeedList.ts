@@ -3,7 +3,7 @@ export const coldStorageTypeList = [
     name: "Integrated with grading/processing (ग्रेडिंग/प्रोसेसिंग सहित/ગ્રેડિંગ/પ્રોસેસિંગ સાથે/ਗ੍ਰੇਡਿੰਗ/ਪ੍ਰੋਸੈਸਿੰਗ ਨਾਲ)",
     position: 1,
   },
-  { name: "Multi-purpose (बहुउद्देशीय/બહુપયોગી/ਬਹੁ-ਉਦੇਸ਼ੀ)", position: 2 },
+  { name: "Multi-purpose (बहुउद्देशीय/વિવિધલક્ષી/ਬਹੁ-ਉਦੇਸ਼ੀ)", position: 2 },
   {
     name: "Potato-specific (आलू विशेष/બટાકા માટે વિશિષ્ટ/ਆਲੂ-ਵਿਸ਼ੇਸ਼)",
     position: 3,
@@ -13,7 +13,7 @@ export const coldStorageTypeList = [
 
 export const storageTypeList = [
   { name: "Bags (थैले/થેલાં/ਥੈਲੇ)", position: 1 },
-  { name: "Bulk (थोक/થોક/ਥੋਕ)", position: 2 },
+  { name: "Bulk (थोक/જથ્થાબંધ/ਥੋਕ)", position: 2 },
   { name: "Boxes (बक्से/બોક્સ/ਡੱਬੇ)", position: 3 },
   { name: "Crates (टोकरी/ક્રેટ/ਕ੍ਰੇਟ)", position: 4 },
   { name: "Palletized (पैलेटाइज्ड/પેલેટાઇઝ્ડ/ਪੈਲੇਟਾਈਜ਼ਡ)", position: 5 },
@@ -57,13 +57,20 @@ export const dryingFacilityDetailsList = [
     name: "Post-storage drying (भंडारण के बाद सुखाना/ભંડારણ પછી સુકાવવું/ਸਟੋਰੇਜ ਤੋਂ ਬਾਅਦ ਸੁਕਾਉਣਾ)",
     position: 2,
   },
-  { name: "Fan based (पंखा आधारित/પંખો આધારિત/ਪੱਖੇ ਆਧਾਰਿਤ)", position: 3 },
+
+  { name: "None (कोई नहीं/કોઈ નથી/ਕੋਈ ਨਹੀਂ)", position: 3 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 4 },
+];
+
+export const dryingMethodsAvailableList = [
+  { name: "Fan based (पंखा आधारित/પંખો આધારિત/ਪੱਖੇ ਆਧਾਰਿਤ)", position: 1 },
   {
     name: "Natural ventilation (प्राकृतिक वेंटिलेशन/પ્રાકૃતિક હવાનું પ્રવાહ/ਕੁਦਰਤੀ ਹਵਾ ਦਾ ਪ੍ਰਵਾਹ)",
-    position: 4,
+    position: 2,
   },
-  { name: "None (कोई नहीं/કોઈ નથી/ਕੋਈ ਨਹੀਂ)", position: 5 },
-  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 6 },
+
+  { name: "None (कोई नहीं/કોઈ નથી/ਕੋਈ ਨਹੀਂ)", position: 3 },
+  { name: "Other (अन्य/અન્ય/ਹੋਰ)", position: 4 },
 ];
 
 export const elevatorTypeLIst = [
@@ -113,11 +120,11 @@ export const otherFacilityList = [
 
 export const constructionTypeList = [
   {
-    name: "Civil with Puff (सिविल विद पफ/સિવિલ વિથ પફ/ਸਿਵਲ ਵਿਦ ਪਫ)",
+    name: "Civil with Puff (सिविल विद पफ/સિવિલ સાથે પફ/ਸਿਵਲ ਵਿਦ ਪਫ)",
     position: 1,
   },
   {
-    name: "Civil with Thermocol (सिविल विद थर्माकोल/સિવિલ વિથ થર્મોકોલ/ਸਿਵਲ ਵਿਦ ਥਰਮੋਕੋਲ)",
+    name: "Civil with Thermocol (सिविल विद थर्माकोल/સિવિલ સાથે થર્મોકોલ/ਸਿਵਲ ਵਿਦ ਥਰਮੋਕੋਲ)",
     position: 2,
   },
   { name: "Only Puff (केवल पफ/ફક્ત પફ/ਸਿਰਫ਼ ਪਫ)", position: 3 },

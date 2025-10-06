@@ -2,11 +2,11 @@ import express from "express";
 import { createValidator } from "express-joi-validation";
 import {
   adminMiddleware,
-  adminOrSubAdminMiddleware,
   authMiddleware,
   checkWebPermissionMiddleware,
 } from "../utils/userAuth";
 import {
+  availabilitySchema,
   coldStorageSchema,
   updateColdStorageSchema,
 } from "../validation/coldStorageValidation";
@@ -21,11 +21,13 @@ import {
   likeOrDislikeColdStorage,
   requestUpdateCS,
   verifyUpdateCS,
+  updateColdStorageAvailability,
 } from "../controller/coldStorage";
 import { verifyOtpSchema } from "../validation/userValidator";
 import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
 import { duplicationCheckMiddleware } from "../middlewares/duplicationCheckMiddleware";
 import ColdStorage from "../database/models/coldStorage";
+import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -49,15 +51,7 @@ router.post(
   selfOnboardColdStorage
 );
 
-router.get(
-  "/profile/:id",
-  checkWebPermissionMiddleware(
-    WEB_MODULES.COLD_STORAGE,
-    WEB_ACTIONS.VIEW,
-    true
-  ),
-  getColdStorageProfile
-);
+router.get("/profile/:id", authMiddleware, getColdStorageProfile);
 
 router.put(
   "/update/:coldStorageId",
@@ -70,7 +64,7 @@ router.put(
   duplicationCheckMiddleware(ColdStorage, "update", "coldStorageId"),
   updateColdStorage
 );
-router.get("/", adminOrSubAdminMiddleware, getColdStorageList);
+router.get("/", authMiddleware, getColdStorageList);
 router.delete(
   "/delete/:id",
   checkWebPermissionMiddleware(
@@ -86,7 +80,7 @@ router.post(
   adminMiddleware,
   exportColdStorages
 );
-router.post("/like", authMiddleware, likeOrDislikeColdStorage);
+router.post("/:coldStorageId/like", authMiddleware, likeOrDislikeColdStorage);
 router.post(
   "/:coldStorageId/request-mobile-update",
   checkWebPermissionMiddleware(
@@ -94,6 +88,7 @@ router.post(
     WEB_ACTIONS.UPDATE,
     false
   ),
+  limitOtpMiddleware,
   requestUpdateCS
 );
 
@@ -105,6 +100,13 @@ router.post(
     false
   ),
   verifyUpdateCS
+);
+
+router.patch(
+  "/:coldStorageId/availability",
+  authMiddleware,
+  validator.body(availabilitySchema),
+  updateColdStorageAvailability
 );
 
 export default router;

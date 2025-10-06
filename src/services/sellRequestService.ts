@@ -1,11 +1,13 @@
 import { Op } from "sequelize";
-import User from "../database/models/user";
+import User, { USER_ROLES } from "../database/models/user";
 import { generateSellRequestId } from "../utils/generate";
 import SellRequest, {
   SELL_REQUEST_STATUS,
 } from "../database/models/sellRequest";
 import FavouriteRequest from "../database/models/favouriteRequest";
 import RequestView from "../database/models/requestView";
+import SubAdminPermission from "../database/models/subAdminPermission";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 export const createSellRequestService = async (userId: number, data: any) => {
   const newRequest = await SellRequest.create({
@@ -50,7 +52,7 @@ export const createSellRequestService = async (userId: number, data: any) => {
     organicCertified: data.organicCertified,
     images: data.images,
     location: data.location,
-    status: SELL_REQUEST_STATUS.AVAILABLE,
+    status: SELL_REQUEST_STATUS.PENDING,
   });
 
   return newRequest;
@@ -68,14 +70,14 @@ export const listSellRequestsService = async (
     qualityGrade,
     district,
     isVerified,
+    pbVerified,
     userId,
     currentSellRequestId,
   } = query;
 
   const offset = (Number(page) - 1) * Number(perPage);
 
-  // const where: any = { status: SELL_REQUEST_STATUS.AVAILABLE };
-  const where: any = { isActive: true };
+  const where: any = { isActive: true, status: SELL_REQUEST_STATUS.APPROVED };
   const userWhere: any = {};
 
   if (userId) {
@@ -108,13 +110,25 @@ export const listSellRequestsService = async (
     userWhere.district = district;
   }
 
+  if (pbVerified && pbVerified.toLowerCase() !== "all") {
+    userWhere.pbVerified = pbVerified === "true";
+  }
+
   const { rows, count } = await SellRequest.findAndCountAll({
     where,
     include: [
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "state", "district"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "state",
+          "district",
+          "pbVerified",
+        ],
         where: Object.keys(userWhere).length ? userWhere : undefined,
       },
       ...(currentUserId
@@ -188,7 +202,15 @@ export const listMySellRequestsService = async (
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "state", "district"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "state",
+          "district",
+          "pbVerified",
+        ],
         where: Object.keys(userWhere).length ? userWhere : undefined,
       },
       {
@@ -237,7 +259,16 @@ export const listAdminSellRequestsService = async (query: any) => {
   const offset = (Number(page) - 1) * Number(perPage);
 
   const where: any = {};
-  if (status) where.status = status;
+
+  if (status) {
+    if (status.toLowerCase() === "active") {
+      where.isActive = true;
+    } else if (status.toLowerCase() === "inactive") {
+      where.isActive = false;
+    } else if (Object.values(SELL_REQUEST_STATUS).includes(status)) {
+      where.status = status;
+    }
+  }
 
   if (search) {
     where[Op.or] = [
@@ -253,7 +284,7 @@ export const listAdminSellRequestsService = async (query: any) => {
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile"],
+        attributes: ["id", "name", "email", "mobile", "pbVerified"],
       },
     ],
     limit: Number(perPage),
@@ -261,12 +292,12 @@ export const listAdminSellRequestsService = async (query: any) => {
     order: [["createdAt", "DESC"]],
   });
 
-  const [totalRequests, availableCount, reservedCount, soldCount] =
+  const [totalRequests, approvedCount, pendingCount, rejectedCount] =
     await Promise.all([
       SellRequest.count(),
-      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.AVAILABLE } }),
-      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.RESERVED } }),
-      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.SOLD } }),
+      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.APPROVED } }),
+      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.PENDING } }),
+      SellRequest.count({ where: { status: SELL_REQUEST_STATUS.REJECTED } }),
     ]);
 
   return {
@@ -275,9 +306,9 @@ export const listAdminSellRequestsService = async (query: any) => {
     totalPages: Math.ceil(count / Number(perPage)),
     total: count,
     totalRequests,
-    availableCount,
-    reservedCount,
-    soldCount,
+    approvedCount,
+    pendingCount,
+    rejectedCount,
     requests: rows,
   };
 };
@@ -292,7 +323,14 @@ export const getSellRequestByIdService = async (
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "createdAt"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "createdAt",
+          "pbVerified",
+        ],
       },
       {
         model: RequestView,
@@ -340,13 +378,44 @@ export const getSellRequestByIdService = async (
   };
 };
 
-export const deleteSellRequestService = async (id: number) => {
-  const request = await SellRequest.findOne({ where: { id } });
+export const deleteSellRequestService = async (
+  user: any,
+  requestId: number
+) => {
+  const request = await SellRequest.findByPk(requestId);
 
-  if (!request) return false;
+  if (!request) {
+    return {
+      statusCode: 404,
+      success: false,
+      message: "Sell request not found",
+    };
+  }
+
+  const canDelete =
+    request.userId === user.id || // owner
+    user.role === USER_ROLES.SUPER_ADMIN || // super admin
+    (user.role === USER_ROLES.SUB_ADMIN &&
+      (await SubAdminPermission.findOne({
+        where: { userId: user.id, permission: PERMISSIONS.SELL_REQUESTS },
+      })));
+
+  if (!canDelete) {
+    return {
+      statusCode: 403,
+      success: false,
+      message:
+        "Only Super Admin, Sub Admin with permission, or the request owner can delete a sell request.",
+    };
+  }
 
   await request.destroy();
-  return true;
+
+  return {
+    statusCode: 200,
+    success: true,
+    message: `Sell request deleted successfully`,
+  };
 };
 
 export const updateSellRequestService = async (
@@ -380,4 +449,17 @@ export const updateSellRequestService = async (
     message: "Sell request updated successfully",
     data: request,
   };
+};
+
+export const updateSellRequestStatusService = async (requestId, status) => {
+  const sellRequest = await SellRequest.findByPk(requestId);
+
+  if (!sellRequest) {
+    return null;
+  }
+
+  sellRequest.status = status;
+  await sellRequest.save();
+
+  return sellRequest;
 };

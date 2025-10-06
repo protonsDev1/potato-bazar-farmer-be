@@ -15,7 +15,9 @@ import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
-import { getUserRole } from "./userServices";
+import { getRegistrationTypes, getUserRole } from "./userServices";
+import ProcurementRegion from "../database/models/trader/procurementRegions";
+import ExporterDetail from "../database/models/trader/exporterDetail";
 
 export async function onboardTrader(payload) {
   try {
@@ -47,7 +49,6 @@ export async function onboardTrader(payload) {
           ownPotatoFarming: payload.ownPotatoFarming,
           acres: payload.acres,
           yearlyPurchaseVolumeTons: payload.yearlyPurchaseVolumeTons,
-          mainProcurementRegion: payload.mainProcurementRegion,
           geographicalMarketCovered: payload.geographicalMarketCovered,
           contractFarming: payload.contractFarming,
           spotBuying: payload.spotBuying,
@@ -64,6 +65,7 @@ export async function onboardTrader(payload) {
           gstNumber: payload.gstNumber,
           fssaiNumber: payload.fssaiNumber,
           marketCoverageStates: payload.marketCoverageStates,
+          procurementRegionStates: payload.procurementRegionStates,
           userId: payload.userId,
           onBoardedBy: payload.onBoardedBy,
           subVariety: payload.subVariety,
@@ -116,6 +118,15 @@ export async function onboardTrader(payload) {
         }
       }
 
+      if (payload.procurementRegions) {
+        for (const { name } of payload.procurementRegions) {
+          await ProcurementRegion.create(
+            { traderId: trader.id, name },
+            { transaction: t }
+          );
+        }
+      }
+
       if (payload.bankDetails) {
         await BankDetail.create(
           { traderId: trader.id, ...payload.bankDetails },
@@ -126,6 +137,13 @@ export async function onboardTrader(payload) {
       if (payload.mandiDetails) {
         await MandiDetail.create(
           { traderId: trader.id, ...payload.mandiDetails },
+          { transaction: t }
+        );
+      }
+
+      if (payload.exporterDetails) {
+        await ExporterDetail.create(
+          { traderId: trader.id, ...payload.exporterDetails },
           { transaction: t }
         );
       }
@@ -150,6 +168,7 @@ export async function onboardTrader(payload) {
             district: payload.district,
             state: payload.state,
             statusOfRegistration: REGISTRATION_STATUS.PENDING,
+            entityId: trader.id,
           },
           { transaction: t }
         );
@@ -195,7 +214,6 @@ export async function updateTraderService(traderId, payload) {
       "ownPotatoFarming",
       "acres",
       "yearlyPurchaseVolumeTons",
-      "mainProcurementRegion",
       "geographicalMarketCovered",
       "contractFarming",
       "spotBuying",
@@ -210,6 +228,7 @@ export async function updateTraderService(traderId, payload) {
       "acceptsOnlinePayments",
       "subVariety",
       "marketCoverageStates",
+      "procurementRegionStates",
     ];
 
     const updateData: Record<string, any> = {};
@@ -235,6 +254,7 @@ export async function updateTraderService(traderId, payload) {
       traderVarieties: TraderVariety,
       cropsTraded: CropTraded,
       marketCoverages: MarketCoverage,
+      procurementRegions: ProcurementRegion,
     };
 
     for (const [key, Model] of Object.entries(relationMap)) {
@@ -254,6 +274,10 @@ export async function updateTraderService(traderId, payload) {
 
     if (payload.mandiDetails) {
       await safeUpsert(MandiDetail, traderId, payload.mandiDetails, t);
+    }
+
+    if (payload.exporterDetails) {
+      await safeUpsert(ExporterDetail, traderId, payload.exporterDetails, t);
     }
 
     if (payload.traderDocuments) {
@@ -290,15 +314,17 @@ export const retrieveTraderProfile = async (
       personalInfo,
       bankDetails,
       mandiDetails,
+      exporterDetails,
       traderDocuments,
       interests,
       marketCoverages,
+      procurementRegions,
       types,
       varieties,
       cropsTraded,
     ] = await Promise.all([
       Trader.findOne({
-        where: { id: traderId, isDeleted: false },
+        where: { id: traderId },
         include: [
           {
             model: User,
@@ -314,12 +340,17 @@ export const retrieveTraderProfile = async (
       }),
       BankDetail.findOne({ where: { traderId } }),
       MandiDetail.findOne({ where: { traderId } }),
+      ExporterDetail.findOne({ where: { traderId } }),
       TraderDocument.findOne({ where: { traderId } }),
       TraderInterest.findAll({
         attributes: ["interest"],
         where: { traderId },
       }),
       MarketCoverage.findAll({
+        attributes: ["name"],
+        where: { traderId },
+      }),
+      ProcurementRegion.findAll({
         attributes: ["name"],
         where: { traderId },
       }),
@@ -341,9 +372,11 @@ export const retrieveTraderProfile = async (
       personalInfo,
       bankDetails,
       mandiDetails,
+      exporterDetails,
       traderDocuments,
       interests,
       marketCoverages,
+      procurementRegions,
       types,
       varieties,
       cropsTraded,
@@ -374,8 +407,6 @@ export const getTraderListByAdmin = async (
   try {
     const offset = (page - 1) * limit;
     const whereCondition: any = {};
-
-    whereCondition.isDeleted = false;
 
     const {
       agentId,
@@ -553,10 +584,10 @@ export const getTraderListByAdmin = async (
   }
 };
 
-export const softDeleteTraderById = async (traderId: number) => {
+export const deleteTraderById = async (traderId: number) => {
   const trader = await Trader.findByPk(traderId);
 
-  if (!trader || trader.isDeleted) {
+  if (!trader) {
     return { success: false, status: 404, message: "Trader not found" };
   }
 
@@ -564,13 +595,19 @@ export const softDeleteTraderById = async (traderId: number) => {
     where: { userId: trader.userId, userType: USER_TYPE.TRADER },
   });
 
-  trader.isDeleted = true;
-  await trader.save();
+  await Trader.destroy({ where: { id: traderId } });
 
   if (agentOnboardedTrader) {
-    agentOnboardedTrader.isDeleted = true;
-    await agentOnboardedTrader.save();
+    await AgentOnboardedUser.destroy({
+      where: { id: agentOnboardedTrader.id },
+    });
   }
+
+  const { isFarmerOnboarded, isColdStorageOnboarded, isTraderOnboarded } =
+    await getRegistrationTypes(trader.mobileNumber);
+
+  if (!isFarmerOnboarded && !isColdStorageOnboarded && !isTraderOnboarded)
+    await User.destroy({ where: { id: trader.userId } });
 
   return { success: true, data: trader };
 };
@@ -586,8 +623,6 @@ export const getAllTraders = async (filters, search) => {
     registrationDate,
     onboardedByUser,
   } = filters;
-
-  whereCondition.isDeleted = false;
 
   if (agentId && agentId.toLowerCase() !== "all") {
     whereCondition.onBoardedBy = agentId;
@@ -694,7 +729,6 @@ export const createTraderWorksheetColumns = (worksheet) => {
       key: "yearlyPurchaseVolumeTons",
       width: 25,
     },
-    { header: "Main Region", key: "mainProcurementRegion", width: 30 },
     {
       header: "Geographical Market",
       key: "geographicalMarketCovered",
@@ -706,9 +740,20 @@ export const createTraderWorksheetColumns = (worksheet) => {
     { header: "Trader Varieties", key: "traderVarieties", width: 50 },
     { header: "Crops Traded", key: "cropsTraded", width: 50 },
     { header: "Trader Interests", key: "traderInterests", width: 50 },
+    { header: "Procurement Regions", key: "procurementRegions", width: 50 },
+    {
+      header: "Procurement Region States",
+      key: "procurementRegionStates",
+      width: 50,
+    },
     { header: "Market Coverage", key: "marketCoverages", width: 50 },
-    { header: "Market Coverage State", key: "marketCoverageStates", width: 50 },
+    {
+      header: "Market Coverage States",
+      key: "marketCoverageStates",
+      width: 50,
+    },
     { header: "Mandi Details", key: "mandiDetail", width: 80 },
+    { header: "Exporter Details", key: "exporterDetail", width: 80 },
   ];
 
   worksheet.getRow(1).eachCell((cell) => {
@@ -726,16 +771,23 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       cropsTraded,
       traderInterests,
       marketCoverages,
+      procurementRegions,
       mandiDetail,
+      exporterDetail,
     ] = await Promise.all([
       TraderType.findAll({ where: { traderId }, attributes: ["type"] }),
       TraderVariety.findAll({ where: { traderId }, attributes: ["variety"] }),
       CropTraded.findAll({ where: { traderId }, attributes: ["cropName"] }),
       TraderInterest.findAll({ where: { traderId }, attributes: ["interest"] }),
       MarketCoverage.findAll({ where: { traderId }, attributes: ["name"] }),
+      ProcurementRegion.findAll({ where: { traderId }, attributes: ["name"] }),
       MandiDetail.findOne({
         where: { traderId },
         attributes: ["mandiName", "shopNumber", "mandiLicenceNo"],
+      }),
+      ExporterDetail.findOne({
+        where: { traderId },
+        attributes: ["regions", "potatoVarieties", "quantityPerYear"],
       }),
     ]);
 
@@ -767,7 +819,6 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       seedsSales: trader.seedsSales ? "Yes" : "No",
       ownColdStorage: trader.ownColdStorage ? "Yes" : "No",
       yearlyPurchaseVolumeTons: trader.yearlyPurchaseVolumeTons || "",
-      mainProcurementRegion: trader.mainProcurementRegion || "",
       geographicalMarketCovered: trader.geographicalMarketCovered || "",
       yearsInTrading: trader.yearsInTrading || "",
       averageDailySalesKatta: trader.averageDailySalesKatta || "",
@@ -775,10 +826,15 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
       traderVarieties: traderVarieties.map((v) => v.variety).join(", "),
       cropsTraded: cropsTraded.map((c) => c.cropName).join(", "),
       traderInterests: traderInterests.map((i) => i.interest).join(", "),
+      procurementRegions: procurementRegions.map((m) => m.name).join(", "),
+      procurementRegionStates: trader.procurementRegionStates || "",
       marketCoverages: marketCoverages.map((m) => m.name).join(", "),
       marketCoverageStates: trader.marketCoverageStates || "",
       mandiDetail: mandiDetail
         ? `Mandi: ${mandiDetail.mandiName}, Shop: ${mandiDetail.shopNumber}, Licence: ${mandiDetail.mandiLicenceNo}`
+        : "",
+      exporterDetail: exporterDetail
+        ? `Regions: ${exporterDetail.regions}, Potato Varieties: ${exporterDetail.potatoVarieties}, Average export quantity per year: ${exporterDetail.quantityPerYear}`
         : "",
     });
   }

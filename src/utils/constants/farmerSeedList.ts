@@ -31,7 +31,7 @@ export const potatoTypeList = [
   { name: "French Fry (फ्रेंच फ्राई/ફ્રેન્ચ ફ્રાઇ/ਫ੍ਰੈਂਚ ਫਰਾਈ)", position: 3 },
 ];
 
-export const potatoVarietyList = [
+export const potatoVarietyListOld = [
   {
     name: "Table",
     position: 1,
@@ -70,7 +70,7 @@ export const potatoVarietyList = [
   },
 ];
 
-export const potatoSubVarietyList = [
+export const potatoSubVarietyListOld = [
   {
     varietyName: "Table",
     name: "Jyoti",
@@ -319,6 +319,422 @@ export const potatoSubVarietyList = [
   { varietyName: "Minituber", name: "Mohan" },
   { varietyName: "Minituber", name: "Other (CPRI)" },
   { varietyName: "Minituber", name: "Other" },
+];
+
+export const potatoVarietyList = [
+  {
+    name: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    position: 1,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796556091-i0ws4rd5.png",
+  },
+  {
+    name: "Chips (चिप्स/ચિપ્સ/ਚਿਪਸ)",
+    position: 2,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796238111-bu98tqs5.png",
+  },
+  {
+    name: "Fries (फ्राइज़/ફ્રાઈઝ/ਫ੍ਰਾਈਜ਼)",
+    position: 3,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796321886-u9kww2ux.png",
+  },
+  {
+    name: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    position: 4,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796393172-qhqey698.png",
+  },
+  {
+    name: "Seeds (बीज/બીજ/ਬੀਜ)",
+    position: 5,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796458026-mdlpkarw.png",
+  },
+  {
+    name: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    position: 6,
+    image:
+      "https://potato-bazar.s3.amazonaws.com/uploads/potatoVariety/1756796505265-4angwnzg.png",
+  },
+];
+
+export const potatoSubVarietyList = [
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Jyoti (ज्योति/જ્યોતિ/ਜ੍ਯੋਤੀ)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Badshah (बादशाह/બાદશાહ/ਬਾਦਸ਼ਾਹ)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Lauvkar (लौवकर/લૌવકર/ਲੌਵਕਰ)",
+  },
+  { varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)", name: "Diamond (हीरा/હીરા/ਹੀਰਾ)" },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Colombo (कोलंबो/કોલંબો/ਕੋਲੰਬੋ)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Bahar (3797) (बहार/બહાર/ਬਹਾਰ)",
+  },
+  { varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)", name: "Surya (सूर्य/સૂર્ય/ਸੂਰਜ)" },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Amber Light (अंबर लाइट/એમ્બર લાઇટ/ਐਂਬਰ ਲਾਈਟ)",
+  },
+  { varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)", name: "LR (एल.आर./એલ.આર./ਐਲ.ਆਰ.)" },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Chipsona-1 (चिपसोना-1/ચિપસોના-1/ਚਿਪਸੋਨਾ-1)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Chipsona-3 (चिपसोना-3/ચિપસોના-3/ਚਿਪਸੋਨਾ-3)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "KCM (के.सी.एम./કે.સી.એમ./ਕੇ.ਸੀ.ਐਮ.)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Hermes (हर्मेस/હર્મેસ/ਹਰਮੇਸ)",
+  },
+  { varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)", name: "Taurus (टॉरस/ટૉરસ/ਟੌਰਸ)" },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Frysona (फ्रायसोना/ફ્રાયસોના/ਫ੍ਰਾਇਸੋਨਾ)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "FryOm (फ्रायओम/ફ્રાયઓમ/ਫ੍ਰਾਇਓਮ)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Santana (संताना/સંતાના/ਸੰਤਾਨਾ)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Innovator (इननोवेटर/ઇનોવેટર/ਇਨੋਵੇਟਰ)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "HYFM (एच.वाई.एफ.एम./એચ.વાય.એફ.એમ./ਐਚ.ਵਾਈ.ਐਫ.ਐਮ.)",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Jamania (जामानिया/જામાનિયા/ਜਾਮਾਨੀਆ)",
+  },
+  { varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)", name: "Uday (उदय/ઉદય/ਉਦੈ)" },
+  { varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)", name: "Mohan (मोहन/મોહન/ਮੋਹਨ)" },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Other (CPRI) (अन्य (CPRI)/અન્ય (CPRI)/ਹੋਰ (CPRI))",
+  },
+  {
+    varietyName: "Table (टेबल/ટેબલ/ਟੇਬਲ)",
+    name: "Other (अन्य/અન્ય/ਹੋਰ)",
+  },
+  {
+    varietyName: "Chips (चिप्स/ચિપ્સ/ਚਿਪਸ)",
+    name: "LR (एलआर/એલઆર/ਐਲਆਰ)",
+  },
+  {
+    varietyName: "Chips (चिप्स/ચિપ્સ/ਚਿਪਸ)",
+    name: "Chipsona-1 (चिपसोना-1/ચિપસોના-1/ਚਿਪਸੋਨਾ-1)",
+  },
+  {
+    varietyName: "Chips (चिप्स/ચિપ્સ/ਚਿਪਸ)",
+    name: "Chipsona-3 (चिपसोना-3/ચિપસોના-3/ਚਿਪਸੋਨਾ-3)",
+  },
+  {
+    varietyName: "Chips (चिप्स/ચિપ્સ/ਚਿਪਸ)",
+    name: "KCM (केसीएम/કેસીએમ/ਕੇਸੀਐਮ)",
+  },
+  {
+    varietyName: "Chips (चिप्स/ચિપ્સ/ਚਿਪਸ)",
+    name: "Hermes (हर्मेस/હર્મેસ/ਹਰਮੇਸ)",
+  },
+  {
+    varietyName: "Chips (चिप्स/ચિપ્સ/ਚਿਪਸ)",
+    name: "Taurus (टॉरस/ટૌરસ/ਟੌਰਸ)",
+  },
+  {
+    varietyName: "Chips (चिप्स/ચિપ્સ/ਚਿਪਸ)",
+    name: "Other (अन्य/અન્ય/ਹੋਰ)",
+  },
+  {
+    varietyName: "Fries (फ्राइज़/ફ્રાઈઝ/ਫ੍ਰਾਈਜ਼)",
+    name: "Frysona (फ्राईसोना/ફ્રાઇસોના/ਫ੍ਰਾਈਸੋਨਾ)",
+  },
+  {
+    varietyName: "Fries (फ्राइज़/ફ્રાઈઝ/ਫ੍ਰਾਈਜ਼)",
+    name: "FryOm (फ्राईओम/ફ્રાઇઓમ/ਫ੍ਰਾਈਓਮ)",
+  },
+  {
+    varietyName: "Fries (फ्राइज़/ફ્રાઈઝ/ਫ੍ਰਾਈਜ਼)",
+    name: "Santana (संताना/સંતાના/ਸੰਤਾਨਾ)",
+  },
+  {
+    varietyName: "Fries (फ्राइज़/ફ્રાઈઝ/ਫ੍ਰਾਈਜ਼)",
+    name: "Innovator (इन्वोवेटर/ઇનોવેટર/ਇਨੋਵੇਟਰ)",
+  },
+  {
+    varietyName: "Fries (फ्राइज़/ફ્રાઈઝ/ਫ੍ਰਾਈਜ਼)",
+    name: "HYSM (एचवाईएसएम/એચવાયએસએમ/ਐਚਵਾਈਐੱਸਐੱਮ)",
+  },
+  {
+    varietyName: "Fries (फ्राइज़/ફ્રાઈઝ/ਫ੍ਰਾਈਜ਼)",
+    name: "Kennebeck (केनेबेक/કેનબેક/ਕੇਨੇਬੇਕ)",
+  },
+  {
+    varietyName: "Fries (फ्राइज़/ફ્રાઈઝ/ਫ੍ਰਾਈਜ਼)",
+    name: "Other (अन्य/અન્ય/ਹੋਰ)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "LR (एलआर/એલઆર/ਐਲਆਰ)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "Chipsona-1 (चिपसोना-1/ચિપસોના-1/ਚਿਪਸੋਨਾ-1)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "Chipsona-3 (चिपसोना-3/ચિપસોના-3/ਚਿਪਸੋਨਾ-3)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "Hermes (हर्मेस/હર્મેસ/ਹਰਮੇਸ)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "Taurus (टॉरस/ટૌરસ/ਟੌਰਸ)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "Frysona (फ्राईसोना/ફ્રાઇસોના/ਫ੍ਰਾਈਸੋਨਾ)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "FryOm (फ्राईओम/ફ્રાઇઓમ/ਫ੍ਰਾਈਓਮ)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "Santana (संताना/સંતાના/ਸੰਤਾਨਾ)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "Innovator (इन्वोवेटर/ઇનોવેટર/ਇਨੋਵੇਟਰ)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "HYSM (एचवाईएसएम/એચવાયએસએમ/ਐਚਵਾਈਐੱਸਐੱਮ)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "Kennebeck (केनेबेक/કેનબેક/ਕੇਨੇਬੇਕ)",
+  },
+  {
+    varietyName: "Flakes (फ्लेक्स/ફ્લેક્સ/ਫਲੇਕਸ)",
+    name: "Other (अन्य/અન્ય/ਹੋਰ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Jyoti (ज्योति/જ્યોતિ/ਜਯੋਤੀ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Badshah (बादशाह/બાદશાહ/ਬਾਦਸ਼ਾਹ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Lauvkar (लौवकर/લૌવકર/ਲੌਵਕਰ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Diamond (डायमंड/ડાયમંડ/ਡਾਇਮੰਡ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Colombo (कोलंबो/કોલમ્બો/ਕੋਲੰਬੋ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Bahar (3797) (बहार/બહાર/ਬਹਾਰ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Surya (सूर्य/સૂર્ય/ਸੂਰਜ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Amber Light (अंबर लाइट/એમ્બર લાઇટ/ਐਂਬਰ ਲਾਈਟ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "LR (एलआर/એલઆર/ਐਲਆਰ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Chipsona-1 (चिपसोना-1/ચિપસોના-1/ਚਿਪਸੋਨਾ-1)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Chipsona-3 (चिपसोना-3/ચિપસોના-3/ਚਿਪਸੋਨਾ-3)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "KCM (केसीएम/કેસીએમ/ਕੇਸੀਐਮ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Hermes (हर्मेस/હર્મેસ/ਹਰਮੇਸ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Taurus (टॉरस/ટૌરસ/ਟੌਰਸ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Frysona (फ्राईसोना/ફ્રાઇસોના/ਫ੍ਰਾਈਸੋਨਾ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "FryOm (फ्राईओम/ફ્રાઇઓમ/ਫ੍ਰਾਈਓਮ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Santana (संताना/સંતાના/ਸੰਤਾਨਾ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Innovator (इन्वोवेटर/ઇનોવેટર/ਇਨੋਵੇਟਰ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "HYFM (एचवाईएफएम/એચવાયએફએમ/ਐਚਵਾਈਐਫਐਮ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Jamania (जमाना/જમનિયા/ਜਮਾਨਿਆ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Uday (उदय/ઉદય/ਉਦਯ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Mohan (मोहन/મોહન/ਮੋਹਨ)",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Other (CPRI) (अन्य (CPRI)/અન્ય (CPRI)/ਹੋਰ (CPRI))",
+  },
+  {
+    varietyName: "Seeds (बीज/બીજ/ਬੀਜ)",
+    name: "Other (अन्य/અન્ય/ਹੋਰ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Jyoti (ज्योति/જ્યોતિ/ਜਯੋਤੀ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Badshah (बादशाह/બાદશાહ/ਬਾਦਸ਼ਾਹ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Lauvkar (लौवकर/લૌવકર/ਲੌਵਕਰ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Diamond (डायमंड/ડાયમંડ/ਡਾਇਮੰਡ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Colombo (कोलंबो/કોલમ્બો/ਕੋਲੰਬੋ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Bahar (3797) (बहार/બહાર/ਬਹਾਰ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Surya (सूर्य/સૂર્ય/ਸੂਰਜ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Amber Light (अंबर लाइट/એમ્બર લાઇટ/ਐਂਬਰ ਲਾਈਟ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "LR (एलआर/એલઆર/ਐਲਆਰ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",     
+    name: "Chipsona-1 (चिपसोना-1/ચિપસોના-1/ਚਿਪਸੋਨਾ-1)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Chipsona-3 (चिपसोना-3/ચિપસોના-3/ਚਿਪਸੋਨਾ-3)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "KCM (केसीएम/કેસીએમ/ਕੇਸੀਐਮ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Hermes (हर्मेस/હર્મેસ/ਹਰਮੇਸ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Taurus (टॉरस/ટૌરસ/ਟੌਰਸ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Frysona (फ्राईसोना/ફ્રાઇસોના/ਫ੍ਰਾਈਸੋਨਾ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "FryOm (फ्राईओम/ફ્રાઇઓમ/ਫ੍ਰਾਈਓਮ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Santana (संताना/સંતાના/ਸੰਤਾਨਾ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Innovator (इन्वोवेटर/ઇનોવેટર/ਇਨੋਵੇਟਰ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "HYFM (एचवाईएफएम/એચવાયએફએમ/ਐਚਵਾਈਐਫਐਮ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Jamania (जमाना/જમનિયા/ਜਮਾਨਿਆ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Uday (उदय/ઉદય/ਉਦਯ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Mohan (मोहन/મોહન/ਮੋਹਨ)",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Other (CPRI) (अन्य (CPRI)/અન્ય (CPRI)/ਹੋਰ (CPRI))",
+  },
+  {
+    varietyName: "Minituber (मिनिट्यूबर/મિનિટ્યુબર/ਮਿਨਿਟਿਊਬਰ)",
+    name: "Other (अन्य/અન્ય/ਹੋਰ)",
+  },
 ];
 
 export const farmEquipmentList = [

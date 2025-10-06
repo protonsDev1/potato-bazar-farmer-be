@@ -1,4 +1,5 @@
 import AdminSellingChannel from "../../../database/models/adminModels/farmer/adminSellingChannel";
+import SellingChannel from "../../../database/models/sellingChannel";
 import {
   createRecord,
   getAllRecords,
@@ -79,7 +80,10 @@ export const updateSellingChannel = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminSellingChannel, id, data);
+    const response = await updateRecord(AdminSellingChannel, id, data, "name", {
+      relatedModel: SellingChannel,
+      targetField: "name",
+    });
 
     if (response?.duplicate) {
       return res.status(409).json({

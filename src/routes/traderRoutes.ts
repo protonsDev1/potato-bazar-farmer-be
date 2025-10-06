@@ -25,6 +25,7 @@ import { verifyOtpSchema } from "../validation/userValidator";
 import { WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
 import { duplicationCheckMiddleware } from "../middlewares/duplicationCheckMiddleware";
 import Trader from "../database/models/trader/trader";
+import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -76,6 +77,7 @@ router.post(
 router.post(
   "/:traderId/request-mobile-update",
   checkWebPermissionMiddleware(WEB_MODULES.TRADER, WEB_ACTIONS.UPDATE, false),
+  limitOtpMiddleware,
   requestUpdateTrader
 );
 

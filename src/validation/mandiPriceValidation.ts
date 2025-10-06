@@ -3,16 +3,14 @@ import { ARRIVAL_STATUS } from "../database/models/mandiPrice";
 import { MANDI_GRADE_TYPE } from "../database/models/mandiGradePrice";
 
 export const createMandiPriceSchema = Joi.object({
-  mandiName: Joi.string().required(),
-  startDate: Joi.date().iso().required(),   
-  endDate: Joi.date().iso().required(), 
-   variety: Joi.string().required(),
+  mandiId: Joi.number().integer().required(),
+  date: Joi.date().iso().required(),
+  variety: Joi.string().required(),
   category: Joi.string().required(),
   arrivalStatus: Joi.string()
     .valid(...Object.values(ARRIVAL_STATUS))
     .required(),
-  cityId: Joi.number().integer().required(),
-    totalArrivalBags: Joi.number().integer().required(),
+  totalArrivalBags: Joi.number().integer().required(),
   normalMandiArrivalBags: Joi.number().integer().required(),
   gradeWisePricing: Joi.array()
     .items(
@@ -30,13 +28,13 @@ export const createMandiPriceSchema = Joi.object({
 });
 
 export const updateMandiPriceSchema = Joi.object({
+  mandiId: Joi.number().integer().optional(),
+  date: Joi.date().iso().optional(),
   variety: Joi.string().optional(),
   category: Joi.string().optional(),
   arrivalStatus: Joi.string()
     .valid(...Object.values(ARRIVAL_STATUS))
     .optional(),
-  state: Joi.string().optional(),
-  city: Joi.string().optional(),
   totalArrivalBags: Joi.number().integer().optional(),
   normalMandiArrivalBags: Joi.number().integer().optional(),
   gradeWisePricing: Joi.array()

@@ -1,10 +1,9 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
 import SubAdminWebPermission from '../database/models/subAdminWebPermission';
 import { buildPermissionsResponse, buildSubAdminPermissionsResponse } from '../utils/commonCode';
-import KycDocument from '../database/models/kycDocuments';
 import SubAdminPermission from '../database/models/subAdminPermission';
 import MobileUpdateSession, { MOBILE_TYPE } from '../database/models/mobileUpdateSession';
 
@@ -519,28 +518,35 @@ export const adminUpdateRegistrationStatus = async (req, res) => {
 
 export const retrieveMobileUsers = async (req, res) => {
   try {
-  const { page = 1, limit = 10, kycStatus, search = "", activeStatus } = req.query;
-  
-  
-  const response = await getMobileUsers({
-  page: parseInt(page, 10),
-  limit: parseInt(limit, 10),
-  kycStatus,
-  search,
-  activeStatus,
-  });
-  
-  
-  if (!response.success)
-  return res.status(400).json({ message: response.error });
-  
-  
-  return res.status(200).json(response);
+    const {
+      page = 1,
+      limit = 10,
+      kycStatus,
+      search = "",
+      activeStatus,
+      pbVerificationRequested,
+      pbVerificationStatus,
+    } = req.query;
+
+    const response = await getMobileUsers({
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+      kycStatus,
+      search,
+      activeStatus,
+      pbVerificationRequested,
+      pbVerificationStatus,
+    });
+
+    if (!response.success)
+      return res.status(400).json({ message: response.error });
+
+    return res.status(200).json(response);
   } catch (error) {
-  res.status(500).json({
-  success: false,
-  message: error.message || "Failed in retrieving mobile users.",
-  });
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed in retrieving mobile users.",
+    });
   }
 };
 
@@ -591,34 +597,51 @@ export const getMobileUserProfile = async (req, res) => {
   }
 };
 
+export const updatePbVerification = async (req, res) => {
+  try {
+    const result = await updatePbVerificationService(
+      req.params.id,
+      req.body.pbVerificationStatus
+    );
+
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update pb verification",
+    });
+  }
+};
+
+export const requestPbVerification = async (req, res) => {
+  try {
+    const result = await requestPbVerificationService(req.user.id);
+
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to request PB verification",
+    });
+  }
+};
+
 export const getMobileUserProfileByAdmin = async (req, res) => {
   const { userId } = req.params;
 
   try {
-    const userDetail = await User.findOne({
-      where: { id: userId },
-      include: [{ model: KycDocument, as: "kycDocument" }],
-    });
+    const userDetail = await getUserTypeProfileDetails(userId);
 
-    if (!userDetail)
-      return res
-        .status(400)
-        .json({ success: false, message: "User not found." });
-
-    if (
-      userDetail.role !== USER_ROLES.USER ||
-      (userDetail.hasStartedUsingMobile === false &&
-        userDetail.isUserOnBoardedOnMobile === false)
-    )
+    if (!userDetail.success)
       return res.status(400).json({
         success: false,
-        message: "Only Mobile user's profile can be viewed here.",
+        error: userDetail.error,
       });
 
     return res.status(200).json({
       success: true,
       message: "User detail fetched successfully.",
-      data: userDetail,
+      data: userDetail.data,
     });
   } catch (error) {
     res.status(500).json({

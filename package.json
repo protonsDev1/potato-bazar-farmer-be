@@ -12,10 +12,13 @@
     "import:locations": "ts-node src/scripts/importLocations.ts",
     "seed": "ts-node src/scripts/seed.ts",
     "backfill": "ts-node src/scripts/backFillExistingUsers.ts",
+    "update:potato-varieties": "ts-node src/scripts/updateExistingPotatoVarities.ts",
     "populate-cities": "ts-node src/scripts/seedCitiesData.ts",
     "db:migrate:create": "sequelize-cli migration:generate --name",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
-    "subadmin:update": "ts-node src/scripts/updateSubAdminAction.ts"
+    "buy-sell-statuses:update": "ts-node src/scripts/updateBuySellStatuses.ts",
+    "hard-delete:user": "ts-node src/scripts/deleteSoftDeletedUsers.ts",
+    "add-entityId:agent": "ts-node src/scripts/addEntityIdForOldUserData.ts"
   },
   "author": "",
   "license": "ISC",
@@ -34,6 +37,7 @@
     "express": "^5.1.0",
     "express-joi-validation": "^6.0.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
     "nodemon": "^3.1.10",
     "pg": "^8.15.6",
     "sequelize": "^6.37.7"

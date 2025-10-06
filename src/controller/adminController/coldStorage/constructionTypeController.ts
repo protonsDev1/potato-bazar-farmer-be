@@ -1,4 +1,5 @@
 import AdminConstructionType from "../../../database/models/adminModels/coldStorage/adminConstructionType";
+import ConstructionType from "../../../database/models/constructionType";
 import {
   createRecord,
   getAllRecords,
@@ -81,7 +82,16 @@ export const updateConstructionType = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
 
-    const response = await updateRecord(AdminConstructionType, id, data);
+    const response = await updateRecord(
+      AdminConstructionType,
+      id,
+      data,
+      "name",
+      {
+        relatedModel: ConstructionType,
+        targetField: "constructionType",
+      }
+    );
 
     if (response?.duplicate) {
       return res.status(409).json({

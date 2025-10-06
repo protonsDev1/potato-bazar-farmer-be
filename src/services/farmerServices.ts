@@ -25,7 +25,7 @@ import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
 import SeedBrandName from "../database/models/seedBrandName";
-import { getUserRole } from "./userServices";
+import { getRegistrationTypes, getUserRole } from "./userServices";
 
 interface Payload {
   name: string;
@@ -297,6 +297,7 @@ export async function onboardFarmer(payload: Payload) {
             district: payload.district,
             state: payload.state,
             statusOfRegistration: REGISTRATION_STATUS.PENDING,
+            entityId: farmer.id,
           },
           { transaction: t }
         );
@@ -418,7 +419,7 @@ export const retrieveFarmerProfile = async (
 ) => {
   try {
     const farmerPersonalInfo = await Farmer.findOne({
-      where: { id: farmerId, isDeleted: false },
+      where: { id: farmerId },
       include: [
         {
           model: User,
@@ -568,8 +569,6 @@ export async function getFarmerListByAdmin(
       onboardedByUser,
       status,
     } = filters;
-
-    whereCondition.isDeleted = false;
 
     if (status) {
       whereCondition.status = status;
@@ -858,10 +857,10 @@ export async function getFarmerListByAdmin(
   }
 }
 
-export const softDeleteFarmerById = async (farmerId: number) => {
+export const deleteFarmerById = async (farmerId: number) => {
   const farmer = await Farmer.findByPk(farmerId);
 
-  if (!farmer || farmer.isDeleted) {
+  if (!farmer) {
     return { success: false, status: 404, message: "Farmer not found" };
   }
 
@@ -869,13 +868,19 @@ export const softDeleteFarmerById = async (farmerId: number) => {
     where: { userId: farmer.userId, userType: USER_TYPE.FARMER },
   });
 
-  farmer.isDeleted = true;
-  await farmer.save();
+  await Farmer.destroy({ where: { id: farmerId } });
 
   if (agentOnboardedFarmer) {
-    agentOnboardedFarmer.isDeleted = true;
-    await agentOnboardedFarmer.save();
+    await AgentOnboardedUser.destroy({
+      where: { id: agentOnboardedFarmer.id },
+    });
   }
+
+  const { isFarmerOnboarded, isColdStorageOnboarded, isTraderOnboarded } =
+    await getRegistrationTypes(farmer.optionalNumber);
+
+  if (!isFarmerOnboarded && !isColdStorageOnboarded && !isTraderOnboarded)
+    await User.destroy({ where: { id: farmer.userId } });
 
   return { success: true, data: farmer };
 };
@@ -902,8 +907,6 @@ export async function getAllFarmers(filters: any, search: string) {
     registrationDate,
     onboardedByUser,
   } = filters;
-
-  whereCondition.isDeleted = false;
 
   if (agentId && agentId.toLowerCase() !== "all") {
     whereCondition.onBoardedBy = agentId;

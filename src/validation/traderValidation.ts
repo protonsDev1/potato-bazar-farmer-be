@@ -1,9 +1,9 @@
 import Joi from "joi";
 
 export const onboardTraderSchema = Joi.object({
-  fullName: Joi.string().max(255).optional(),
-  firstName: Joi.string().max(255).required(),
-  lastName: Joi.string().max(255).required(),
+  fullName: Joi.string().trim().max(255).optional(),
+  firstName: Joi.string().trim().max(255).required(),
+  lastName: Joi.string().trim().max(255).required(),
   businessName: Joi.string().max(255).required(),
   businessAddress: Joi.string().max(255).optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).required(),
@@ -27,7 +27,6 @@ export const onboardTraderSchema = Joi.object({
   ownPotatoFarming: Joi.boolean().optional(),
   acres: Joi.number().min(0).max(1000000000).allow(null).optional(),
   yearlyPurchaseVolumeTons: Joi.number().min(0).max(1000000000).required(),
-  mainProcurementRegion: Joi.string().required(),
   geographicalMarketCovered: Joi.string().optional().allow(null, ""),
 
   contractFarming: Joi.boolean().optional().allow(null),
@@ -93,7 +92,16 @@ export const onboardTraderSchema = Joi.object({
     )
     .optional(),
 
+  procurementRegions: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().max(255).required(),
+      })
+    )
+    .optional(),
+
   marketCoverageStates: Joi.array().items(Joi.string().max(255)).optional(),
+  procurementRegionStates: Joi.array().items(Joi.string().max(255)).optional(),
 
   // bankDetails: Joi.object({
   //   bankName: Joi.string().required(),
@@ -104,18 +112,30 @@ export const onboardTraderSchema = Joi.object({
   // }).required(),
 
   mandiDetails: Joi.object({
-    mandiName: Joi.string().max(100).required(),
-    state: Joi.string().max(100).required(),
+    mandiName: Joi.string().max(255).required(),
+    state: Joi.string().max(255).required(),
     district: Joi.string().max(255).required(),
-    cityOrVillage: Joi.string().max(100).required(),
-    shopNumber: Joi.string().max(50).optional().allow(null, ""),
+    cityOrVillage: Joi.string().max(255).required(),
+    shopNumber: Joi.string().max(255).optional().allow(null, ""),
     mandiLicenceNo: Joi.string().max(255).required(),
+  })
+    .optional()
+    .allow(null),
+
+  exporterDetails: Joi.object({
+    regions: Joi.array().items(Joi.string().max(255)).optional(),
+    isCustomRegion: Joi.boolean().optional().allow(null),
+    potatoVarieties: Joi.array().items(Joi.string().max(255)).optional(),
+    isCustomPotatoVariety: Joi.boolean().optional().allow(null),
+    quantityPerYear: Joi.string().max(255).optional().allow(null, ""),
   })
     .optional()
     .allow(null),
 
   traderDocuments: Joi.object({
     panCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    gstCertificateUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    FSSAICertificateUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     businessCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     tradeLicenseUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     recentInvoiceUrl: Joi.string().max(255).uri().optional().allow(null, ""),
@@ -123,9 +143,9 @@ export const onboardTraderSchema = Joi.object({
 });
 
 export const updateTraderSchema = Joi.object({
-  fullName: Joi.string().max(255).optional().allow(null, ""),
-  firstName: Joi.string().max(255).optional().allow(null, ""),
-  lastName: Joi.string().max(255).optional().allow(null, ""),
+  fullName: Joi.string().trim().max(255).optional().allow(null, ""),
+  firstName: Joi.string().trim().max(255).optional().allow(null, ""),
+  lastName: Joi.string().trim().max(255).optional().allow(null, ""),
   businessName: Joi.string().max(255).optional().allow(null, ""),
   businessAddress: Joi.string().max(255).optional().allow(null, ""),
   mobileNumber: Joi.string().max(15).optional().allow(null, ""),
@@ -153,7 +173,6 @@ export const updateTraderSchema = Joi.object({
     .max(1000000000)
     .optional()
     .allow(null),
-  mainProcurementRegion: Joi.string().optional().allow(null, ""),
   geographicalMarketCovered: Joi.string().optional().allow(null, ""),
 
   contractFarming: Joi.boolean().optional().allow(null),
@@ -217,7 +236,16 @@ export const updateTraderSchema = Joi.object({
     )
     .optional(),
 
+  procurementRegions: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().max(255).required(),
+      })
+    )
+    .optional(),
+
   marketCoverageStates: Joi.array().items(Joi.string().max(255)).optional(),
+  procurementRegionStates: Joi.array().items(Joi.string().max(255)).optional(),
 
   // bankDetails: Joi.object({
   //   bankName: Joi.string().required(),
@@ -228,18 +256,30 @@ export const updateTraderSchema = Joi.object({
   // }).required(),
 
   mandiDetails: Joi.object({
-    mandiName: Joi.string().max(100).optional().allow(null, ""),
-    state: Joi.string().max(100).optional().allow(null, ""),
+    mandiName: Joi.string().max(255).optional().allow(null, ""),
+    state: Joi.string().max(255).optional().allow(null, ""),
     district: Joi.string().max(255).optional().allow(null, ""),
-    cityOrVillage: Joi.string().max(100).optional().allow(null, ""),
-    shopNumber: Joi.string().max(50).optional().allow(null, ""),
+    cityOrVillage: Joi.string().max(255).optional().allow(null, ""),
+    shopNumber: Joi.string().max(255).optional().allow(null, ""),
     mandiLicenceNo: Joi.string().max(255).optional().allow(null, ""),
+  })
+    .optional()
+    .allow(null),
+
+  exporterDetails: Joi.object({
+    regions: Joi.array().items(Joi.string().max(255)).optional(),
+    isCustomRegion: Joi.boolean().optional().allow(null),
+    potatoVarieties: Joi.array().items(Joi.string().max(255)).optional(),
+    isCustomPotatoVariety: Joi.boolean().optional().allow(null),
+    quantityPerYear: Joi.string().max(255).optional().allow(null, ""),
   })
     .optional()
     .allow(null),
 
   traderDocuments: Joi.object({
     panCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    gstCertificateUrl: Joi.string().max(255).uri().optional().allow(null, ""),
+    FSSAICertificateUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     businessCardUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     tradeLicenseUrl: Joi.string().max(255).uri().optional().allow(null, ""),
     recentInvoiceUrl: Joi.string().max(255).uri().optional().allow(null, ""),

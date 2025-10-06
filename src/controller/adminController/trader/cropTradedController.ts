@@ -1,4 +1,5 @@
 import AdminCropTraded from "../../../database/models/adminModels/trader/adminCropTraded";
+import CropTraded from "../../../database/models/trader/cropTraded";
 import {
   createRecord,
   getAllRecords,
@@ -84,7 +85,10 @@ export const getActiveCropsTraded = async (req, res) => {
 export const updateCropTraded = async (req, res) => {
   try {
     const { id } = req.params;
-    const response = await updateRecord(AdminCropTraded, id, req.body);
+    const response = await updateRecord(AdminCropTraded, id, req.body, "name", {
+      relatedModel: CropTraded,
+      targetField: "cropName",
+    });
     if (response?.duplicate) {
       return res.status(409).json({
         message: "Crop Traded with this name already exists.",

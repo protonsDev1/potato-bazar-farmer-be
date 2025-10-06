@@ -1,4 +1,4 @@
-import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
+import User, { PB_VERIFICATION_STATUS, REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import Agent from '../database/models/agent';
 import { generateAgentId, generateRandomPassword } from '../utils/generate';
 import Farmer from "../database/models/farmer";
@@ -13,12 +13,14 @@ import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboarded
 import KycDocument from "../database/models/kycDocuments";
 import { hasValue } from "../utils/parseQuery";
 import SubAdminWebPermission from "../database/models/subAdminWebPermission";
-import { WEB_ACTIONS } from "../utils/constants/permissions";
+import { PERMISSIONS, WEB_ACTIONS } from "../utils/constants/permissions";
 import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
-import dayjs from "dayjs";
 import MandiAgent from "../database/models/mandiAgent";
 import SellRequest from "../database/models/sellRequest";
 import UserSupport from "../database/models/userSupport";
+import SubAdminPermission from "../database/models/subAdminPermission";
+import { retrieveFarmerProfile } from "./farmerServices";
+import { retrieveTraderProfile } from "./traderService";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -151,15 +153,15 @@ export const getDashboardCounts = async () => {
     farmersSelfOnboarded,
     farmersByAdmins,
   ] = await Promise.all([
-    Farmer.count({ where: { isDeleted: false } }),
+    Farmer.count(),
     Farmer.count({
-      where: { createdAt: { [Op.gte]: oneWeekAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneWeekAgo } },
     }),
     Farmer.count({
-      where: { createdAt: { [Op.gte]: oneMonthAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneMonthAgo } },
     }),
     Farmer.count({
-      where: { onBoardedBy: { [Op.in]: agentIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: agentIds } },
     }),
     Farmer.count({
       where: {
@@ -171,11 +173,10 @@ export const getDashboardCounts = async () => {
             Sequelize.col("userId")
           ),
         ],
-        isDeleted: false,
       },
     }),
     Farmer.count({
-      where: { onBoardedBy: { [Op.in]: adminIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: adminIds } },
     }), // <-- NEW
   ]);
 
@@ -187,15 +188,15 @@ export const getDashboardCounts = async () => {
     coldStoragesSelfOnboarded,
     coldStoragesByAdmins,
   ] = await Promise.all([
-    ColdStorage.count({ where: { isDeleted: false } }),
+    ColdStorage.count(),
     ColdStorage.count({
-      where: { createdAt: { [Op.gte]: oneWeekAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneWeekAgo } },
     }),
     ColdStorage.count({
-      where: { createdAt: { [Op.gte]: oneMonthAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneMonthAgo } },
     }),
     ColdStorage.count({
-      where: { onBoardedBy: { [Op.in]: agentIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: agentIds } },
     }),
     ColdStorage.count({
       where: {
@@ -207,11 +208,11 @@ export const getDashboardCounts = async () => {
             Sequelize.col("userId")
           ),
         ],
-        isDeleted: false,
+        
       },
     }),
     ColdStorage.count({
-      where: { onBoardedBy: { [Op.in]: adminIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: adminIds } },
     }), // <-- NEW
   ]);
 
@@ -223,15 +224,15 @@ export const getDashboardCounts = async () => {
     tradersSelfOnboarded,
     tradersByAdmins,
   ] = await Promise.all([
-    Trader.count({ where: { isDeleted: false } }),
+    Trader.count(),
     Trader.count({
-      where: { createdAt: { [Op.gte]: oneWeekAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneWeekAgo } },
     }),
     Trader.count({
-      where: { createdAt: { [Op.gte]: oneMonthAgo }, isDeleted: false },
+      where: { createdAt: { [Op.gte]: oneMonthAgo } },
     }),
     Trader.count({
-      where: { onBoardedBy: { [Op.in]: agentIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: agentIds } },
     }),
     Trader.count({
       where: {
@@ -243,11 +244,10 @@ export const getDashboardCounts = async () => {
             Sequelize.col("userId")
           ),
         ],
-        isDeleted: false,
       },
     }),
     Trader.count({
-      where: { onBoardedBy: { [Op.in]: adminIds }, isDeleted: false },
+      where: { onBoardedBy: { [Op.in]: adminIds } },
     }), // <-- NEW
   ]);
 
@@ -344,16 +344,37 @@ export const getRegistrationTypes = async (mobile) => {
     };
   }
 
-  const [isFarmer, isColdStorage, isTrader] = await Promise.all([
-    Farmer.findOne({ where: { userId: user.id } }),
-    ColdStorage.findOne({ where: { userId: user.id } }),
-    Trader.findOne({ where: { userId: user.id } }),
-  ]);
+  const [isFarmer, isColdStorage, isTrader, coldStorageList] =
+    await Promise.all([
+      Farmer.findOne({ where: { userId: user.id } }),
+      ColdStorage.findOne({ where: { userId: user.id } }),
+      Trader.findOne({ where: { userId: user.id } }),
+      ColdStorage.findAll({
+        where: { userId: user.id },
+        attributes: [
+          "id",
+          "name",
+          "firstName",
+          "lastName",
+          "ownerName",
+          "mobileNumber",
+          "state",
+          "district",
+          "totalCapacityMt",
+          "createdAt",
+          "updatedAt",
+          "onBoardedBy",
+          "status",
+          "isAvailable",
+        ],
+      }),
+    ]);
 
   return {
     isFarmerOnboarded: !!isFarmer,
     isColdStorageOnboarded: !!isColdStorage,
     isTraderOnboarded: !!isTrader,
+    coldStorageList: coldStorageList
   };
 };
 
@@ -663,11 +684,15 @@ const normalizeUserType = (userType: string): string | null => {
 export const updateRegistrationStatus = async (
   status: string,
   userType: string,
-  userId: number,
+  entityId: number,
   currentUser: User
 ) => {
   try {
-    if (currentUser.role === USER_ROLES.ADMIN) {
+    if (
+      currentUser.role === USER_ROLES.ADMIN ||
+      (currentUser.role === USER_ROLES.SUPER_ADMIN &&
+        userType === USER_TYPE.COLD_STORAGE)
+    ) {
     } else if (currentUser.role === USER_ROLES.SUB_ADMIN_WEB) {
       const normalizedUserType = normalizeUserType(userType);
 
@@ -684,6 +709,21 @@ export const updateRegistrationStatus = async (
           success: false,
           statusCode: 403,
           error: `Access denied: Missing approve/reject permission for ${normalizedUserType}`,
+        };
+      }
+    } else if (
+      currentUser.role === USER_ROLES.SUB_ADMIN &&
+      userType === USER_TYPE.COLD_STORAGE
+    ) {
+      const hasPermission = await SubAdminPermission.findOne({
+        where: { userId: currentUser.id, permission: PERMISSIONS.COLD_STORAGE },
+      });
+
+      if (!hasPermission) {
+        return {
+          success: false,
+          statusCode: 403,
+          error: `Access denied: Missing '${PERMISSIONS.COLD_STORAGE}' permission.`,
         };
       }
     } else {
@@ -727,7 +767,7 @@ export const updateRegistrationStatus = async (
         };
     }
 
-    const user = await Model.findByPk(userId);
+    const user = await Model.findByPk(entityId);
     if (!user) {
       return {
         success: false,
@@ -737,7 +777,7 @@ export const updateRegistrationStatus = async (
     }
 
     const agentOnboardedUser = await AgentOnboardedUser.findOne({
-      where: { userId: user.userId, userType },
+      where: { entityId, userType },
     });
 
     const onboardedByRole = await getUserRole(user.onBoardedBy);
@@ -820,70 +860,81 @@ export const getUserRole = async (userId) => {
   };
 };
 
-export const getMobileUsers = async ({ page, limit, kycStatus, search, activeStatus }) => {
-  try {
-  const offset = (page - 1) * limit;
-  
-  
-  const whereCondition = {
-  role: USER_ROLES.USER,
-  [Op.or]: [
-  { isUserOnBoardedOnMobile: true },
-  { hasStartedUsingMobile: true },
-  ],
-  };
-  
-  if (search) {
-      //@ts-ignore
-  whereCondition.name = { [Op.iLike]: `%${search}%` };
-  }
-  
-  
-  if (activeStatus && activeStatus !== "all") {
-      //@ts-ignore
-  whereCondition.isActive = activeStatus === "active" ? true : false;
-  }
-  
-  
-  const include = [] as any;
-  if (kycStatus && kycStatus !== "all") {
-  include.push({
-  model: KycDocument,
-  as: "kycDocument",
-  where: { status: kycStatus },
-  required: true,
-  });
-  } else {
-  include.push({ model: KycDocument, as: "kycDocument", required: false });
-  }
-  
-  
-  const { count, rows: users } = await User.findAndCountAll({
-  where: whereCondition,
-  include,
-  limit,
-  offset,
-  });
-  
-  
-  return {
-  success: true,
-  message: "Users onboarded on mobile.",
-  users,
-  pagination: {
-  total: count,
+export const getMobileUsers = async ({
   page,
   limit,
-  totalPages: Math.ceil(count / limit),
-  },
-  };
+  kycStatus,
+  search,
+  activeStatus,
+  pbVerificationRequested,
+  pbVerificationStatus,
+}) => {
+  try {
+    const offset = (page - 1) * limit;
+
+    const whereCondition: any = {
+      role: USER_ROLES.USER,
+      [Op.or]: [
+        { isUserOnBoardedOnMobile: true },
+        { hasStartedUsingMobile: true },
+      ],
+    };
+
+    if (search) {
+      whereCondition.name = { [Op.iLike]: `%${search}%` };
+    }
+
+    if (activeStatus && activeStatus !== "all") {
+      whereCondition.isActive = activeStatus === "active" ? true : false;
+    }
+
+    if (pbVerificationRequested !== undefined) {
+      whereCondition.pbVerificationRequested =
+        pbVerificationRequested === "true";
+    }
+
+    if (pbVerificationStatus && pbVerificationStatus !== "all") {
+      whereCondition.pbVerificationStatus = pbVerificationStatus;
+    }
+    const include = [] as any;
+    if (kycStatus && kycStatus !== "all") {
+      include.push({
+        model: KycDocument,
+        as: "kycDocument",
+        where: { status: kycStatus },
+        required: true,
+      });
+    } else {
+      include.push({ model: KycDocument, as: "kycDocument", required: false });
+    }
+
+    const { count, rows: users } = await User.findAndCountAll({
+      where: whereCondition,
+      include,
+      limit,
+      offset,
+    });
+
+    return {
+      success: true,
+      message: "Users onboarded on mobile.",
+      pagination: {
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+      },
+      users,
+    };
   } catch (error) {
-  return {
-  success: false,
-  error: error.message || "Failed to fetch mobile users.",
-  };
+    return {
+      success: false,
+      error: error.message || "Failed to fetch mobile users.",
+    };
   }
-  };
+  
+};
+
 export const updateMobileService = async (userId, payload) => {
   let { firstName, lastName, email } = payload;
 
@@ -1217,4 +1268,210 @@ export const getSupportTicketById = async (ticketId: number) => {
   }
 
   return ticket;
+};
+
+export const getUserTypeProfileDetails = async (userId) => {
+  const userDetail = await User.findOne({
+    where: { id: userId },
+    include: [{ model: KycDocument, as: "kycDocument" }],
+  });
+
+  if (!userDetail)
+    return {
+      success: false,
+      error: "User not found.",
+    };
+
+  if (
+    userDetail.role !== USER_ROLES.USER ||
+    (userDetail.hasStartedUsingMobile === false &&
+      userDetail.isUserOnBoardedOnMobile === false)
+  )
+    return {
+      success: false,
+      error: "Only Mobile user's profile can be viewed here.",
+    };
+
+  const [isFarmer, isColdStorage, isTrader, coldStorageList] =
+    await Promise.all([
+      Farmer.findOne({ where: { userId } }),
+      ColdStorage.findOne({ where: { userId } }),
+      Trader.findOne({ where: { userId } }),
+      ColdStorage.findAll({
+        where: { userId },
+        attributes: [
+          "id",
+          "name",
+          "firstName",
+          "lastName",
+          "ownerName",
+          "mobileNumber",
+          "state",
+          "district",
+          "totalCapacityMt",
+          "createdAt",
+          "updatedAt",
+          "onBoardedBy",
+          "status",
+          "isAvailable",
+        ],
+      }),
+    ]);
+
+  let farmerProfile, traderProfile;
+
+  if (isFarmer)
+    farmerProfile = await retrieveFarmerProfile(String(isFarmer.id), false);
+
+  if (isTrader)
+    traderProfile = await retrieveTraderProfile(String(isTrader.id), false);
+
+  return {
+    success: true,
+    data: {
+      isFarmerOnboarded: !!isFarmer,
+      isColdStorageOnboarded: !!isColdStorage,
+      isTraderOnboarded: !!isTrader,
+      userDetail,
+      farmerProfile,
+      traderProfile,
+      coldStorageList,
+    },
+  };
+};
+
+export const updatePbVerificationService = async (
+  userId,
+  pbVerificationStatus
+) => {
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    return { statusCode: 404, success: false, message: "User not found" };
+  }
+
+  if (
+    user.role !== USER_ROLES.USER ||
+    (user.hasStartedUsingMobile === false &&
+      user.isUserOnBoardedOnMobile === false)
+  )
+    return {
+      statusCode: 403,
+      success: false,
+      message: "PB verification can only be updated for mobile users.",
+    };
+
+  const kyc = await KycDocument.findOne({ where: { userId } });
+
+  if (!kyc) {
+    return {
+      statusCode: 400,
+      success: false,
+      message:
+        "KYC record not found for this user. Ask the user to complete KYC first.",
+    };
+  }
+
+  if (!kyc.isVerified) {
+    return {
+      statusCode: 403,
+      success: false,
+      message:
+        "User's KYC is not verified. PB verification cannot be updated until KYC is approved.",
+    };
+  }
+
+  if (!user.pbVerificationRequested) {
+    return {
+      statusCode: 400,
+      success: false,
+      message:
+        "User has not requested PB verification yet. Cannot update verification status.",
+    };
+  }
+  
+  user.pbVerificationStatus = pbVerificationStatus;
+  user.pbVerified = pbVerificationStatus === PB_VERIFICATION_STATUS.APPROVED;
+
+  await user.save();
+
+  return {
+    statusCode: 200,
+    success: true,
+    message: `PB verification has been marked as ${pbVerificationStatus}.`,
+    data: user,
+  };
+};
+
+export const requestPbVerificationService = async (userId) => {
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    return { statusCode: 404, success: false, message: "User not found" };
+  }
+
+  if (
+    user.role !== USER_ROLES.USER ||
+    (user.hasStartedUsingMobile === false &&
+      user.isUserOnBoardedOnMobile === false)
+  )
+    return {
+      statusCode: 403,
+      success: false,
+      message: "PB verification can only be updated for mobile users.",
+    };
+
+  const kyc = await KycDocument.findOne({ where: { userId } });
+
+  if (!kyc) {
+    return {
+      statusCode: 400,
+      success: false,
+      message:
+        "KYC record not found. Complete KYC before requesting PB verification.",
+    };
+  }
+
+  if (!kyc.isVerified) {
+    return {
+      statusCode: 403,
+      success: false,
+      message:
+        "Your KYC is not verified. PB verification request cannot be made.",
+    };
+  }
+
+  if (user.pbVerificationRequested) {
+    if (user.pbVerificationStatus === PB_VERIFICATION_STATUS.APPROVED) {
+      return {
+        statusCode: 200,
+        success: true,
+        message: "PB verification is already approved.",
+        data: user
+      };
+    } else {
+      return {
+        statusCode: 200,
+        success: true,
+        message:
+          "You have already requested PB verification. Please wait for admin approval.",
+        data: user
+      };
+    }
+  }
+
+  user.pbVerificationRequested = true;
+  user.pbVerificationRequestedAt = new Date();
+  user.pbVerificationStatus = PB_VERIFICATION_STATUS.PENDING;
+  user.pbVerified = false;
+
+  await user.save();
+
+  return {
+    statusCode: 200,
+    success: true,
+    message:
+      "PB verification request submitted successfully. Awaiting admin approval.",
+    data: user,
+  };
 };

@@ -8,6 +8,7 @@ import {
   listMySellRequests,
   showSellRequest,
   updateSellRequest,
+  updateSellRequestStatus,
 } from "../controller/sellRequestController";
 import {
   authMiddleware,
@@ -18,6 +19,7 @@ import { PERMISSIONS } from "../utils/constants/permissions";
 import {
   createSellRequestSchema,
   updateSellRequestSchema,
+  updateSellRequestStatusSchema,
 } from "../validation/sellRequestValidation";
 
 const router = Router();
@@ -40,17 +42,20 @@ router.get(
 );
 
 router.get("/:id", optionalAuthMiddleware, showSellRequest);
-router.delete(
-  "/:id",
-  checkPermissionMiddleware(PERMISSIONS.SELL_REQUESTS),
-  deleteSellRequest
-);
+router.delete("/:id", authMiddleware, deleteSellRequest);
 
 router.put(
   "/:id",
   authMiddleware,
   validator.body(updateSellRequestSchema),
   updateSellRequest
+);
+
+router.put(
+  "/update_status/:requestId",
+  checkPermissionMiddleware(PERMISSIONS.SELL_REQUESTS),
+  validator.body(updateSellRequestStatusSchema),
+  updateSellRequestStatus
 );
 
 export default router;

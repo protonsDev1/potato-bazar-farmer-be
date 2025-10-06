@@ -8,6 +8,7 @@ import {
 import sequelize from "./db";
 import User from "./user";
 import InterestRequest from "./interestRequest";
+import LikeCSRequirement from "./likeCSRequirement";
 
 class ColdStorageRequirement extends Model<
   InferAttributes<ColdStorageRequirement>,
@@ -19,18 +20,17 @@ class ColdStorageRequirement extends Model<
   declare district: string | null;
   declare state: string | null;
   declare verified: boolean;
-  declare quantity: number | null;
-  declare capacityMin: number | null;
-  declare capacityMax: number | null;
+  declare quantity: string | null;
+  declare commodityType: string | null;
+  declare storageTypes: string[] | null;
+  declare bagTypes: string[] | null;
   declare duration: string | null;
-  declare storageType: string | null;
   declare requiredFromDate: Date | null;
   declare preferredLocation: boolean;
   declare specialcoldStorageRequirements: string | null;
-  declare contactNumber: string;
-  declare email: string | null;
   declare isActive: boolean;
   declare createdBy: number;
+  declare likes?: LikeCSRequirement[];
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -57,16 +57,16 @@ ColdStorageRequirement.init(
     quantity: {
       type: DataTypes.STRING,
     },
-    capacityMin: {
-      type: DataTypes.INTEGER,
-    },
-    capacityMax: {
-      type: DataTypes.INTEGER,
-    },
-    duration: {
+    commodityType: {
       type: DataTypes.STRING,
     },
-    storageType: {
+    storageTypes: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    bagTypes: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    duration: {
       type: DataTypes.STRING,
     },
     requiredFromDate: {
@@ -78,13 +78,6 @@ ColdStorageRequirement.init(
     },
     specialcoldStorageRequirements: {
       type: DataTypes.TEXT,
-    },
-    contactNumber: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING,
     },
     isActive: {
       type: DataTypes.BOOLEAN,

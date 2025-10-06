@@ -53,6 +53,8 @@ import sellRequestRoutes from "./src/routes/sellRequestRoutes";
 import favRequestRoutes from "./src/routes/favRequestRoutes";
 import mandiPriceRoutes from "./src/routes/mandiPriceRoutes";
 import subAdminWebRoutes from "./src/routes/subAdminWebRoutes";
+import mandiListRoutes from "./src/routes/mandiListRoutes";
+import adminDryingMethodRoutes from "./src/routes/adminRoutes/coldStorage/adminDryingMethodRoutes";
 
 const cors = require("cors");
 
@@ -105,7 +107,7 @@ app.use("/api/admin/irrigation_method", adminIrrigationMethodRoutes);
 app.use("/api/admin/operational_challenge", adminOperationalChallengeRoutes);
 app.use("/api/traders", traderRoutes);
 app.use("/api", uploadRoutes);
-app.use("/api", csRequirementRoutes);
+app.use("/api/requirements", csRequirementRoutes);
 app.use("/api/sub_admins", subAdminRoutes);
 app.use("/api/mandi_agent", mandiAgentRoutes);
 app.use("/api/government_schemes", govSchemeRoutes);
@@ -117,6 +119,8 @@ app.use("/api/sell_requests", sellRequestRoutes);
 app.use("/api/favourite", favRequestRoutes);
 app.use("/api/mandi_prices", mandiPriceRoutes);
 app.use("/api/web_sub_admins", subAdminWebRoutes);
+app.use("/api/mandi", mandiListRoutes);
+app.use("/api/admin/drying_methods", adminDryingMethodRoutes);
 
 const PORT = 8000;
 const startServer = async () => {

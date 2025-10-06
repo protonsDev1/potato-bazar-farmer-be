@@ -1,9 +1,9 @@
 import Joi from "joi";
 
 export const coldStorageSchema = Joi.object({
-  name: Joi.string().max(255).required(),
-  firstName: Joi.string().max(255).required(),
-  lastName: Joi.string().max(255).required(),
+  name: Joi.string().trim().max(255).required(),
+  firstName: Joi.string().trim().max(255).required(),
+  lastName: Joi.string().trim().max(255).required(),
   ownerName: Joi.string().max(255).optional(),
   mobileNumber: Joi.string().max(255).required(),
   optionalNumber: Joi.string().max(255).allow("", null),
@@ -196,6 +196,14 @@ export const coldStorageSchema = Joi.object({
     )
     .required(),
 
+  dryingMethods: Joi.array()
+    .items(
+      Joi.object({
+        method: Joi.string().max(255).required(),
+      })
+    )
+    .required(),
+
   featureOfStorage: Joi.array()
     .items(
       Joi.object({
@@ -315,9 +323,9 @@ export const coldStorageSchema = Joi.object({
 });
 
 export const updateColdStorageSchema = Joi.object({
-  name: Joi.string().max(255).optional().allow("", null),
-  firstName: Joi.string().max(255).optional().allow(null, ""),
-  lastName: Joi.string().max(255).optional().allow(null, ""),
+  name: Joi.string().trim().max(255).optional().allow("", null),
+  firstName: Joi.string().trim().max(255).optional().allow(null, ""),
+  lastName: Joi.string().trim().max(255).optional().allow(null, ""),
   ownerName: Joi.string().max(255).optional().allow("", null),
   mobileNumber: Joi.string().max(255).optional().allow("", null),
   optionalNumber: Joi.string().max(255).allow("", null),
@@ -521,6 +529,14 @@ export const updateColdStorageSchema = Joi.object({
     )
     .optional(),
 
+  dryingMethods: Joi.array()
+    .items(
+      Joi.object({
+        method: Joi.string().max(255).required(),
+      })
+    )
+    .optional(),
+
   featureOfStorage: Joi.array()
     .items(
       Joi.object({
@@ -637,4 +653,8 @@ export const updateColdStorageSchema = Joi.object({
       })
     )
     .optional(),
+});
+
+export const availabilitySchema = Joi.object({
+  isAvailable: Joi.boolean().required(),
 });

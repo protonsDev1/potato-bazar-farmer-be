@@ -6,11 +6,12 @@ import {
   retrieveColdStorageProfile,
   getColdStorage,
   updateColdStorageService,
-  softDeleteColdStorageById,
+  deleteColdStorageById,
   createColdStorageWorksheetColumns,
   addColdStoragesToWorksheet,
   getAllColdStorages,
   likeOrDislikeService,
+  canUpdateColdStorage,
 } from "../services/coldStorageService";
 import {
   checkExistingUser,
@@ -56,7 +57,7 @@ export const updateColdStorage = async (req, res) => {
     const payload = req.body;
 
     const coldStorage = await ColdStorage.findOne({
-      where: { id: coldStorageId, isDeleted: false },
+      where: { id: coldStorageId },
     });
     if (!coldStorage) {
       return res.status(404).json({ message: "Cold storage not found" });
@@ -112,10 +113,10 @@ export const getColdStorageProfile = async (req, res) => {
   try {
     const coldStorageId = req.params.id;
 
-    const { role } = req.user;
+    const { id: userId, role } = req.user;
 
     const coldStorage = await ColdStorage.findOne({
-      where: { id: coldStorageId, isDeleted: false },
+      where: { id: coldStorageId },
     });
 
     let isWithin24Hours = true;
@@ -128,10 +129,12 @@ export const getColdStorageProfile = async (req, res) => {
 
     const profileDetails = await retrieveColdStorageProfile(
       coldStorageId,
-      isWithin24Hours
+      isWithin24Hours,
+      userId,
+      role
     );
 
-    return res.status(200).json({ message: profileDetails });
+    return res.status(200).json({ success: true, message: profileDetails });
   } catch (error) {
     res.status(500).json({
       message: error.message || "Failed to retrieve cold storage profile.",
@@ -141,7 +144,7 @@ export const getColdStorageProfile = async (req, res) => {
 
 export const getColdStorageList = async (req, res) => {
   try {
-    const { page, perPage: limit, search, sortBy } = req.query;
+    const { page, perPage: limit, search, sortBy, listingType } = req.query;
     const { id: userId } = req.user;
 
     const filters = parseFilters(req.query);
@@ -156,10 +159,12 @@ export const getColdStorageList = async (req, res) => {
       filters,
       search,
       userId,
-      sortBy
+      sortBy,
+      listingType
     );
 
     return res.status(200).json({
+      success: true,
       message: "Cold storage list",
       data: coldStorage,
     });
@@ -196,7 +201,7 @@ export const selfOnboardColdStorage = async (req, res) => {
 
 export const deleteColdStorage = async (req, res) => {
   try {
-    const result = await softDeleteColdStorageById(req.params.id);
+    const result = await deleteColdStorageById(req.params.id);
     if (!result.success) {
       return res
         .status(result.status)
@@ -284,12 +289,7 @@ export const exportColdStorages = async (req, res) => {
 export const likeOrDislikeColdStorage = async (req, res) => {
   try {
     const { id } = req.user;
-    const { coldStorageId } = req.body;
-
-    if (!coldStorageId)
-      return res
-        .status(400)
-        .json({ message: "cold storage id is a required field!" });
+    const { coldStorageId } = req.params;
 
     const response = await likeOrDislikeService(id, coldStorageId);
 
@@ -312,7 +312,7 @@ export const requestUpdateCS = async (req, res) => {
     const { newMobileNumber } = req.body;
 
     const coldStorage = await ColdStorage.findOne({
-      where: { id: coldStorageId, isDeleted: false },
+      where: { id: coldStorageId },
     });
     if (!coldStorage)
       return res
@@ -353,7 +353,7 @@ export const verifyUpdateCS = async (req, res) => {
     const { newMobileNumber, otp } = req.body;
 
     const coldStorage = await ColdStorage.findOne({
-      where: { id: coldStorageId, isDeleted: false },
+      where: { id: coldStorageId },
       attributes: ["id", "userId"],
     });
 
@@ -373,16 +373,16 @@ export const verifyUpdateCS = async (req, res) => {
     const updates = [
       ColdStorage.update(
         { mobileNumber: newMobileNumber },
-        { where: { id: coldStorageId } }
+        { where: { id: coldStorage.userId } }
       ),
       updateUserInDB(coldStorage.userId, { mobile: newMobileNumber }),
       Farmer.update(
         { optionalNumber: newMobileNumber },
-        { where: { userId: coldStorage.userId, isDeleted: false } }
+        { where: { userId: coldStorage.userId } }
       ),
       Trader.update(
         { mobileNumber: newMobileNumber },
-        { where: { userId: coldStorage.userId, isDeleted: false } }
+        { where: { userId: coldStorage.userId } }
       ),
     ];
 
@@ -397,5 +397,40 @@ export const verifyUpdateCS = async (req, res) => {
     return res
       .status(500)
       .json({ message: err.message || "Failed to verify mobile update" });
+  }
+};
+
+export const updateColdStorageAvailability = async (req, res) => {
+  try {
+    const { coldStorageId } = req.params;
+    const { isAvailable } = req.body;
+
+    const coldStorage = await ColdStorage.findByPk(coldStorageId);
+
+    if (!coldStorage) {
+      return res.status(404).json({ message: "Cold storage not found" });
+    }
+
+    const hasAccess = await canUpdateColdStorage(req.user, coldStorage);
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        message:
+          "Only the owner, a super admin, or an authorized sub admin can update availability.",
+      });
+    }
+
+    coldStorage.isAvailable = isAvailable;
+    await coldStorage.save();
+
+    return res.status(200).json({
+      message: "Cold storage availability updated successfully",
+      data: { id: coldStorage.id, isAvailable: coldStorage.isAvailable },
+    });
+  } catch (err) {
+    console.error("Update Availability Error:", err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to update availability" });
   }
 };

@@ -1,10 +1,10 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema, createSupportTicketSchema, replyTicketSchema, updateTicketStatusSchema, otpExportSendSchema, verifyAndUpdateMobileNumberSchema, forgotPasswordVerifyOtpSchema,  } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats, createTicket, replyToSupportTicket, updateSupportTicketStatus, listSupportTickets, getTicketDetails, sendExportOtps, resendOtp, verifyOldMobileNumberForUpdate, verifyNewMobileNumberBeforeUpdate } from "../controller/user";
-import { adminMiddleware, authMiddleware, checkPermissionMiddleware, superAdminMiddleware } from "../utils/userAuth";
+import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema, createSupportTicketSchema, replyTicketSchema, updateTicketStatusSchema, otpExportSendSchema, verifyAndUpdateMobileNumberSchema, forgotPasswordVerifyOtpSchema, mobileUserPBVerificationSchema,  } from "../validation/userValidator";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats, createTicket, replyToSupportTicket, updateSupportTicketStatus, listSupportTickets, getTicketDetails, sendExportOtps, resendOtp, verifyOldMobileNumberForUpdate, verifyNewMobileNumberBeforeUpdate, updatePbVerification, requestPbVerification } from "../controller/user";
+import { adminMiddleware, authMiddleware, checkPermissionMiddleware, checkWebPermissionMiddleware, superAdminMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
-import { PERMISSIONS } from "../utils/constants/permissions";
+import { PERMISSIONS, WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});  
@@ -14,7 +14,12 @@ router.post("/signup", validator.body(userSchema), signup);
 
 router.post("/login", validator.body(loginSchema), login);
 
-router.post('/agents', adminMiddleware, validator.body(createAgentSchema), createAgent);
+router.post(
+  "/agents",
+  checkWebPermissionMiddleware(WEB_MODULES.AGENT, WEB_ACTIONS.CREATE, false),
+  validator.body(createAgentSchema),
+  createAgent
+);
 
 router.post('/agent-login',validator.body(agentLoginSchema), agentLogin);
 
@@ -73,11 +78,26 @@ router.put(
 );
 
 router.get("/mobile/user_profile", authMiddleware, getMobileUserProfile);       // mobile app user profile overview
+
 router.get(
   "/mobile/user_profile/:userId",
   checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),         // mobile admin user profile overview
   getMobileUserProfileByAdmin
 );
+
+router.post(
+  "/mobile/request-pb-verification",
+  authMiddleware,
+  requestPbVerification
+);
+
+router.put(
+  "/mobile/user/:id/pb-verification",
+  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
+  validator.body(mobileUserPBVerificationSchema),
+  updatePbVerification
+);
+
 router.delete("/mobile/:userId", superAdminMiddleware, deleteMobileUserByAdmin);       //  mobile admin delete user
 
 router.get(

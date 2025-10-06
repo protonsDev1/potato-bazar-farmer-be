@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import ColdStorage from "./coldStorage";
 
 class LikeColdStorage extends Model<
   InferAttributes<LikeColdStorage>,
@@ -46,4 +47,15 @@ LikeColdStorage.init(
   }
 );
 
+ColdStorage.hasMany(LikeColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "likes",
+});
+
+LikeColdStorage.belongsTo(ColdStorage, {
+  foreignKey: "coldStorageId",
+  as: "coldStorage",
+});
+
 export default LikeColdStorage;
+

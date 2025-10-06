@@ -14,7 +14,11 @@ export const updateRecord = async (
   modelClass,
   id,
   data,
-  uniqueField = "name"
+  uniqueField = "name",
+  syncOptions?: {
+    relatedModel: any; // e.g., SellingChannel
+    targetField: string; // field in relatedModel (SellingChannel)
+  }
 ) => {
   try {
     const instance = await modelClass.findByPk(id);
@@ -40,7 +44,23 @@ export const updateRecord = async (
         };
       }
     }
+
+    // Store old value before update
+    const oldValue = instance[uniqueField];
+
+    // Update main record
     const updatedInstance = await updateModelFields(instance, data);
+
+    // Sync related model if provided
+    if (syncOptions && data[uniqueField] && oldValue !== data[uniqueField]) {
+      const { relatedModel, targetField } = syncOptions;
+
+      await relatedModel.update(
+        { [targetField]: data[uniqueField] }, // new value
+        { where: { [targetField]: oldValue } } // match old value
+      );
+    }
+
     return {
       success: true,
       data: updatedInstance,
@@ -84,7 +104,7 @@ export const createRecord = async (model, data, uniqueField = "name") => {
 export const getActiveRecords = async (model) => {
   try {
     const result = await model.findAll({
-      where: { isActive: true },
+      where: { isActive: true, isDeleted: false },
       order: [["position", "ASC"]],
     });
     return {
@@ -103,6 +123,7 @@ export const getActiveRecords = async (model) => {
 export const getAllRecords = async (model) => {
   try {
     const result = await model.findAll({
+      where: { isDeleted: false },
       order: [["position", "ASC"]],
     });
     return {
@@ -120,7 +141,7 @@ export const getAllRecords = async (model) => {
 
 export const getRecordById = async (model, id) => {
   try {
-    const result = await model.findByPk(id);
+    const result = await model.findOne({ where: { id, isDeleted: false } });
     if (!result) {
       return {
         success: false,
@@ -149,7 +170,7 @@ export const deleteRecord = async (model, id) => {
         success: false,
         error: `Record not found with ID: ${id}.`,
       };
-    await model.destroy({ where: { id } });
+    await model.update({ isDeleted: true }, { where: { id } });
     return {
       success: true,
     };

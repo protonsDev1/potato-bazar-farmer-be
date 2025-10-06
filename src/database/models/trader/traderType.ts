@@ -29,7 +29,7 @@ TraderType.init(
       references: { model: "traders", key: "id" },
       onDelete: "CASCADE",
     },
-    type: { type: DataTypes.STRING(100), allowNull: false },
+    type: { type: DataTypes.STRING, allowNull: false },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

@@ -5,6 +5,9 @@ import sequelize from "../database/models/db";
 import MandiAgent from "../database/models/mandiAgent";
 import User, { USER_ROLES } from "../database/models/user";
 import { hasValue } from "../utils/parseQuery";
+import MandiAllotedToMandiAgent from "../database/models/mandiAllotedToMandiAgent";
+import MandiList from "../database/models/mandiList";
+import City from "../database/models/city";
 
 interface MandiAgentResponse {
   success: boolean;
@@ -28,6 +31,7 @@ export const addMandiAgent = async (
     city,
     pinCode,
     licenseNumber,
+    mandiIds,
   } = mandiAgentData;
 
   if (password !== confirmPassword)
@@ -52,6 +56,23 @@ export const addMandiAgent = async (
     }
   }
 
+  const existingMandis = await MandiList.findAll({
+    where: { id: { [Op.in]: mandiIds } },
+    attributes: ["id"],
+    raw: true,
+  });
+
+  const existingIds = existingMandis.map((m) => m.id);
+
+  const invalidIds = mandiIds.filter((id) => !existingIds.includes(id));
+
+  if (invalidIds.length > 0) {
+    return {
+      success: false,
+      error: `Invalid mandiId(s): ${invalidIds.join(", ")}`,
+    };
+  }
+
   const isDuplicateLicense = await MandiAgent.findOne({
     where: { licenseNumber },
   });
@@ -63,9 +84,27 @@ export const addMandiAgent = async (
     };
   }
 
+  const keyMap: Record<number, number> = {};
+  mandiIds.forEach((id) => {
+    keyMap[id] = (keyMap[id] || 0) + 1;
+  });
+
+  for (const id in keyMap) {
+    const count = keyMap[id];
+
+    if (count === 1) continue;
+
+    return {
+      success: false,
+      error: `mandiId ${id} occurs ${count} times`,
+    };
+  }
+
   return await sequelize.transaction(async (t) => {
     const mandiUser = await User.create(
       {
+        firstName,
+        lastName,
         name: `${firstName} ${lastName}`,
         email,
         mobile,
@@ -86,6 +125,18 @@ export const addMandiAgent = async (
       },
       { transaction: t }
     );
+
+    if (Array.isArray(mandiIds)) {
+      for (const id of mandiIds) {
+        await MandiAllotedToMandiAgent.create(
+          {
+            mandiAgentId: mandiAgentDetail.id,
+            mandiId: id,
+          },
+          { transaction: t }
+        );
+      }
+    }
 
     return {
       success: true,
@@ -114,6 +165,8 @@ export const getAllMandiAgents = async (
       {
         model: User,
         attributes: [
+          "firstName",
+          "lastName",
           "name",
           "mobile",
           "district",
@@ -137,8 +190,8 @@ export const getAllMandiAgents = async (
     return {
       id: entry.id,
       name: mandiUser?.name,
-      firstName: mandiUser.name.split(" ")[0],
-      lastName: mandiUser.name.split(" ")[1],
+      firstName: mandiUser?.firstName || mandiUser?.name.split(" ")[0],
+      lastName: mandiUser?.lastName || mandiUser?.name.split(" ")[1],
       contact: mandiUser?.mobile,
       email: mandiUser?.email,
       location: {
@@ -168,6 +221,22 @@ export const getProfileOverview = async (mandiAgentId) => {
         model: User,
         as: "user",
       },
+      {
+        model: MandiAllotedToMandiAgent,
+        as: "allotedMandisToAgent",
+        include: [
+          {
+            model: MandiList,
+            as: "mandiName",
+            include: [
+              {
+                model: City,
+                as: "city",
+              },
+            ],
+          },
+        ],
+      },
     ],
   });
 
@@ -192,6 +261,7 @@ export const updateMandiAgentService = async (
     district,
     city,
     pinCode,
+    mandiIds,
   } = updateFields;
 
   const mandiUser = await MandiAgent.findOne({
@@ -201,6 +271,8 @@ export const updateMandiAgentService = async (
         model: User,
         attributes: [
           "id",
+          "firstName",
+          "lastName",
           "name",
           "mobile",
           "district",
@@ -234,16 +306,6 @@ export const updateMandiAgentService = async (
       error: "Password and confirm password do not match",
     };
   }
-  if (
-    (hasValue(firstName) && !hasValue(lastName)) ||
-    (!hasValue(firstName) && hasValue(lastName))
-  ) {
-    return {
-      success: false,
-      error:
-        "First name and last name should either both be updated, or neither.",
-    };
-  }
 
   if (hasValue(email)) {
     const isEmailTaken = await User.findOne({ where: { email } });
@@ -274,12 +336,38 @@ export const updateMandiAgentService = async (
     }
   }
 
+  if (mandiIds && mandiIds.length > 0) {
+    const existingMandis = await MandiList.findAll({
+      where: { id: { [Op.in]: mandiIds } },
+      attributes: ["id"],
+      raw: true,
+    });
+
+    const existingIds = existingMandis.map((m) => m.id);
+
+    const invalidIds = mandiIds.filter((id) => !existingIds.includes(id));
+
+    if (invalidIds.length > 0) {
+      return {
+        success: false,
+        error: `Invalid mandiId(s): ${invalidIds.join(", ")}`,
+      };
+    }
+  }
+
   const mandiAgentUpdates: any = {};
   const userUpdates: any = {};
 
   if (hasValue(licenseNumber)) mandiAgentUpdates.licenseNumber = licenseNumber;
+  if (hasValue(firstName)) userUpdates.firstName = firstName;
+  if (hasValue(lastName)) userUpdates.lastName = lastName;
+  if (hasValue(email)) userUpdates.email = email;
   if (hasValue(firstName) || hasValue(lastName)) {
-    userUpdates.name = `${firstName || ""} ${lastName || ""}`.trim();
+    const newFirstName = hasValue(firstName)
+      ? firstName
+      : mandiUser.user.firstName;
+    const newLastName = hasValue(lastName) ? lastName : mandiUser.user.lastName;
+    userUpdates.name = `${newFirstName} ${newLastName}`.trim();
   }
   if (hasValue(email)) userUpdates.email = email;
   if (hasValue(mobile)) userUpdates.mobile = mobile;
@@ -294,6 +382,7 @@ export const updateMandiAgentService = async (
   const result = await sequelize.transaction(async (t) => {
     let updatedMandiAgentRow = null;
     let updatedMandiUserRow = null;
+    let updatedAllotedMandis = [];
 
     if (Object.keys(mandiAgentUpdates).length) {
       const [, updated] = await MandiAgent.update(mandiAgentUpdates, {
@@ -313,9 +402,27 @@ export const updateMandiAgentService = async (
       updatedMandiUserRow = updated[0] || null;
     }
 
+    if (Array.isArray(mandiIds)) {
+      await MandiAllotedToMandiAgent.destroy({
+        where: { mandiAgentId },
+        transaction: t,
+      });
+
+      const newRows = mandiIds.map((mandiId) => ({
+        mandiAgentId,
+        mandiId,
+      }));
+
+      updatedAllotedMandis = await MandiAllotedToMandiAgent.bulkCreate(
+        newRows,
+        { transaction: t }
+      );
+    }
+
     return {
       mandiAgent: updatedMandiAgentRow,
       mandiUser: updatedMandiUserRow,
+      allotedMandis: updatedAllotedMandis,
     };
   });
 

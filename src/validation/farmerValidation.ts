@@ -1,9 +1,9 @@
 import Joi from "joi";
 
 export const onboardFarmerSchema = Joi.object({
-  name: Joi.string().max(255).optional(),
-  firstName: Joi.string().max(255).required(),
-  lastName: Joi.string().max(255).required(),
+  name: Joi.string().trim().max(255).optional(),
+  firstName: Joi.string().trim().max(255).required(),
+  lastName: Joi.string().trim().max(255).required(),
   userId: Joi.number().required(),
   age: Joi.number().integer().min(1).max(150).required(),
   gender: Joi.string().valid("male", "female", "other").required(),
@@ -22,11 +22,8 @@ export const onboardFarmerSchema = Joi.object({
   aadhaarNumber: Joi.string()
     .max(255)
     .pattern(/^\d{12}$/)
-    .when("isAadhaarCard", {
-      is: true,
-      then: Joi.required(),
-      otherwise: Joi.optional().allow(null, ""),
-    }),
+    .optional()
+    .allow(null, ""),
   isBankAccount: Joi.boolean().optional().allow(null),
 
   landDetails: Joi.array()
@@ -105,7 +102,7 @@ export const onboardFarmerSchema = Joi.object({
         contractPercent: Joi.number().min(0).max(100).optional().allow(null),
         spotPercent: Joi.number().min(0).max(100).optional().allow(null),
         contractPartnerName: Joi.string().max(255).optional().allow(null, ""),
-        reasonForTrust: Joi.string().optional().allow(null, ""),
+        // reasonForTrust: Joi.string().optional().allow(null, ""),
         preference: Joi.string().optional().allow(null, ""),
         suggestions: Joi.string().optional().allow(null, ""),
         contractFarmingPercent: Joi.number()
@@ -258,9 +255,9 @@ export const onboardFarmerSchema = Joi.object({
 });
 
 export const updateFarmerSchema = Joi.object({
-  name: Joi.string().max(255).optional().allow(null, ""),
-  firstName: Joi.string().max(255).optional().allow(null, ""),
-  lastName: Joi.string().max(255).optional().allow(null, ""),
+  name: Joi.string().trim().max(255).optional().allow(null, ""),
+  firstName: Joi.string().trim().max(255).optional().allow(null, ""),
+  lastName: Joi.string().trim().max(255).optional().allow(null, ""),
   age: Joi.number().integer().min(1).max(150).optional().allow(null),
   gender: Joi.string().max(255).valid("male", "female", "other").optional(),
   optionalNumber: Joi.string().max(255).optional().allow(null, ""),
@@ -278,11 +275,8 @@ export const updateFarmerSchema = Joi.object({
   aadhaarNumber: Joi.string()
     .max(255)
     .pattern(/^\d{12}$/)
-    .when("isAadhaarCard", {
-      is: true,
-      then: Joi.required(),
-      otherwise: Joi.optional().allow(null, ""),
-    }),
+    .optional()
+    .allow(null, ""),
   isBankAccount: Joi.boolean().optional().allow(null),
 
   landDetails: Joi.array()
@@ -364,7 +358,7 @@ export const updateFarmerSchema = Joi.object({
         contractPercent: Joi.number().min(0).max(100).optional().allow(null),
         spotPercent: Joi.number().min(0).max(100).optional().allow(null),
         contractPartnerName: Joi.string().max(255).optional().allow(null, ""),
-        reasonForTrust: Joi.string().optional().allow(null, ""),
+        // reasonForTrust: Joi.string().optional().allow(null, ""),
         preference: Joi.string().optional().allow(null, ""),
         suggestions: Joi.string().optional().allow(null, ""),
         contractFarmingPercent: Joi.number()
