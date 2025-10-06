@@ -112,11 +112,11 @@ export const onboardTraderSchema = Joi.object({
   // }).required(),
 
   mandiDetails: Joi.object({
-    mandiName: Joi.string().max(100).required(),
-    state: Joi.string().max(100).required(),
+    mandiName: Joi.string().max(255).required(),
+    state: Joi.string().max(255).required(),
     district: Joi.string().max(255).required(),
-    cityOrVillage: Joi.string().max(100).required(),
-    shopNumber: Joi.string().max(50).optional().allow(null, ""),
+    cityOrVillage: Joi.string().max(255).required(),
+    shopNumber: Joi.string().max(255).optional().allow(null, ""),
     mandiLicenceNo: Joi.string().max(255).required(),
   })
     .optional()
@@ -256,11 +256,11 @@ export const updateTraderSchema = Joi.object({
   // }).required(),
 
   mandiDetails: Joi.object({
-    mandiName: Joi.string().max(100).optional().allow(null, ""),
-    state: Joi.string().max(100).optional().allow(null, ""),
+    mandiName: Joi.string().max(255).optional().allow(null, ""),
+    state: Joi.string().max(255).optional().allow(null, ""),
     district: Joi.string().max(255).optional().allow(null, ""),
-    cityOrVillage: Joi.string().max(100).optional().allow(null, ""),
-    shopNumber: Joi.string().max(50).optional().allow(null, ""),
+    cityOrVillage: Joi.string().max(255).optional().allow(null, ""),
+    shopNumber: Joi.string().max(255).optional().allow(null, ""),
     mandiLicenceNo: Joi.string().max(255).optional().allow(null, ""),
   })
     .optional()

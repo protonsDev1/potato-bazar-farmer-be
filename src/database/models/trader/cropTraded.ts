@@ -29,7 +29,7 @@ CropTraded.init(
       references: { model: "traders", key: "id" },
       onDelete: "CASCADE",
     },
-    cropName: { type: DataTypes.STRING(100), allowNull: false },
+    cropName: { type: DataTypes.STRING, allowNull: false },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
