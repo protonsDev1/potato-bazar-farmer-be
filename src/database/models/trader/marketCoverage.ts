@@ -29,7 +29,7 @@ MarketCoverage.init(
       references: { model: "traders", key: "id" },
       onDelete: "CASCADE",
     },
-    name: { type: DataTypes.STRING(100), allowNull: false },
+    name: { type: DataTypes.STRING, allowNull: false },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
