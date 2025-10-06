@@ -56,6 +56,8 @@ import subAdminWebRoutes from "./src/routes/subAdminWebRoutes";
 import mandiListRoutes from "./src/routes/mandiListRoutes";
 import adminDryingMethodRoutes from "./src/routes/adminRoutes/coldStorage/adminDryingMethodRoutes";
 import bannerRoutes from "./src/routes/bannerRoutes";
+import advertisementServiceRoutes from "./src/routes/adminRoutes/advertisementServiceRoutes";
+import adverisementRoutes from "./src/routes/advertisementRoutes";
 
 const cors = require("cors");
 
@@ -123,6 +125,8 @@ app.use("/api/web_sub_admins", subAdminWebRoutes);
 app.use("/api/mandi", mandiListRoutes);
 app.use("/api/admin/drying_methods", adminDryingMethodRoutes);
 app.use("/api/banner", bannerRoutes);
+app.use("/api/admin/advertisement_services", advertisementServiceRoutes);
+app.use("/api/advertisement", adverisementRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
