@@ -61,6 +61,7 @@ import adverisementRoutes from "./src/routes/advertisementRoutes";
 import contentManagementRoutes from "./src/routes/contentManagementRoutes";
 import faqCategoryRoutes from "./src/routes/adminRoutes/mobile/faqCategoryRoutes";
 import faqRoutes from "./src/routes/faqRoutes";
+import contactSupportRoutes from "./src/routes/contactSupportRoutes";
 
 const cors = require("cors");
 
@@ -133,6 +134,7 @@ app.use("/api/advertisement", adverisementRoutes);
 app.use("/api/content_management", contentManagementRoutes);
 app.use("/api/admin/faq_categories", faqCategoryRoutes);
 app.use("/api/faqs", faqRoutes);
+app.use("/api/contact_support", contactSupportRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
