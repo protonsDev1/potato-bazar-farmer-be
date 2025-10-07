@@ -839,3 +839,164 @@ export const addTradersToWorksheet = async (traders, worksheet) => {
     });
   }
 };
+
+export const getTraderProfileCompletion = async (userId: number) => {
+  const trader = await Trader.findOne({ where: { userId } });
+  if (!trader) {
+    return {
+      hasTraderProfile: false,
+      completion: 0,
+      message: "User has no trader profile",
+    };
+  }
+
+  // Required fields in Trader table
+  const requiredTraderFields = [
+    "firstName",
+    "lastName",
+    "mobileNumber",
+    "businessAddress",
+    "businessName",
+    "cityOrVillage",
+    "district",
+    "state",
+    "pinCode",
+    "yearlyPurchaseVolumeTons",
+    "numberOfEmployees",
+    "yearsInTrading",
+    "averageDailySalesKatta",
+    "companyRegisteredVendor",
+    "mainCompany",
+    "annualTurnover",
+    "ownPotatoFarming",
+    "acres",
+    "geographicalMarketCovered",
+    "contractFarming",
+    "spotBuying",
+    "seedsSales",
+    "ownColdStorage",
+    "onlineAuctionInterest",
+    "acceptsOnlinePayments",
+    "panNumber",
+    "gstNumber",
+    "fssaiNumber",
+  ];
+
+  // Associated required models
+  const associatedModels: {
+    key: string;
+    model: ModelStatic<Model<any, any>>;
+  }[] = [
+    { key: "traderVarieties", model: TraderVariety },
+    { key: "cropsTraded", model: CropTraded },
+    { key: "traderInterests", model: TraderInterest },
+    { key: "traderTypes", model: TraderType },
+    { key: "marketCoverages", model: MarketCoverage },
+    { key: "procurementRegions", model: ProcurementRegion },
+    { key: "bankDetails", model: BankDetail },
+    { key: "mandiDetails", model: MandiDetail },
+    { key: "exporterDetails", model: ExporterDetail },
+    { key: "traderDocuments", model: TraderDocument },
+  ];
+
+  let totalRequiredFields =
+    requiredTraderFields.length + associatedModels.length;
+  let filledFields = 0;
+
+  // Trader table fields
+  for (const field of requiredTraderFields) {
+    const value = (trader as any)[field];
+    if (value !== undefined && value !== null && value !== "") {
+      filledFields++;
+    }
+  }
+
+  // Associated models (check record presence)
+  for (const { model } of associatedModels) {
+    const count = await model.count({ where: { traderId: trader.id } });
+    if (count > 0) filledFields++;
+  }
+
+  const traderTypes = await TraderType.findAll({
+    where: { traderId: trader.id },
+  });
+
+  const typeNames = traderTypes.map((t) => t.type);
+
+  // If Exporter type, include ExporterDetail fields
+  if (
+    typeNames.includes("Exporter") ||
+    typeNames.includes("Exporter (निर्यातक/નિકાસકાર/ਨਿਰਯਾਤਕ)")
+  ) {
+    const exporterDetail = await ExporterDetail.findOne({
+      where: { traderId: trader.id },
+    });
+
+    const requiredExporterFields = [
+      "regions",
+      "potatoVarieties",
+      "quantityPerYear",
+    ];
+
+    totalRequiredFields += requiredExporterFields.length;
+
+    if (exporterDetail) {
+      for (const field of requiredExporterFields) {
+        const value = (exporterDetail as any)[field];
+        if (
+          value !== undefined &&
+          value !== null &&
+          value !== "" &&
+          (!Array.isArray(value) || value.length > 0)
+        ) {
+          filledFields++;
+        }
+      }
+    }
+  }
+
+  // If Mandi Agent type, include MandiDetail fields
+  if (
+    typeNames.includes("Mandi Agent") ||
+    typeNames.includes("Mandi Agent (मंडी एजेंट/માંડી એજન્ટ/ਮੰਡੀ ਏਜੰਟ)")
+  ) {
+    const mandiDetail = await MandiDetail.findOne({
+      where: { traderId: trader.id },
+    });
+
+    const requiredMandiFields = [
+      "state",
+      "cityOrVillage",
+      "district",
+      "mandiName",
+      "shopNumber",
+      "mandiLicenceNo",
+    ];
+
+    totalRequiredFields += requiredMandiFields.length;
+
+    if (mandiDetail) {
+      for (const field of requiredMandiFields) {
+        const value = (mandiDetail as any)[field];
+        if (value !== undefined && value !== null && value !== "") {
+          filledFields++;
+        }
+      }
+    }
+  }
+
+  // Compute percentage
+  const completion = totalRequiredFields
+    ? Math.round((filledFields / totalRequiredFields) * 100)
+    : 0;
+
+  return {
+    hasTraderProfile: true,
+    completion,
+    message: `Trader profile completion: ${completion}%`,
+    details: {
+      filledFields,
+      totalRequiredFields,
+    },
+  };
+};

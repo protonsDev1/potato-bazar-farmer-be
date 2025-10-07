@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
 import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema, createSupportTicketSchema, replyTicketSchema, updateTicketStatusSchema, otpExportSendSchema, verifyAndUpdateMobileNumberSchema, forgotPasswordVerifyOtpSchema, mobileUserPBVerificationSchema,  } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats, createTicket, replyToSupportTicket, updateSupportTicketStatus, listSupportTickets, getTicketDetails, sendExportOtps, resendOtp, verifyOldMobileNumberForUpdate, verifyNewMobileNumberBeforeUpdate, updatePbVerification, requestPbVerification, getPbVerificationStepStatus } from "../controller/user";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats, createTicket, replyToSupportTicket, updateSupportTicketStatus, listSupportTickets, getTicketDetails, sendExportOtps, resendOtp, verifyOldMobileNumberForUpdate, verifyNewMobileNumberBeforeUpdate, updatePbVerification, requestPbVerification, getPbVerificationStepStatus, getProfileCompletion } from "../controller/user";
 import { adminMiddleware, authMiddleware, checkPermissionMiddleware, checkWebPermissionMiddleware, superAdminMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 import { PERMISSIONS, WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
@@ -157,6 +157,12 @@ router.post(
   adminMiddleware,
   validator.body(verifyAndUpdateMobileNumberSchema),
   verifyNewMobileNumberBeforeUpdate
+);
+
+router.get(
+  "/profile/completion",
+  authMiddleware,
+  getProfileCompletion
 );
 
 export default router;
