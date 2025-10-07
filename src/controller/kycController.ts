@@ -1,3 +1,4 @@
+import KycDocument from "../database/models/kycDocuments";
 import {
   updateKycStatusInDB,
   listKycFromDB,
@@ -5,7 +6,7 @@ import {
   upsertKycForUser,
 } from "../services/kycServices";
 
-export const createKyc = async (req, res) => {
+export const upsertKyc = async (req, res) => {
   try {
     const userId = req.user.id;
     const result = await upsertKycForUser(userId, req.body);
@@ -76,6 +77,33 @@ export const getKycDetail = async (req, res) => {
     return res.status(400).json({
       success: false,
       message: error.message || "Error fetching KYC detail",
+    });
+  }
+};
+
+export const getMyKycDetail = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const kyc = await KycDocument.findOne({ where: { userId } });
+
+    if (!kyc) {
+      return res.status(404).json({
+        success: false,
+        message: "You have not submitted your KYC yet.",
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "KYC details fetched successfully",
+      data: kyc,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error fetching KYC details",
     });
   }
 };
