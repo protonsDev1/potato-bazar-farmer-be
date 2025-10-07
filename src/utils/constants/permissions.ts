@@ -11,6 +11,9 @@ export const PERMISSIONS = {
   NEWS: "news",
   DIRECTORY: "directory",
   CONTENT_MANAGEMENT: "content_management",
+  ADVERTISEMENT: "advertisement",
+  FAQ: "faq",
+  CALL_SUPPORT: "call_support",
   HELP_SUPPORT: "help_support",
   REPORTS: "reports",
 } as const;
