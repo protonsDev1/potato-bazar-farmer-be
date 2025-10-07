@@ -15,8 +15,23 @@ export const advertisementServiceList = [
     name: "Guest/sponsored posts",
     position: 4,
   },
+];
+
+export const faqCategoryList = [
   {
-    name: "All Above",
-    position: 5,
+    name: "General",
+    position: 1,
+  },
+  {
+    name: "Account",
+    position: 2,
+  },
+  {
+    name: "Buy/Sell",
+    position: 3,
+  },
+  {
+    name: "Mandi Price",
+    position: 4,
   },
 ];

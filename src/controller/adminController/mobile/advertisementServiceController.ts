@@ -4,9 +4,9 @@ import {
   updateRecord,
   deleteRecord,
   getActiveRecords,
-} from "../../services/adminServices/crudOperationService";
+} from "../../../services/adminServices/crudOperationService";
 
-import AdvertisementService from "../../database/models/adminModels/advertisementService";
+import AdvertisementService from "../../../database/models/adminModels/mobile/advertisementService";
 
 export const addAdvertisementService = async (req, res) => {
   try {
