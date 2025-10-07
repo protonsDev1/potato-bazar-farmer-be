@@ -26,6 +26,7 @@ import AgentOnboardedUser, {
 } from "../database/models/agentOnboardedUsers";
 import SeedBrandName from "../database/models/seedBrandName";
 import { getRegistrationTypes, getUserRole } from "./userServices";
+import { onboardFarmerSchema } from "../validation/farmerValidation";
 
 interface Payload {
   name: string;
@@ -1345,4 +1346,132 @@ export const addFarmersToWorksheet = async (
       seedBrandName: seedBrandName.map((v) => v.name).join(", "),
     });
   }
+};
+
+export const getFarmerProfileCompletion = async (userId: number) => {
+  const farmer = await Farmer.findOne({ where: { userId } });
+  if (!farmer) {
+    return {
+      hasFarmerProfile: false,
+      completion: 0,
+      message: "User has no farmer profile",
+    };
+  }
+
+  // Required fields in Farmer table
+  const requiredFarmerFields = [
+    "firstName",
+    "lastName",
+    "age",
+    "gender",
+    "optionalNumber",
+    "whatsappNumber",
+    "village",
+    "taluka",
+    "district",
+    "state",
+    "pinCode",
+    "digiPin",
+    "geoLocation",
+    "isAadhaarCard",
+    "aadhaarNumber",
+    "isBankAccount",
+  ];
+
+  // Required fields in LandDetail table
+  const requiredLandFields = [
+    "landOwnedAcres",
+    "landLeasedAcres",
+    "totalLandUnderCultivation",
+    "landForPotatoFarming",
+    "areaUnderDrip",
+    "storageCapacityAtFarm",
+    "irrigationEquipmentBrand",
+    "irrigationEquipmentModel",
+    "seedProcurementType",
+    "newSeedPercent",
+    "reusedSeedPercent",
+    "soilType",
+    "averageYieldPerAcre",
+    "sowingMonth",
+    "harvestMonth",
+    "equipmentSource",
+    "preference",
+    "contractFarmingPercent",
+    "soldInSpotMarketPercent",
+    "storedInColdStoragePercent",
+    "interestedInDigitalTrading",
+    "usesWhatsappForBusiness",
+    "suggestions",
+  ];
+
+  // Associated required models
+  const associatedModels: {
+    key: string;
+    model: ModelStatic<Model<any, any>>;
+  }[] = [
+    { key: "irrigationSources", model: IrrigationSource },
+    { key: "irrigationMethods", model: IrrigationMethod },
+    { key: "potatoVarieties", model: PotatoVarietyGrown },
+    { key: "farmEquipment", model: FarmEquipment },
+    { key: "technologyUsed", model: TechnologyUsed },
+    { key: "sellingPlaces", model: SellingPlace },
+    { key: "sellingChannels", model: SellingChannel },
+    { key: "sellingChallenges", model: SellingChallenge },
+    { key: "majorSellingChallenges", model: MajorSellingChallenge },
+    { key: "brandPreferenceReasons", model: BrandPreferenceReason },
+    { key: "sellingPrices", model: SellingPrice },
+    { key: "potatoTypes", model: PotatoType },
+    { key: "otherCropsGrown", model: OtherCropGrown },
+    { key: "priceDiscoveryMethods", model: PriceDiscoveryMethod },
+    { key: "seedBrandName", model: SeedBrandName },
+  ];
+
+  let totalRequiredFields =
+    requiredFarmerFields.length +
+    requiredLandFields.length +
+    associatedModels.length;
+  let filledFields = 0;
+
+  // Farmer table fields
+  for (const field of requiredFarmerFields) {
+    const value = (farmer as any)[field];
+    if (value !== undefined && value !== null && value !== "") {
+      filledFields++;
+    }
+  }
+
+  // LandDetail table fields (single record per farmer)
+  const landDetail = await LandDetail.findOne({
+    where: { farmerId: farmer.id },
+  });
+  if (landDetail) {
+    for (const field of requiredLandFields) {
+      const value = (landDetail as any)[field];
+      if (value !== undefined && value !== null && value !== "") {
+        filledFields++;
+      }
+    }
+  }
+
+  // ssociated models (check record presence)
+  for (const { model } of associatedModels) {
+    const count = await model.count({ where: { farmerId: farmer.id } });
+    if (count > 0) filledFields++;
+  }
+
+  // Compute percentage
+  const completion = totalRequiredFields
+    ? Math.round((filledFields / totalRequiredFields) * 100)
+    : 0;
+
+  return {
+    hasFarmerProfile: true,
+    completion,
+    message: `Farmer profile completion: ${completion}%`,
+    details: {
+      filledFields,
+      totalRequiredFields,
+    },
+  };
 };

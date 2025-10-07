@@ -1466,3 +1466,128 @@ export const canUpdateColdStorage = async (user, coldStorage: ColdStorage) => {
 
   return false;
 };
+
+export const getColdStorageProfileCompletion = async (userId: number) => {
+  const coldStorage = await ColdStorage.findOne({ where: { userId } });
+  if (!coldStorage) {
+    return {
+      hasColdStorageProfile: false,
+      completion: 0,
+      message: "User has no Cold Storage profile",
+    };
+  }
+
+  // Required fields in ColdStorage table
+  const requiredColdStorageFields = [
+    "name",
+    "firstName",
+    "lastName",
+    "mobileNumber",
+    "whatsappNumber",
+    "village",
+    "district",
+    "state",
+    "pinCode",
+    "digiPin",
+    "geoLocation",
+    "hasGstCertificate",
+    "gstOrCertificateNumber",
+    "totalCapacityMt",
+    "builtYear",
+    "numberOfChambers",
+    "numberOfSheds",
+    "hasAirCutter",
+    "hasInsectTrap",
+    "gradingAreaAvailable",
+    "gradingMachineAvailable",
+    "gradingMachineTph",
+    "manualGradingAreaAvailable",
+    "numberOfKattas",
+    "co2Controller",
+    "humidityController",
+    "temperatureController",
+    "monitoringLogAvailable",
+    "realTimeAlertSystem",
+    "refrigerationType",
+    "refrigerationMake",
+    "machineCount",
+    "machineCapacityArray",
+    "weighBridge",
+    "weighbridgeCapacityLength",
+    "hasLorryShades",
+    "lorryShadeCapacity",
+    "hasLabourForGrading",
+    "noOfLabourInPeakSeason",
+    "uniqueFeatures",
+    "isSlabWiseDiscount",
+    "gradingCharges",
+    "otherCharges",
+    "coldStorageType",
+    "dryingFloorCapacityKatta",
+    "awardOrCertificate",
+    "photos",
+  ];
+
+  // Associated required models
+  const associatedModels: {
+    key: string;
+    model: ModelStatic<Model<any, any>>;
+  }[] = [
+    { key: "storageTypes", model: StorageType },
+    { key: "usageTypes", model: UsageType },
+    { key: "operationalChallenges", model: OperationalChallenge },
+    { key: "elevatorsAndStuffing", model: ElevatorAndStuffing },
+    { key: "chamberCapacities", model: ChamberCapacity },
+    { key: "sheds", model: Shed },
+    { key: "coldStorageTypes", model: ColdStorageType },
+    { key: "dryingFacilityDetails", model: DryingFacilityDetail },
+    { key: "dryingMethods", model: DryingMethod },
+    { key: "constructionTypes", model: ConstructionType },
+    { key: "featureOfStorage", model: FeatureOfStorage },
+    { key: "monitoringFacilities", model: MonitoringFacility },
+    { key: "otherFacilities", model: OtherFacility },
+    { key: "potatoDisposalSystems", model: PotatoDisposalSystem },
+    { key: "powerFacilities", model: PowerFacility },
+    { key: "roofTypes", model: RoofType },
+    { key: "seasonWiseBookingSystems", model: SeasonWiseBookingSystem },
+    { key: "slabWiseDiscount", model: SlabWiseDiscount },
+    { key: "storageBookingSystems", model: StorageBookingSystem },
+    { key: "realTimeAlertSystemType", model: RealTimeAlertSystem },
+    { key: "monitoringLoggers", model: MonitoringLogger },
+  ];
+
+  let totalRequiredFields =
+    requiredColdStorageFields.length + associatedModels.length;
+  let filledFields = 0;
+
+  // Cold Storage table fields
+  for (const field of requiredColdStorageFields) {
+    const value = (coldStorage as any)[field];
+    if (value !== undefined && value !== null && value !== "") {
+      filledFields++;
+    }
+  }
+
+  // Associated models (check record presence)
+  for (const { model } of associatedModels) {
+    const count = await model.count({
+      where: { coldStorageId: coldStorage.id },
+    });
+    if (count > 0) filledFields++;
+  }
+
+  // Compute percentage
+  const completion = totalRequiredFields
+    ? Math.round((filledFields / totalRequiredFields) * 100)
+    : 0;
+
+  return {
+    hasColdStorageProfile: true,
+    completion,
+    message: `Cold Storage profile completion: ${completion}%`,
+    details: {
+      filledFields,
+      totalRequiredFields,
+    },
+  };
+};

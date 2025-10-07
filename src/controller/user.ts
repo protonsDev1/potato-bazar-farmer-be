@@ -6,6 +6,9 @@ import SubAdminWebPermission from '../database/models/subAdminWebPermission';
 import { buildPermissionsResponse, buildSubAdminPermissionsResponse } from '../utils/commonCode';
 import SubAdminPermission from '../database/models/subAdminPermission';
 import MobileUpdateSession, { MOBILE_TYPE } from '../database/models/mobileUpdateSession';
+import { getFarmerProfileCompletion } from '../services/farmerServices';
+import { getColdStorageProfileCompletion } from '../services/coldStorageService';
+import { getTraderProfileCompletion } from '../services/traderService';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -918,5 +921,32 @@ export const verifyNewMobileNumberBeforeUpdate = async (req, res) => {
       .json({ success: true, message: "Mobile Number updated successfully." });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const getProfileCompletion = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const [farmerResult, coldStorageResult, traderResult] = await Promise.all([
+      getFarmerProfileCompletion(userId),
+      getColdStorageProfileCompletion(userId),
+      getTraderProfileCompletion(userId),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        farmerProfile: farmerResult,
+        coldStorageProfile: coldStorageResult,
+        traderProfile: traderResult,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to calculate profile completion",
+    });
   }
 };
