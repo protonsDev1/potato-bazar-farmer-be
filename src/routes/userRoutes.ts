@@ -66,8 +66,11 @@ router.post(
 
 router.get(
   "/mobile/list",
-  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),      // mobile admin users listing
-  retrieveMobileUsers
+  checkPermissionMiddleware([
+    PERMISSIONS.USER_MANAGEMENT,
+    PERMISSIONS.PB_VERIFICATION,
+  ]),
+  retrieveMobileUsers // mobile admin users listing
 );
 
 router.put(
@@ -81,8 +84,11 @@ router.get("/mobile/user_profile", authMiddleware, getMobileUserProfile);       
 
 router.get(
   "/mobile/user_profile/:userId",
-  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),         // mobile admin user profile overview
-  getMobileUserProfileByAdmin
+  checkPermissionMiddleware([
+    PERMISSIONS.USER_MANAGEMENT,
+    PERMISSIONS.PB_VERIFICATION,
+  ]),
+  getMobileUserProfileByAdmin // mobile admin user profile overview
 );
 
 router.get(
@@ -99,7 +105,7 @@ router.post(
 
 router.put(
   "/mobile/user/:id/pb-verification",
-  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
+  checkPermissionMiddleware(PERMISSIONS.PB_VERIFICATION),
   validator.body(mobileUserPBVerificationSchema),
   updatePbVerification
 );

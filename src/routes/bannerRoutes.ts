@@ -15,6 +15,6 @@ router.post(
   createOrUpdateBanner
 );
 
-router.get("/", authMiddleware, getBanner);
+router.get("/", getBanner);
 
 export default router;
