@@ -6,7 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
-import AdvertisementService from "./adminModels/advertisementService";
+import AdvertisementService from "./adminModels/mobile/advertisementService";
 import User from "./user";
 
 class Advertisement extends Model<

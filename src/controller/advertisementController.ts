@@ -1,4 +1,5 @@
-import AdvertisementService from "../database/models/adminModels/advertisementService";
+import { Op } from "sequelize";
+import AdvertisementService from "../database/models/adminModels/mobile/advertisementService";
 import Advertisement from "../database/models/advertisement";
 import User from "../database/models/user";
 
@@ -32,15 +33,33 @@ export const createAdvertisementRequest = async (req, res) => {
 
 export const getAllAdvertisementRequestByAdmin = async (req, res) => {
   try {
-    const { page, perPage: limit } = req.query;
+    let { page = 1, perPage: limit = 10, search, serviceId } = req.query;
+
+    page = Number(page);
+    limit = Number(limit);
 
     const offset = (page - 1) * limit;
 
+    const whereCondition: any = {};
+    const userWhereCondition: any = {};
+
+    if (serviceId) whereCondition.serviceId = serviceId;
+
+    if (search?.trim()) {
+      const searchTerm = `%${search.trim()}%`;
+      userWhereCondition[Op.or] = [
+        { name: { [Op.iLike]: searchTerm } },
+        { mobile: { [Op.iLike]: searchTerm } },
+      ];
+    }
+
     const { count, rows } = await Advertisement.findAndCountAll({
+      where: whereCondition,
       include: [
         {
           model: User,
           as: "user",
+          where: userWhereCondition,
         },
         {
           model: AdvertisementService,

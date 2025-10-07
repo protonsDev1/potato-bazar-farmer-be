@@ -6,11 +6,11 @@ import {
   CreationOptional,
 } from "sequelize";
 
-import sequelize from "../db";
+import sequelize from "../../db";
 
-class AdvertisementService extends Model<
-  InferAttributes<AdvertisementService>,
-  InferCreationAttributes<AdvertisementService>
+class FaqCategory extends Model<
+  InferAttributes<FaqCategory>,
+  InferCreationAttributes<FaqCategory>
 > {
   declare id: CreationOptional<number>;
   declare name: string;
@@ -19,7 +19,7 @@ class AdvertisementService extends Model<
   declare isDeleted: boolean;
 }
 
-AdvertisementService.init(
+FaqCategory.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: DataTypes.STRING, unique: true, allowNull: false },
@@ -38,10 +38,10 @@ AdvertisementService.init(
   },
   {
     sequelize,
-    modelName: "AdvertisementService",
-    tableName: "advertisementServices",
+    modelName: "FaqCategory",
+    tableName: "faqCategories",
     timestamps: true,
   }
 );
 
-export default AdvertisementService;
+export default FaqCategory;

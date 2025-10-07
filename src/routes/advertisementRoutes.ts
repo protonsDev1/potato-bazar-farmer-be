@@ -1,13 +1,14 @@
 import express from "express";
 import { createValidator } from "express-joi-validation";
 
-import { authMiddleware, superAdminMiddleware } from "../utils/userAuth";
+import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
 import {
   createAdvertisementRequest,
   deleteAdvertisementRequest,
   getAllAdvertisementRequestByAdmin,
 } from "../controller/advertisementController";
 import { createAdvertisementRequestValidation } from "../validation/advertisementValidation";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -18,7 +19,15 @@ router.post(
   validator.body(createAdvertisementRequestValidation),
   createAdvertisementRequest
 );
-router.get("/", superAdminMiddleware, getAllAdvertisementRequestByAdmin); // for mobile admin
-router.delete("/:id", superAdminMiddleware, deleteAdvertisementRequest);
+router.get(
+  "/",
+  checkPermissionMiddleware(PERMISSIONS.ADVERTISEMENT),
+  getAllAdvertisementRequestByAdmin
+);
+router.delete(
+  "/:id",
+  checkPermissionMiddleware(PERMISSIONS.ADVERTISEMENT),
+  deleteAdvertisementRequest
+);
 
 export default router;
