@@ -56,9 +56,11 @@ import subAdminWebRoutes from "./src/routes/subAdminWebRoutes";
 import mandiListRoutes from "./src/routes/mandiListRoutes";
 import adminDryingMethodRoutes from "./src/routes/adminRoutes/coldStorage/adminDryingMethodRoutes";
 import bannerRoutes from "./src/routes/bannerRoutes";
-import advertisementServiceRoutes from "./src/routes/adminRoutes/advertisementServiceRoutes";
+import advertisementServiceRoutes from "./src/routes/adminRoutes/mobile/advertisementServiceRoutes";
 import adverisementRoutes from "./src/routes/advertisementRoutes";
 import contentManagementRoutes from "./src/routes/contentManagementRoutes";
+import faqCategoryRoutes from "./src/routes/adminRoutes/mobile/faqCategoryRoutes";
+import faqRoutes from "./src/routes/faqRoutes";
 
 const cors = require("cors");
 
@@ -129,6 +131,8 @@ app.use("/api/banner", bannerRoutes);
 app.use("/api/admin/advertisement_services", advertisementServiceRoutes);
 app.use("/api/advertisement", adverisementRoutes);
 app.use("/api/content_management", contentManagementRoutes);
+app.use("/api/admin/faq_categories", faqCategoryRoutes);
+app.use("/api/faqs", faqRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
