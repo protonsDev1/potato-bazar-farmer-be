@@ -1,5 +1,6 @@
 export const PERMISSIONS = {
   USER_MANAGEMENT: "user_management",
+  PB_VERIFICATION: "pb_verification",
   MANDI_AGENTS: "mandi_agents",
   MANDI_LISTS: "mandi_list",
   KYC_REQUESTS: "kyc_requests",
