@@ -9,6 +9,8 @@ import MobileUpdateSession, { MOBILE_TYPE } from '../database/models/mobileUpdat
 import { getFarmerProfileCompletion } from '../services/farmerServices';
 import { getColdStorageProfileCompletion } from '../services/coldStorageService';
 import { getTraderProfileCompletion } from '../services/traderService';
+import { renderTemplate } from '../services/emailTemplate';
+import { sendEmail } from '../services/emailService';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -114,13 +116,30 @@ export const createAgent = async (req, res) => {
   try {
     const result = await createUserWithAgent(req.body);
 
+    const { user, sharedCredentials } = result;
+
+    if (user.email) {
+      const html = renderTemplate("agentCredentials", {
+        name: user.name,
+        email: user.email,
+        password: sharedCredentials.password,
+        agentId: sharedCredentials.agentId,
+      });
+
+      sendEmail({
+        to: user.email,
+        subject: "Your Agent Account Credentials",
+        html,
+      });
+    }
+
     return res.status(201).json({
-      message: 'Agent created successfully',
+      message: "Agent created successfully",
       credentialsToShare: result.sharedCredentials,
     });
   } catch (error: any) {
     return res.status(400).json({
-      message: error.message || 'Error creating agent',
+      message: error.message || "Error creating agent",
     });
   }
 };
