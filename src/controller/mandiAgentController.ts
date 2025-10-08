@@ -1,3 +1,5 @@
+import { sendEmail } from "../services/emailService";
+import { renderTemplate } from "../services/emailTemplate";
 import {
   addMandiAgent,
   deleteMandiAgentService,
@@ -8,10 +10,28 @@ import {
 
 export const createMandiAgent = async (req, res) => {
   try {
-    const response = await addMandiAgent(req.body);
+    const response: any = await addMandiAgent(req.body);
 
     if (!response.success)
       return res.status(400).json({ success: false, message: response.error });
+
+    const { user } = response.data;
+
+    if (user.email) {
+      const html = renderTemplate("mandiAgentCredentials", {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        password: req.body.password,
+      });
+
+      sendEmail({
+        to: user.email,
+        subject: "Your Mandi Agent Account Credentials",
+        html,
+      });
+    }
+
     return res.status(201).json({
       success: true,
       message: "Mandi Agent created successfully.",
