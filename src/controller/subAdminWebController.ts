@@ -1,3 +1,5 @@
+import { sendEmail } from "../services/emailService";
+import { renderTemplate } from "../services/emailTemplate";
 import {
   createSubAdminWebService,
   deleteSubAdminWebService,
@@ -13,6 +15,22 @@ export const createSubAdminWeb = async (req, res) => {
       return res
         .status(result.statusCode)
         .json({ success: false, message: result.message });
+    }
+
+    const subAdmin = result.data;
+
+    if (subAdmin.email) {
+      const html = renderTemplate("subAdminCredentials", {
+        name: subAdmin.name,
+        email: subAdmin.email,
+        password: req.body.password,
+      });
+
+      sendEmail({
+        to: subAdmin.email,
+        subject: "Your Sub Admin Account Credentials",
+        html,
+      });
     }
 
     return res
