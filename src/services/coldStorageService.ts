@@ -1468,12 +1468,14 @@ export const canUpdateColdStorage = async (user, coldStorage: ColdStorage) => {
 };
 
 export const getColdStorageProfileCompletion = async (userId: number) => {
-  const coldStorage = await ColdStorage.findOne({ where: { userId } });
-  if (!coldStorage) {
+  const coldStorages = await ColdStorage.findAll({ where: { userId } });
+
+  if (!coldStorages || coldStorages.length === 0) {
     return {
       hasColdStorageProfile: false,
       completion: 0,
       message: "User has no Cold Storage profile",
+      details: [],
     };
   }
 
@@ -1556,38 +1558,45 @@ export const getColdStorageProfileCompletion = async (userId: number) => {
     { key: "monitoringLoggers", model: MonitoringLogger },
   ];
 
-  let totalRequiredFields =
-    requiredColdStorageFields.length + associatedModels.length;
-  let filledFields = 0;
+  const completionResults = [];
 
-  // Cold Storage table fields
-  for (const field of requiredColdStorageFields) {
-    const value = (coldStorage as any)[field];
-    if (value !== undefined && value !== null && value !== "") {
-      filledFields++;
+  for (const coldStorage of coldStorages) {
+    let totalRequiredFields =
+      requiredColdStorageFields.length + associatedModels.length;
+    let filledFields = 0;
+
+    // Cold Storage table fields
+    for (const field of requiredColdStorageFields) {
+      const value = (coldStorage as any)[field];
+      if (value !== undefined && value !== null && value !== "") {
+        filledFields++;
+      }
     }
-  }
 
-  // Associated models (check record presence)
-  for (const { model } of associatedModels) {
-    const count = await model.count({
-      where: { coldStorageId: coldStorage.id },
+    // Associated models
+    for (const { model } of associatedModels) {
+      const count = await model.count({
+        where: { coldStorageId: coldStorage.id },
+      });
+      if (count > 0) filledFields++;
+    }
+
+    const completion = totalRequiredFields
+      ? Math.round((filledFields / totalRequiredFields) * 100)
+      : 0;
+
+    completionResults.push({
+      coldStorageId: coldStorage.id,
+      name: coldStorage.name,
+      completion,
+      filledFields,
+      totalRequiredFields,
     });
-    if (count > 0) filledFields++;
   }
-
-  // Compute percentage
-  const completion = totalRequiredFields
-    ? Math.round((filledFields / totalRequiredFields) * 100)
-    : 0;
 
   return {
     hasColdStorageProfile: true,
-    completion,
-    message: `Cold Storage profile completion: ${completion}%`,
-    details: {
-      filledFields,
-      totalRequiredFields,
-    },
+    message: "Cold Storage profile completion details",
+    details: completionResults,
   };
 };
