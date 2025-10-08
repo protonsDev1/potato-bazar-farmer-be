@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { randomInt } from "crypto";
 
 import Otp from "../database/models/otp";
+import { Op } from "sequelize";
 
 const generateOtp = () => String(randomInt(0, 1_000_000)).padStart(6, "0");
 
@@ -34,7 +35,7 @@ const sendOtpService = async (mobile, otp) => {
   }
 };
 
-export const createOtp = async (mobile: string) => {
+export const createOtp = async (mobile: string, email?: string) => {
   let otp: string;
 
   if (
@@ -42,7 +43,9 @@ export const createOtp = async (mobile: string) => {
     process.env.NODE_ENV === "staging"
   ) {
     otp = generateOtp();
-    await sendOtpService(mobile, otp);
+    if (mobile) await sendOtpService(mobile, otp);
+    if (email) {
+    }
   } else {
     otp = "123456";
   }
@@ -51,25 +54,31 @@ export const createOtp = async (mobile: string) => {
 
   const hashedOtp = await bcrypt.hash(otp, 10);
 
-  await Otp.create({ mobile, otpHash: hashedOtp, expiresAt });
+  await Otp.create({ mobile, email, otpHash: hashedOtp, expiresAt });
 };
 
 export const verifyOtpFromDB = async (
   mobile: string,
   otp: string,
-  consume = true
+  consume = true,
+  email?: string
 ): Promise<boolean> => {
+  const orConditions = [];
+  if (email) orConditions.push({ email });
+  if (mobile) orConditions.push({ mobile });
+
   const record = await Otp.findOne({
-    where: { mobile },
+    where: { [Op.or]: orConditions },
     order: [["createdAt", "DESC"]],
   });
+
   if (!record || record.expiresAt < new Date()) return false;
 
-  const isMatch = await bcrypt.compare(otp, record.otpHash);
+  const isMatch = await bcrypt.compare(otp.trim(), record.otpHash);
   if (!isMatch) return false;
 
   if (consume) {
-    await Otp.destroy({ where: { mobile } });
+    await Otp.destroy({ where: { [Op.or]: orConditions } });
   }
 
   return true;

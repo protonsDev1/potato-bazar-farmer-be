@@ -453,9 +453,15 @@ export const getUserProfileDB = async (id) => {
   return result;
 };
 
-export const forgotPasswordService = async (mobile: string) => {
+export const forgotPasswordService = async (mobile: string, email: string) => {
   try {
-    const userResponse = await User.findOne({ where: { mobile } });
+    const orConditions = [];
+    if (email) orConditions.push({ email });
+    if (mobile) orConditions.push({ mobile });
+
+    const userResponse = await User.findOne({
+      where: { [Op.or]: orConditions },
+    });
 
     if (!userResponse) {
       return {
@@ -464,9 +470,12 @@ export const forgotPasswordService = async (mobile: string) => {
       };
     }
 
-    await createOtp(mobile);
+    await createOtp(mobile, email);
 
-    await User.update({ otpVerified: false }, { where: { mobile } });
+    await User.update(
+      { otpVerified: false },
+      { where: { [Op.or]: orConditions } }
+    );
 
     return {
       success: true,
@@ -478,6 +487,7 @@ export const forgotPasswordService = async (mobile: string) => {
 
 export const resetPasswordService = async (
   mobile: string,
+  email: string,
   password: string,
   confirmPassword: string
 ) => {
@@ -488,7 +498,13 @@ export const resetPasswordService = async (
         error: "Password and Confirm Password should be same.",
       };
 
-    const userResponse = await User.findOne({ where: { mobile } });
+    const orConditions = [];
+    if (email) orConditions.push({ email });
+    if (mobile) orConditions.push({ mobile });
+
+    const userResponse = await User.findOne({
+      where: { [Op.or]: orConditions },
+    });
 
     if (!userResponse) {
       return {
@@ -504,10 +520,11 @@ export const resetPasswordService = async (
       };
     }
 
-    await User.update({ otpVerified: false }, { where: { mobile } });
-
     const hashedPassword = await bcrypt.hash(password, 10);
-    await User.update({ password_hash: hashedPassword }, { where: { mobile } });
+    await User.update(
+      { password_hash: hashedPassword, otpVerified: false },
+      { where: { [Op.or]: orConditions } }
+    );
 
     return {
       success: true,
