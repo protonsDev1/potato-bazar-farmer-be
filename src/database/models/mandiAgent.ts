@@ -15,6 +15,7 @@ class MandiAgent extends Model<
   declare id: number;
   declare userId: number;
   declare licenseNumber: string;
+  declare remarks: string;
   declare isActive: boolean;
   declare isDeleted: boolean;
   declare createdAt: CreationOptional<Date>;
@@ -40,6 +41,10 @@ MandiAgent.init(
     },
     licenseNumber: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    remarks: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     isActive: {
