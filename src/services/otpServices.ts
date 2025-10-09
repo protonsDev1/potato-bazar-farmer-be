@@ -4,6 +4,8 @@ import { randomInt } from "crypto";
 
 import Otp from "../database/models/otp";
 import { Op } from "sequelize";
+import { sendEmail } from "./emailService";
+import { renderTemplate } from "./emailTemplate";
 
 const generateOtp = () => String(randomInt(0, 1_000_000)).padStart(6, "0");
 
@@ -45,6 +47,14 @@ export const createOtp = async (mobile: string, email?: string) => {
     otp = generateOtp();
     if (mobile) await sendOtpService(mobile, otp);
     if (email) {
+      const html = renderTemplate("sendOtpCredentials", {
+        otp,
+      });
+      await sendEmail({
+        to: email,
+        subject: "Your Potato Bazaar OTP for Account Verification",
+        html,
+      });
     }
   } else {
     otp = "123456";
