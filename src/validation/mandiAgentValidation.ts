@@ -11,7 +11,8 @@ export const createMandiAgentSchema = Joi.object({
   district: Joi.string().required(),
   city: Joi.string().required(),
   pinCode: Joi.string().required(),
-  licenseNumber: Joi.string().required(),
+  licenseNumber: Joi.string().optional().allow(null, ""),
+  remarks: Joi.string().optional().allow(null, ""),
   mandiIds: Joi.array().items(Joi.number()).required().min(1),
 });
 
@@ -27,5 +28,6 @@ export const updateMandiAgentSchema = Joi.object({
   city: Joi.string().optional().allow(null, ""),
   pinCode: Joi.string().optional().allow(null, ""),
   licenseNumber: Joi.string().optional().allow(null, ""),
+  remarks: Joi.string().optional().allow(null, ""),
   mandiIds: Joi.array().items(Joi.number()).optional(),
 });
