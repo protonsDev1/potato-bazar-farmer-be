@@ -11,6 +11,7 @@ import { getColdStorageProfileCompletion } from '../services/coldStorageService'
 import { getTraderProfileCompletion } from '../services/traderService';
 import { renderTemplate } from '../services/emailTemplate';
 import { sendEmail } from '../services/emailService';
+import { Op } from 'sequelize';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -217,11 +218,13 @@ export const sendOtp = async (req, res) => {
 
 export const verifyOtp = async (req, res) => {
   try {
-    const { mobile, otp, hasStartedUsingMobile } = req.body;
+    const { mobile, email, otp, hasStartedUsingMobile } = req.body;
 
-    const isValid = await verifyOtpFromDB(mobile, otp);
+    const isValid = await verifyOtpFromDB(mobile, otp, email);
     if (!isValid) {
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
     }
 
     const registrationType = await getRegistrationTypes(mobile);
@@ -231,28 +234,34 @@ export const verifyOtp = async (req, res) => {
       if (hasStartedUsingMobile) {
         await existingUser.update({ hasStartedUsingMobile: true });
       }
-      
+
       const token = jwt.sign({ id: existingUser.id }, JWT_SECRET);
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "OTP verified. User already exists.",
-          token,
-          user: existingUser,
-          registrationType,
-        });
+      return res.status(200).json({
+        success: true,
+        message: "OTP verified. User already exists.",
+        token,
+        user: existingUser,
+        registrationType,
+      });
     }
 
     const createUser = await registerInitialUser(mobile, hasStartedUsingMobile);
 
     return res
       .status(200)
-      .json({ success: true, message: "OTP verified", createUser, registrationType });
+      .json({
+        success: true,
+        message: "OTP verified",
+        createUser,
+        registrationType,
+      });
   } catch (err: any) {
     return res
       .status(500)
-      .json({ success: false, message: err.message || "OTP verification failed" });
+      .json({
+        success: false,
+        message: err.message || "OTP verification failed",
+      });
   }
 };
 
@@ -355,16 +364,15 @@ export const getUserProfile = async (req, res) => {
 
 export const forgotPassword = async (req, res) => {
   try {
-    const { mobile } = req.body;
-
-    const response = await forgotPasswordService(mobile);
+    const { mobile, email } = req.body;
+   
+    const response = await forgotPasswordService(mobile, email);
 
     if (!response.success)
       return res.status(400).json({ message: response.error });
 
     return res.status(200).json({
-      message:
-        "OTP has been sent successfully.",
+      message: "OTP has been sent successfully.",
     });
   } catch (error) {
     return res
@@ -375,15 +383,22 @@ export const forgotPassword = async (req, res) => {
 
 export const verifyForgotPasswordOtp = async (req, res) => {
   try {
-    const { otp, mobile } = req.body;
+    const { otp, mobile, email } = req.body;
 
-    const isValid = await verifyOtpFromDB(mobile, otp);
+    const isValid = await verifyOtpFromDB(mobile, otp, true, email);
 
     if (!isValid) {
       return res.status(401).json({ message: "Invalid or expired OTP" });
     }
 
-    await User.update({ otpVerified: true }, { where: { mobile } });
+    const orConditions = [];
+    if (email) orConditions.push({ email });
+    if (mobile) orConditions.push({ mobile });
+
+    await User.update(
+      { otpVerified: true },
+      { where: { [Op.or]: orConditions } }
+    );
 
     return res.status(200).json({ message: "Otp verified successfully." });
   } catch (error) {
@@ -395,10 +410,11 @@ export const verifyForgotPasswordOtp = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const { mobile, password, confirmPassword } = req.body;
+    const { mobile, email, password, confirmPassword } = req.body;
 
     const response = await resetPasswordService(
       mobile,
+      email,
       password,
       confirmPassword
     );
