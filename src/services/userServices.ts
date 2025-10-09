@@ -881,8 +881,18 @@ export const getMobileUsers = async ({
       ],
     };
 
-    if (search) {
-      whereCondition.name = { [Op.iLike]: `%${search}%` };
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim()}%`;
+      const searchId = Number(search);
+      whereCondition[Op.and] = [
+        {
+          [Op.or]: [
+            { id: !isNaN(searchId) ? searchId : -1 },
+            { name: { [Op.iLike]: searchTerm } },
+            { mobile: { [Op.iLike]: searchTerm } },
+          ],
+        },
+      ];
     }
 
     if (activeStatus && activeStatus !== "all") {
