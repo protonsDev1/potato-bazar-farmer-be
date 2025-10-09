@@ -100,16 +100,20 @@ export const registrationTypesSchema = Joi.object({
 
 export const forgotPasswordSchema = Joi.object({
   mobile: Joi.string()
-    .required()
-    .pattern(/^[6-9]\d{9}$/),
-});
+    .optional()
+    .pattern(/^[6-9]\d{9}$/)
+    .allow(null, ""),
+  email: Joi.string().email().optional().allow(null, ""),
+}).or("email", "mobile");
 
 export const forgotPasswordVerifyOtpSchema = Joi.object({
   mobile: Joi.string()
-    .required()
-    .pattern(/^[6-9]\d{9}$/),
+    .optional()
+    .pattern(/^[6-9]\d{9}$/)
+    .allow(null, ""),
+  email: Joi.string().email().optional().allow(null, ""),
   otp: Joi.string().required().length(6),
-});
+}).or("email", "mobile");
 
 export const verifyOtpSchema = Joi.object({
   mobile: Joi.string()
@@ -124,11 +128,13 @@ export const verifyOtpSchema = Joi.object({
 
 export const resetPasswordSchema = Joi.object({
   mobile: Joi.string()
-    .required()
-    .pattern(/^[6-9]\d{9}$/),
+    .optional()
+    .pattern(/^[6-9]\d{9}$/)
+    .allow(null, ""),
+  email: Joi.string().email().optional().allow(null, ""),
   password: Joi.string().required(),
   confirmPassword: Joi.string().required(),
-});
+}).or("email", "mobile");
 
 export const changePasswordSchema = Joi.object({
   oldPassword: Joi.string().required(),
