@@ -2,10 +2,11 @@ import { Op } from "sequelize";
 import City from "../database/models/city";
 import MandiList from "../database/models/mandiList";
 import State from "../database/models/state";
+import { hasValue } from "../utils/parseQuery";
 
 export const addMandi = async (req, res) => {
   try {
-    const { cityId, mandiName } = req.body;
+    const { cityId, mandiName, address } = req.body;
 
     const isDuplicateMandi = await MandiList.findOne({
       where: { cityId, mandiName },
@@ -21,6 +22,7 @@ export const addMandi = async (req, res) => {
     await MandiList.create({
       cityId,
       mandiName,
+      address,
     });
 
     return res
@@ -153,7 +155,7 @@ export const updateMandi = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { mandiName } = req.body;
+    const { mandiName, address } = req.body;
 
     const isMandiExist = await MandiList.findByPk(id);
 
@@ -163,23 +165,36 @@ export const updateMandi = async (req, res) => {
         message: "Mandi with given id do not exists.",
       });
 
-    const isDuplicateMandi = await MandiList.findOne({
-      where: {
-        cityId: isMandiExist.cityId,
-        mandiName,
-        id: { [Op.ne]: id },
-      },
-    });
+    if (mandiName) {
+      const isDuplicateMandi = await MandiList.findOne({
+        where: {
+          cityId: isMandiExist.cityId,
+          mandiName,
+          id: { [Op.ne]: id },
+        },
+      });
 
-    if (isDuplicateMandi) {
+      if (isDuplicateMandi) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Another mandi with the same name already exists in this city.",
+        });
+      }
+    }
+
+    const updateFields: any = {};
+    if (hasValue(mandiName)) updateFields.mandiName = mandiName;
+    if (address !== undefined) updateFields.address = address;
+
+    if (Object.keys(updateFields).length === 0) {
       return res.status(400).json({
         success: false,
-        message:
-          "Another mandi with the same name already exists in this city.",
+        message: "No fields provided to update.",
       });
     }
 
-    await MandiList.update({ mandiName }, { where: { id } });
+    await MandiList.update(updateFields, { where: { id } });
 
     return res.status(200).json({
       success: true,

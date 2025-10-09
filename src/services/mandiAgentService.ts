@@ -31,6 +31,7 @@ export const addMandiAgent = async (
     city,
     pinCode,
     licenseNumber,
+    remarks,
     mandiIds,
   } = mandiAgentData;
 
@@ -72,18 +73,18 @@ export const addMandiAgent = async (
       error: `Invalid mandiId(s): ${invalidIds.join(", ")}`,
     };
   }
+  if (licenseNumber) {
+    const isDuplicateLicense = await MandiAgent.findOne({
+      where: { licenseNumber },
+    });
 
-  const isDuplicateLicense = await MandiAgent.findOne({
-    where: { licenseNumber },
-  });
-
-  if (isDuplicateLicense) {
-    return {
-      success: false,
-      error: "Mandi agent with given license number already exists.",
-    };
+    if (isDuplicateLicense) {
+      return {
+        success: false,
+        error: "Mandi agent with given license number already exists.",
+      };
+    }
   }
-
   const keyMap: Record<number, number> = {};
   mandiIds.forEach((id) => {
     keyMap[id] = (keyMap[id] || 0) + 1;
@@ -122,6 +123,7 @@ export const addMandiAgent = async (
       {
         userId: Number(mandiUser.id),
         licenseNumber,
+        remarks,
       },
       { transaction: t }
     );
@@ -201,6 +203,7 @@ export const getAllMandiAgents = async (
         pinCode: mandiUser?.pinCode,
       },
       licenseNumber: entry.licenseNumber,
+      remarks: entry.remarks,
       status: entry.isActive,
     };
   });
@@ -251,6 +254,7 @@ export const updateMandiAgentService = async (
 ): Promise<MandiAgentResponse> => {
   const {
     licenseNumber,
+    remarks,
     password,
     confirmPassword,
     firstName,
@@ -325,7 +329,10 @@ export const updateMandiAgentService = async (
 
   if (licenseNumber) {
     const isDuplicateLicense = await MandiAgent.findOne({
-      where: { licenseNumber },
+      where: {
+        licenseNumber,
+        id: { [Op.ne]: mandiAgentId },
+      },
     });
 
     if (isDuplicateLicense) {
@@ -358,7 +365,9 @@ export const updateMandiAgentService = async (
   const mandiAgentUpdates: any = {};
   const userUpdates: any = {};
 
-  if (hasValue(licenseNumber)) mandiAgentUpdates.licenseNumber = licenseNumber;
+  if (licenseNumber !== undefined)
+    mandiAgentUpdates.licenseNumber = licenseNumber;
+  if (remarks !== undefined) mandiAgentUpdates.remarks = remarks;
   if (hasValue(firstName)) userUpdates.firstName = firstName;
   if (hasValue(lastName)) userUpdates.lastName = lastName;
   if (hasValue(email)) userUpdates.email = email;
