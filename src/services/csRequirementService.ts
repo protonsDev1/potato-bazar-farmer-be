@@ -3,7 +3,7 @@ import { Op } from "sequelize";
 import ColdStorageRequirement from "../database/models/coldStorageRequirement";
 import sequelize from "../database/models/db";
 import { generateUniqueRequirementUid } from "../utils/generate";
-import User from "../database/models/user";
+import User, { USER_ROLES } from "../database/models/user";
 import LikeCSRequirement from "../database/models/likeCSRequirement";
 import CSRequirementView from "../database/models/csRequirementView";
 
@@ -106,7 +106,11 @@ export const createRequirementAndInterests = async (data) => {
   });
 };
 
-export const getRequirementByIdService = async (id: number, userId: number) => {
+export const getRequirementByIdService = async (
+  id: number,
+  userId: number,
+  role: string
+) => {
   const requirement = await ColdStorageRequirement.findOne({
     where: { id },
     include: [
@@ -122,10 +126,12 @@ export const getRequirementByIdService = async (id: number, userId: number) => {
     return null;
   }
 
-  await CSRequirementView.findOrCreate({
-    where: { userId, requirementId: id },
-    defaults: { userId, requirementId: id },
-  });
+  if (role === USER_ROLES.USER) {
+    await CSRequirementView.findOrCreate({
+      where: { userId, requirementId: id },
+      defaults: { userId, requirementId: id },
+    });
+  }
 
   const jsonReq = requirement.toJSON();
 

@@ -77,7 +77,11 @@ export const listAdminBuyRequests = async (req, res) => {
 
 export const showBuyRequest = async (req, res) => {
   try {
-    const request = await getBuyRequestByIdService(req.params.id, req.user?.id);
+    const request = await getBuyRequestByIdService(
+      req.params.id,
+      req.user?.id,
+      req.user?.role
+    );
 
     if (!request) {
       return res.status(404).json({

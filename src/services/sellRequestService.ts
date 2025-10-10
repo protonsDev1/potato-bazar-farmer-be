@@ -315,7 +315,8 @@ export const listAdminSellRequestsService = async (query: any) => {
 
 export const getSellRequestByIdService = async (
   id: number,
-  currentUserId: number
+  currentUserId: number,
+  role: string
 ) => {
   const request = await SellRequest.findOne({
     where: { id },
@@ -352,7 +353,7 @@ export const getSellRequestByIdService = async (
   });
   if (!request) return null;
 
-  if (currentUserId) {
+  if (currentUserId && role === USER_ROLES.USER) {
     await RequestView.findOrCreate({
       where: { userId: currentUserId, sellRequestId: id },
       defaults: { userId: currentUserId, sellRequestId: id },
