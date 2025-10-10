@@ -79,7 +79,8 @@ export const showSellRequest = async (req, res) => {
   try {
     const request = await getSellRequestByIdService(
       req.params.id,
-      req.user?.id
+      req.user?.id,
+      req.user?.role
     );
 
     if (!request) {
