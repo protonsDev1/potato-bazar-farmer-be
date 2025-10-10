@@ -73,7 +73,11 @@ export const createRequirementWithInterests = async (req, res) => {
 
 export const getRequirementById = async (req, res) => {
   try {
-    const result = await getRequirementByIdService(req.params.id, req.user.id);
+    const result = await getRequirementByIdService(
+      req.params.id,
+      req.user.id,
+      req.user.role
+    );
 
     if (!result) {
       return res.status(404).json({

@@ -311,7 +311,8 @@ export const listAdminBuyRequestsService = async (query: any) => {
 
 export const getBuyRequestByIdService = async (
   id: number,
-  currentUserId: number
+  currentUserId: number,
+  role: string
 ) => {
   const request = await BuyRequest.findOne({
     where: { id },
@@ -349,7 +350,7 @@ export const getBuyRequestByIdService = async (
 
   if (!request) return null;
 
-  if (currentUserId) {
+  if (currentUserId && role === USER_ROLES.USER) {
     await RequestView.findOrCreate({
       where: { userId: currentUserId, buyRequestId: id },
       defaults: { userId: currentUserId, buyRequestId: id },
