@@ -702,6 +702,32 @@ export const getMobileUserProfileByAdmin = async (req, res) => {
   }
 };
 
+export const getMobileUserRoleInformation = async (req, res) => {
+  const { id: userId } = req.user;
+
+  try {
+    const userDetail = await getUserTypeProfileDetails(userId);
+
+    if (!userDetail.success)
+      return res.status(400).json({
+        success: false,
+        error: userDetail.error,
+      });
+
+    return res.status(200).json({
+      success: true,
+      message: "User role information retrieved successfully.",
+      data: userDetail.data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message:
+        error.message || "Unable to fetch user role information.",
+    });
+  }
+};
+
 export const deleteMobileUserByAdmin = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -730,6 +756,38 @@ export const deleteMobileUserByAdmin = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Failed in deleting mobile user.",
+    });
+  }
+};
+
+export const deleteCurrentMobileUser = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+
+    const userDetail = await User.findByPk(userId);
+
+    if(!userDetail)
+      return res.status(400).json({success: false, message: "User not found."});
+
+    if (
+      userDetail.role !== USER_ROLES.USER ||
+      (userDetail.hasStartedUsingMobile === false &&
+        userDetail.isUserOnBoardedOnMobile === false)
+    )
+      return res.status(400).json({
+        success: false,
+        message: "Account deletion is only allowed for mobile users.",
+      });
+
+    await User.destroy({ where: { id: userId } });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Mobile user account deleted successfully." });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete mobile user account.",
     });
   }
 };
