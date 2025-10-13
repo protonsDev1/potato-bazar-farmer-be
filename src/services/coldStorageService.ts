@@ -1046,12 +1046,6 @@ export const deleteColdStorageById = async (coldStorageId: number) => {
     await AgentOnboardedUser.destroy({ where: { id: agentOnboardedCs.id } });
   }
 
-  const { isFarmerOnboarded, isColdStorageOnboarded, isTraderOnboarded } =
-    await getRegistrationTypes(coldStorage.mobileNumber);
-
-  if (!isFarmerOnboarded && !isColdStorageOnboarded && !isTraderOnboarded)
-    await User.destroy({ where: { id: coldStorage.userId } });
-
   return { success: true, data: coldStorage };
 };
 

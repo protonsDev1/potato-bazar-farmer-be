@@ -121,6 +121,9 @@ export const updateFarmer = async (req, res) => {
             "Only Admins, Sub Admins or the Agent who onboarded the farmer within the last 24 hours can update the profile.",
         });
       }
+
+      if (farmer.status === REGISTRATION_STATUS.APPROVED)
+        return res.status(403).json({ message: "Farmer is already approved." });
     }
 
     await updateUserInDB(farmer.userId, { name: payload.name });

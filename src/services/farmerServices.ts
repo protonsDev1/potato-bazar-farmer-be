@@ -877,12 +877,6 @@ export const deleteFarmerById = async (farmerId: number) => {
     });
   }
 
-  const { isFarmerOnboarded, isColdStorageOnboarded, isTraderOnboarded } =
-    await getRegistrationTypes(farmer.optionalNumber);
-
-  if (!isFarmerOnboarded && !isColdStorageOnboarded && !isTraderOnboarded)
-    await User.destroy({ where: { id: farmer.userId } });
-
   return { success: true, data: farmer };
 };
 

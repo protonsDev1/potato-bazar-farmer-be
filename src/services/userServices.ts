@@ -1017,6 +1017,21 @@ export const updateMobileService = async (userId, payload) => {
 export const getAdminDashboardStats = async () => {
   const { oneWeekAgo, oneMonthAgo } = getDateRange();
 
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const now = new Date();
+
+  const userInclude: any = {
+    model: User,
+    as: "user",
+    attributes: ["id", "name", "hasStartedUsingMobile", "pbVerified"],
+  };
+
+  userInclude.where = { hasStartedUsingMobile: true };
+  userInclude.required = true; // ensures inner join
+
   const [
     pendingKycStats,
     approvedKycStats,
@@ -1029,6 +1044,8 @@ export const getAdminDashboardStats = async () => {
     lastMonthTotalUsersCount,
     mandiAgentsCount,
     lastMonthMandiAgentsCount,
+    coldStorageCount,
+    lastMonthColdStorageCount,
   ] = await Promise.all([
     KycDocument.count({ where: { status: "pending" } }),
     KycDocument.count({ where: { status: "approved" } }),
@@ -1075,6 +1092,12 @@ export const getAdminDashboardStats = async () => {
         createdAt: { [Op.gte]: oneMonthAgo },
         isActive: true,
       },
+    }),
+
+    ColdStorage.count({ include: [userInclude] }),
+    ColdStorage.count({
+      where: { createdAt: { [Op.gte]: startOfMonth, [Op.lte]: now } },
+      include: [userInclude],
     }),
   ]);
 
@@ -1181,6 +1204,10 @@ export const getAdminDashboardStats = async () => {
           : parseFloat(
               ((lastMonthTotalUsersCount / totalUsersCount) * 100).toFixed(0)
             ),
+    },
+    coldStorageStats: {
+      coldStorageCount,
+      lastMonthColdStorageCount,
     },
     recentActivities: activities.slice(0, 5),
   };
