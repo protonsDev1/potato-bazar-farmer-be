@@ -79,6 +79,9 @@ export const updateTrader = async (req, res) => {
             "Only Admins, Sub Admins or the Agent who onboarded the trader within the last 24 hours can update the profile.",
         });
       }
+
+      if (trader.status === REGISTRATION_STATUS.APPROVED)
+        return res.status(403).json({ message: "Trader is already approved." });
     }
 
     if (payload.fullName) {
