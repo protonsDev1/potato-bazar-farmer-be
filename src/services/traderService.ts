@@ -603,12 +603,6 @@ export const deleteTraderById = async (traderId: number) => {
     });
   }
 
-  const { isFarmerOnboarded, isColdStorageOnboarded, isTraderOnboarded } =
-    await getRegistrationTypes(trader.mobileNumber);
-
-  if (!isFarmerOnboarded && !isColdStorageOnboarded && !isTraderOnboarded)
-    await User.destroy({ where: { id: trader.userId } });
-
   return { success: true, data: trader };
 };
 
