@@ -941,6 +941,7 @@ export const getMobileUsers = async ({
       include,
       limit,
       offset,
+      order: [["createdAt", "DESC"]],
     });
 
     return {
