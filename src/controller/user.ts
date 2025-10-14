@@ -12,6 +12,8 @@ import { getTraderProfileCompletion } from '../services/traderService';
 import { renderTemplate } from '../services/emailTemplate';
 import { sendEmail } from '../services/emailService';
 import { Op } from 'sequelize';
+import { getProfileOverview } from '../services/mandiAgentService';
+import MandiAgent from '../database/models/mandiAgent';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -1040,6 +1042,42 @@ export const getProfileCompletion = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to calculate profile completion",
+    });
+  }
+};
+
+export const getMadniAgentProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const mandiAgent = await MandiAgent.findOne({ where: { userId } });
+
+    if (!mandiAgent) {
+      return res.status(404).json({
+        success: false,
+        message: "No Mandi Agent found for this user",
+      });
+    }
+
+    const result = await getProfileOverview(mandiAgent.id);
+
+    if (!result.mandiUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Mandi Agent profile not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Mandi Agent profile fetched successfully",
+      data: result.mandiUser,
+    });
+  } catch (error) {
+    console.error("Error fetching Mandi Agent profile:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
   }
 };
