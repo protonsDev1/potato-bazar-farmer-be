@@ -1,7 +1,7 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema, createSupportTicketSchema, replyTicketSchema, updateTicketStatusSchema, otpExportSendSchema, verifyAndUpdateMobileNumberSchema, forgotPasswordVerifyOtpSchema, mobileUserPBVerificationSchema,  } from "../validation/userValidator";
-import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats, createTicket, replyToSupportTicket, updateSupportTicketStatus, listSupportTickets, getTicketDetails, sendExportOtps, resendOtp, verifyOldMobileNumberForUpdate, verifyNewMobileNumberBeforeUpdate, updatePbVerification, requestPbVerification, getPbVerificationStepStatus, getProfileCompletion, getMobileUserRoleInformation, deleteCurrentMobileUser, getMadniAgentProfile } from "../controller/user";
+import { loginSchema, userSchema, createAgentSchema, agentLoginSchema, otpSendSchema, otpVerifySchema, registrationTypesSchema, forgotPasswordSchema, resetPasswordSchema, changePasswordSchema, updateProfileSchema, updateRegistrationStatusSchema, mobileLoginSchema, mobileUpdateSchema, createSupportTicketSchema, replyTicketSchema, updateTicketStatusSchema, otpExportSendSchema, verifyAndUpdateMobileNumberSchema, forgotPasswordVerifyOtpSchema, mobileUserPBVerificationSchema, mandiAgentUpdateSchema,  } from "../validation/userValidator";
+import { agentLogin, createAgent, forgotPassword, getDashboardStats, login, resetPassword, sendOtp, signup, updateUserRegistrationTypes, verifyForgotPasswordOtp, verifyOtp, getUserProfile, changePassword, updateProfile, retrieveRegistrationTypes, getRecentRegistrationsForAdmin, adminUpdateRegistrationStatus, UserLoginOnMobile, retrieveMobileUsers, updateMobileUserProfile, getMobileUserProfile, getMobileUserProfileByAdmin, deleteMobileUserByAdmin, retrieveAdminDashboardStats, createTicket, replyToSupportTicket, updateSupportTicketStatus, listSupportTickets, getTicketDetails, sendExportOtps, resendOtp, verifyOldMobileNumberForUpdate, verifyNewMobileNumberBeforeUpdate, updatePbVerification, requestPbVerification, getPbVerificationStepStatus, getProfileCompletion, getMobileUserRoleInformation, deleteCurrentMobileUser, getMadniAgentProfile, updateOwnMandiAgentProfile } from "../controller/user";
 import { adminMiddleware, authMiddleware, checkPermissionMiddleware, checkWebPermissionMiddleware, superAdminMiddleware } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 import { PERMISSIONS, WEB_ACTIONS, WEB_MODULES } from "../utils/constants/permissions";
@@ -174,6 +174,13 @@ router.get(
 router.delete("/mobile", authMiddleware, deleteCurrentMobileUser);  
 
 router.get("/mandi-agent/profile", authMiddleware, getMadniAgentProfile); 
+
+router.put(
+  "/mandi-agent/profile",
+  authMiddleware,
+  validator.body(mandiAgentUpdateSchema),
+  updateOwnMandiAgentProfile
+);
 
 export default router;
 

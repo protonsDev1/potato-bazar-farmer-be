@@ -12,7 +12,7 @@ import { getTraderProfileCompletion } from '../services/traderService';
 import { renderTemplate } from '../services/emailTemplate';
 import { sendEmail } from '../services/emailService';
 import { Op } from 'sequelize';
-import { getProfileOverview } from '../services/mandiAgentService';
+import { getProfileOverview, updateOwnMandiAgentService } from '../services/mandiAgentService';
 import MandiAgent from '../database/models/mandiAgent';
 
 
@@ -1078,6 +1078,32 @@ export const getMadniAgentProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
+    });
+  }
+};
+
+export const updateOwnMandiAgentProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const response = await updateOwnMandiAgentService(userId, req.body);
+
+    if (!response.success) {
+      return res.status(400).json({
+        success: false,
+        message: response.error,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: response.message,
+      data: response.data,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update Mandi Agent profile",
     });
   }
 };

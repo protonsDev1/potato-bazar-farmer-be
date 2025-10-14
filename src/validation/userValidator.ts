@@ -199,6 +199,26 @@ export const mobileUpdateSchema = Joi.object({
   district: Joi.string().optional().allow(null, ""),
 });
 
+export const mandiAgentUpdateSchema = Joi.object({
+  licenseNumber: Joi.string().trim().optional().allow(null, ""),
+  remarks: Joi.string().trim().optional().allow(null, ""),
+  firstName: Joi.string().trim().optional().allow(null, ""),
+  lastName: Joi.string().trim().optional().allow(null, ""),
+  email: Joi.string().email().trim().optional().allow(null, ""),
+  mobile: Joi.string()
+    .pattern(/^[6-9]\d{9}$/)
+    .optional()
+    .allow(null, ""),
+  state: Joi.string().trim().optional().allow(null, ""),
+  district: Joi.string().trim().optional().allow(null, ""),
+  city: Joi.string().trim().optional().allow(null, ""),
+  pinCode: Joi.string()
+    .pattern(/^\d{6}$/)
+    .message("Pin code must be a 6-digit number")
+    .optional()
+    .allow(null, ""),
+});
+
 export const createSupportTicketSchema = Joi.object({
   subject: Joi.string().trim().required(),
   category: Joi.string().trim().required(),
