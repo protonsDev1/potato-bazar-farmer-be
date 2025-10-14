@@ -463,3 +463,136 @@ export const deleteMandiAgentService = async (
     };
   });
 };
+
+export const updateOwnMandiAgentService = async (
+  userId: number,
+  updateFields: any
+) => {
+  const {
+    licenseNumber,
+    remarks,
+    firstName,
+    lastName,
+    email,
+    mobile,
+    state,
+    district,
+    city,
+    pinCode,
+  } = updateFields;
+
+  const mandiUser = await MandiAgent.findOne({
+    where: { userId },
+    include: [
+      {
+        model: User,
+        attributes: [
+          "id",
+          "firstName",
+          "lastName",
+          "name",
+          "mobile",
+          "district",
+          "cityOrVillage",
+          "state",
+          "email",
+          "pinCode",
+        ],
+        as: "user",
+      },
+    ],
+  });
+
+  if (!mandiUser) {
+    return { success: false, error: "Mandi Agent not found." };
+  }
+
+  if (hasValue(email)) {
+    const isEmailTaken = await User.findOne({ where: { email } });
+    if (isEmailTaken && mandiUser.user.email !== email) {
+      return { success: false, error: "Email to be updated already exists." };
+    }
+  }
+
+  if (hasValue(mobile)) {
+    const isMobileTaken = await User.findOne({ where: { mobile } });
+    if (isMobileTaken && mandiUser.user.mobile !== mobile) {
+      return {
+        success: false,
+        error: "Mobile number to be updated already exists.",
+      };
+    }
+  }
+
+  if (licenseNumber) {
+    const isDuplicateLicense = await MandiAgent.findOne({
+      where: {
+        licenseNumber,
+        id: { [Op.ne]: mandiUser.id },
+      },
+    });
+
+    if (isDuplicateLicense) {
+      return {
+        success: false,
+        error: "Mandi agent with given license number already exists.",
+      };
+    }
+  }
+
+  const mandiAgentUpdates: any = {};
+  const userUpdates: any = {};
+
+  if (licenseNumber !== undefined)
+    mandiAgentUpdates.licenseNumber = licenseNumber;
+  if (remarks !== undefined) mandiAgentUpdates.remarks = remarks;
+  if (hasValue(firstName)) userUpdates.firstName = firstName;
+  if (hasValue(lastName)) userUpdates.lastName = lastName;
+  if (hasValue(email)) userUpdates.email = email;
+  if (hasValue(firstName) || hasValue(lastName)) {
+    const newFirstName = hasValue(firstName)
+      ? firstName
+      : mandiUser.user.firstName;
+    const newLastName = hasValue(lastName) ? lastName : mandiUser.user.lastName;
+    userUpdates.name = `${newFirstName} ${newLastName}`.trim();
+  }
+  if (hasValue(mobile)) userUpdates.mobile = mobile;
+  if (hasValue(state)) userUpdates.state = state;
+  if (hasValue(district)) userUpdates.district = district;
+  if (hasValue(city)) userUpdates.cityOrVillage = city;
+  if (hasValue(pinCode)) userUpdates.pinCode = pinCode;
+
+  const result = await sequelize.transaction(async (t) => {
+    let updatedMandiAgentRow = null;
+    let updatedMandiUserRow = null;
+
+    if (Object.keys(mandiAgentUpdates).length) {
+      const [, updated] = await MandiAgent.update(mandiAgentUpdates, {
+        where: { id: mandiUser.id },
+        transaction: t,
+        returning: true,
+      });
+      updatedMandiAgentRow = updated[0] || null;
+    }
+
+    if (Object.keys(userUpdates).length) {
+      const [, updated] = await User.update(userUpdates, {
+        where: { id: mandiUser.user.id },
+        transaction: t,
+        returning: true,
+      });
+      updatedMandiUserRow = updated[0] || null;
+    }
+
+    return {
+      mandiAgent: updatedMandiAgentRow,
+      mandiUser: updatedMandiUserRow,
+    };
+  });
+
+  return {
+    success: true,
+    message: "Mandi Agent profile updated successfully.",
+    data: result,
+  };
+};
