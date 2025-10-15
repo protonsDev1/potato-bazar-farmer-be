@@ -8,6 +8,7 @@ import {
   getAllMandiPricesByMandiId,
   getAllMandiPricesService,
   getMandiPriceByIdService,
+  getTopMandiPricesService,
   listCitiesWithMandis,
   retrieveDashboardStats,
   updateMandiPriceService,
@@ -251,6 +252,29 @@ export const retrieveAllMandisAllotedToAgent = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to retrieve alloted mandis.",
+      error: error.message,
+    });
+  }
+};
+
+export const getTopMandiPrices = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+
+    const response = await getTopMandiPricesService(pageNum, limitNum);
+
+    return res.status(200).json({
+      success: true,
+      message: "Top mandi prices retrieved successfully.",
+      data: response,
+    });
+  } catch (error) {
+    console.error("Failed to retrieve top mandi prices:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve top mandi prices.",
       error: error.message,
     });
   }
