@@ -520,3 +520,50 @@ export const listCitiesWithMandis = async (page = 1, limit = 10) => {
     totalPages: Math.ceil(total / limit),
   };
 };
+
+export const getTopMandiPricesService = async (page = 1, limit = 10) => {
+  const offset = (page - 1) * limit;
+
+  const { count, rows } = await MandiPrice.findAndCountAll({
+    include: [
+      {
+        model: MandiGradePrice,
+        as: "grades",
+      },
+      {
+        model: MandiList,
+        as: "mandi",
+        include: [
+          {
+            model: City,
+            as: "city",
+          },
+        ],
+      },
+    ],
+    distinct: true,
+    order: [["createdAt", "DESC"]],
+    limit,
+    offset,
+  });
+
+  const mandiPrices = rows.map((item) => ({
+    id: item.id,
+    mandiId: item.mandiId,
+    mandiDetail: item.mandi,
+    date: item.date,
+    variety: item.variety,
+    category: item.category,
+    arrivalStatus: item.arrivalStatus,
+    totalArrivalBags: item.totalArrivalBags,
+    normalMandiArrivalBags: item.normalMandiArrivalBags,
+    gradeWisePricing: item.grades,
+  }));
+
+  return {
+    total: count,
+    mandiPrices,
+    currentPage: page,
+    totalPages: Math.ceil(count / limit),
+  };
+};

@@ -9,6 +9,7 @@ import {
   deleteMandiPrice,
   getCitiesWithMandisController,
   getDashboardStats,
+  getTopMandiPrices,
   retrieveAllMandiPrices,
   retrieveAllMandiPricesForMobileUsers,
   retrieveAllMandisAllotedToAgent,
@@ -53,5 +54,7 @@ router.get(
   retrieveAllMandisAllotedToAgent
 );
 router.get("/city-list", getCitiesWithMandisController);
+
+router.get("/top", getTopMandiPrices);
 
 export default router;
