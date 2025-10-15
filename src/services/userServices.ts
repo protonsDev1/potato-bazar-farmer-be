@@ -22,6 +22,7 @@ import SubAdminPermission from "../database/models/subAdminPermission";
 import { retrieveFarmerProfile } from "./farmerServices";
 import { retrieveTraderProfile } from "./traderService";
 import ColdStorageRequirement from "../database/models/coldStorageRequirement";
+import { OTP_TYPE } from "../database/models/otp";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -469,9 +470,9 @@ export const forgotPasswordService = async (mobile: string, email: string) => {
         error: "User not found.",
       };
     }
-
-    await createOtp(mobile, email);
-
+    
+    const otpType = OTP_TYPE.FORGOT;
+    await createOtp(mobile, otpType, email);
     await User.update(
       { otpVerified: false },
       { where: { [Op.or]: orConditions } }

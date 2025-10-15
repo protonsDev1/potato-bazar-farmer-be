@@ -7,10 +7,19 @@ import {
 } from "sequelize";
 import sequelize from "./db";
 
+export enum OTP_TYPE {
+  LOGIN = "login",
+  ON_BOARDING= "onboarding",
+  FORGOT = "forgot",
+  EXPORT = "export",
+  UPDATE = "update",
+}
+
 class Otp extends Model<InferAttributes<Otp>, InferCreationAttributes<Otp>> {
   declare id: CreationOptional<number>;
   declare mobile: string;
   declare email: string;
+  declare otpType: string;
   declare otpHash: string;
   declare expiresAt: Date;
   declare isUsed: boolean;
@@ -30,6 +39,10 @@ Otp.init(
       allowNull: true,
     },
     email: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    otpType: {
       type: DataTypes.STRING,
       allowNull: true,
     },

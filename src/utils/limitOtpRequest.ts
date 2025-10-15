@@ -1,9 +1,14 @@
 import { Op } from "sequelize";
-import Otp from "../database/models/otp";
+import Otp, { OTP_TYPE } from "../database/models/otp";
 
 export const limitOtpMiddleware = async (req, res, next) => {
   try {
-    const { mobile, newMobileNumber, email } = req.body;
+    const {
+      mobile,
+      newMobileNumber,
+      email,
+      otpType = OTP_TYPE.ON_BOARDING,
+    } = req.body;
     const targetMobile = mobile || newMobileNumber;
 
     if (!targetMobile && !email) {
@@ -22,6 +27,7 @@ export const limitOtpMiddleware = async (req, res, next) => {
     const otps = await Otp.findAll({
       where: {
         [Op.or]: orConditions,
+        otpType,
         createdAt: { [Op.gte]: twentyMinutesAgo },
       },
     });

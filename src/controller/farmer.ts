@@ -21,7 +21,7 @@ import { createOtp, verifyOtpFromDB } from "../services/otpServices";
 import { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import Trader from "../database/models/trader/trader";
 import ColdStorage from "../database/models/coldStorage";
-import Otp from "../database/models/otp";
+import Otp, { OTP_TYPE } from "../database/models/otp";
 
 export const createFarmer = async (req, res) => {
   try {
@@ -218,10 +218,18 @@ export const exportFarmers = async (req, res) => {
   try {
     const { mobile, mobileOtp, secondaryMobile, secondaryMobileOtp } = req.body;
 
-    const isPrimaryValid = await verifyOtpFromDB(mobile, mobileOtp, false);
+    const otpType = OTP_TYPE.EXPORT;
+
+    const isPrimaryValid = await verifyOtpFromDB(
+      mobile,
+      mobileOtp,
+      otpType,
+      false
+    );
     const isSecondaryValid = await verifyOtpFromDB(
       secondaryMobile,
       secondaryMobileOtp,
+      otpType,
       false
     );
 
@@ -305,7 +313,8 @@ export const requestUpdateFarmer = async (req, res) => {
       });
     }
 
-    await createOtp(newMobileNumber);
+    const otpType = OTP_TYPE.UPDATE;
+    await createOtp(newMobileNumber, otpType);
 
     return res.status(200).json({
       success: true,
@@ -334,7 +343,8 @@ export const verifyUpdateFarmer = async (req, res) => {
         .json({ success: false, message: "Farmer not found" });
     }
 
-    const isValid = await verifyOtpFromDB(newMobileNumber, otp);
+    const otpType = OTP_TYPE.UPDATE;
+    const isValid = await verifyOtpFromDB(newMobileNumber, otp, otpType);
     if (!isValid) {
       return res
         .status(400)
