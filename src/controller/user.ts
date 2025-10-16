@@ -1,4 +1,4 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService, updateUserInDB } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService, updateUserMobileNumber } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
@@ -272,7 +272,7 @@ export const verifyOtp = async (req, res) => {
 
 export const resendOtp = async (req, res) => {
   try {
-    const { mobile, otpType } = req.body;
+    const { mobile, otpType = OTP_TYPE.ON_BOARDING } = req.body;
 
     await createOtp(mobile, otpType);
     return res
@@ -1132,33 +1132,17 @@ export const verifyAndUpdateNewNumber = async (req, res) => {
         message: "New Mobile number is required.",
       });
 
-    newMobileNumber = newMobileNumber.toString();
-    otp = otp.toString();
+    const response = await updateUserMobileNumber(
+      newMobileNumber,
+      otp,
+      mobile,
+      userId
+    );
 
-    if (mobile === newMobileNumber) {
-      return res.status(400).json({
-        success: false,
-        message: "New mobile number is same as the current one",
-      });
-    }
-
-    const existingUser = await checkExistingUser(newMobileNumber);
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Mobile number already in use by another user",
-      });
-    }
-
-    const otpType = OTP_TYPE.UPDATE;
-    const isValid = await verifyOtpFromDB(newMobileNumber, otp, otpType);
-    if (!isValid) {
+    if (!response.success)
       return res
         .status(400)
-        .json({ success: false, message: "Invalid or expired OTP" });
-    }
-
-    updateUserInDB(userId, { mobile: newMobileNumber });
+        .json({ success: false, message: response.message });
 
     return res.status(200).json({
       success: true,

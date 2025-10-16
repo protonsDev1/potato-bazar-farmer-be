@@ -3,7 +3,7 @@ import Agent from '../database/models/agent';
 import { generateAgentId, generateRandomPassword } from '../utils/generate';
 import Farmer from "../database/models/farmer";
 import ColdStorage from "../database/models/coldStorage";
-import { createOtp } from "./otpServices";
+import { createOtp, verifyOtpFromDB } from "./otpServices";
 import { Op, Sequelize } from 'sequelize';
 import { formatDistanceToNow } from "date-fns";
 import bcrypt from 'bcrypt';
@@ -1623,5 +1623,48 @@ export const getPbVerificationStepStatusService = async (userId: number) => {
       steps,
       canRequestPbVerification,
     },
+  };
+};
+
+export const updateUserMobileNumber = async (
+  newMobileNumber,
+  otp,
+  mobile,
+  userId
+) => {
+  newMobileNumber = newMobileNumber.toString();
+  otp = otp.toString();
+
+  if (mobile === newMobileNumber)
+    return {
+      success: false,
+      message: "New mobile number is same as the current one",
+    };
+
+  const existingUser = await checkExistingUser(newMobileNumber);
+  if (existingUser)
+    return {
+      success: false,
+      message: "Mobile number already in use by another user",
+    };
+
+  const otpType = OTP_TYPE.UPDATE;
+  const isValid = await verifyOtpFromDB(newMobileNumber, otp, otpType);
+  if (!isValid) return { success: false, message: "Invalid or expired OTP" };
+
+  const updates = [
+    Farmer.update({ optionalNumber: newMobileNumber }, { where: { userId } }),
+    updateUserInDB(userId, { mobile: newMobileNumber }),
+    Trader.update({ mobileNumber: newMobileNumber }, { where: { userId } }),
+    ColdStorage.update(
+      { mobileNumber: newMobileNumber },
+      { where: { userId } }
+    ),
+  ];
+
+  await Promise.all(updates);
+
+  return {
+    success: true,
   };
 };
