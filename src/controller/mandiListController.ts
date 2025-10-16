@@ -74,6 +74,7 @@ export const getAllMandiByCity = async (req, res) => {
           as: "city",
         },
       ],
+      order: [["updatedAt", "DESC"]],
     });
 
     return res.status(200).json({
@@ -129,6 +130,7 @@ export const getAllMandi = async (req, res) => {
       ],
       limit,
       offset,
+      order: [["updatedAt", "DESC"]],
     });
 
     return res.status(200).json({
