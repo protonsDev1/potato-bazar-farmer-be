@@ -37,7 +37,11 @@ const sendOtpService = async (mobile, otp) => {
   }
 };
 
-export const createOtp = async (mobile: string, email?: string) => {
+export const createOtp = async (
+  mobile: string,
+  otpType: string,
+  email?: string
+) => {
   let otp: string;
 
   if (
@@ -64,12 +68,13 @@ export const createOtp = async (mobile: string, email?: string) => {
 
   const hashedOtp = await bcrypt.hash(otp, 10);
 
-  await Otp.create({ mobile, email, otpHash: hashedOtp, expiresAt });
+  await Otp.create({ mobile, email, otpType, otpHash: hashedOtp, expiresAt });
 };
 
 export const verifyOtpFromDB = async (
   mobile: string,
   otp: string,
+  otpType: string,
   consume = true,
   email?: string
 ): Promise<boolean> => {
@@ -78,7 +83,7 @@ export const verifyOtpFromDB = async (
   if (mobile) orConditions.push({ mobile });
 
   const record = await Otp.findOne({
-    where: { [Op.or]: orConditions },
+    where: { [Op.or]: orConditions, otpType },
     order: [["createdAt", "DESC"]],
   });
 
@@ -88,7 +93,7 @@ export const verifyOtpFromDB = async (
   if (!isMatch) return false;
 
   if (consume) {
-    await Otp.destroy({ where: { [Op.or]: orConditions } });
+    await Otp.destroy({ where: { [Op.or]: orConditions, otpType } });
   }
 
   return true;

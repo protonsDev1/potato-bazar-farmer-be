@@ -2,6 +2,7 @@ import Joi from "joi";
 import { PriorityEnum, StatusEnum } from "../database/models/helpAndSupport";
 import { TICKET_PRIORITY } from "../database/models/userSupport";
 import { PB_VERIFICATION_STATUS } from "../database/models/user";
+import { OTP_TYPE } from "../database/models/otp";
 
 // Define the Joi schema for user signup validation
 export const userSchema = Joi.object({
@@ -60,15 +61,22 @@ export const agentLoginSchema = Joi.object({
 });
 
 export const otpSendSchema = Joi.object({
-  mobile: Joi.string()
-    .required()
-    .pattern(/^[6-9]\d{9}$/),
-});
+   mobile: Joi.string()
+    .optional()
+    .pattern(/^[6-9]\d{9}$/)
+    .allow(null, ""),
+  email: Joi.string().email().optional().allow(null, ""),
+  otpType: Joi.string()
+    .optional()
+    .allow(null, "")
+    .valid(...Object.values(OTP_TYPE)),
+}).or("email", "mobile");
 
 export const otpExportSendSchema = Joi.object({
   mobile: Joi.string()
-    .required()
+    .optional()
     .pattern(/^[6-9]\d{9}$/),
+    email: Joi.string().email().optional().allow(null),
   secondaryMobile: Joi.string()
     .required()
     .pattern(/^[6-9]\d{9}$/),
@@ -79,6 +87,10 @@ export const otpVerifySchema = Joi.object({
     .required()
     .pattern(/^[6-9]\d{9}$/),
   otp: Joi.string().required().length(6),
+  otpType: Joi.string()
+    .optional()
+    .allow(null, "")
+    .valid(...Object.values(OTP_TYPE)),
   hasStartedUsingMobile: Joi.boolean().optional().allow(null),
 });
 

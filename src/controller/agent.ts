@@ -28,7 +28,7 @@ import AgentMonthlyTarget from "../database/models/agentMonthlyTarget";
 import dayjs from "dayjs";
 import { verifyOtpFromDB } from "../services/otpServices";
 import { USER_ROLES } from "../database/models/user";
-import Otp from "../database/models/otp";
+import Otp, { OTP_TYPE } from "../database/models/otp";
 
 export const getAllRegisteredUsers = async (req, res) => {
   try {
@@ -399,10 +399,18 @@ export const exportAgents = async (req, res) => {
     const { mobile, mobileOtp, secondaryMobile, secondaryMobileOtp } = req.body;
     const { search } = req.query;
 
-    const isPrimaryValid = await verifyOtpFromDB(mobile, mobileOtp, false);
+    const otpType = OTP_TYPE.EXPORT;
+
+    const isPrimaryValid = await verifyOtpFromDB(
+      mobile,
+      mobileOtp,
+      otpType,
+      false
+    );
     const isSecondaryValid = await verifyOtpFromDB(
       secondaryMobile,
       secondaryMobileOtp,
+      otpType,
       false
     );
 

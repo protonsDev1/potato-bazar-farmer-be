@@ -1,4 +1,4 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService, updateUserMobileNumber } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
@@ -14,6 +14,7 @@ import { sendEmail } from '../services/emailService';
 import { Op } from 'sequelize';
 import { getProfileOverview, updateOwnMandiAgentService } from '../services/mandiAgentService';
 import MandiAgent from '../database/models/mandiAgent';
+import { OTP_TYPE } from '../database/models/otp';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -207,10 +208,12 @@ export const agentLogin = async (req, res) => {
 
 export const sendOtp = async (req, res) => {
   try {
-    const { mobile } = req.body;
+    const { mobile, otpType = OTP_TYPE.ON_BOARDING } = req.body;
 
-    await createOtp(mobile);
-    return res.status(200).json({ success: true, message: "OTP has been sent successfully." });
+    await createOtp(mobile, otpType);
+    return res
+      .status(200)
+      .json({ success: true, message: "OTP has been sent successfully." });
   } catch (err: any) {
     return res
       .status(500)
@@ -220,9 +223,9 @@ export const sendOtp = async (req, res) => {
 
 export const verifyOtp = async (req, res) => {
   try {
-    const { mobile, email, otp, hasStartedUsingMobile } = req.body;
+    const { mobile, email, otp, hasStartedUsingMobile, otpType = OTP_TYPE.ON_BOARDING } = req.body;
 
-    const isValid = await verifyOtpFromDB(mobile, otp, email);
+    const isValid = await verifyOtpFromDB(mobile, otp, otpType, true, email);
     if (!isValid) {
       return res
         .status(400)
@@ -269,9 +272,9 @@ export const verifyOtp = async (req, res) => {
 
 export const resendOtp = async (req, res) => {
   try {
-    const { mobile } = req.body;
+    const { mobile, email, otpType = OTP_TYPE.ON_BOARDING } = req.body;
 
-    await createOtp(mobile);
+    await createOtp(mobile, otpType, email);
     return res
       .status(200)
       .json({ success: true, message: "OTP resent successfully" });
@@ -293,9 +296,10 @@ export const sendExportOtps = async (req, res) => {
         message: "Provided mobile numbers do not match the admin account records",
       });
     }
-
-    await createOtp(mobile);
-    await createOtp(secondaryMobile);
+    
+    const otpType = OTP_TYPE.EXPORT;
+    await createOtp(mobile, otpType);
+    await createOtp(secondaryMobile, otpType);
 
     return res.status(200).json({
       success: true,
@@ -387,7 +391,8 @@ export const verifyForgotPasswordOtp = async (req, res) => {
   try {
     const { otp, mobile, email } = req.body;
 
-    const isValid = await verifyOtpFromDB(mobile, otp, true, email);
+    const otpType = OTP_TYPE.FORGOT;
+    const isValid = await verifyOtpFromDB(mobile, otp, otpType, true, email);
 
     if (!isValid) {
       return res.status(401).json({ message: "Invalid or expired OTP" });
@@ -924,8 +929,9 @@ export const verifyOldMobileNumberForUpdate = async (req, res) => {
         message: "Mobile number entered is incorrect.",
       });
     }
-
-    const isValid = await verifyOtpFromDB(mobile, otp);
+ 
+    const otpType = OTP_TYPE.UPDATE;
+    const isValid = await verifyOtpFromDB(mobile, otp, otpType);
     if (!isValid) {
       return res
         .status(400)
@@ -993,7 +999,9 @@ export const verifyNewMobileNumberBeforeUpdate = async (req, res) => {
       });
     }
 
-    const isValid = await verifyOtpFromDB(mobile, otp);
+    const otpType = OTP_TYPE.UPDATE;
+    const isValid = await verifyOtpFromDB(mobile, otp, otpType);
+    
     if (!isValid) {
       return res
         .status(400)
@@ -1104,6 +1112,48 @@ export const updateOwnMandiAgentProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to update Mandi Agent profile",
+    })
+  }
+}
+
+export const verifyAndUpdateNewNumber = async (req, res) => {
+  try {
+    let { otp, newMobileNumber } = req.body;
+    const { id: userId, mobile } = req.user;
+
+    if (!otp)
+      return res
+        .status(400)
+        .json({ success: false, message: "Otp is required." });
+
+    if (!newMobileNumber)
+      return res.status(400).json({
+        success: false,
+        message: "New Mobile number is required.",
+      });
+
+    const response = await updateUserMobileNumber(
+      newMobileNumber,
+      otp,
+      mobile,
+      userId
+    );
+
+    if (!response.success)
+      return res
+        .status(400)
+        .json({ success: false, message: response.message });
+
+    return res.status(200).json({
+      success: true,
+      message: "Mobile number updated successfully",
+      newMobileNumber,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message || "Failed to verify or update mobile number for user.",
     });
   }
 };
