@@ -272,9 +272,9 @@ export const verifyOtp = async (req, res) => {
 
 export const resendOtp = async (req, res) => {
   try {
-    const { mobile, otpType = OTP_TYPE.ON_BOARDING } = req.body;
+    const { mobile, email, otpType = OTP_TYPE.ON_BOARDING } = req.body;
 
-    await createOtp(mobile, otpType);
+    await createOtp(mobile, otpType, email);
     return res
       .status(200)
       .json({ success: true, message: "OTP resent successfully" });
