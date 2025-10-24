@@ -14,6 +14,7 @@ import { sendEmail } from '../services/emailService';
 import { Op } from 'sequelize';
 import { getProfileOverview, updateOwnMandiAgentService } from '../services/mandiAgentService';
 import MandiAgent from '../database/models/mandiAgent';
+import KycDocument from '../database/models/kycDocuments';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -620,15 +621,16 @@ export const getMobileUserProfile = async (req, res) => {
   try {
     const { id } = req.user;
 
-    const userDetail = await User.findByPk(id);
+    const userDetail = await User.findOne({
+      where: id,
+      include: [{ model: KycDocument, as: "kycDocument" }],
+    });
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "User detail fetched successfully.",
-        data: userDetail,
-      });
+    return res.status(200).json({
+      success: true,
+      message: "User detail fetched successfully.",
+      data: userDetail,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
