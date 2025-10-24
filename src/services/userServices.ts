@@ -330,8 +330,11 @@ export const getDashboardCounts = async () => {
   };
 };
 
-export const checkExistingUser = async (mobile) =>{
-  return await User.findOne({ where: { mobile } });
+export const checkExistingUser = async (mobile) => {
+  return await User.findOne({
+    where: { mobile },
+    include: [{ model: KycDocument, as: "kycDocument" }],
+  });
 };
 
 export const getRegistrationTypes = async (mobile) => {
