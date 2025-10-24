@@ -69,6 +69,7 @@ export const listBuyRequestsService = async (
     pbVerified,
     userId,
     currentBuyRequestId,
+    isFavourite,
   } = query;
 
   const offset = (Number(page) - 1) * Number(perPage);
@@ -110,35 +111,36 @@ export const listBuyRequestsService = async (
     userWhere.pbVerified = pbVerified === "true";
   }
 
+  const include: any[] = [
+    {
+      model: User,
+      as: "user",
+      attributes: [
+        "id",
+        "name",
+        "email",
+        "mobile",
+        "state",
+        "district",
+        "pbVerified",
+      ],
+      where: Object.keys(userWhere).length ? userWhere : undefined,
+    },
+  ];
+
+  if (currentUserId) {
+    include.push({
+      model: FavouriteRequest,
+      as: "buyFavourites",
+      attributes: ["id"],
+      required: isFavourite === "true",
+      where: { userId: currentUserId },
+    });
+  }
+
   const { rows, count } = await BuyRequest.findAndCountAll({
     where,
-    include: [
-      {
-        model: User,
-        as: "user",
-        attributes: [
-          "id",
-          "name",
-          "email",
-          "mobile",
-          "state",
-          "district",
-          "pbVerified",
-        ],
-        where: Object.keys(userWhere).length ? userWhere : undefined,
-      },
-      ...(currentUserId
-        ? [
-            {
-              model: FavouriteRequest,
-              as: "buyFavourites",
-              attributes: ["id"],
-              required: false,
-              where: { userId: currentUserId },
-            },
-          ]
-        : []),
-    ],
+    include,
     limit: Number(perPage),
     offset,
     order: [["createdAt", "DESC"]],
