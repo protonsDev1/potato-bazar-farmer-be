@@ -290,6 +290,7 @@ export const updateEventService = async (eventId, payload) => {
     "location",
     "document",
     "website",
+    "contactUrl",
   ];
 
   for (const field of updatableFields) {
