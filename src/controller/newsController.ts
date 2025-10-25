@@ -8,7 +8,15 @@ import {
 
 export const createNews = async (req, res) => {
   try {
-    req.body.createdBy= req.user.role;
+    const { images } = req.body;
+
+    if (!Array.isArray(images) || images.length === 0)
+      return res.status(400).json({
+        success: false,
+        message: "At least one image is required to create a news post.",
+      });
+
+    req.body.createdBy = req.user.role;
     const result = await createNewsService(req.body);
     return res.status(result.statusCode).json(result);
   } catch (err) {
