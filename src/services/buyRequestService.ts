@@ -361,12 +361,20 @@ export const getBuyRequestByIdService = async (
 
   const jsonReq = request.toJSON();
 
-  const [viewCount, favCount] = await Promise.all([
+  const [viewCount, favCount, otherBuyRequestsCount] = await Promise.all([
     RequestView.count({
       where: { buyRequestId: id },
     }),
     FavouriteRequest.count({
       where: { buyRequestId: id },
+    }),
+    BuyRequest.count({
+      where: {
+        userId: request.userId,
+        id: { [Op.ne]: id },
+        isActive: true,
+        status: BUY_REQUEST_STATUS.APPROVED,
+      },
     }),
   ]);
 
@@ -375,6 +383,7 @@ export const getBuyRequestByIdService = async (
     isFavourite: jsonReq.buyFavourites?.length > 0 || false,
     viewCount,
     favCount,
+    otherBuyRequestsCount,
   };
 };
 
