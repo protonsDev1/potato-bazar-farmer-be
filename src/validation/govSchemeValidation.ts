@@ -21,6 +21,8 @@ export const createGovSchemeSchema = Joi.object({
     .required(),
   email: Joi.string().email().required(),
   websiteUrl: Joi.string().uri().allow(null, "").optional(),
+  ageLimit: Joi.string().allow(null, "").optional(),
+  contactUrl: Joi.string().uri().allow(null, "").optional(),
   isActive: Joi.boolean().default(true),
 });
 
@@ -45,5 +47,7 @@ export const updateGovSchemeSchema = Joi.object({
     .optional(),
   email: Joi.string().email().allow(null, "").optional(),
   websiteUrl: Joi.string().uri().allow(null, "").optional(),
+  ageLimit: Joi.string().allow(null, "").optional(),
+  contactUrl: Joi.string().uri().allow(null, "").optional(),
   isActive: Joi.boolean().optional(),
 });
