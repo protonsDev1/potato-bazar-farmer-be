@@ -42,7 +42,6 @@ export const updateEventSchema = Joi.object({
   document: Joi.array().items(Joi.string()).optional(),
   website: Joi.string().optional().allow(null, ""),
   contactUrl: Joi.string().optional().allow(null, ""),
-
   isFeatured: Joi.boolean().optional().allow(null, ""),
 });
 
