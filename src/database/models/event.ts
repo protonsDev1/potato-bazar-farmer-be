@@ -30,6 +30,7 @@ class Event extends Model<
   declare location: string;
   declare document: string[];
   declare website: string;
+  declare contactUrl: string;
   declare isFeatured: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -107,6 +108,10 @@ Event.init(
       allowNull: true,
     },
     website: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    contactUrl: {
       type: DataTypes.STRING,
       allowNull: true,
     },
