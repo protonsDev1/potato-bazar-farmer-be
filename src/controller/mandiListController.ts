@@ -6,7 +6,7 @@ import { hasValue } from "../utils/parseQuery";
 
 export const addMandi = async (req, res) => {
   try {
-    const { cityId, mandiName, address } = req.body;
+    const { cityId, mandiName, address, isTopMandi, position } = req.body;
 
     const isDuplicateMandi = await MandiList.findOne({
       where: { cityId, mandiName },
@@ -23,6 +23,8 @@ export const addMandi = async (req, res) => {
       cityId,
       mandiName,
       address,
+      isTopMandi,
+      position,
     });
 
     return res
@@ -157,7 +159,7 @@ export const updateMandi = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { mandiName, address } = req.body;
+    const { mandiName, address, isTopMandi, position } = req.body;
 
     const isMandiExist = await MandiList.findByPk(id);
 
@@ -188,6 +190,8 @@ export const updateMandi = async (req, res) => {
     const updateFields: any = {};
     if (hasValue(mandiName)) updateFields.mandiName = mandiName;
     if (address !== undefined) updateFields.address = address;
+    if (hasValue(isTopMandi)) updateFields.isTopMandi = isTopMandi;
+    if (hasValue(position)) updateFields.position = position;
 
     if (Object.keys(updateFields).length === 0) {
       return res.status(400).json({
