@@ -524,45 +524,35 @@ export const listCitiesWithMandis = async (page = 1, limit = 10) => {
 export const getTopMandiPricesService = async (page = 1, limit = 10) => {
   const offset = (page - 1) * limit;
 
-  const { count, rows } = await MandiPrice.findAndCountAll({
+  const { count, rows } = await MandiList.findAndCountAll({
+    where: { isTopMandi: true },
     include: [
       {
-        model: MandiGradePrice,
-        as: "grades",
-      },
-      {
-        model: MandiList,
-        as: "mandi",
+        model: MandiPrice,
+        as: "mandiPrices",
+        limit: 5,
+        order: [["date", "DESC"]],
         include: [
           {
-            model: City,
-            as: "city",
+            model: MandiGradePrice,
+            as: "grades",
           },
         ],
       },
+      {
+        model: City,
+        as: "city",
+      },
     ],
     distinct: true,
-    order: [["createdAt", "DESC"]],
+    order: [["position", "ASC"]],
     limit,
     offset,
   });
 
-  const mandiPrices = rows.map((item) => ({
-    id: item.id,
-    mandiId: item.mandiId,
-    mandiDetail: item.mandi,
-    date: item.date,
-    variety: item.variety,
-    category: item.category,
-    arrivalStatus: item.arrivalStatus,
-    totalArrivalBags: item.totalArrivalBags,
-    normalMandiArrivalBags: item.normalMandiArrivalBags,
-    gradeWisePricing: item.grades,
-  }));
-
   return {
     total: count,
-    mandiPrices,
+    mandis: rows,
     currentPage: page,
     totalPages: Math.ceil(count / limit),
   };
