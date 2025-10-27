@@ -18,6 +18,7 @@ export const getRequirements = async (req, res) => {
       verified,
       district,
       pbVerified,
+      isFavourite,
     } = req.query;
     const userId = req.user.id;
 
@@ -26,7 +27,7 @@ export const getRequirements = async (req, res) => {
       Number(page),
       Number(perPage),
       listingType,
-      { commodityType, verified, district, pbVerified }
+      { commodityType, verified, district, pbVerified, isFavourite }
     );
 
     return res.status(200).json({

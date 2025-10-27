@@ -781,6 +781,7 @@ export async function getColdStorage(
       onboardedByUser,
       status,
       pbVerified,
+      isFavourite,
     } = filters;
 
     // if (userId) {
@@ -899,6 +900,28 @@ export async function getColdStorage(
     }
 
     let order: any[] = [["updatedAt", "DESC"]];
+
+    let favouriteColdStorageIds: number[] = [];
+    if (isFavourite && isFavourite === "true") {
+      const likedRecords = await LikeColdStorage.findAll({
+        where: { userId },
+        attributes: ["coldStorageId"],
+      });
+
+      favouriteColdStorageIds = likedRecords.map((like) => like.coldStorageId);
+
+      if (favouriteColdStorageIds.length === 0) {
+        return {
+          data: [],
+          currentPage: page,
+          perPage: limit,
+          totalItems: 0,
+          totalPages: 0,
+        };
+      }
+
+      whereCondition.id = { [Op.in]: favouriteColdStorageIds };
+    }
 
     if (sortBy) {
       switch (sortBy) {
