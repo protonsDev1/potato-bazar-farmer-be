@@ -17,6 +17,7 @@ export const getRequirementsService = async (
     verified?: string;
     district?: string;
     pbVerified?: string;
+    isFavourite?: string;
   }
 ) => {
   const offset = (page - 1) * limit;
@@ -51,6 +52,28 @@ export const getRequirementsService = async (
   if (filters.pbVerified && filters.pbVerified.toLowerCase() !== "all") {
     userInclude.where = { pbVerified: filters.pbVerified === "true" };
     userInclude.required = true;
+  }
+
+  let favouriteRequirementIds: number[] = [];
+  if (filters.isFavourite && filters.isFavourite === "true") {
+    const likedRecords = await LikeCSRequirement.findAll({
+      where: { userId },
+      attributes: ["requirementId"],
+    });
+
+    favouriteRequirementIds = likedRecords.map((like) => like.requirementId);
+
+    if (favouriteRequirementIds.length === 0) {
+      return {
+        total: 0,
+        page,
+        perPage: limit,
+        totalPages: 0,
+        requirements: [],
+      };
+    }
+
+    whereCondition.id = { [Op.in]: favouriteRequirementIds };
   }
 
   const { rows, count } = await ColdStorageRequirement.findAndCountAll({
