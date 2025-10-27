@@ -1048,7 +1048,7 @@ export const getProfileCompletion = async (req, res) => {
   }
 };
 
-export const getMadniAgentProfile = async (req, res) => {
+export const getMandiAgentProfile = async (req, res) => {
   try {
     const userId = req.user.id;
 

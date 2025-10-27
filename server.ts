@@ -63,6 +63,7 @@ import faqCategoryRoutes from "./src/routes/adminRoutes/mobile/faqCategoryRoutes
 import faqRoutes from "./src/routes/faqRoutes";
 import contactSupportRoutes from "./src/routes/contactSupportRoutes";
 import cropDiagnosisRoutes from "./src/routes/cropDiagnosisRoutes";
+import promotionRequestRoutes from "./src/routes/promotionRequestRoutes";
 
 const cors = require("cors");
 
@@ -137,6 +138,7 @@ app.use("/api/admin/faq_categories", faqCategoryRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/contact_support", contactSupportRoutes);
 app.use("/api/crop_diagnosis", cropDiagnosisRoutes);
+app.use("/api/promotion_requests", promotionRequestRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
