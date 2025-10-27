@@ -211,7 +211,7 @@ export const getAllMandiPricesService = async (
     limit,
     offset,
     distinct: true,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const data = rows.map((item) => ({
@@ -280,7 +280,7 @@ export const getAllMandiPricesByMandiId = async (filters, mandiId) => {
       },
     ],
     distinct: true,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const mandiPrices = rows.map((item) => ({
