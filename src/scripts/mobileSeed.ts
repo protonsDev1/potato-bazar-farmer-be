@@ -4,19 +4,23 @@ import {
   advertisementServiceList,
   faqCategoryList,
 } from "../utils/constants/mobileSeedList";
-import { seedData } from "./seedHelper";
+import { seedFaqHelper } from "./seedFaqHelper";
+import { seedDataWithoutTrunctate } from "./seedHelperWithoutTruncate";
 
 const seedDatabase = async () => {
   try {
-    await seedData(
+    await seedDataWithoutTrunctate(
       AdvertisementService,
       advertisementServiceList,
       "Advertisement Services"
-    );
-
-    await seedData(FaqCategory, faqCategoryList, "Faq Categories");
-
-    process.exit(0);
+    ),
+      await seedDataWithoutTrunctate(
+        FaqCategory,
+        faqCategoryList,
+        "Faq Categories"
+      ),
+      await seedFaqHelper(),
+      process.exit(0);
   } catch (error) {
     process.exit(1);
   }
