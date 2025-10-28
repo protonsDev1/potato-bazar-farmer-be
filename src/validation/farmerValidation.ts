@@ -106,7 +106,7 @@ export const onboardFarmerSchema = Joi.object({
         preference: Joi.string().optional().allow(null, ""),
         suggestions: Joi.string().optional().allow(null, ""),
         contractFarmingPercent: Joi.number()
-          .min(1)
+          .min(0)
           .max(100)
           .optional()
           .allow(null),
@@ -362,7 +362,7 @@ export const updateFarmerSchema = Joi.object({
         preference: Joi.string().optional().allow(null, ""),
         suggestions: Joi.string().optional().allow(null, ""),
         contractFarmingPercent: Joi.number()
-          .min(1)
+          .min(0)
           .max(100)
           .optional()
           .allow(null),
