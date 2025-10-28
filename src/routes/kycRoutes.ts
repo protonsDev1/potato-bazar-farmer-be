@@ -5,10 +5,11 @@ import {
   updateKycStatusSchema,
 } from "../validation/kycValidation";
 import {
-  createKyc,
+  upsertKyc,
   approveOrRejectKyc,
   listKyc,
   getKycDetail,
+  getMyKycDetail,
 } from "../controller/kycController";
 import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
 import { PERMISSIONS } from "../utils/constants/permissions";
@@ -16,7 +17,7 @@ import { PERMISSIONS } from "../utils/constants/permissions";
 const router = express.Router();
 const validator = createValidator({});
 
-router.post("/", authMiddleware, validator.body(createKycSchema), createKyc);
+router.post("/", authMiddleware, validator.body(createKycSchema), upsertKyc);
 router.patch(
   "/:id",
   checkPermissionMiddleware(PERMISSIONS.KYC_REQUESTS),
@@ -24,6 +25,7 @@ router.patch(
   approveOrRejectKyc
 );
 router.get("/", checkPermissionMiddleware(PERMISSIONS.KYC_REQUESTS), listKyc);
+router.get("/my", authMiddleware, getMyKycDetail);
 router.get(
   "/:id",
   checkPermissionMiddleware(PERMISSIONS.KYC_REQUESTS),

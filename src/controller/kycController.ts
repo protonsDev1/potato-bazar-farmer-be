@@ -1,31 +1,43 @@
-import { createKycInDB, updateKycStatusInDB, listKycFromDB, getKycDetailFromDB } from '../services/kycServices';
+import KycDocument from "../database/models/kycDocuments";
+import {
+  updateKycStatusInDB,
+  listKycFromDB,
+  getKycDetailFromDB,
+  upsertKycForUser,
+} from "../services/kycServices";
 
-export const createKyc = async (req, res) => {
+export const upsertKyc = async (req, res) => {
   try {
-    req.body.userId=req.user.id;
-    const kyc = await createKycInDB(req.body);
-    return res.status(201).json({
-      success: true,
-      message: "KYC created successfully",
-      kyc
+    const userId = req.user.id;
+    const result = await upsertKycForUser(userId, req.body);
+
+    return res.status(result.status).json({
+      success: result.status < 400,
+      message: result.message,
+      kyc: result.kyc,
     });
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message || "Error creating KYC" });
+    return res
+      .status(400)
+      .json({ success: false, message: error.message || "Error creating KYC" });
   }
 };
 
 export const approveOrRejectKyc = async (req, res) => {
   try {
     const { id } = req.params;
-    const { isVerified,reason } = req.body;
-    const updated = await updateKycStatusInDB(Number(id), isVerified,reason);
+    const { isVerified, reason } = req.body;
+    const updated = await updateKycStatusInDB(Number(id), isVerified, reason);
     return res.status(200).json({
       success: true,
-      message: `KYC ${isVerified ? 'approved' : 'rejected'} successfully`,
-      kyc: updated
+      message: `KYC ${isVerified ? "approved" : "rejected"} successfully`,
+      kyc: updated,
     });
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message || "Error updating KYC status" });
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Error updating KYC status",
+    });
   }
 };
 
@@ -34,10 +46,13 @@ export const listKyc = async (req, res) => {
     const page = req.query.page ? Number(req.query.page) : 1;
     const limit = req.query.limit ? Number(req.query.limit) : 10;
     const search = req.query.search ? String(req.query.search) : undefined;
-    const result = await listKycFromDB(Number(page), Number(limit),search);
-    return res.status(200).json({success: true, ...result});
+    const result = await listKycFromDB(Number(page), Number(limit), search);
+    return res.status(200).json({ success: true, ...result });
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message || "Error fetching KYC list" });
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Error fetching KYC list",
+    });
   }
 };
 
@@ -46,17 +61,49 @@ export const getKycDetail = async (req, res) => {
     const id = Number(req.params.id);
 
     if (isNaN(id)) {
-      return res.status(400).json({ success:false, message: "Invalid ID" });
+      return res.status(400).json({ success: false, message: "Invalid ID" });
     }
 
     const kyc = await getKycDetailFromDB(id);
 
     if (!kyc) {
-      return res.status(404).json({ success: false, message: "KYC record not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "KYC record not found" });
     }
 
-    return res.json({success: true, kyc});
+    return res.json({ success: true, kyc });
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message || "Error fetching KYC detail" });
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Error fetching KYC detail",
+    });
+  }
+};
+
+export const getMyKycDetail = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const kyc = await KycDocument.findOne({ where: { userId } });
+
+    if (!kyc) {
+      return res.status(404).json({
+        success: false,
+        message: "You have not submitted your KYC yet.",
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "KYC details fetched successfully",
+      data: kyc,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error fetching KYC details",
+    });
   }
 };

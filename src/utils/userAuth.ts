@@ -5,6 +5,7 @@ import User, { USER_ROLES } from "../database/models/user";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { WEB_ACTIONS } from "./constants/permissions";
 import SubAdminWebPermission from "../database/models/subAdminWebPermission";
+import { Op } from "sequelize";
 
 dotenv.config();
 
@@ -124,7 +125,7 @@ export const adminMiddleware = async (req, res, next) => {
   }
 };
 
-export const checkPermissionMiddleware = (permission: string) => {
+export const checkPermissionMiddleware = (permissions: string | string[]) => {
   return async (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -150,12 +151,21 @@ export const checkPermissionMiddleware = (permission: string) => {
           return next(); // always allowed
 
         case USER_ROLES.SUB_ADMIN: {
-          const exists = await SubAdminPermission.findOne({
-            where: { userId: user.id, permission },
+          const allowedPermissions = Array.isArray(permissions)
+            ? permissions
+            : [permissions];
+
+          const hasPermission = await SubAdminPermission.findOne({
+            where: {
+              userId: user.id,
+              permission: { [Op.in]: allowedPermissions },
+            },
           });
-          if (!exists) {
+          if (!hasPermission) {
             return res.status(403).json({
-              message: `${USER_ROLES.SUB_ADMIN} does not have '${permission}' permission.`,
+              message: `${
+                USER_ROLES.SUB_ADMIN
+              } does not have '${allowedPermissions.join(", ")}' permission.`,
             });
           }
           return next();

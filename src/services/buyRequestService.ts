@@ -69,6 +69,7 @@ export const listBuyRequestsService = async (
     pbVerified,
     userId,
     currentBuyRequestId,
+    isFavourite,
   } = query;
 
   const offset = (Number(page) - 1) * Number(perPage);
@@ -110,35 +111,36 @@ export const listBuyRequestsService = async (
     userWhere.pbVerified = pbVerified === "true";
   }
 
+  const include: any[] = [
+    {
+      model: User,
+      as: "user",
+      attributes: [
+        "id",
+        "name",
+        "email",
+        "mobile",
+        "state",
+        "district",
+        "pbVerified",
+      ],
+      where: Object.keys(userWhere).length ? userWhere : undefined,
+    },
+  ];
+
+  if (currentUserId) {
+    include.push({
+      model: FavouriteRequest,
+      as: "buyFavourites",
+      attributes: ["id"],
+      required: isFavourite === "true",
+      where: { userId: currentUserId },
+    });
+  }
+
   const { rows, count } = await BuyRequest.findAndCountAll({
     where,
-    include: [
-      {
-        model: User,
-        as: "user",
-        attributes: [
-          "id",
-          "name",
-          "email",
-          "mobile",
-          "state",
-          "district",
-          "pbVerified",
-        ],
-        where: Object.keys(userWhere).length ? userWhere : undefined,
-      },
-      ...(currentUserId
-        ? [
-            {
-              model: FavouriteRequest,
-              as: "buyFavourites",
-              attributes: ["id"],
-              required: false,
-              where: { userId: currentUserId },
-            },
-          ]
-        : []),
-    ],
+    include,
     limit: Number(perPage),
     offset,
     order: [["createdAt", "DESC"]],
@@ -311,7 +313,8 @@ export const listAdminBuyRequestsService = async (query: any) => {
 
 export const getBuyRequestByIdService = async (
   id: number,
-  currentUserId: number
+  currentUserId: number,
+  role: string
 ) => {
   const request = await BuyRequest.findOne({
     where: { id },
@@ -349,7 +352,7 @@ export const getBuyRequestByIdService = async (
 
   if (!request) return null;
 
-  if (currentUserId) {
+  if (currentUserId && role === USER_ROLES.USER) {
     await RequestView.findOrCreate({
       where: { userId: currentUserId, buyRequestId: id },
       defaults: { userId: currentUserId, buyRequestId: id },
@@ -358,12 +361,20 @@ export const getBuyRequestByIdService = async (
 
   const jsonReq = request.toJSON();
 
-  const [viewCount, favCount] = await Promise.all([
+  const [viewCount, favCount, otherBuyRequestsCount] = await Promise.all([
     RequestView.count({
       where: { buyRequestId: id },
     }),
     FavouriteRequest.count({
       where: { buyRequestId: id },
+    }),
+    BuyRequest.count({
+      where: {
+        userId: request.userId,
+        id: { [Op.ne]: id },
+        isActive: true,
+        status: BUY_REQUEST_STATUS.APPROVED,
+      },
     }),
   ]);
 
@@ -372,6 +383,7 @@ export const getBuyRequestByIdService = async (
     isFavourite: jsonReq.buyFavourites?.length > 0 || false,
     viewCount,
     favCount,
+    otherBuyRequestsCount,
   };
 };
 

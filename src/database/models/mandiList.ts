@@ -15,8 +15,11 @@ class MandiList extends Model<
   declare id: number;
   declare cityId: number;
   declare mandiName: string;
+  declare address: string | null;
   declare isActive: boolean;
   declare isDeleted: boolean;
+  declare isTopMandi: boolean;
+  declare position: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
   declare city?: City;
@@ -43,6 +46,10 @@ MandiList.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
@@ -51,6 +58,15 @@ MandiList.init(
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
+    },
+    isTopMandi: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    position: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,

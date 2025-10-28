@@ -42,6 +42,8 @@ class GovernmentScheme extends Model<
   declare document: string | null;
   declare mobile: string;
   declare email: string;
+  declare ageLimit: string;
+  declare contactUrl: string | null;
   declare websiteUrl: string | null;
   declare isActive: CreationOptional<boolean>;
   declare createdAt: CreationOptional<Date>;
@@ -99,6 +101,17 @@ GovernmentScheme.init(
       },
     },
     websiteUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        isUrl: true,
+      },
+    },
+    ageLimit: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    contactUrl: {
       type: DataTypes.STRING,
       allowNull: true,
       validate: {

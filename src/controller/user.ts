@@ -1,4 +1,4 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
@@ -6,6 +6,15 @@ import SubAdminWebPermission from '../database/models/subAdminWebPermission';
 import { buildPermissionsResponse, buildSubAdminPermissionsResponse } from '../utils/commonCode';
 import SubAdminPermission from '../database/models/subAdminPermission';
 import MobileUpdateSession, { MOBILE_TYPE } from '../database/models/mobileUpdateSession';
+import { getFarmerProfileCompletion } from '../services/farmerServices';
+import { getColdStorageProfileCompletion } from '../services/coldStorageService';
+import { getTraderProfileCompletion } from '../services/traderService';
+import { renderTemplate } from '../services/emailTemplate';
+import { sendEmail } from '../services/emailService';
+import { Op } from 'sequelize';
+import { getProfileOverview, updateOwnMandiAgentService } from '../services/mandiAgentService';
+import MandiAgent from '../database/models/mandiAgent';
+import KycDocument from '../database/models/kycDocuments';
 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -111,13 +120,30 @@ export const createAgent = async (req, res) => {
   try {
     const result = await createUserWithAgent(req.body);
 
+    const { user, sharedCredentials } = result;
+
+    if (user.email) {
+      const html = renderTemplate("agentCredentials", {
+        name: user.name,
+        email: user.email,
+        password: sharedCredentials.password,
+        agentId: sharedCredentials.agentId,
+      });
+
+      sendEmail({
+        to: user.email,
+        subject: "Your Agent Account Credentials",
+        html,
+      });
+    }
+
     return res.status(201).json({
-      message: 'Agent created successfully',
+      message: "Agent created successfully",
       credentialsToShare: result.sharedCredentials,
     });
   } catch (error: any) {
     return res.status(400).json({
-      message: error.message || 'Error creating agent',
+      message: error.message || "Error creating agent",
     });
   }
 };
@@ -195,11 +221,13 @@ export const sendOtp = async (req, res) => {
 
 export const verifyOtp = async (req, res) => {
   try {
-    const { mobile, otp, hasStartedUsingMobile } = req.body;
+    const { mobile, email, otp, hasStartedUsingMobile } = req.body;
 
-    const isValid = await verifyOtpFromDB(mobile, otp);
+    const isValid = await verifyOtpFromDB(mobile, otp, email);
     if (!isValid) {
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
     }
 
     const registrationType = await getRegistrationTypes(mobile);
@@ -209,28 +237,34 @@ export const verifyOtp = async (req, res) => {
       if (hasStartedUsingMobile) {
         await existingUser.update({ hasStartedUsingMobile: true });
       }
-      
+
       const token = jwt.sign({ id: existingUser.id }, JWT_SECRET);
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "OTP verified. User already exists.",
-          token,
-          user: existingUser,
-          registrationType,
-        });
+      return res.status(200).json({
+        success: true,
+        message: "OTP verified. User already exists.",
+        token,
+        user: existingUser,
+        registrationType,
+      });
     }
 
     const createUser = await registerInitialUser(mobile, hasStartedUsingMobile);
 
     return res
       .status(200)
-      .json({ success: true, message: "OTP verified", createUser, registrationType });
+      .json({
+        success: true,
+        message: "OTP verified",
+        createUser,
+        registrationType,
+      });
   } catch (err: any) {
     return res
       .status(500)
-      .json({ success: false, message: err.message || "OTP verification failed" });
+      .json({
+        success: false,
+        message: err.message || "OTP verification failed",
+      });
   }
 };
 
@@ -333,16 +367,15 @@ export const getUserProfile = async (req, res) => {
 
 export const forgotPassword = async (req, res) => {
   try {
-    const { mobile } = req.body;
-
-    const response = await forgotPasswordService(mobile);
+    const { mobile, email } = req.body;
+   
+    const response = await forgotPasswordService(mobile, email);
 
     if (!response.success)
       return res.status(400).json({ message: response.error });
 
     return res.status(200).json({
-      message:
-        "OTP has been sent successfully.",
+      message: "OTP has been sent successfully.",
     });
   } catch (error) {
     return res
@@ -353,15 +386,22 @@ export const forgotPassword = async (req, res) => {
 
 export const verifyForgotPasswordOtp = async (req, res) => {
   try {
-    const { otp, mobile } = req.body;
+    const { otp, mobile, email } = req.body;
 
-    const isValid = await verifyOtpFromDB(mobile, otp);
+    const isValid = await verifyOtpFromDB(mobile, otp, true, email);
 
     if (!isValid) {
       return res.status(401).json({ message: "Invalid or expired OTP" });
     }
 
-    await User.update({ otpVerified: true }, { where: { mobile } });
+    const orConditions = [];
+    if (email) orConditions.push({ email });
+    if (mobile) orConditions.push({ mobile });
+
+    await User.update(
+      { otpVerified: true },
+      { where: { [Op.or]: orConditions } }
+    );
 
     return res.status(200).json({ message: "Otp verified successfully." });
   } catch (error) {
@@ -373,10 +413,11 @@ export const verifyForgotPasswordOtp = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const { mobile, password, confirmPassword } = req.body;
+    const { mobile, email, password, confirmPassword } = req.body;
 
     const response = await resetPasswordService(
       mobile,
+      email,
       password,
       confirmPassword
     );
@@ -580,15 +621,16 @@ export const getMobileUserProfile = async (req, res) => {
   try {
     const { id } = req.user;
 
-    const userDetail = await User.findByPk(id);
+    const userDetail = await User.findOne({
+      where: id,
+      include: [{ model: KycDocument, as: "kycDocument" }],
+    });
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "User detail fetched successfully.",
-        data: userDetail,
-      });
+    return res.status(200).json({
+      success: true,
+      message: "User detail fetched successfully.",
+      data: userDetail,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -626,6 +668,19 @@ export const requestPbVerification = async (req, res) => {
   }
 };
 
+export const getPbVerificationStepStatus = async (req, res) => {
+  try {
+    const result = await getPbVerificationStepStatusService(req.user.id);
+
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get PB verification Step Status",
+    });
+  }
+};
+
 export const getMobileUserProfileByAdmin = async (req, res) => {
   const { userId } = req.params;
 
@@ -647,6 +702,32 @@ export const getMobileUserProfileByAdmin = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Failed in retrieving mobile user's profile.",
+    });
+  }
+};
+
+export const getMobileUserRoleInformation = async (req, res) => {
+  const { id: userId } = req.user;
+
+  try {
+    const userDetail = await getUserTypeProfileDetails(userId);
+
+    if (!userDetail.success)
+      return res.status(400).json({
+        success: false,
+        error: userDetail.error,
+      });
+
+    return res.status(200).json({
+      success: true,
+      message: "User role information retrieved successfully.",
+      data: userDetail.data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message:
+        error.message || "Unable to fetch user role information.",
     });
   }
 };
@@ -679,6 +760,38 @@ export const deleteMobileUserByAdmin = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Failed in deleting mobile user.",
+    });
+  }
+};
+
+export const deleteCurrentMobileUser = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+
+    const userDetail = await User.findByPk(userId);
+
+    if(!userDetail)
+      return res.status(400).json({success: false, message: "User not found."});
+
+    if (
+      userDetail.role !== USER_ROLES.USER ||
+      (userDetail.hasStartedUsingMobile === false &&
+        userDetail.isUserOnBoardedOnMobile === false)
+    )
+      return res.status(400).json({
+        success: false,
+        message: "Account deletion is only allowed for mobile users.",
+      });
+
+    await User.destroy({ where: { id: userId } });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Mobile user account deleted successfully." });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete mobile user account.",
     });
   }
 };
@@ -905,5 +1018,94 @@ export const verifyNewMobileNumberBeforeUpdate = async (req, res) => {
       .json({ success: true, message: "Mobile Number updated successfully." });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const getProfileCompletion = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const [farmerResult, coldStorageResult, traderResult] = await Promise.all([
+      getFarmerProfileCompletion(userId),
+      getColdStorageProfileCompletion(userId),
+      getTraderProfileCompletion(userId),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        farmerProfile: farmerResult,
+        coldStorageProfile: coldStorageResult,
+        traderProfile: traderResult,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to calculate profile completion",
+    });
+  }
+};
+
+export const getMandiAgentProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const mandiAgent = await MandiAgent.findOne({ where: { userId } });
+
+    if (!mandiAgent) {
+      return res.status(404).json({
+        success: false,
+        message: "No Mandi Agent found for this user",
+      });
+    }
+
+    const result = await getProfileOverview(mandiAgent.id);
+
+    if (!result.mandiUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Mandi Agent profile not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Mandi Agent profile fetched successfully",
+      data: result.mandiUser,
+    });
+  } catch (error) {
+    console.error("Error fetching Mandi Agent profile:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export const updateOwnMandiAgentProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const response = await updateOwnMandiAgentService(userId, req.body);
+
+    if (!response.success) {
+      return res.status(400).json({
+        success: false,
+        message: response.error,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: response.message,
+      data: response.data,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update Mandi Agent profile",
+    });
   }
 };

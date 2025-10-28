@@ -1,5 +1,6 @@
 export const PERMISSIONS = {
   USER_MANAGEMENT: "user_management",
+  PB_VERIFICATION: "pb_verification",
   MANDI_AGENTS: "mandi_agents",
   MANDI_LISTS: "mandi_list",
   KYC_REQUESTS: "kyc_requests",
@@ -11,6 +12,9 @@ export const PERMISSIONS = {
   NEWS: "news",
   DIRECTORY: "directory",
   CONTENT_MANAGEMENT: "content_management",
+  ADVERTISEMENT: "advertisement",
+  FAQ: "faq",
+  CALL_SUPPORT: "call_support",
   HELP_SUPPORT: "help_support",
   REPORTS: "reports",
 } as const;

@@ -19,6 +19,7 @@ export const createEventSchema = Joi.object({
   location: Joi.string().required(),
   document: Joi.array().items(Joi.string()).optional(),
   website: Joi.string().optional().allow(null, ""),
+  contactUrl: Joi.string().optional().allow(null, ""),
   isFeatured: Joi.boolean().optional().allow(null, ""),
 });
 
@@ -40,6 +41,7 @@ export const updateEventSchema = Joi.object({
   city: Joi.string().optional().allow(null, ""),
   document: Joi.array().items(Joi.string()).optional(),
   website: Joi.string().optional().allow(null, ""),
+  contactUrl: Joi.string().optional().allow(null, ""),
   isFeatured: Joi.boolean().optional().allow(null, ""),
 });
 

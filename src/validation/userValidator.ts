@@ -100,16 +100,20 @@ export const registrationTypesSchema = Joi.object({
 
 export const forgotPasswordSchema = Joi.object({
   mobile: Joi.string()
-    .required()
-    .pattern(/^[6-9]\d{9}$/),
-});
+    .optional()
+    .pattern(/^[6-9]\d{9}$/)
+    .allow(null), // mobile is unique , "" is not allowed
+  email: Joi.string().email().optional().allow(null), // email is unique , "" is not allowed
+}).or("email", "mobile");
 
 export const forgotPasswordVerifyOtpSchema = Joi.object({
   mobile: Joi.string()
-    .required()
-    .pattern(/^[6-9]\d{9}$/),
+    .optional()
+    .pattern(/^[6-9]\d{9}$/)
+    .allow(null), // mobile is unique , "" is not allowed
+  email: Joi.string().email().optional().allow(null), // email is unique , "" is not allowed
   otp: Joi.string().required().length(6),
-});
+}).or("email", "mobile");
 
 export const verifyOtpSchema = Joi.object({
   mobile: Joi.string()
@@ -124,11 +128,13 @@ export const verifyOtpSchema = Joi.object({
 
 export const resetPasswordSchema = Joi.object({
   mobile: Joi.string()
-    .required()
-    .pattern(/^[6-9]\d{9}$/),
+    .optional()
+    .pattern(/^[6-9]\d{9}$/)
+    .allow(null), // mobile is unique , "" is not allowed
+  email: Joi.string().email().optional().allow(null), // email is unique , "" is not allowed
   password: Joi.string().required(),
   confirmPassword: Joi.string().required(),
-});
+}).or("email", "mobile");
 
 export const changePasswordSchema = Joi.object({
   oldPassword: Joi.string().required(),
@@ -138,8 +144,8 @@ export const changePasswordSchema = Joi.object({
 
 export const updateProfileSchema = Joi.object({
   name: Joi.string().optional().allow(null, ""),
-  email: Joi.string().optional().allow(null, ""),
-  mobile: Joi.string().optional().allow(null, ""),
+  email: Joi.string().optional().allow(null), // email is unique , "" is not allowed
+  mobile: Joi.string().optional().allow(null), // mobile is unique , "" is not allowed
   location: Joi.string().optional().allow(null, ""),
 });
 
@@ -186,11 +192,31 @@ export const mobileUpdateSchema = Joi.object({
   state: Joi.string().optional().allow(null, ""),
   cityOrVillage: Joi.string().optional().allow(null, ""),
   pinCode: Joi.string().optional().allow(null, ""),
-  email: Joi.string().optional().allow(null, ""),
+  email: Joi.string().optional().allow(null), // email is unique , "" is not allowed
   bio: Joi.string().optional().allow(null, ""),
   profilePicture: Joi.string().optional().allow(null, ""),
   userType: Joi.array().items(Joi.string()).optional(),
   district: Joi.string().optional().allow(null, ""),
+});
+
+export const mandiAgentUpdateSchema = Joi.object({
+  licenseNumber: Joi.string().trim().optional().allow(null, ""),
+  remarks: Joi.string().trim().optional().allow(null, ""),
+  firstName: Joi.string().trim().optional().allow(null, ""),
+  lastName: Joi.string().trim().optional().allow(null, ""),
+  email: Joi.string().email().trim().optional().allow(null), // email is unique , "" is not allowed
+  mobile: Joi.string()
+    .pattern(/^[6-9]\d{9}$/)
+    .optional()
+    .allow(null), // mobile is unique , "" is not allowed
+  state: Joi.string().trim().optional().allow(null, ""),
+  district: Joi.string().trim().optional().allow(null, ""),
+  city: Joi.string().trim().optional().allow(null, ""),
+  pinCode: Joi.string()
+    .pattern(/^\d{6}$/)
+    .message("Pin code must be a 6-digit number")
+    .optional()
+    .allow(null, ""),
 });
 
 export const createSupportTicketSchema = Joi.object({

@@ -28,7 +28,15 @@ export const addEvent = async (eventData) => {
 export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
   const offset = (page - 1) * limit;
 
-  const { isFeatured, category, district, city, date, dateRange } = filters;
+  const {
+    isFeatured,
+    category,
+    district,
+    city,
+    date,
+    dateRange,
+    includeExpired,
+  } = filters;
 
   const whereCondition: any = {};
 
@@ -73,8 +81,10 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
   }
 
   // expired events filter
-  const now = new Date();
-  whereCondition.endDate = { [Op.gte]: now };
+  if (!includeExpired || includeExpired === "false") {
+    const now = new Date();
+    whereCondition.endDate = { [Op.gte]: now };
+  }
 
   if (search) {
     whereCondition[Op.or] = [
@@ -280,6 +290,7 @@ export const updateEventService = async (eventId, payload) => {
     "location",
     "document",
     "website",
+    "contactUrl",
   ];
 
   for (const field of updatableFields) {

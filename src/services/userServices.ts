@@ -21,6 +21,7 @@ import UserSupport from "../database/models/userSupport";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { retrieveFarmerProfile } from "./farmerServices";
 import { retrieveTraderProfile } from "./traderService";
+import ColdStorageRequirement from "../database/models/coldStorageRequirement";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -329,8 +330,11 @@ export const getDashboardCounts = async () => {
   };
 };
 
-export const checkExistingUser = async (mobile) =>{
-  return await User.findOne({ where: { mobile } });
+export const checkExistingUser = async (mobile) => {
+  return await User.findOne({
+    where: { mobile },
+    include: [{ model: KycDocument, as: "kycDocument" }],
+  });
 };
 
 export const getRegistrationTypes = async (mobile) => {
@@ -452,9 +456,15 @@ export const getUserProfileDB = async (id) => {
   return result;
 };
 
-export const forgotPasswordService = async (mobile: string) => {
+export const forgotPasswordService = async (mobile: string, email: string) => {
   try {
-    const userResponse = await User.findOne({ where: { mobile } });
+    const orConditions = [];
+    if (email) orConditions.push({ email });
+    if (mobile) orConditions.push({ mobile });
+
+    const userResponse = await User.findOne({
+      where: { [Op.or]: orConditions },
+    });
 
     if (!userResponse) {
       return {
@@ -463,9 +473,12 @@ export const forgotPasswordService = async (mobile: string) => {
       };
     }
 
-    await createOtp(mobile);
+    await createOtp(mobile, email);
 
-    await User.update({ otpVerified: false }, { where: { mobile } });
+    await User.update(
+      { otpVerified: false },
+      { where: { [Op.or]: orConditions } }
+    );
 
     return {
       success: true,
@@ -477,6 +490,7 @@ export const forgotPasswordService = async (mobile: string) => {
 
 export const resetPasswordService = async (
   mobile: string,
+  email: string,
   password: string,
   confirmPassword: string
 ) => {
@@ -487,7 +501,13 @@ export const resetPasswordService = async (
         error: "Password and Confirm Password should be same.",
       };
 
-    const userResponse = await User.findOne({ where: { mobile } });
+    const orConditions = [];
+    if (email) orConditions.push({ email });
+    if (mobile) orConditions.push({ mobile });
+
+    const userResponse = await User.findOne({
+      where: { [Op.or]: orConditions },
+    });
 
     if (!userResponse) {
       return {
@@ -503,10 +523,11 @@ export const resetPasswordService = async (
       };
     }
 
-    await User.update({ otpVerified: false }, { where: { mobile } });
-
     const hashedPassword = await bcrypt.hash(password, 10);
-    await User.update({ password_hash: hashedPassword }, { where: { mobile } });
+    await User.update(
+      { password_hash: hashedPassword, otpVerified: false },
+      { where: { [Op.or]: orConditions } }
+    );
 
     return {
       success: true,
@@ -880,8 +901,18 @@ export const getMobileUsers = async ({
       ],
     };
 
-    if (search) {
-      whereCondition.name = { [Op.iLike]: `%${search}%` };
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim()}%`;
+      const searchId = Number(search);
+      whereCondition[Op.and] = [
+        {
+          [Op.or]: [
+            { id: !isNaN(searchId) ? searchId : -1 },
+            { name: { [Op.iLike]: searchTerm } },
+            { mobile: { [Op.iLike]: searchTerm } },
+          ],
+        },
+      ];
     }
 
     if (activeStatus && activeStatus !== "all") {
@@ -913,6 +944,7 @@ export const getMobileUsers = async ({
       include,
       limit,
       offset,
+      order: [["createdAt", "DESC"]],
     });
 
     return {
@@ -989,6 +1021,21 @@ export const updateMobileService = async (userId, payload) => {
 export const getAdminDashboardStats = async () => {
   const { oneWeekAgo, oneMonthAgo } = getDateRange();
 
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const now = new Date();
+
+  const userInclude: any = {
+    model: User,
+    as: "user",
+    attributes: ["id", "name", "hasStartedUsingMobile", "pbVerified"],
+  };
+
+  userInclude.where = { hasStartedUsingMobile: true };
+  userInclude.required = true; // ensures inner join
+
   const [
     pendingKycStats,
     approvedKycStats,
@@ -1001,6 +1048,8 @@ export const getAdminDashboardStats = async () => {
     lastMonthTotalUsersCount,
     mandiAgentsCount,
     lastMonthMandiAgentsCount,
+    coldStorageCount,
+    lastMonthColdStorageCount,
   ] = await Promise.all([
     KycDocument.count({ where: { status: "pending" } }),
     KycDocument.count({ where: { status: "approved" } }),
@@ -1047,6 +1096,12 @@ export const getAdminDashboardStats = async () => {
         createdAt: { [Op.gte]: oneMonthAgo },
         isActive: true,
       },
+    }),
+
+    ColdStorage.count({ include: [userInclude] }),
+    ColdStorage.count({
+      where: { createdAt: { [Op.gte]: startOfMonth, [Op.lte]: now } },
+      include: [userInclude],
     }),
   ]);
 
@@ -1153,6 +1208,10 @@ export const getAdminDashboardStats = async () => {
           : parseFloat(
               ((lastMonthTotalUsersCount / totalUsersCount) * 100).toFixed(0)
             ),
+    },
+    coldStorageStats: {
+      coldStorageCount,
+      lastMonthColdStorageCount,
     },
     recentActivities: activities.slice(0, 5),
   };
@@ -1421,6 +1480,32 @@ export const requestPbVerificationService = async (userId) => {
       message: "PB verification can only be updated for mobile users.",
     };
 
+    const [
+      farmerExists,
+      coldStorageExists,
+      traderExists,
+      coldStoageHirerExists,
+    ] = await Promise.all([
+      Farmer.findOne({ where: { userId } }),
+      ColdStorage.findOne({ where: { userId } }),
+      Trader.findOne({ where: { userId } }),
+      ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
+    ]);
+    const step2Completed =
+      !!farmerExists ||
+      !!coldStorageExists ||
+      !!traderExists ||
+      !!coldStoageHirerExists;
+
+    if (!step2Completed) {
+      return {
+        statusCode: 400,
+        success: false,
+        message:
+          "Complete your role information (farmer, cold storage, trader or cold storage hirer) before requesting PB verification.",
+      };
+    }
+
   const kyc = await KycDocument.findOne({ where: { userId } });
 
   if (!kyc) {
@@ -1473,5 +1558,72 @@ export const requestPbVerificationService = async (userId) => {
     message:
       "PB verification request submitted successfully. Awaiting admin approval.",
     data: user,
+  };
+};
+
+export const getPbVerificationStepStatusService = async (userId: number) => {
+  const user = await User.findByPk(userId);
+
+  if (!user) {
+    return { statusCode: 404, success: false, message: "User not found" };
+  }
+
+  const steps: any = {};
+
+  // Step 1: Complete basic information
+  const step1Completed =
+    user.hasStartedUsingMobile && user.isUserOnBoardedOnMobile;
+  steps.step1Completed = step1Completed;
+  steps.step1Message = step1Completed
+    ? "Basic information completed."
+    : "Complete your basic information before requesting PB verification.";
+
+  // Step 2: Complete role information
+  const [farmerExists, coldStorageExists, traderExists, coldStoageHirerExists] =
+    await Promise.all([
+      Farmer.findOne({ where: { userId } }),
+      ColdStorage.findOne({ where: { userId } }),
+      Trader.findOne({ where: { userId } }),
+      ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
+    ]);
+  const step2Completed =
+    !!farmerExists ||
+    !!coldStorageExists ||
+    !!traderExists ||
+    !!coldStoageHirerExists;
+  steps.step2Completed = step2Completed;
+  steps.step2Message = step2Completed
+    ? "Role information completed."
+    : "Complete your role information (farmer, cold storage, trader, or cold storage hirer) before requesting PB verification.";
+
+  // Step 3: Complete KYC upload
+  const kyc = await KycDocument.findOne({ where: { userId } });
+  const step3Completed = !!kyc;
+  steps.step3Completed = step3Completed;
+  steps.step3Message = step3Completed
+    ? "KYC document uploaded."
+    : "Upload KYC document before requesting PB verification.";
+
+  // Step 4: KYC verified
+  const step4Completed = kyc?.isVerified ?? false;
+  steps.step4Completed = step4Completed;
+  steps.step4Message = step4Completed
+    ? "KYC verified."
+    : "Your KYC is not verified. PB verification cannot be requested.";
+
+  // Can request PB verification if all steps completed
+  const canRequestPbVerification =
+    step1Completed && step2Completed && step3Completed && step4Completed;
+
+  return {
+    statusCode: 200,
+    success: true,
+    message: canRequestPbVerification
+      ? "All steps completed. User can request PB verification."
+      : "Some steps are pending. Complete the steps to request PB verification.",
+    data: {
+      steps,
+      canRequestPbVerification,
+    },
   };
 };

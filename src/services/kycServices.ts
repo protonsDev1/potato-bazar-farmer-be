@@ -1,6 +1,64 @@
 import KycDocument from '../database/models/kycDocuments';
 import User from '../database/models/user';
 import { Op } from 'sequelize';
+interface UpsertKycResult {
+  status: number;
+  message: string;
+  kyc?: KycDocument;
+}
+
+export const upsertKycForUser = async (
+  userId: number,
+  kycData: any
+): Promise<UpsertKycResult> => {
+  return await KycDocument.sequelize!.transaction(async (t) => {
+    const kyc = await KycDocument.findOne({
+      where: { userId },
+      transaction: t,
+    });
+
+    if (kyc) {
+      if (kyc.isVerified) {
+        return {
+          status: 400,
+          message: "KYC already verified. You cannot update it.",
+          kyc,
+        };
+      }
+
+      const updatedKyc = await kyc.update(
+        {
+          ...kycData,
+          isVerified: false,
+          status: "pending",
+        },
+        { transaction: t }
+      );
+
+      return {
+        status: 200,
+        message: "KYC updated successfully",
+        kyc: updatedKyc,
+      };
+    }
+
+    const newKyc = await KycDocument.create(
+      {
+        userId,
+        ...kycData,
+        isVerified: false,
+        status: "pending",
+      },
+      { transaction: t }
+    );
+
+    return {
+      status: 201,
+      message: "KYC created successfully",
+      kyc: newKyc,
+    };
+  });
+};
 
 export const createKycInDB = async (kycData: any) => {
   return await KycDocument.create(kycData);
