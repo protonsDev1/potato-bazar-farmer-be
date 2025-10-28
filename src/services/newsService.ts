@@ -18,6 +18,9 @@ export const listNewsService = async ({
   limit,
   category,
   isFeatured,
+  stateId,
+  districtId,
+  date,
 }) => {
   const whereClause: any = {};
 
@@ -34,6 +37,17 @@ export const listNewsService = async ({
 
   if (isFeatured && isFeatured === "true") {
     whereClause.isFeatured = true;
+  }
+
+  if (stateId) whereClause.stateId = stateId;
+
+  if (districtId) whereClause.districtId = districtId;
+
+  if (date) {
+    const start = new Date(date);
+    const end = new Date(date);
+    end.setDate(end.getDate() + 1);
+    whereClause.createdAt = { [Op.between]: [start, end] };
   }
 
   const offset = (page - 1) * limit;
