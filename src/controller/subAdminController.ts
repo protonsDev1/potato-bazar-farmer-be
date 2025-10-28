@@ -20,10 +20,16 @@ export const createSubAdmin = async (req, res) => {
     const subAdmin = result.data;
 
     if (subAdmin.email) {
+      const loginUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://app-admin-pb.vercel.app/login"
+          : "https://app-admin-pb.vercel.app/login";
+
       const html = renderTemplate("subAdminCredentials", {
         name: subAdmin.name,
         email: subAdmin.email,
         password: req.body.password,
+        loginUrl,
       });
 
       sendEmail({

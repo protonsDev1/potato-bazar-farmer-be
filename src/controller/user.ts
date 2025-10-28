@@ -123,11 +123,17 @@ export const createAgent = async (req, res) => {
     const { user, sharedCredentials } = result;
 
     if (user.email) {
+      const loginUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://onboarding.potatobazaar.com/agent/login"
+          : "https://potato-bazar.vercel.app/agent/login";
+
       const html = renderTemplate("agentCredentials", {
         name: user.name,
         email: user.email,
         password: sharedCredentials.password,
         agentId: sharedCredentials.agentId,
+        loginUrl,
       });
 
       sendEmail({

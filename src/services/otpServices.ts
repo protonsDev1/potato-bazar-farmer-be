@@ -50,7 +50,7 @@ export const createOtp = async (mobile: string, email?: string) => {
       const html = renderTemplate("sendOtpCredentials", {
         otp,
       });
-      await sendEmail({
+      sendEmail({
         to: email,
         subject: "Your Potato Bazaar OTP for Account Verification",
         html,
