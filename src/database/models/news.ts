@@ -179,4 +179,19 @@ News.init(
   }
 );
 
+// Associations
+News.belongsTo(State, {
+  foreignKey: "stateId",
+  as: "state",
+});
+
+State.hasMany(News, { foreignKey: "stateId", as: "news" });
+
+News.belongsTo(District, {
+  foreignKey: "districtId",
+  as: "district",
+});
+
+District.hasMany(News, { foreignKey: "districtId", as: "news" });
+
 export default News;

@@ -1,6 +1,8 @@
 import { Op } from "sequelize";
 import News from "../database/models/news";
 import { USER_ROLES } from "../database/models/user";
+import State from "../database/models/state";
+import District from "../database/models/district";
 
 export const createNewsService = async (payload) => {
   const news = await News.create(payload);
@@ -54,6 +56,18 @@ export const listNewsService = async ({
 
   const { rows, count } = await News.findAndCountAll({
     where: whereClause,
+    include: [
+      {
+        model: State,
+        as: "state",
+        attributes: ["id", "name"],
+      },
+      {
+        model: District,
+        as: "district",
+        attributes: ["id", "name"],
+      },
+    ],
     offset,
     limit,
     order: [["createdAt", "DESC"]],
@@ -73,7 +87,22 @@ export const listNewsService = async ({
 };
 
 export const getNewsByIdService = async (id, user) => {
-  const news = await News.findByPk(id);
+  const news = await News.findOne({
+    where: { id },
+    include: [
+      {
+        model: State,
+        as: "state",
+        attributes: ["id", "name"],
+      },
+      {
+        model: District,
+        as: "district",
+        attributes: ["id", "name"],
+      },
+    ],
+  });
+
   if (!news) {
     return {
       success: false,
@@ -95,6 +124,18 @@ export const getNewsByIdService = async (id, user) => {
         { tags: { [Op.overlap]: news.tags } },
       ],
     },
+    include: [
+      {
+        model: State,
+        as: "state",
+        attributes: ["id", "name"],
+      },
+      {
+        model: District,
+        as: "district",
+        attributes: ["id", "name"],
+      },
+    ],
     limit: 5,
   });
 
