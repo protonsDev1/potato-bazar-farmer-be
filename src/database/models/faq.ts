@@ -12,8 +12,8 @@ import FaqCategory from "./adminModels/mobile/faqCategory";
 class Faq extends Model<InferAttributes<Faq>, InferCreationAttributes<Faq>> {
   declare id: CreationOptional<number>;
   declare categoryId: number;
-  declare question: Text;
-  declare answer: Text;
+  declare question: string;
+  declare answer: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
