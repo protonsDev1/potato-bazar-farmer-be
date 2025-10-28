@@ -18,11 +18,17 @@ export const createMandiAgent = async (req, res) => {
     const { user } = response.data;
 
     if (user.email) {
+      const loginUrl =
+        process.env.NODE_ENV === "production"
+          ? "https://app-admin-pb.vercel.app/login-mandi-agent"
+          : "https://app-admin-pb.vercel.app/login-mandi-agent";
+
       const html = renderTemplate("mandiAgentCredentials", {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
         password: req.body.password,
+        loginUrl,
       });
 
       sendEmail({
