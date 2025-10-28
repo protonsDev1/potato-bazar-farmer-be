@@ -6,6 +6,8 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import State from "./state";
+import District from "./district";
 
 export enum NEWS_STATUS {
   DRAFT = "Draft",
@@ -36,6 +38,8 @@ class News extends Model<InferAttributes<News>, InferCreationAttributes<News>> {
   declare isFeatured: boolean;
   declare createdBy: string | null;
   declare source: string | null;
+  declare stateId: number;
+  declare districtId: number;
 
   // New optional fields
   declare introduction: string | null;
@@ -99,6 +103,26 @@ News.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    stateId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: State,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
+    },
+    districtId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: District,
+        key: "id",
+      },
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
+    },
 
     // ✅ Newly added optional fields
     introduction: {
@@ -155,5 +179,19 @@ News.init(
   }
 );
 
-export default News;
+// Associations
+News.belongsTo(State, {
+  foreignKey: "stateId",
+  as: "state",
+});
 
+State.hasMany(News, { foreignKey: "stateId", as: "news" });
+
+News.belongsTo(District, {
+  foreignKey: "districtId",
+  as: "district",
+});
+
+District.hasMany(News, { foreignKey: "districtId", as: "news" });
+
+export default News;

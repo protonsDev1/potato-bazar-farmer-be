@@ -32,6 +32,9 @@ export const listNews = async (req, res) => {
       perPage = 10,
       category,
       isFeatured,
+      stateId,
+      districtId,
+      date
     } = req.query;
     const result = await listNewsService({
       search: search.toString(),
@@ -39,6 +42,9 @@ export const listNews = async (req, res) => {
       limit: Number(perPage),
       category,
       isFeatured,
+      stateId,
+      districtId,
+      date,
     });
     return res.status(result.statusCode).json(result);
   } catch (err) {

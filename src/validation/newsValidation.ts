@@ -13,6 +13,8 @@ export const createNewsSchema = Joi.object({
   isFeatured: Joi.boolean().default(false),
   createdBy: Joi.string().trim().optional(),
   source: Joi.string().trim().optional(),
+  stateId: Joi.number().optional().allow(null),
+  districtId: Joi.number().optional().allow(null),
 
   //  AI optional fields
   introduction: Joi.string().trim().optional(),
@@ -43,4 +45,6 @@ export const updateNewsSchema = Joi.object({
   images: Joi.array().items(Joi.string().uri()).optional(),
   tags: Joi.array().items(Joi.string().trim()).optional(),
   isFeatured: Joi.boolean().optional(),
+  stateId: Joi.number().optional().allow(null),
+  districtId: Joi.number().optional().allow(null),
 });
