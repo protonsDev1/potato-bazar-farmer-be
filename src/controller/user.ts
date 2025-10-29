@@ -1,4 +1,4 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService, updateUserMobileNumber } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
@@ -1112,6 +1112,48 @@ export const updateOwnMandiAgentProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to update Mandi Agent profile",
+    });
+  }
+};
+
+export const verifyAndUpdateNewNumber = async (req, res) => {
+  try {
+    let { otp, newMobileNumber } = req.body;
+    const { id: userId, mobile } = req.user;
+
+    if (!otp)
+      return res
+        .status(400)
+        .json({ success: false, message: "Otp is required." });
+
+    if (!newMobileNumber)
+      return res.status(400).json({
+        success: false,
+        message: "New Mobile number is required.",
+      });
+
+    const response = await updateUserMobileNumber(
+      newMobileNumber,
+      otp,
+      mobile,
+      userId
+    );
+
+    if (!response.success)
+      return res
+        .status(400)
+        .json({ success: false, message: response.message });
+
+    return res.status(200).json({
+      success: true,
+      message: "Mobile number updated successfully",
+      newMobileNumber,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message || "Failed to verify or update mobile number for user.",
     });
   }
 };
