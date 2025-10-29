@@ -61,9 +61,11 @@ export const agentLoginSchema = Joi.object({
 
 export const otpSendSchema = Joi.object({
   mobile: Joi.string()
-    .required()
-    .pattern(/^[6-9]\d{9}$/),
-});
+    .optional()
+    .pattern(/^[6-9]\d{9}$/)
+    .allow(null),
+  email: Joi.string().email().optional().allow(null),
+}).or("email", "mobile");
 
 export const otpExportSendSchema = Joi.object({
   mobile: Joi.string()
