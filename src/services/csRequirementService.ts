@@ -140,7 +140,15 @@ export const getRequirementByIdService = async (
       {
         model: User,
         as: "creator",
-        attributes: ["id", "name", "role", "email", "mobile", "pbVerified"],
+        attributes: [
+          "id",
+          "name",
+          "role",
+          "email",
+          "mobile",
+          "pbVerified",
+          "profilePicture",
+        ],
       },
     ],
   });
