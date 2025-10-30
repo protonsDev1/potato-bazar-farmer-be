@@ -7,11 +7,12 @@ import {
   verifyAndRegister,
 } from "../controller/userRegistrationController";
 import { userRegistrationSchema } from "../validation/userRegistrationValidation";
+import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 
 const router = express.Router();
 const validator = createValidator({});
 
-router.post("/send_otp", sendOtp);
+router.post("/send_otp", limitOtpMiddleware, sendOtp);
 router.post(
   "/verify_and_register",
   validator.body(userRegistrationSchema),
