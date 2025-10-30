@@ -583,7 +583,15 @@ export const retrieveColdStorageProfile = async (
         {
           model: User,
           as: "user",
-          attributes: ["id", "name", "role", "email", "mobile", "pbVerified"],
+          attributes: [
+            "id",
+            "name",
+            "role",
+            "email",
+            "mobile",
+            "pbVerified",
+            "profilePicture",
+          ],
         },
         {
           model: User,
