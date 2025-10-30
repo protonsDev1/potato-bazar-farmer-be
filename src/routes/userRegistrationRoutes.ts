@@ -8,6 +8,7 @@ import {
 } from "../controller/userRegistrationController";
 import { userRegistrationSchema } from "../validation/userRegistrationValidation";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
+import { adminMiddleware } from "../utils/userAuth";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -18,6 +19,6 @@ router.post(
   validator.body(userRegistrationSchema),
   verifyAndRegister
 );
-router.get("/", getAndExportAllUserRegistrations);
+router.get("/", adminMiddleware, getAndExportAllUserRegistrations);
 
 export default router;
