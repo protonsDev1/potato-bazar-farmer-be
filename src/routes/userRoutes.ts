@@ -66,6 +66,7 @@ import {
   deleteCurrentMobileUser,
   getMandiAgentProfile,
   updateOwnMandiAgentProfile,
+  verifyAndUpdateNewNumber,
 } from "../controller/user";
 import {
   adminMiddleware,
@@ -298,5 +299,12 @@ router.put(
   validator.body(mandiAgentUpdateSchema),
   updateOwnMandiAgentProfile
 );
+
+router.post(
+  "/mobile/verify_and_update",        // api to update mobile number for mobile users
+  authMiddleware,
+  verifyAndUpdateNewNumber
+);
+
 
 export default router;
