@@ -8,6 +8,17 @@ export const sendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
 
+    const isUserAlreadyExist = await UserRegistration.findOne({
+      where: { mobile },
+    });
+
+    if (isUserAlreadyExist) {
+      return res.status(403).json({
+        success: false,
+        message: "User with this mobile number already exists.",
+      });
+    }
+
     await createOtp(mobile);
     return res
       .status(200)
