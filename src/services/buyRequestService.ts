@@ -316,38 +316,41 @@ export const getBuyRequestByIdService = async (
   currentUserId: number,
   role: string
 ) => {
+  const include: any = [
+    {
+      model: RequestView,
+      as: "views",
+      attributes: ["id", "userId"],
+    },
+  ];
+
+  if (currentUserId) {
+    include.push({
+      model: User,
+      as: "user",
+      attributes: [
+        "id",
+        "name",
+        "email",
+        "mobile",
+        "createdAt",
+        "pbVerified",
+        "profilePicture",
+      ],
+    });
+
+    include.push({
+      model: FavouriteRequest,
+      as: "buyFavourites",
+      attributes: ["id"],
+      required: false,
+      where: { userId: currentUserId },
+    });
+  }
+
   const request = await BuyRequest.findOne({
     where: { id },
-    include: [
-      {
-        model: User,
-        as: "user",
-        attributes: [
-          "id",
-          "name",
-          "email",
-          "mobile",
-          "createdAt",
-          "pbVerified",
-        ],
-      },
-      {
-        model: RequestView,
-        as: "views",
-        attributes: ["id", "userId"],
-      },
-      ...(currentUserId
-        ? [
-            {
-              model: FavouriteRequest,
-              as: "buyFavourites",
-              attributes: ["id"],
-              required: false,
-              where: { userId: currentUserId },
-            },
-          ]
-        : []),
-    ],
+    include,
   });
 
   if (!request) return null;
