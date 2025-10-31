@@ -3,6 +3,7 @@ import News from "../database/models/news";
 import { USER_ROLES } from "../database/models/user";
 import State from "../database/models/state";
 import District from "../database/models/district";
+import NewsView from "../database/models/newsView";
 
 export const createNewsService = async (payload) => {
   const news = await News.create(payload);
@@ -73,6 +74,13 @@ export const listNewsService = async ({
     order: [["createdAt", "DESC"]],
   });
 
+  const newsWithViews = await Promise.all(
+    rows.map(async (news) => {
+      const viewCount = await NewsView.count({ where: { newsId: news.id } });
+      return { ...news.toJSON(), views: viewCount };
+    })
+  );
+
   return {
     success: true,
     statusCode: 200,
@@ -81,7 +89,7 @@ export const listNewsService = async ({
       total: count,
       page,
       perPage: limit,
-      news: rows,
+      news: newsWithViews,
     },
   };
 };
@@ -111,10 +119,14 @@ export const getNewsByIdService = async (id, user) => {
     };
   }
 
-  // Increment view count only if not super admin
-  if (!user || user.role !== USER_ROLES.SUPER_ADMIN) {
-    await news.increment("views");
+  if (user && user.role !== USER_ROLES.SUPER_ADMIN) {
+    await NewsView.findOrCreate({
+      where: { userId: user.id, newsId: id },
+      defaults: { userId: user.id, newsId: id },
+    });
   }
+
+  const viewCount = await NewsView.count({ where: { newsId: id } });
 
   const relatedNews = await News.findAll({
     where: {
@@ -144,7 +156,7 @@ export const getNewsByIdService = async (id, user) => {
     statusCode: 200,
     message: "News fetched successfully",
     data: {
-      news,
+      news: { ...news.toJSON(), views: viewCount },
       relatedNews,
     },
   };
