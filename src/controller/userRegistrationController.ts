@@ -15,7 +15,8 @@ export const sendOtp = async (req, res) => {
     if (isUserAlreadyExist) {
       return res.status(403).json({
         success: false,
-        message: "User with this mobile number already exists.",
+        message:
+          "The mobile number you entered is already registered. Please use a different number.",
       });
     }
 
@@ -48,7 +49,8 @@ export const verifyAndRegister = async (req, res) => {
     if (isUserAlreadyExist) {
       return res.status(403).json({
         success: false,
-        message: "User with this mobile number already exists.",
+        message:
+          "The mobile number you entered is already registered. Please use a different number.",
       });
     }
 

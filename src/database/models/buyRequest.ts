@@ -32,7 +32,7 @@ class BuyRequest extends Model<
   declare qualityGrade: string | null;
   declare packagingType: string | null;
   declare delivery: string | null;
-  declare size: number | null;
+  declare size: string | null;
   declare sugarContent: string | null;
   declare skinSet: string | null;
   declare fleshColor: string | null;
@@ -44,7 +44,7 @@ class BuyRequest extends Model<
   declare tpod: number | null;
   declare uc: number | null;
   declare tuberSize: string | null;
-  declare dryMatter: number | null;
+  declare dryMatter: string | null;
   declare healthCondition: string | null;
   declare additionalComment: string | null;
   declare storageTemperature: string | null;
@@ -122,7 +122,7 @@ BuyRequest.init(
       type: DataTypes.STRING,
     },
     size: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.STRING,
     },
     sugarContent: {
       type: DataTypes.STRING,
@@ -158,7 +158,7 @@ BuyRequest.init(
       type: DataTypes.STRING,
     },
     dryMatter: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.STRING,
     },
     healthCondition: {
       type: DataTypes.STRING,
