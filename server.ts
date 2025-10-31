@@ -65,6 +65,7 @@ import contactSupportRoutes from "./src/routes/contactSupportRoutes";
 import cropDiagnosisRoutes from "./src/routes/cropDiagnosisRoutes";
 import promotionRequestRoutes from "./src/routes/promotionRequestRoutes";
 import userRegistrationRoutes from "./src/routes/userRegistrationRoutes";
+import askExpertRoutes from "./src/routes/askExpertRoutes";
 
 const cors = require("cors");
 
@@ -141,6 +142,7 @@ app.use("/api/contact_support", contactSupportRoutes);
 app.use("/api/crop_diagnosis", cropDiagnosisRoutes);
 app.use("/api/promotion_requests", promotionRequestRoutes);
 app.use("/api/user_registrations", userRegistrationRoutes);
+app.use("/api/ask_experts", askExpertRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
