@@ -32,7 +32,7 @@ class SellRequest extends Model<
   declare qualityGrade: string | null;
   declare packagingType: string | null;
   declare delivery: string | null;
-  declare size: number | null;
+  declare size: string | null;
   declare sugarContent: string | null;
   declare skinSet: string | null;
   declare fleshColor: string | null;
@@ -124,7 +124,7 @@ SellRequest.init(
       type: DataTypes.STRING,
     },
     size: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.STRING,
     },
     sugarContent: {
       type: DataTypes.STRING,
