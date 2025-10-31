@@ -1,6 +1,6 @@
 import express from "express";
 import { createValidator } from "express-joi-validation";
-import { authMiddleware } from "../utils/userAuth";
+import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
 import {
   askQuery,
   getAllQueries,
@@ -10,12 +10,22 @@ import {
   createQuerySchema,
   respondQuerySchema,
 } from "../validation/askExpertValidation";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
 
 router.post("/", authMiddleware, validator.body(createQuerySchema), askQuery);
-router.get("/", getAllQueries);
-router.put("/:queryId", validator.body(respondQuerySchema), respondToQuery);
+router.get(
+  "/",
+  checkPermissionMiddleware(PERMISSIONS.ASK_EXPERT),
+  getAllQueries
+);
+router.put(
+  "/:queryId",
+  checkPermissionMiddleware(PERMISSIONS.ASK_EXPERT),
+  validator.body(respondQuerySchema),
+  respondToQuery
+);
 
 export default router;
