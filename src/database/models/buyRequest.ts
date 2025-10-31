@@ -44,7 +44,7 @@ class BuyRequest extends Model<
   declare tpod: number | null;
   declare uc: number | null;
   declare tuberSize: string | null;
-  declare dryMatter: number | null;
+  declare dryMatter: string | null;
   declare healthCondition: string | null;
   declare additionalComment: string | null;
   declare storageTemperature: string | null;
@@ -158,7 +158,7 @@ BuyRequest.init(
       type: DataTypes.STRING,
     },
     dryMatter: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.STRING,
     },
     healthCondition: {
       type: DataTypes.STRING,
