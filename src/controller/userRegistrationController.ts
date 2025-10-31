@@ -8,6 +8,19 @@ export const sendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
 
+    if (!mobile)
+      return res
+        .status(400)
+        .json({ success: false, message: "Mobile is required." });
+
+    const mobilePattern = /^[6-9]\d{9}$/;
+    if (!mobilePattern.test(mobile)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid 10-digit mobile number.",
+      });
+    }
+
     const isUserAlreadyExist = await UserRegistration.findOne({
       where: { mobile },
     });
