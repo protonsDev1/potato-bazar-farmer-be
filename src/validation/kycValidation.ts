@@ -12,8 +12,8 @@ export const createKycSchema = Joi.object({
     "any.required": "Aadhaar Back is required",
     "string.uri": "Aadhaar Back must be a valid URL",
   }),
-  gstNumber: Joi.string().optional(),
-  fssaiNumber: Joi.string().optional(),
+  gstNumber: Joi.string().allow(null, "").optional(),
+  fssaiNumber: Joi.string().allow(null, "").optional(),
 });
 
 export const updateKycStatusSchema = Joi.object({
