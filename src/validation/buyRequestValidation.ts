@@ -41,6 +41,7 @@ export const createBuyRequestSchema = Joi.object({
   perTubeWeight: Joi.string().optional(),
   diseaseFreeCertified: Joi.string().valid("Yes", "No").optional(),
   productionMethod: Joi.string().optional(),
+  shapeType: Joi.string().optional(),
   productionDate: Joi.date().optional(),
   organicCertified: Joi.boolean().default(false),
 });
@@ -86,6 +87,7 @@ export const updateBuyRequestSchema = Joi.object({
   perTubeWeight: Joi.string().optional(),
   diseaseFreeCertified: Joi.string().valid("Yes", "No").optional(),
   productionMethod: Joi.string().optional(),
+  shapeType: Joi.string().optional(),
   productionDate: Joi.date().optional(),
   isActive: Joi.boolean().optional(),
 });
@@ -94,4 +96,11 @@ export const updateBuyRequestStatusSchema = Joi.object({
   status: Joi.string()
     .valid(...Object.values(BUY_REQUEST_STATUS))
     .required(),
+  reason: Joi.when("status", {
+    is: BUY_REQUEST_STATUS.REJECTED,
+    then: Joi.string().required().messages({
+      "any.required": "reason is required when rejecting buy request",
+    }),
+    otherwise: Joi.string().optional().allow(null, ""),
+  }),
 });

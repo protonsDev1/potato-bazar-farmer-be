@@ -41,6 +41,7 @@ export const createSellRequestSchema = Joi.object({
   perTubeWeight: Joi.string().optional(),
   diseaseFreeCertified: Joi.string().valid("Yes", "No").optional(),
   productionMethod: Joi.string().optional(),
+  shapeType: Joi.string().optional(),
   productionDate: Joi.date().optional(),
   organicCertified: Joi.boolean().default(false),
   images: Joi.array().items(Joi.string()).optional(),
@@ -87,6 +88,7 @@ export const updateSellRequestSchema = Joi.object({
   perTubeWeight: Joi.string().optional(),
   diseaseFreeCertified: Joi.string().valid("Yes", "No").optional(),
   productionMethod: Joi.string().optional(),
+  shapeType: Joi.string().optional(),
   productionDate: Joi.date().optional(),
   organicCertified: Joi.boolean().default(false),
   images: Joi.array().items(Joi.string()).optional(),
@@ -98,4 +100,11 @@ export const updateSellRequestStatusSchema = Joi.object({
   status: Joi.string()
     .valid(...Object.values(SELL_REQUEST_STATUS))
     .required(),
+  reason: Joi.when("status", {
+    is: SELL_REQUEST_STATUS.REJECTED,
+    then: Joi.string().required().messages({
+      "any.required": "reason is required when rejecting sell request",
+    }),
+    otherwise: Joi.string().optional().allow(null, ""),
+  }),
 });
