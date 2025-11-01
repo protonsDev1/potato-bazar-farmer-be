@@ -824,7 +824,11 @@ export const updateRegistrationStatus = async (
 
     await user.update({ status });
 
-    if (userType === USER_TYPE.COLD_STORAGE) await user.update({ reason });
+    if (userType === USER_TYPE.COLD_STORAGE) {
+      if (status === REGISTRATION_STATUS.REJECTED)
+        await user.update({ reason });
+      else await user.update({ reason: null });
+    }
 
       if (agentOnboardedUser) {
         await agentOnboardedUser.update({ statusOfRegistration: status });
