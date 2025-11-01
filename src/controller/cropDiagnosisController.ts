@@ -2,6 +2,8 @@ import {
   createCropDiagnosisService,
   listCropDiagnosisService,
   getCropDiagnosisByIdService,
+  createEndorsementService,
+  getEndorsementsService,
 } from "../services/cropDiagnosisService";
 
 export const createCropDiagnosis = async (req, res) => {
@@ -42,3 +44,46 @@ export const getCropDiagnosisById = async (req, res) => {
     return res.status(500).json({ success: false, message: err.message });
   }
 };
+
+
+
+export const createEndorsement = async (req, res) => {
+  try {
+    const payload = {
+      ...req.body,
+      createdBy: req.user?.id, 
+    };
+
+    const result = await createEndorsementService(payload);
+    return res.status(result.statusCode).json(result);
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Internal server error",
+    });
+  }
+};
+export const getEndorsements = async (req, res) => {
+  try {
+        console.log("Received query params:", req.query);
+
+    const { page = 1, limit = 10, disease } = req.query;
+
+    const params = {
+      page: Number(page),
+      limit: Number(limit),
+      disease: disease || null
+    };
+
+    const result = await getEndorsementsService(params);
+    return res.status(result.statusCode).json(result);
+
+  } catch (error: any) {
+    console.error("Error in getEndorsements controller:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
