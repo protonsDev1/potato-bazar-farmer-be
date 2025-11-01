@@ -450,6 +450,18 @@ export const updateBuyRequestService = async (
     };
   }
 
+  if (request.status === BUY_REQUEST_STATUS.APPROVED) {
+    return {
+      statusCode: 400,
+      success: false,
+      message: "Approved buy requests cannot be modified",
+    };
+  }
+
+  if (request.status === BUY_REQUEST_STATUS.REJECTED) {
+    payload.status = BUY_REQUEST_STATUS.PENDING;
+  }
+
   await request.update(payload);
 
   return {
@@ -460,7 +472,11 @@ export const updateBuyRequestService = async (
   };
 };
 
-export const updateBuyRequestStatusService = async (requestId, status) => {
+export const updateBuyRequestStatusService = async (
+  requestId,
+  status,
+  reason
+) => {
   const buyRequest = await BuyRequest.findByPk(requestId);
 
   if (!buyRequest) {
@@ -468,6 +484,13 @@ export const updateBuyRequestStatusService = async (requestId, status) => {
   }
 
   buyRequest.status = status;
+
+  if (status === BUY_REQUEST_STATUS.REJECTED) {
+    buyRequest.reason = reason || null;
+  } else {
+    buyRequest.reason = null;
+  }
+
   await buyRequest.save();
 
   return buyRequest;

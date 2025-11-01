@@ -125,11 +125,12 @@ export const updateSellRequest = async (req, res) => {
 export const updateSellRequestStatus = async (req, res) => {
   try {
     const { requestId } = req.params;
-    const { status } = req.body;
+    const { status, reason } = req.body;
 
     const updatedRequest = await updateSellRequestStatusService(
       requestId,
-      status
+      status,
+      reason
     );
 
     if (!updatedRequest) {

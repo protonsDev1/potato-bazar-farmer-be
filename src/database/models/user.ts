@@ -62,6 +62,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare pbVerified: boolean;
   declare pbVerificationStatus: string | null;
   declare pbVerificationRequested: boolean;
+  declare reason: string | null;
   declare pbVerificationRequestedAt: CreationOptional<Date>;
   declare permissions?: SubAdminPermission[];
   declare webPermissions?: SubAdminWebPermission[];
@@ -188,6 +189,10 @@ User.init(
     },
     pbVerificationStatus: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    reason: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     pbVerificationRequested: {
