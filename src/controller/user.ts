@@ -540,14 +540,15 @@ export const getRecentRegistrationsForAdmin = async (req, res) => {
 
 export const adminUpdateRegistrationStatus = async (req, res) => {
   try {
-    const { status, userType, userId } = req.body;
+    const { status, userType, userId, reason } = req.body;
     const currentUser = req.user;
 
     const response = await updateRegistrationStatus(
       status,
       userType,
       userId,
-      currentUser
+      currentUser,
+      reason
     );
 
     if (!response.success)

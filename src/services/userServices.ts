@@ -706,7 +706,8 @@ export const updateRegistrationStatus = async (
   status: string,
   userType: string,
   entityId: number,
-  currentUser: User
+  currentUser: User,
+  reason
 ) => {
   try {
     if (
@@ -822,9 +823,12 @@ export const updateRegistrationStatus = async (
     }
 
     await user.update({ status });
-    if (agentOnboardedUser) {
-      await agentOnboardedUser.update({ statusOfRegistration: status });
-    }
+
+    if (userType === USER_TYPE.COLD_STORAGE) await user.update({ reason });
+
+      if (agentOnboardedUser) {
+        await agentOnboardedUser.update({ statusOfRegistration: status });
+      }
 
     return {
       success: true,

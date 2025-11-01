@@ -291,6 +291,7 @@ export const updateEventService = async (eventId, payload) => {
     "document",
     "website",
     "contactUrl",
+    "isFeatured",
   ];
 
   for (const field of updatableFields) {
