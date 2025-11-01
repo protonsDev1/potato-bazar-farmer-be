@@ -1401,7 +1401,8 @@ export const getUserTypeProfileDetails = async (userId) => {
 
 export const updatePbVerificationService = async (
   userId,
-  pbVerificationStatus
+  pbVerificationStatus,
+  reason
 ) => {
   const user = await User.findByPk(userId);
 
@@ -1452,6 +1453,11 @@ export const updatePbVerificationService = async (
   user.pbVerificationStatus = pbVerificationStatus;
   user.pbVerified = pbVerificationStatus === PB_VERIFICATION_STATUS.APPROVED;
 
+if (pbVerificationStatus === PB_VERIFICATION_STATUS.REJECTED) {
+    user.reason = reason || null;
+  } else {
+    user.reason = null;
+  }
   await user.save();
 
   return {

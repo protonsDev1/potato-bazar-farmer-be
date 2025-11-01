@@ -649,7 +649,8 @@ export const updatePbVerification = async (req, res) => {
   try {
     const result = await updatePbVerificationService(
       req.params.id,
-      req.body.pbVerificationStatus
+      req.body.pbVerificationStatus,
+      req.body.reason
     );
 
     return res.status(result.statusCode).json(result);

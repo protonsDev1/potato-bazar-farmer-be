@@ -457,6 +457,18 @@ export const updateSellRequestService = async (
     };
   }
 
+  if (request.status === SELL_REQUEST_STATUS.APPROVED) {
+    return {
+      statusCode: 400,
+      success: false,
+      message: "Approved sell requests cannot be modified",
+    };
+  }
+
+  if (request.status === SELL_REQUEST_STATUS.REJECTED) {
+    payload.status = SELL_REQUEST_STATUS.PENDING;
+  }
+
   await request.update(payload);
 
   return {
@@ -467,7 +479,11 @@ export const updateSellRequestService = async (
   };
 };
 
-export const updateSellRequestStatusService = async (requestId, status) => {
+export const updateSellRequestStatusService = async (
+  requestId,
+  status,
+  reason
+) => {
   const sellRequest = await SellRequest.findByPk(requestId);
 
   if (!sellRequest) {
@@ -475,6 +491,13 @@ export const updateSellRequestStatusService = async (requestId, status) => {
   }
 
   sellRequest.status = status;
+
+  if (status === SELL_REQUEST_STATUS.REJECTED) {
+    sellRequest.reason = reason || null;
+  } else {
+    sellRequest.reason = null;
+  }
+
   await sellRequest.save();
 
   return sellRequest;
