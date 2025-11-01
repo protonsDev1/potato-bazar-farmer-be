@@ -2,6 +2,7 @@ import express from "express";
 import { createValidator } from "express-joi-validation";
 
 import {
+  deleteUserRegistration,
   getAndExportAllUserRegistrations,
   sendOtp,
   verifyAndRegister,
@@ -20,5 +21,6 @@ router.post(
   verifyAndRegister
 );
 router.get("/", adminMiddleware, getAndExportAllUserRegistrations);
+router.delete("/:id", adminMiddleware, deleteUserRegistration);
 
 export default router;
