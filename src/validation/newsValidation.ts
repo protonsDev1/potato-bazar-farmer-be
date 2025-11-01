@@ -2,7 +2,7 @@ import Joi from "joi";
 import { NEWS_STATUS } from "../database/models/news";
 
 export const createNewsSchema = Joi.object({
-  title: Joi.string().trim().required(),
+  title: Joi.string().trim().max(255).required(),
   category: Joi.string().required(),
   status: Joi.string()
     .valid(...Object.values(NEWS_STATUS))

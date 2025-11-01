@@ -31,16 +31,18 @@ export const listNews = async (req, res) => {
       page = 1,
       perPage = 10,
       category,
+      status,
       isFeatured,
       stateId,
       districtId,
-      date
+      date,
     } = req.query;
     const result = await listNewsService({
       search: search.toString(),
       page: Number(page),
       limit: Number(perPage),
       category,
+      status,
       isFeatured,
       stateId,
       districtId,
