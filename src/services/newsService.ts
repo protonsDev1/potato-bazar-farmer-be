@@ -20,6 +20,7 @@ export const listNewsService = async ({
   page,
   limit,
   category,
+  status,
   isFeatured,
   stateId,
   districtId,
@@ -36,6 +37,10 @@ export const listNewsService = async ({
 
   if (category) {
     whereClause.category = category;
+  }
+
+  if (status) {
+    whereClause.status = status;
   }
 
   if (isFeatured && isFeatured === "true") {
