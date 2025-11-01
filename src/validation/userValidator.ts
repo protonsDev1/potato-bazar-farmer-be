@@ -173,6 +173,7 @@ export const updateRegistrationStatusSchema = Joi.object({
   status: Joi.string().required(),
   userType: Joi.string().required(),
   userId: Joi.string().required(),
+  reason: Joi.string().optional().allow(null, ""),
 });
 
 export const mobileLoginSchema = Joi.object({
