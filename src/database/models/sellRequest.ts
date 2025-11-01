@@ -62,10 +62,12 @@ class SellRequest extends Model<
   declare organicCertified: boolean;
   declare isVerified: boolean;
   declare status: SELL_REQUEST_STATUS;
+  declare reason: string | null;
   declare images?: string[];
   declare location?: string;
   declare isAdminVerified: boolean;
   declare isActive: boolean;
+  declare shapeType: string | null;
   declare sellFavourites?: FavouriteRequest[];
   declare views?: RequestView[];
   declare createdAt: CreationOptional<Date>;
@@ -217,6 +219,10 @@ SellRequest.init(
       type: DataTypes.STRING,
       defaultValue: SELL_REQUEST_STATUS.PENDING,
     },
+    reason: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     images: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
@@ -228,6 +234,9 @@ SellRequest.init(
     isAdminVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    shapeType: {
+      type: DataTypes.STRING,
     },
     isActive: {
       type: DataTypes.BOOLEAN,

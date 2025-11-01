@@ -125,11 +125,12 @@ export const updateBuyRequest = async (req, res) => {
 export const updateBuyRequestStatus = async (req, res) => {
   try {
     const { requestId } = req.params;
-    const { status } = req.body;
+    const { status, reason } = req.body;
 
     const updatedRequest = await updateBuyRequestStatusService(
       requestId,
-      status
+      status,
+      reason
     );
 
     if (!updatedRequest) {
