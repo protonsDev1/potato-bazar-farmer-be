@@ -1,5 +1,8 @@
+import Brand from "../database/models/Brand";
 import CropDiagnosis from "../database/models/cropDiagnosis";
 import { Op } from "sequelize";
+import Product from "../database/models/Product";
+import Endorsement from "../database/models/Endorsement";
 
 export const createCropDiagnosisService = async (payload: any) => {
   const diagnosis = await CropDiagnosis.create(payload);
@@ -64,5 +67,104 @@ export const getCropDiagnosisByIdService = async (id: number) => {
     statusCode: 200,
     message: "Crop diagnosis fetched successfully",
     data: diagnosis,
+  };
+};
+
+export const createEndorsementService = async (payload: any) => {
+  const {
+    brandName,
+    productName,
+    title,
+    headline,
+    disease,
+    cta_text,
+    cta_url,
+    start_at,
+    end_at,
+    status,
+    image,
+    notes,
+    sort_order,
+  } = payload;
+
+  // ✅ Find or create Brand
+  let brand = await Brand.findOne({ where: { name: brandName } });
+
+  if (!brand) {
+    brand = await Brand.create({
+      name: brandName,
+    });
+  }
+
+  // ✅ Find or create Product under Brand
+  let product = await Product.findOne({
+    where: { name: productName, brand_id: brand.id },
+  });
+
+  if (!product) {
+    product = await Product.create({
+      name: productName,
+      brand_id: brand.id,
+    });
+  }
+
+  // ✅ Create Endorsement (ID auto-generated)
+  const endorsement = await Endorsement.create({
+    brand_id: brand.id,
+    product_id: product.id,
+    title,
+    headline,
+    disease,
+    cta_text,
+    cta_url,
+    start_at,
+    end_at,
+    status,
+    image,
+    notes,
+    sort_order,
+  });
+
+  return {
+    success: true,
+    statusCode: 201,
+    message: "Endorsement created successfully",
+    data: endorsement,
+  };
+};
+
+export const getEndorsementsService = async ({
+  page,
+  limit,
+  disease
+}: {
+  page: number;
+  limit: number;
+  disease?: string | null;
+}) => {
+  const offset = (page - 1) * limit;
+
+  const where: any = {};
+  if (disease) {
+    where.disease = { [Op.iLike]: `%${disease}%` };
+  }
+
+  const { rows, count } = await Endorsement.findAndCountAll({
+    where,
+    limit,
+    offset,
+    order: [["createdAt", "DESC"]],
+  });
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Endorsements fetched successfully",
+    data: {
+      endorsements: rows,
+      total: count,
+      currentPage: page,
+      totalPages: Math.ceil(count / limit),
+    },
   };
 };
