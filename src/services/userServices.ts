@@ -22,6 +22,10 @@ import SubAdminPermission from "../database/models/subAdminPermission";
 import { retrieveFarmerProfile } from "./farmerServices";
 import { retrieveTraderProfile } from "./traderService";
 import ColdStorageRequirement from "../database/models/coldStorageRequirement";
+import Event from "../database/models/event";
+import News from "../database/models/news";
+import MandiList from "../database/models/mandiList";
+import GovernmentScheme from "../database/models/govScheme";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -1682,4 +1686,110 @@ export const updateUserMobileNumber = async (
   return {
     success: true,
   };
+};
+
+export const globalSearchDB = async (q: string) => {
+  const term = `%${q}%`;
+
+  const coldStorages = ColdStorage.findAll({
+    where: {
+      [Op.or]: [
+        { name: { [Op.iLike]: term } },
+        { ownerName: { [Op.iLike]: term } },
+        { village: { [Op.iLike]: term } },
+        { district: { [Op.iLike]: term } },
+        { state: { [Op.iLike]: term } }
+      ],
+      isDeleted: false
+    },
+    limit: 10
+  });
+
+  const events = Event.findAll({
+    where: {
+      [Op.or]: [
+        { title: { [Op.iLike]: term } },
+        { category: { [Op.iLike]: term } },
+        { location: { [Op.iLike]: term } },
+      ]
+    },
+    limit: 10
+  });
+
+  const news = News.findAll({
+    where: {
+      [Op.or]: [
+        { title: { [Op.iLike]: term } },
+        { category: { [Op.iLike]: term } },
+        { description: { [Op.iLike]: term } }
+      ]
+    },
+    limit: 10
+  });
+
+  const mandis = MandiList.findAll({
+    where: {
+      [Op.or]: [
+        { mandiName: { [Op.iLike]: term } },
+        { address: { [Op.iLike]: term } }
+      ],
+      isDeleted: false
+    },
+    limit: 10
+  });
+
+  const buyRequests = BuyRequest.findAll({
+    where: {
+      [Op.or]: [
+        { potatoType: { [Op.iLike]: term } },
+        { potatoVariety: { [Op.iLike]: term } },
+        { additionalComment: { [Op.iLike]: term } }
+      ],
+      isActive: true
+    },
+    limit: 10
+  });
+
+  const sellRequests = SellRequest.findAll({
+    where: {
+      [Op.or]: [
+        { potatoType: { [Op.iLike]: term } },
+        { potatoVariety: { [Op.iLike]: term } },
+        { additionalComment: { [Op.iLike]: term } },
+        { location: { [Op.iLike]: term } }
+      ],
+      isActive: true
+    },
+    limit: 10
+  });
+
+  const schemes = GovernmentScheme.findAll({
+    where: {
+      [Op.or]: [
+        { title: { [Op.iLike]: term } },
+        { category: { [Op.iLike]: term } },
+        { state: { [Op.iLike]: term } }
+      ],
+      isActive: true
+    },
+    limit: 10
+  });
+
+  return Promise.all([
+    coldStorages,
+    events,
+    news,
+    mandis,
+    buyRequests,
+    sellRequests,
+    schemes
+  ]).then(([coldStorages, events, news, mandis, buyRequests, sellRequests, schemes]) => ({
+    coldStorages,
+    events,
+    news,
+    mandis,
+    buyRequests,
+    sellRequests,
+    schemes
+  }));
 };
