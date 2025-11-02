@@ -1,7 +1,7 @@
 import Joi from "joi";
 
 export const createKycSchema = Joi.object({
-  panFront: Joi.string().uri().optional().messages({
+  panFront: Joi.string().uri().allow(null, "").optional().messages({
     "string.uri": "PAN Front must be a valid URL",
   }),
   aadhaarFront: Joi.string().uri().required().messages({
