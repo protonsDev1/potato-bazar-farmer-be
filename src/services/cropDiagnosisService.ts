@@ -150,11 +150,18 @@ export const getEndorsementsService = async ({
   }
 
   const { rows, count } = await Endorsement.findAndCountAll({
-    where,
-    limit,
-    offset,
-    order: [["createdAt", "DESC"]],
-  });
+  limit: Number(limit),
+  offset,
+  order: [["createdAt", "DESC"]],
+  include: [
+    {
+      model: Brand,
+    },
+    {
+      model: Product,
+    }
+  ]
+});
 
   return {
     success: true,
