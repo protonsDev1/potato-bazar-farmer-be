@@ -3,6 +3,7 @@ import { createValidator } from "express-joi-validation";
 import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
 import {
   askQuery,
+  getAllMyQueries,
   getAllQueries,
   respondToQuery,
 } from "../controller/askExpertController";
@@ -27,5 +28,6 @@ router.put(
   validator.body(respondQuerySchema),
   respondToQuery
 );
+router.get("/my_queries", authMiddleware, getAllMyQueries)
 
 export default router;
