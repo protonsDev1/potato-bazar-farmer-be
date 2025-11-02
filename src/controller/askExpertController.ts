@@ -113,3 +113,54 @@ export const respondToQuery = async (req, res) => {
     });
   }
 };
+
+export const getAllMyQueries = async (req, res) => {
+  try {
+    const { id } = req.user;
+    let { page = 1, perPage: limit = 10 } = req.query;
+
+    page = Number(page);
+    limit = Number(limit);
+
+    const offset = (page - 1) * limit;
+
+    const { rows, count } = await AskExpert.findAndCountAll({
+      where: {
+        "$cropDiagnosed.userId$": id, // filter by userId in nested CropDiagnosis model
+      },
+
+      include: [
+        {
+          model: CropDiagnosis,
+          as: "cropDiagnosed",
+          include: [
+            {
+              model: User,
+              as: "user",
+            },
+          ],
+        },
+      ],
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "All queries fetched successfully.",
+      data: {
+        queries: rows,
+        currentPage: page,
+        total: count,
+        totalPages: Math.ceil(count / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error in retrieving all queries:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
