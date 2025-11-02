@@ -1,4 +1,4 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService, updateUserMobileNumber } from '../services/userServices';
+import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService, updateUserMobileNumber, globalSearchDB } from '../services/userServices';
 import jwt from 'jsonwebtoken';
 import { createOtp,verifyOtpFromDB } from '../services/otpServices';
 import User, { USER_ROLES } from '../database/models/user';
@@ -1154,6 +1154,34 @@ export const verifyAndUpdateNewNumber = async (req, res) => {
       success: false,
       message:
         error.message || "Failed to verify or update mobile number for user.",
+    });
+  }
+};
+
+export const globalSearchController = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: "Query parameter 'q' is required"
+      });
+    }
+
+    const results = await globalSearchDB(q);
+
+    return res.json({
+      success: true,
+      query: q,
+      results
+    });
+
+  } catch (err) {
+    console.error("Global Search Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
     });
   }
 };
