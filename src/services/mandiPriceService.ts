@@ -434,23 +434,41 @@ export const updateMandiPriceService = async (
   };
 };
 
-export const retrieveDashboardStats = async () => {
+export const retrieveDashboardStats = async (userId) => {
   const curDate = new Date();
   const todayStart = new Date(curDate.setHours(0, 0, 0, 0));
   const todayEnd = new Date(curDate.setHours(23, 59, 59, 999));
 
+  const mandiAgent = await MandiAgent.findOne({ where: { userId } });
+  if (!mandiAgent) {
+    return { totalEntries: 0, todaysEntries: 0, totalVarieties: 0 };
+  }
+
+  const allotedMandis = await MandiAllotedToMandiAgent.findAll({
+    where: { mandiAgentId: mandiAgent.id },
+    attributes: ["mandiId"],
+    raw: true,
+  });
+
+  const mandiIds = allotedMandis.map((m) => m.mandiId);
+  if (mandiIds.length === 0) {
+    return { totalEntries: 0, todaysEntries: 0, totalVarieties: 0 };
+  }
+
   const [totalEntries, todaysEntries, totalVarieties] = await Promise.all([
-    MandiPrice.count(),
+    MandiPrice.count({
+      where: { mandiId: { [Op.in]: mandiIds } },
+    }),
 
     MandiPrice.count({
       where: {
-        createdAt: {
-          [Op.between]: [todayStart, todayEnd],
-        },
+        mandiId: { [Op.in]: mandiIds },
+        createdAt: { [Op.between]: [todayStart, todayEnd] },
       },
     }),
 
     MandiPrice.count({
+      where: { mandiId: { [Op.in]: mandiIds } },
       distinct: true,
       col: "variety",
     }),
