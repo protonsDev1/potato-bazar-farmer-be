@@ -1,5 +1,6 @@
 import Event from "../database/models/event";
 import EventRequest from "../database/models/eventRequest";
+import { NotificationType } from "../database/models/notification";
 import {
   addEvent,
   getAllEventRequests,
@@ -8,16 +9,29 @@ import {
   requestToJoinEvent,
   updateEventService,
 } from "../services/eventServices";
+import { sendNotificationService } from "../services/notificationService";
 import { parseFilters } from "../utils/parseQuery";
+import User, { USER_ROLES } from "../database/models/user";
 
 export const createEvent = async (req, res) => {
   try {
+    const { id } = req.user;
+
     const response = await addEvent(req.body);
 
     if (!response.success)
       return res
         .status(400)
         .json({ success: response.success, message: response.error });
+
+    await sendNotificationService({
+      title: "New Event Created",
+      description: `A new event "${response.data.title}" has been added. Check it out now!`,
+      senderId: id,
+      referenceType: NotificationType.EVENT,
+      referenceId: response.data.id,
+      isBroadCast: true,
+    });
 
     return res.status(201).json({
       success: response.success,
@@ -162,6 +176,14 @@ export const registerOnEvent = async (req, res) => {
     const { id: userId } = req.user;
     const { name, mobile } = req.body;
 
+    const isEventExist = await Event.findOne({ where: { id: eventId } });
+
+    if (!isEventExist)
+      return res.status(404).json({
+        success: false,
+        message: "Event with given id do not exist.",
+      });
+
     const response = await requestToJoinEvent(userId, eventId, name, mobile);
 
     if (!response.success)
@@ -169,6 +191,19 @@ export const registerOnEvent = async (req, res) => {
         success: response.success,
         message: response.error,
       });
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Request To Join an Event",
+      description: "User is Requesting to join an Event",
+      senderId: userId,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.EVENT,
+      referenceId: eventId,
+    });
 
     return res.status(201).json({
       success: response.success,
@@ -190,6 +225,7 @@ export const updateEventStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const { requestId } = req.params;
+    const { id } = req.user;
 
     const isEventExist = await EventRequest.findByPk(requestId);
 
@@ -200,6 +236,15 @@ export const updateEventStatus = async (req, res) => {
       });
 
     await isEventExist.update({ status });
+
+    await sendNotificationService({
+      title: `Your Event Request has been ${status}`,
+      description: `Your request to join event has been ${status}.`,
+      senderId: id,
+      receiverId: isEventExist.requestCreatedBy,
+      referenceType: NotificationType.EVENT,
+      referenceId: isEventExist.eventId,
+    });
 
     return res
       .status(200)

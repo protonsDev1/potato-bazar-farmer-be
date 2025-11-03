@@ -60,3 +60,10 @@ export const updateEventStatusSchema = Joi.object({
     .valid(EVENT_REQUEST_STATUS.APPROVED, EVENT_REQUEST_STATUS.REJECTED)
     .required(),
 });
+
+export const registerOnEventSchema = Joi.object({
+  name: Joi.string().required(),
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
+});

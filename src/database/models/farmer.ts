@@ -47,6 +47,7 @@ class Farmer extends Model<
   declare status: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare user?: User;
 }
 
 Farmer.init(
