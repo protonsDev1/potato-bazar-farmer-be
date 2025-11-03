@@ -49,6 +49,7 @@ export const createBuyRequestService = async (userId: number, data: any) => {
     productionDate: data.productionDate,
     organicCertified: data.organicCertified,
     status: BUY_REQUEST_STATUS.PENDING,
+    isActive: false,
   });
 
   return newRequest;

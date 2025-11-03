@@ -16,7 +16,7 @@ export const createColdStorageRequirementSchema = Joi.object({
     .trim()
     .allow(null, "")
     .optional(),
-  isActive: Joi.boolean().default(true),
+  isActive: Joi.boolean().default(false),
 });
 
 export const updateColdStorageRequirementSchema = Joi.object({
