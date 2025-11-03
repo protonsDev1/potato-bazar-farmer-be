@@ -117,18 +117,23 @@ export const respondToQuery = async (req, res) => {
 export const getAllMyQueries = async (req, res) => {
   try {
     const { id } = req.user;
-    let { page = 1, perPage: limit = 10 } = req.query;
+    let { page = 1, perPage: limit = 10, cropDiagnosedId } = req.query;
 
     page = Number(page);
     limit = Number(limit);
 
     const offset = (page - 1) * limit;
 
-    const { rows, count } = await AskExpert.findAndCountAll({
-      where: {
-        "$cropDiagnosed.userId$": id, // filter by userId in nested CropDiagnosis model
-      },
+     const whereCondition:any = {
+       "$cropDiagnosed.userId$": id, 
+     };
 
+     if (cropDiagnosedId) {
+       whereCondition.cropDiagnosedId = Number(cropDiagnosedId);
+     }
+
+    const { rows, count } = await AskExpert.findAndCountAll({
+      where: whereCondition,
       include: [
         {
           model: CropDiagnosis,
