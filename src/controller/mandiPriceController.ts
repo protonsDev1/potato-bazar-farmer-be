@@ -175,7 +175,8 @@ export const deleteMandiPrice = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const response = await retrieveDashboardStats();
+    const { id } = req.user;
+    const response = await retrieveDashboardStats(id);
 
     return res.status(200).json({
       success: true,
