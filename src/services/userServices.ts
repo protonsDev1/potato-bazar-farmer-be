@@ -830,15 +830,29 @@ export const updateRegistrationStatus = async (
 
     await user.update({ status });
 
+    const description =
+      status == REGISTRATION_STATUS.APPROVED
+        ? `Your ColdStorage is ${status}`
+        : reason;
+
     if (userType === USER_TYPE.COLD_STORAGE) {
       if (status === REGISTRATION_STATUS.REJECTED)
         await user.update({ reason });
       else await user.update({ reason: null });
+
+      await sendNotificationService({
+        title: `Your ColdStorage is ${status}`,
+        description,
+        senderId: currentUser.id,
+        receiverId: user.userId,
+        referenceType: NotificationType.COLD_STORAGE,
+        referenceId: entityId,
+      });
     }
 
-      if (agentOnboardedUser) {
-        await agentOnboardedUser.update({ statusOfRegistration: status });
-      }
+    if (agentOnboardedUser) {
+      await agentOnboardedUser.update({ statusOfRegistration: status });
+    }
 
     return {
       success: true,

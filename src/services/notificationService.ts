@@ -2,8 +2,11 @@ import { Op } from "sequelize";
 import Notification, {
   NotificationType,
 } from "../database/models/notification";
-import User, { REGISTRATION_STATUS } from "../database/models/user";
+import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import Farmer from "../database/models/farmer";
+import ColdStorage from "../database/models/coldStorage";
+import BuyRequest from "../database/models/buyRequest";
+import SellRequest from "../database/models/sellRequest";
 
 interface Payload {
   title: string;
@@ -31,7 +34,7 @@ export const sendNotificationService = async (payload: Payload) => {
   if (isBroadCast) {
     const users = await User.findAll({
       where: {
-        [Op.or]: [
+        [Op.and]: [
           {
             isUserOnBoardedOnMobile: true,
           },
@@ -87,7 +90,7 @@ export const sendMandiNotificationToFarmers = async (senderId, referenceId) => {
         as: "user",
         attributes: ["id"],
         where: {
-          [Op.or]: [
+          [Op.and]: [
             {
               isUserOnBoardedOnMobile: true,
             },
@@ -109,6 +112,85 @@ export const sendMandiNotificationToFarmers = async (senderId, referenceId) => {
     description: "New Mandi Price data is added",
     senderId,
     referenceType: NotificationType.MANDI_PRICE,
+    referenceId,
+    receiverIds: userIds,
+  });
+};
+
+export const sendNotificationForColdStorage = async (senderId, referenceId) => {
+  const coldStorage = await ColdStorage.findOne({
+    where: { id: referenceId },
+    include: [{ model: User, as: "user" }],
+  });
+
+  if (
+    coldStorage.user.isUserOnBoardedOnMobile == true &&
+    coldStorage.user.hasStartedUsingMobile == true
+  ) {
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "New ColdStorage is added.",
+      description: "New ColdStorage is added.",
+      senderId,
+      referenceType: NotificationType.COLD_STORAGE,
+      referenceId,
+      receiverId: superAdmin.id,
+    });
+  }
+};
+
+export const sendNotificationToMatchingBuyers = async (
+  senderId,
+  referenceId
+) => {
+  const sellRequest = await SellRequest.findByPk(referenceId);
+
+  const buyers = await BuyRequest.findAll({
+    where: {
+      potatoType: sellRequest.potatoType,
+      potatoVariety: sellRequest.potatoVariety,
+    },
+  });
+
+  const userIds = buyers
+    .map((f) => f.userId)
+    .filter((id): id is number => Boolean(id));
+
+  await sendNotificationService({
+    title: "Matching Sell Request is added.",
+    description: "Matching Sell Request is added.",
+    senderId,
+    referenceType: NotificationType.BUY,
+    referenceId,
+    receiverIds: userIds,
+  });
+};
+
+export const sendNotificationToMatchingSellers = async (
+  senderId,
+  referenceId
+) => {
+  const buyRequest = await BuyRequest.findByPk(referenceId);
+
+  const sellers = await SellRequest.findAll({
+    where: {
+      potatoType: buyRequest.potatoType,
+      potatoVariety: buyRequest.potatoVariety,
+    },
+  });
+
+  const userIds = sellers
+    .map((f) => f.userId)
+    .filter((id): id is number => Boolean(id));
+
+  await sendNotificationService({
+    title: "Matching Buy Request is added.",
+    description: "Matching Buy Request is added.",
+    senderId,
+    referenceType: NotificationType.SELL,
     referenceId,
     receiverIds: userIds,
   });
