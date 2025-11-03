@@ -10,7 +10,7 @@ import MandiAgent from "../database/models/mandiAgent";
 interface MandiPriceResponse {
   success: boolean;
   error?: string;
-  data?: object;
+  data?: any;
   message?: string;
 }
 

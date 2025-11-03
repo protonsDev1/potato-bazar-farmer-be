@@ -1,15 +1,31 @@
 import KycDocument from "../database/models/kycDocuments";
+import { NotificationType } from "../database/models/notification";
+import User, { USER_ROLES } from "../database/models/user";
 import {
   updateKycStatusInDB,
   listKycFromDB,
   getKycDetailFromDB,
   upsertKycForUser,
 } from "../services/kycServices";
+import { sendNotificationService } from "../services/notificationService";
 
 export const upsertKyc = async (req, res) => {
   try {
     const userId = req.user.id;
     const result = await upsertKycForUser(userId, req.body);
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Kyc Request",
+      description: "New Kyc Request has been created.",
+      senderId: userId,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.KYC,
+      referenceId: result.kyc.id,
+    });
 
     return res.status(result.status).json({
       success: result.status < 400,
@@ -28,6 +44,21 @@ export const approveOrRejectKyc = async (req, res) => {
     const { id } = req.params;
     const { isVerified, reason } = req.body;
     const updated = await updateKycStatusInDB(Number(id), isVerified, reason);
+    const { id: adminId } = req.user;
+
+    const description = isVerified
+      ? `Your Kyc Request is approved`
+      : (updated.reason as string);
+
+    await sendNotificationService({
+      title: `Your Kyc Request is ${updated.status}`,
+      description,
+      senderId: adminId,
+      receiverId: updated.userId,
+      referenceType: NotificationType.KYC,
+      referenceId: id,
+    });
+
     return res.status(200).json({
       success: true,
       message: `KYC ${isVerified ? "approved" : "rejected"} successfully`,
