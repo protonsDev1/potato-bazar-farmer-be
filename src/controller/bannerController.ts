@@ -1,43 +1,64 @@
 import {
-  createOrUpdateBannerService,
-  getBannerService,
+  createBannerService,
+  getAllBannersService,
+  getBannerByIdService,
+  updateBannerService,
+  deleteBannerService,
+  getPublicBannersService,
 } from "../services/bannerService";
 
-export const createOrUpdateBanner = async (req, res) => {
+export const createBanner = async (req, res) => {
   try {
-    const { text, isActive } = req.body;
-
-    if (!text) {
-      return res.status(400).json({
-        success: false,
-        message: "Text is required.",
-      });
-    }
-
-    const result = await createOrUpdateBannerService(text, isActive);
+    const result = await createBannerService(req.body);
     return res.status(result.statusCode).json(result);
   } catch (error) {
-    console.error("Error creating/updating banner:", error);
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    console.error("Error creating banner:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const getBanner = async (req, res) => {
+export const getAllBanners = async (req, res) => {
   try {
-    const { isActive } = req.query;
-
-    const onlyActive = isActive === "true";
-
-    const result = await getBannerService(onlyActive);
+    const result = await getAllBannersService(req.query);
     return res.status(result.statusCode).json(result);
   } catch (error) {
-    console.error("Error fetching banner:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error.",
-    });
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getBannerById = async (req, res) => {
+  try {
+    const result = await getBannerByIdService(Number(req.params.id));
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateBanner = async (req, res) => {
+  try {
+    const result = await updateBannerService(Number(req.params.id), req.body);
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteBanner = async (req, res) => {
+  try {
+    const result = await deleteBannerService(Number(req.params.id));
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getPublicBanners = async (req, res) => {
+  try {
+    const result = await getPublicBannersService();
+    return res.status(result.statusCode).json(result);
+  } catch (error) {
+    console.error("Error fetching public banners:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
