@@ -813,6 +813,7 @@ export async function getColdStorage(
     if (listingType === "others") {
       whereCondition.userId = { [Op.ne]: userId };
       whereCondition.isAvailable = true;
+      whereCondition.status = REGISTRATION_STATUS.APPROVED;
       userInclude.where = { hasStartedUsingMobile: true };
       userInclude.required = true;
     }
