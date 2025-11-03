@@ -11,7 +11,10 @@ import {
   updateBuyRequestService,
   updateBuyRequestStatusService,
 } from "../services/buyRequestService";
-import { sendNotificationService } from "../services/notificationService";
+import {
+  sendNotificationService,
+  sendNotificationToMatchingSellers,
+} from "../services/notificationService";
 
 export const createBuyRequest = async (req, res) => {
   try {
@@ -169,6 +172,9 @@ export const updateBuyRequestStatus = async (req, res) => {
       referenceType: NotificationType.BUY,
       referenceId: updatedRequest.id,
     });
+
+    if (status === BUY_REQUEST_STATUS.APPROVED)
+      await sendNotificationToMatchingSellers(id, updatedRequest.id);
 
     return res.json({
       success: true,

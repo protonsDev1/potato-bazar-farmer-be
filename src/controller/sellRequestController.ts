@@ -1,7 +1,10 @@
 import { NotificationType } from "../database/models/notification";
 import { SELL_REQUEST_STATUS } from "../database/models/sellRequest";
 import User, { USER_ROLES } from "../database/models/user";
-import { sendNotificationService } from "../services/notificationService";
+import {
+  sendNotificationService,
+  sendNotificationToMatchingBuyers,
+} from "../services/notificationService";
 import {
   createSellRequestService,
   deleteSellRequestService,
@@ -169,6 +172,9 @@ export const updateSellRequestStatus = async (req, res) => {
       referenceType: NotificationType.SELL,
       referenceId: updatedRequest.id,
     });
+
+    if (status === SELL_REQUEST_STATUS.APPROVED)
+      await sendNotificationToMatchingBuyers(id, updatedRequest.id);
 
     return res.json({
       success: true,

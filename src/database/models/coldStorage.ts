@@ -92,6 +92,7 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare isAvailable: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare user?:User;
 }
 
 ColdStorage.init({
