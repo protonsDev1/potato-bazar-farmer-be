@@ -283,6 +283,16 @@ export const getAllMandiPricesByMandiId = async (filters, mandiId) => {
     order: [["updatedAt", "DESC"]],
   });
 
+  const latestMandiPrice = await MandiPrice.findOne({
+    where: { mandiId },
+    order: [["date", "DESC"]],
+    attributes: ["date"],
+  });
+
+  const lastMandiPriceDate = latestMandiPrice
+    ? latestMandiPrice.date.toISOString().split("T")[0]
+    : null;
+
   const mandiPrices = rows.map((item) => ({
     id: item.id,
     mandiId: item.mandiId,
@@ -299,6 +309,7 @@ export const getAllMandiPricesByMandiId = async (filters, mandiId) => {
   return {
     total: count,
     mandiPrices,
+    lastMandiPriceDate
   };
 };
 
