@@ -53,6 +53,7 @@ export const createSellRequestService = async (userId: number, data: any) => {
     images: data.images,
     location: data.location,
     status: SELL_REQUEST_STATUS.PENDING,
+    isActive: false,
   });
 
   return newRequest;
