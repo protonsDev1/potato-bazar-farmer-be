@@ -47,7 +47,7 @@ export const listGovSchemesService = async ({
     where: whereClause,
     offset,
     limit,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const schemes = rows.map((scheme) => {

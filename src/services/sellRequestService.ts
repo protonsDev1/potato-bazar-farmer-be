@@ -148,7 +148,7 @@ export const listSellRequestsService = async (
     include,
     limit: Number(perPage),
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const requestsWithFavourite = rows.map((req: any) => ({
@@ -226,7 +226,7 @@ export const listMySellRequestsService = async (
     ],
     limit: Number(perPage),
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const requestsWithCounts = await Promise.all(
@@ -292,7 +292,7 @@ export const listAdminSellRequestsService = async (query: any) => {
     ],
     limit: Number(perPage),
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const [totalRequests, approvedCount, pendingCount, rejectedCount] =
