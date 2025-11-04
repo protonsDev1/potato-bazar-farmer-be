@@ -40,7 +40,14 @@ export const getContactSupportList = async (req, res) => {
 
     if (search?.trim()) {
       const searchTerm = `%${search.trim()}%`;
-      whereCondition[Op.or] = [{ mobileNumber: { [Op.iLike]: searchTerm } }];
+      whereCondition[Op.or] = [
+        {
+          mobileNumber: { [Op.iLike]: searchTerm },
+        },
+        {
+          fullName: { [Op.iLike]: searchTerm },
+        },
+      ];
     }
 
     const { count, rows } = await ContactSupport.findAndCountAll({
