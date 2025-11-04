@@ -4,6 +4,8 @@ import {
   getCropDiagnosisByIdService,
   createEndorsementService,
   getEndorsementsService,
+  updateEndorsementService,
+  deleteEndorsementService,
 } from "../services/cropDiagnosisService";
 
 export const createCropDiagnosis = async (req, res) => {
@@ -86,4 +88,37 @@ export const getEndorsements = async (req, res) => {
     });
   }
 };
+
+export const updateEndorsement = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const payload = {
+      ...req.body,
+      updatedBy: req.user?.id,
+    };
+
+    const result = await updateEndorsementService(id, payload);
+    return res.status(result.statusCode).json(result);
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Internal server error",
+    });
+  }
+};
+
+export const deleteEndorsement = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const result = await deleteEndorsementService(id);
+    return res.status(result.statusCode).json(result);
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Internal server error",
+    });
+  }
+};
+
 
