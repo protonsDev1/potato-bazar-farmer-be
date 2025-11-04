@@ -79,7 +79,7 @@ export const getRequirementsService = async (
   const { rows, count } = await ColdStorageRequirement.findAndCountAll({
     where: whereCondition,
     include: [userInclude],
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
     limit,
     offset,
   });

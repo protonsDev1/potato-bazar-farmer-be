@@ -52,7 +52,7 @@ export const listNewsService = async ({
     ],
     offset,
     limit,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   // Fetch ALL records separately for latest 2 selection
