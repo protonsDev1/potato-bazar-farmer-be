@@ -3,6 +3,7 @@ import City from "../database/models/city";
 import MandiList from "../database/models/mandiList";
 import State from "../database/models/state";
 import { hasValue } from "../utils/parseQuery";
+import MandiPrice from "../database/models/mandiPrice";
 
 export const addMandi = async (req, res) => {
   try {
@@ -68,12 +69,29 @@ export const getAllMandiByCity = async (req, res) => {
   try {
     const { cityId } = req.params;
 
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // include entire today
+
     const mandiList = await MandiList.findAll({
       where: { cityId },
       include: [
         {
           model: City,
           as: "city",
+        },
+        {
+          model: MandiPrice,
+          as: "mandiPrices",
+          attributes: ["date"],
+          required: false,
+          separate: true,
+          where: {
+            date: {
+              [Op.lte]: today,
+            },
+          },
+          order: [["date", "DESC"]],
+          limit: 1,
         },
       ],
       order: [["updatedAt", "DESC"]],
