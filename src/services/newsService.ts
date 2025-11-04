@@ -76,7 +76,7 @@ export const listNewsService = async ({
     ],
     offset,
     limit,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const newsWithViews = await Promise.all(
