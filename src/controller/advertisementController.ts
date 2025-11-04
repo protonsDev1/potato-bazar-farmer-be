@@ -9,6 +9,20 @@ export const createAdvertisementRequest = async (req, res) => {
     const { id: userId } = req.user;
 
     if (Array.isArray(serviceIds)) {
+      const isValidIds = await AdvertisementService.findAll({
+        where: {
+          id: { [Op.in]: serviceIds },
+        },
+        attributes: ["id"],
+      });
+
+      if (isValidIds.length !== serviceIds.length) {
+        return res.status(400).json({
+          success: false,
+          message: "Please provide valid service ids.",
+        });
+      }
+
       for (const id of serviceIds) {
         await Advertisement.create({
           userId,

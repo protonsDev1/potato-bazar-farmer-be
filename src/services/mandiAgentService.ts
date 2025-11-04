@@ -157,12 +157,19 @@ export const getAllMandiAgents = async (
 ) => {
   const offset = (page - 1) * limit;
 
-  const whereUser: any = {};
-  if (search) {
-    whereUser.name = { [Op.iLike]: `%${search}%` };
-  }
+  const whereCondition: any ={};
 
+if (search?.trim()) {
+  const searchTerm = `%${search.trim()}%`;
+  whereCondition[Op.or] = [
+    { licenseNumber: { [Op.iLike]: searchTerm } },
+    { "$user.name$": { [Op.iLike]: searchTerm } },
+    { "$user.email$": { [Op.iLike]: searchTerm } },
+    { "$user.state$": { [Op.iLike]: searchTerm } },
+  ];
+}
   const { count, rows } = await MandiAgent.findAndCountAll({
+    where: whereCondition,
     include: [
       {
         model: User,
@@ -178,7 +185,7 @@ export const getAllMandiAgents = async (
           "pinCode",
         ],
         as: "user",
-        where: whereUser,
+        required: false,
       },
     ],
     limit,
