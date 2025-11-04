@@ -28,8 +28,8 @@ export const createEndorsementSchema = Joi.object({
     "any.required": "Headline is required",
   }),
 
-  disease: Joi.string().trim().required().messages({
-    "string.base": "Disease must be a string",
+  disease: Joi.array().items(Joi.string().trim()).required().messages({
+    "array.base": "Disease must be an array of strings",
     "any.required": "Disease is required",
   }),
 
@@ -66,4 +66,5 @@ export const createEndorsementSchema = Joi.object({
   sort_order: Joi.number().integer().default(0).messages({
     "number.base": "Sort order must be a number",
   }),
+  isComman: Joi.boolean().default(false),
 });
