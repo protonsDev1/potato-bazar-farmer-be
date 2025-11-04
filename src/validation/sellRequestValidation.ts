@@ -90,7 +90,7 @@ export const updateSellRequestSchema = Joi.object({
   productionMethod: Joi.string().optional(),
   shapeType: Joi.string().optional(),
   productionDate: Joi.date().optional(),
-  organicCertified: Joi.boolean().default(false),
+  organicCertified: Joi.boolean().optional(),
   images: Joi.array().items(Joi.string()).optional(),
   location: Joi.string().optional(),
   isActive: Joi.boolean().optional(),
