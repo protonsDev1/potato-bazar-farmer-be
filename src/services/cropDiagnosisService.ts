@@ -1,6 +1,6 @@
 import Brand from "../database/models/Brand";
 import CropDiagnosis from "../database/models/cropDiagnosis";
-import { Op } from "sequelize";
+import { Op, Sequelize,literal } from "sequelize";
 import Product from "../database/models/Product";
 import Endorsement from "../database/models/Endorsement";
 
@@ -85,6 +85,7 @@ export const createEndorsementService = async (payload: any) => {
     image,
     notes,
     sort_order,
+    isComman
   } = payload;
 
   // ✅ Find or create Brand
@@ -123,6 +124,7 @@ export const createEndorsementService = async (payload: any) => {
     image,
     notes,
     sort_order,
+    isComman
   });
 
   return {
@@ -144,24 +146,38 @@ export const getEndorsementsService = async ({
 }) => {
   const offset = (page - 1) * limit;
 
-  const where: any = {};
+  let where: any = {};
+
   if (disease) {
-    where.disease = { [Op.iLike]: `%${disease}%` };
+    const formattedDisease = disease.toLowerCase().trim();
+
+    where = {
+      [Op.or]: [
+        // ✅ Always return common endorsements
+        { isComman: true },
+
+        // ✅ Disease match condition
+        Sequelize.literal(`
+          EXISTS (
+            SELECT 1
+            FROM unnest("disease") AS d(val)
+            WHERE LOWER(d.val) LIKE '%${formattedDisease}%'
+          )
+        `)
+      ]
+    };
   }
 
   const { rows, count } = await Endorsement.findAndCountAll({
-  limit: Number(limit),
-  offset,
-  order: [["createdAt", "DESC"]],
-  include: [
-    {
-      model: Brand,
-    },
-    {
-      model: Product,
-    }
-  ]
-});
+    where,
+    limit: Number(limit),
+    offset,
+    order: [["createdAt", "DESC"]],
+    include: [
+      { model: Brand },
+      { model: Product },
+    ],
+  });
 
   return {
     success: true,
