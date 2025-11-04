@@ -67,14 +67,14 @@ export const createEndorsement = async (req, res) => {
 };
 export const getEndorsements = async (req, res) => {
   try {
-        console.log("Received query params:", req.query);
+    console.log("Received query params:", req.query);
 
     const { page = 1, limit = 10, disease } = req.query;
 
     const params = {
       page: Number(page),
       limit: Number(limit),
-      disease: disease || null
+      disease: disease ? String(disease).trim().toLowerCase() : null
     };
 
     const result = await getEndorsementsService(params);
@@ -88,6 +88,7 @@ export const getEndorsements = async (req, res) => {
     });
   }
 };
+
 
 export const updateEndorsement = async (req, res) => {
   try {

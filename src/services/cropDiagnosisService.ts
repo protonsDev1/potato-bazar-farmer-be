@@ -145,23 +145,23 @@ export const getEndorsementsService = async ({
   const offset = (page - 1) * limit;
 
   const where: any = {};
+
   if (disease) {
-    where.disease = { [Op.iLike]: `%${disease}%` };
+    where.disease = {
+      [Op.overlap]: [disease.toLowerCase()]
+    };
   }
 
   const { rows, count } = await Endorsement.findAndCountAll({
-  limit: Number(limit),
-  offset,
-  order: [["createdAt", "DESC"]],
-  include: [
-    {
-      model: Brand,
-    },
-    {
-      model: Product,
-    }
-  ]
-});
+    where,
+    limit: Number(limit),
+    offset,
+    order: [["createdAt", "DESC"]],
+    include: [
+      { model: Brand },
+      { model: Product }
+    ]
+  });
 
   return {
     success: true,
