@@ -795,7 +795,15 @@ export const updateRegistrationStatus = async (
         };
     }
 
-    const user = await Model.findByPk(entityId);
+    const user = await Model.findOne({
+      where: {id: entityId},
+      include:[
+        {
+          model: User,
+          as: "user"
+        }
+      ]
+    })
     if (!user) {
       return {
         success: false,
@@ -830,12 +838,16 @@ export const updateRegistrationStatus = async (
 
     await user.update({ status });
 
-    const description =
-      status == REGISTRATION_STATUS.APPROVED
-        ? `Your ColdStorage is ${status}`
-        : reason;
+    if (
+      userType === USER_TYPE.COLD_STORAGE &&
+      user.user.isUserOnBoardedOnMobile === true &&
+      user.user.hasStartedUsingMobile === true
+    ) {
+      const description =
+        status == REGISTRATION_STATUS.APPROVED
+          ? `Your ColdStorage is ${status}`
+          : reason;
 
-    if (userType === USER_TYPE.COLD_STORAGE) {
       if (status === REGISTRATION_STATUS.REJECTED)
         await user.update({ reason });
       else await user.update({ reason: null });

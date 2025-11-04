@@ -1,4 +1,4 @@
-import { literal } from "sequelize";
+import { literal, Op } from "sequelize";
 
 import Notification, {
   NotificationType,
@@ -16,6 +16,11 @@ export const broadCastNotification = async (req, res) => {
       senderId: id,
       referenceType: NotificationType.BROADCAST,
       isBroadCast: true,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Broadcast notification sent successfully",
     });
   } catch (error) {
     return res.status(500).json({
@@ -36,6 +41,19 @@ export const markAsRead = async (req, res) => {
         { where: { receiverId: userId, isRead: false } }
       );
     } else if (notificationId) {
+
+      const isValidId = await Notification.findOne({
+        where: {
+          receiverId: userId,
+          id: notificationId,
+        },
+      });
+
+      if (!isValidId)
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid notification id." });
+
       await Notification.update(
         { isRead: true },
         { where: { id: notificationId, receiverId: userId } }
@@ -87,6 +105,64 @@ export const myNotificationList = async (req, res) => {
         total: count,
         totalPages: Math.ceil(count / limit),
       },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error in fetching my notificaitons ",
+    });
+  }
+};
+
+export const deleteNotification = async (req, res) => {
+  try {
+    const { deleteAll = false, notificationIds } = req.body;
+    const { id: userId } = req.user;
+
+    let deletedCount = 0;
+
+    if (deleteAll) {
+      deletedCount = await Notification.destroy({
+        where: { receiverId: userId },
+      });
+    } else {
+      if (!notificationIds) {
+        return res.status(400).json({
+          success: false,
+          message: "notificationIds are required when deleteAll is false.",
+        });
+      }
+
+      const userNotifications = await Notification.findAll({
+        where: {
+          receiverId: userId,
+          id: { [Op.in]: notificationIds },
+        },
+        attributes: ["id"],
+      });
+
+    
+      if (userNotifications.length !== notificationIds.length) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Some notifications do not belong to the user or are invalid. No notifications were deleted.",
+        });
+      }
+
+      deletedCount = await Notification.destroy({
+        where: {
+          receiverId: userId,
+          id: { [Op.in]: notificationIds },
+        },
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: deleteAll
+        ? `All notifications deleted successfully.`
+        : `${deletedCount} notification(s) deleted successfully.`,
     });
   } catch (error) {
     return res.status(500).json({

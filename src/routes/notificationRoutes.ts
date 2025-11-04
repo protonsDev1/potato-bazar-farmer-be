@@ -4,11 +4,13 @@ import { createValidator } from "express-joi-validation";
 import { authMiddleware, superAdminMiddleware } from "../utils/userAuth";
 import {
   broadCastNotification,
+  deleteNotification,
   markAsRead,
   myNotificationList,
 } from "../controller/notificationController";
 import {
   broadcastNotificationSchema,
+  deleteNotificationSchema,
   markAsReadSchema,
 } from "../validation/notificationValidation";
 
@@ -22,10 +24,18 @@ router.post(
   broadCastNotification
 );
 router.post(
-  "mark_as_read",
+  "/mark_as_read",
   authMiddleware,
   validator.body(markAsReadSchema),
   markAsRead
 );
 
-router.get("/my_notifications", authMiddleware, myNotificationList);
+router.get("/", authMiddleware, myNotificationList);
+router.delete(
+  "/",
+  authMiddleware,
+  validator.body(deleteNotificationSchema),
+  deleteNotification
+);
+
+export default router;
