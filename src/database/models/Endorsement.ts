@@ -7,7 +7,7 @@ class Endorsement extends Model {
   declare id: number;
   declare title: string;
   declare headline: string;
-  declare disease: string;
+  declare disease:  string[];
   declare brand_id: number;
   declare product_id: number;
   declare cta_text?: string;
@@ -18,6 +18,7 @@ class Endorsement extends Model {
   declare image?: string;
   declare notes?: string;
   declare sort_order?: number;
+  declare isComman?: boolean;
 }
 
 Endorsement.init(
@@ -37,7 +38,7 @@ Endorsement.init(
     },
     title: { type: DataTypes.STRING, allowNull: false },
     headline: { type: DataTypes.STRING, allowNull: false },
-    disease: { type: DataTypes.STRING, allowNull: false },
+    disease: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: false },
     cta_text: { type: DataTypes.STRING },
     cta_url: { type: DataTypes.STRING },
     start_at: { type: DataTypes.DATEONLY },
@@ -49,6 +50,7 @@ Endorsement.init(
     image: { type: DataTypes.STRING },
     notes: { type: DataTypes.TEXT },
     sort_order: { type: DataTypes.INTEGER, defaultValue: 0 },
+    isComman: { type: DataTypes.BOOLEAN, defaultValue: false },
   },
   {
     sequelize,
