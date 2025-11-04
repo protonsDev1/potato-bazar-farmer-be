@@ -65,7 +65,7 @@ export const retrieveEventDetail = async (req, res) => {
 
     if (!eventDetail.success)
       return res
-        .status(400)
+        .status(404)
         .json({ success: false, message: eventDetail.error });
 
     return res.status(200).json({
