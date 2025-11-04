@@ -7,5 +7,10 @@ export const broadcastNotificationSchema = Joi.object({
 
 export const markAsReadSchema = Joi.object({
   notificationId: Joi.number().integer().optional().allow(null),
-  markAll: Joi.boolean().optional(),
+  markAll: Joi.boolean().optional().allow(null),
+});
+
+export const deleteNotificationSchema = Joi.object({
+  deleteAll: Joi.boolean().optional().allow(null),
+  notificationIds: Joi.array().items(Joi.number().integer()).optional(),
 });

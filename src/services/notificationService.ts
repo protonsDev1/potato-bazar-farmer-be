@@ -34,6 +34,7 @@ export const sendNotificationService = async (payload: Payload) => {
   if (isBroadCast) {
     const users = await User.findAll({
       where: {
+        role: USER_ROLES.USER,
         [Op.and]: [
           {
             isUserOnBoardedOnMobile: true,
@@ -107,26 +108,40 @@ export const sendMandiNotificationToFarmers = async (senderId, referenceId) => {
     .map((f) => f.user?.id)
     .filter((id): id is number => Boolean(id));
 
-  await sendNotificationService({
-    title: "New Mandi Price data is added.",
-    description: "New Mandi Price data is added",
-    senderId,
-    referenceType: NotificationType.MANDI_PRICE,
-    referenceId,
-    receiverIds: userIds,
-  });
+  if (Array.isArray(userIds) && userIds.length > 0) {
+    await sendNotificationService({
+      title: "New Mandi Price data is added.",
+      description: "New Mandi Price data is added",
+      senderId,
+      referenceType: NotificationType.MANDI_PRICE,
+      referenceId,
+      receiverIds: userIds,
+    });
+  }
 };
 
 export const sendNotificationForColdStorage = async (senderId, referenceId) => {
   const coldStorage = await ColdStorage.findOne({
     where: { id: referenceId },
-    include: [{ model: User, as: "user" }],
+    include: [
+      {
+        model: User,
+        as: "user",
+        where: {
+          [Op.and]: [
+            {
+              isUserOnBoardedOnMobile: true,
+            },
+            {
+              hasStartedUsingMobile: true,
+            },
+          ],
+        },
+      },
+    ],
   });
 
-  if (
-    coldStorage.user.isUserOnBoardedOnMobile == true &&
-    coldStorage.user.hasStartedUsingMobile == true
-  ) {
+  if (coldStorage) {
     const superAdmin = await User.findOne({
       where: { role: USER_ROLES.SUPER_ADMIN },
     });
@@ -163,7 +178,7 @@ export const sendNotificationToMatchingBuyers = async (
     title: "Matching Sell Request is added.",
     description: "Matching Sell Request is added.",
     senderId,
-    referenceType: NotificationType.BUY,
+    referenceType: NotificationType.SELL,
     referenceId,
     receiverIds: userIds,
   });
@@ -190,7 +205,7 @@ export const sendNotificationToMatchingSellers = async (
     title: "Matching Buy Request is added.",
     description: "Matching Buy Request is added.",
     senderId,
-    referenceType: NotificationType.SELL,
+    referenceType: NotificationType.BUY,
     referenceId,
     receiverIds: userIds,
   });
