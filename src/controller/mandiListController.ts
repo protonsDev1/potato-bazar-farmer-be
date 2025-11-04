@@ -83,7 +83,8 @@ export const getAllMandiByCity = async (req, res) => {
           model: MandiPrice,
           as: "mandiPrices",
           attributes: ["date"],
-          required: true,
+          required: false,
+          separate: true,
           where: {
             date: {
               [Op.lte]: today,
@@ -94,20 +95,12 @@ export const getAllMandiByCity = async (req, res) => {
         },
       ],
       order: [["updatedAt", "DESC"]],
-      subQuery: false,
     });
-
-    const filteredList = mandiList
-      .filter((mandi) => mandi.mandiPrices && Array.isArray(mandi.mandiPrices) && mandi.mandiPrices.length > 0)
-      .map((mandi) => ({
-        ...mandi.toJSON(),
-        mandiPrices: [mandi.mandiPrices[0]],
-      }));
 
     return res.status(200).json({
       success: true,
       message: "All Mandis retrieved by city successfully.",
-      data: filteredList,
+      data: mandiList,
     });
   } catch (error) {
     console.error("Failed to retrieve all mandis by city:", error);
