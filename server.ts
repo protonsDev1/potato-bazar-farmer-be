@@ -66,6 +66,9 @@ import cropDiagnosisRoutes from "./src/routes/cropDiagnosisRoutes";
 import promotionRequestRoutes from "./src/routes/promotionRequestRoutes";
 import userRegistrationRoutes from "./src/routes/userRegistrationRoutes";
 import askExpertRoutes from "./src/routes/askExpertRoutes";
+import directoryRoutes from "./src/routes/directoryRoutes";
+import directoryCategoryRoutes from "./src/routes/adminRoutes/directory/directoryCategoryRoutes";
+import directorySubCategoryRoutes from "./src/routes/adminRoutes/directory/directorySubCategoryRoutes";
 
 const cors = require("cors");
 
@@ -143,6 +146,10 @@ app.use("/api/crop_diagnosis", cropDiagnosisRoutes);
 app.use("/api/promotion_requests", promotionRequestRoutes);
 app.use("/api/user_registrations", userRegistrationRoutes);
 app.use("/api/ask_experts", askExpertRoutes);
+app.use("/api/admin/potato_variety", adminPotatoVarietyRoutes);
+app.use("/api/directory_categories", directoryCategoryRoutes);
+app.use("/api/directory_sub_categories", directorySubCategoryRoutes);
+app.use("/api/directories", directoryRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
