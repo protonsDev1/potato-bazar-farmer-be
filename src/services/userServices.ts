@@ -1504,9 +1504,15 @@ export const requestPbVerificationService = async (userId) => {
       traderExists,
       coldStoageHirerExists,
     ] = await Promise.all([
-      Farmer.findOne({ where: { userId } }),
-      ColdStorage.findOne({ where: { userId } }),
-      Trader.findOne({ where: { userId } }),
+      Farmer.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
+      ColdStorage.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
+      Trader.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
       ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
     ]);
     const step2Completed =
@@ -1599,9 +1605,15 @@ export const getPbVerificationStepStatusService = async (userId: number) => {
   // Step 2: Complete role information
   const [farmerExists, coldStorageExists, traderExists, coldStoageHirerExists] =
     await Promise.all([
-      Farmer.findOne({ where: { userId } }),
-      ColdStorage.findOne({ where: { userId } }),
-      Trader.findOne({ where: { userId } }),
+      Farmer.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
+      ColdStorage.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
+      Trader.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
       ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
     ]);
   const step2Completed =

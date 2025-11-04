@@ -144,11 +144,6 @@ export const getPublicBannersService = async () => {
       {
         model: Event,
         as: "event",
-        required: true,
-        where: {
-          startDate: { [Op.lte]: today },
-          endDate: { [Op.gte]: today },
-        },
       },
     ],
     order: [
