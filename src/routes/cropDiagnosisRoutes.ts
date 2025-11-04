@@ -7,6 +7,8 @@ import {
   getCropDiagnosisById,
   createEndorsement,
   getEndorsements,
+  updateEndorsement,
+  deleteEndorsement,
 } from "../controller/cropDiagnosisController";
 import {
   createCropDiagnosisSchema,
@@ -38,4 +40,13 @@ router.post(
   createEndorsement
 );
 
+router.put(
+  "/endorsements/:id",
+  updateEndorsement
+);
+
+router.delete(
+  "/endorsements/:id",
+  deleteEndorsement
+);
 export default router;

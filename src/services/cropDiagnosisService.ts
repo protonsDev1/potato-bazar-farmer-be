@@ -175,3 +175,64 @@ export const getEndorsementsService = async ({
     },
   };
 };
+
+export const updateEndorsementService = async (id: number, payload: any) => {
+  const endorsement = await Endorsement.findByPk(id);
+
+  if (!endorsement) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "Endorsement not found",
+    };
+  }
+
+  // If brand & product updated
+  if (payload.brandName) {
+    let brand = await Brand.findOne({ where: { name: payload.brandName } });
+    if (!brand) brand = await Brand.create({ name: payload.brandName });
+    payload.brand_id = brand.id;
+  }
+
+  if (payload.productName) {
+    let product = await Product.findOne({
+      where: { name: payload.productName, brand_id: payload.brand_id },
+    });
+    if (!product)
+      product = await Product.create({
+        name: payload.productName,
+        brand_id: payload.brand_id,
+      });
+    payload.product_id = product.id;
+  }
+
+  await endorsement.update(payload);
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Endorsement updated successfully",
+    data: endorsement,
+  };
+};
+
+// ✅ Delete Endorsement Service
+export const deleteEndorsementService = async (id: number) => {
+  const endorsement = await Endorsement.findByPk(id);
+
+  if (!endorsement) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "Endorsement not found",
+    };
+  }
+
+  await endorsement.destroy();
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Endorsement deleted successfully",
+  };
+};
