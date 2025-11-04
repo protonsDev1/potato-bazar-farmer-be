@@ -66,5 +66,5 @@ export const createEndorsementSchema = Joi.object({
   sort_order: Joi.number().integer().default(0).messages({
     "number.base": "Sort order must be a number",
   }),
-  isCommon: Joi.boolean().default(false),
+  isComman: Joi.boolean().default(false),
 });
