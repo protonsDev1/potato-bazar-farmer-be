@@ -42,11 +42,13 @@ router.post(
 
 router.put(
   "/endorsements/:id",
+  checkPermissionMiddleware(PERMISSIONS.ENDORSEMENT),
   updateEndorsement
 );
 
 router.delete(
   "/endorsements/:id",
+  checkPermissionMiddleware(PERMISSIONS.ENDORSEMENT),
   deleteEndorsement
 );
 export default router;
