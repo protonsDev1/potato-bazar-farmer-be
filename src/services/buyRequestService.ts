@@ -452,6 +452,19 @@ export const updateBuyRequestService = async (
   }
 
   if (request.status === BUY_REQUEST_STATUS.APPROVED) {
+    if (
+      Object.keys(payload).length === 1 &&
+      payload.hasOwnProperty("isActive")
+    ) {
+      await request.update({ isActive: payload.isActive });
+      return {
+        statusCode: 200,
+        success: true,
+        message: "Sell request status updated successfully",
+        data: request,
+      };
+    }
+
     return {
       statusCode: 400,
       success: false,
