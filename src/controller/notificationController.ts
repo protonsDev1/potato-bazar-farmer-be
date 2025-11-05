@@ -41,7 +41,6 @@ export const markAsRead = async (req, res) => {
         { where: { receiverId: userId, isRead: false } }
       );
     } else if (notificationId) {
-
       const isValidId = await Notification.findOne({
         where: {
           receiverId: userId,
@@ -114,6 +113,27 @@ export const myNotificationList = async (req, res) => {
   }
 };
 
+export const unreadNotificationCount = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+
+    const unreadCount = await Notification.count({
+      where: { receiverId: userId, isRead: false },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Unread Notifications count",
+      count: unreadCount,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error in fetching unread notification count ",
+    });
+  }
+};
+
 export const deleteNotification = async (req, res) => {
   try {
     const { deleteAll = false, notificationIds } = req.body;
@@ -141,7 +161,6 @@ export const deleteNotification = async (req, res) => {
         attributes: ["id"],
       });
 
-    
       if (userNotifications.length !== notificationIds.length) {
         return res.status(400).json({
           success: false,

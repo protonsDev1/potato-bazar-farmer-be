@@ -7,6 +7,7 @@ import {
   deleteNotification,
   markAsRead,
   myNotificationList,
+  unreadNotificationCount,
 } from "../controller/notificationController";
 import {
   broadcastNotificationSchema,
@@ -31,6 +32,9 @@ router.post(
 );
 
 router.get("/", authMiddleware, myNotificationList);
+
+router.get("/unread_count", authMiddleware, unreadNotificationCount);
+
 router.delete(
   "/",
   authMiddleware,
