@@ -1,4 +1,10 @@
-import { USER_ROLES } from "../database/models/user";
+import { NotificationType } from "../database/models/notification";
+import { SELL_REQUEST_STATUS } from "../database/models/sellRequest";
+import User, { USER_ROLES } from "../database/models/user";
+import {
+  sendNotificationService,
+  sendNotificationToMatchingBuyers,
+} from "../services/notificationService";
 import {
   createSellRequestService,
   deleteSellRequestService,
@@ -18,6 +24,19 @@ export const createSellRequest = async (req, res) => {
       });
 
     const sellRequest = await createSellRequestService(req.user.id, req.body);
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Sell Request",
+      description: "New Sell Request has been created.",
+      senderId: req.user.id,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.SELL,
+      referenceId: sellRequest.id,
+    });
 
     return res.status(201).json({
       success: true,
@@ -126,6 +145,7 @@ export const updateSellRequestStatus = async (req, res) => {
   try {
     const { requestId } = req.params;
     const { status, reason } = req.body;
+    const { id } = req.user;
 
     const updatedRequest = await updateSellRequestStatusService(
       requestId,
@@ -138,6 +158,23 @@ export const updateSellRequestStatus = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Sell Request not found" });
     }
+
+    const description =
+      status == SELL_REQUEST_STATUS.APPROVED
+        ? `Your Sell Request is ${status}`
+        : updatedRequest.reason;
+
+    await sendNotificationService({
+      title: `Your Sell Request is ${status}`,
+      description,
+      senderId: id,
+      receiverId: updatedRequest.userId,
+      referenceType: NotificationType.SELL,
+      referenceId: updatedRequest.id,
+    });
+
+    if (status === SELL_REQUEST_STATUS.APPROVED)
+      await sendNotificationToMatchingBuyers(id, updatedRequest.id);
 
     return res.json({
       success: true,

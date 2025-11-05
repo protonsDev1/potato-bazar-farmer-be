@@ -26,6 +26,8 @@ import Event from "../database/models/event";
 import News from "../database/models/news";
 import MandiList from "../database/models/mandiList";
 import GovernmentScheme from "../database/models/govScheme";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -793,7 +795,15 @@ export const updateRegistrationStatus = async (
         };
     }
 
-    const user = await Model.findByPk(entityId);
+    const user = await Model.findOne({
+      where: {id: entityId},
+      include:[
+        {
+          model: User,
+          as: "user"
+        }
+      ]
+    })
     if (!user) {
       return {
         success: false,
@@ -828,15 +838,33 @@ export const updateRegistrationStatus = async (
 
     await user.update({ status });
 
-    if (userType === USER_TYPE.COLD_STORAGE) {
+    if (
+      userType === USER_TYPE.COLD_STORAGE &&
+      user.user.isUserOnBoardedOnMobile === true &&
+      user.user.hasStartedUsingMobile === true
+    ) {
+      const description =
+        status == REGISTRATION_STATUS.APPROVED
+          ? `Your ColdStorage is ${status}`
+          : reason;
+
       if (status === REGISTRATION_STATUS.REJECTED)
         await user.update({ reason });
       else await user.update({ reason: null });
+
+      await sendNotificationService({
+        title: `Your ColdStorage is ${status}`,
+        description,
+        senderId: currentUser.id,
+        receiverId: user.userId,
+        referenceType: NotificationType.COLD_STORAGE,
+        referenceId: entityId,
+      });
     }
 
-      if (agentOnboardedUser) {
-        await agentOnboardedUser.update({ statusOfRegistration: status });
-      }
+    if (agentOnboardedUser) {
+      await agentOnboardedUser.update({ statusOfRegistration: status });
+    }
 
     return {
       success: true,
@@ -1414,7 +1442,8 @@ export const getUserTypeProfileDetails = async (userId) => {
 export const updatePbVerificationService = async (
   userId,
   pbVerificationStatus,
-  reason
+  reason,
+  id
 ) => {
   const user = await User.findByPk(userId);
 
@@ -1471,6 +1500,20 @@ if (pbVerificationStatus === PB_VERIFICATION_STATUS.REJECTED) {
     user.reason = null;
   }
   await user.save();
+
+    const description =
+      user.pbVerificationStatus == PB_VERIFICATION_STATUS.APPROVED
+        ? `Your Buy Request is ${pbVerificationStatus}`
+        : user.reason;
+
+    await sendNotificationService({
+      title: `Your PB Verification Request is ${pbVerificationStatus}`,
+      description,
+      senderId: id,
+      receiverId: userId,
+      referenceType: NotificationType.USER_PB_VERIFICATION,
+      referenceId: userId,
+    });
 
   return {
     statusCode: 200,
@@ -1575,6 +1618,20 @@ export const requestPbVerificationService = async (userId) => {
   user.pbVerified = false;
 
   await user.save();
+
+     const superAdmin = await User.findOne({
+       where: { role: USER_ROLES.SUPER_ADMIN },
+     });
+
+     await sendNotificationService({
+       title: "PB Verification Request",
+       description: "New PB Verification Request has been created.",
+       senderId: userId,
+       receiverId: superAdmin.id,
+       referenceType: NotificationType.USER_PB_VERIFICATION,
+       referenceId: userId,
+     });
+
 
   return {
     statusCode: 200,

@@ -1,3 +1,4 @@
+import { NotificationType } from "../database/models/notification";
 import {
   createNewsService,
   listNewsService,
@@ -5,10 +6,12 @@ import {
   updateNewsService,
   deleteNewsService,
 } from "../services/newsService";
+import { sendNotificationService } from "../services/notificationService";
 
 export const createNews = async (req, res) => {
   try {
     const { images } = req.body;
+    const { id } = req.user;
 
     if (!Array.isArray(images) || images.length === 0)
       return res.status(400).json({
@@ -18,6 +21,16 @@ export const createNews = async (req, res) => {
 
     req.body.createdBy = req.user.role;
     const result = await createNewsService(req.body);
+
+    await sendNotificationService({
+      title: "New Update from Potato Bazaar",
+      description: `A new news post "${req.body.title}" has just been published. Check it out for the latest updates!`,
+      senderId: id,
+      referenceType: NotificationType.NEWS,
+      referenceId: result.data.id,
+      isBroadCast: true,
+    });
+
     return res.status(result.statusCode).json(result);
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });

@@ -24,6 +24,7 @@ import { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import Farmer from "../database/models/farmer";
 import Trader from "../database/models/trader/trader";
 import Otp from "../database/models/otp";
+import { sendNotificationForColdStorage } from "../services/notificationService";
 
 export const createColdStorage = async (req, res) => {
   try {
@@ -193,6 +194,9 @@ export const selfOnboardColdStorage = async (req, res) => {
     await updateUserInDB(req.body.userId, { ownerName: req.body.ownerName });
 
     const selfOnboard = await onboardColdStorage(req.body);
+
+    await sendNotificationForColdStorage(req.body.userId, selfOnboard.id);
+
     res.status(201).json({
       message: "Cold Storage self onboarded successfully",
       data: selfOnboard,

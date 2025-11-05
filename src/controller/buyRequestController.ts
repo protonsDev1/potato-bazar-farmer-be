@@ -1,4 +1,6 @@
-import { USER_ROLES } from "../database/models/user";
+import { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
+import { NotificationType } from "../database/models/notification";
+import User, { USER_ROLES } from "../database/models/user";
 import {
   createBuyRequestService,
   deleteBuyRequestService,
@@ -9,6 +11,10 @@ import {
   updateBuyRequestService,
   updateBuyRequestStatusService,
 } from "../services/buyRequestService";
+import {
+  sendNotificationService,
+  sendNotificationToMatchingSellers,
+} from "../services/notificationService";
 
 export const createBuyRequest = async (req, res) => {
   try {
@@ -18,6 +24,19 @@ export const createBuyRequest = async (req, res) => {
       });
 
     const buyRequest = await createBuyRequestService(req.user.id, req.body);
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Buy Request",
+      description: "New Buy Request has been created.",
+      senderId: req.user.id,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.BUY,
+      referenceId: buyRequest.id,
+    });
 
     return res.status(201).json({
       success: true,
@@ -126,6 +145,7 @@ export const updateBuyRequestStatus = async (req, res) => {
   try {
     const { requestId } = req.params;
     const { status, reason } = req.body;
+    const { id } = req.user;
 
     const updatedRequest = await updateBuyRequestStatusService(
       requestId,
@@ -138,6 +158,23 @@ export const updateBuyRequestStatus = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Buy Request not found" });
     }
+
+    const description =
+      status == BUY_REQUEST_STATUS.APPROVED
+        ? `Your Buy Request is ${status}`
+        : updatedRequest.reason;
+
+    await sendNotificationService({
+      title: `Your Buy Request is ${status}`,
+      description,
+      senderId: id,
+      receiverId: updatedRequest.userId,
+      referenceType: NotificationType.BUY,
+      referenceId: updatedRequest.id,
+    });
+
+    if (status === BUY_REQUEST_STATUS.APPROVED)
+      await sendNotificationToMatchingSellers(id, updatedRequest.id);
 
     return res.json({
       success: true,
