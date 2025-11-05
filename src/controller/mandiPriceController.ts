@@ -13,6 +13,7 @@ import {
   retrieveDashboardStats,
   updateMandiPriceService,
 } from "../services/mandiPriceService";
+import { sendMandiNotificationToFarmers } from "../services/notificationService";
 import { parseFilters } from "../utils/parseQuery";
 
 export const createMandiPrice = async (req, res) => {
@@ -23,6 +24,8 @@ export const createMandiPrice = async (req, res) => {
 
     if (!response.success)
       return res.status(400).json({ success: false, message: response.error });
+
+    await sendMandiNotificationToFarmers(userId, response.data?.mandiPrice.id )
 
     return res.status(201).json({
       success: true,

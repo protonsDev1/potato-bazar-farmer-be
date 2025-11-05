@@ -13,6 +13,7 @@ import {
 } from "../controller/eventController";
 import {
   createEventSchema,
+  registerOnEventSchema,
   updateEventSchema,
   updateEventStatusSchema,
 } from "../validation/eventValidation";
@@ -43,7 +44,7 @@ router.delete(
   deleteEvent
 );
 
-router.post("/join_event/:eventId", authMiddleware, registerOnEvent);
+router.post("/join_event/:eventId", authMiddleware, validator.body(registerOnEventSchema), registerOnEvent);
 
 router.put(
   "/update_status/:requestId",

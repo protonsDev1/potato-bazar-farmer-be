@@ -18,6 +18,7 @@ export enum NotificationType {
   GOV_SCHEME = "GOV_SCHEME",
   KYC = "KYC",
   USER_PB_VERIFICATION = "USER_PB_VERIFICATION",
+  COLD_STORAGE = "COLD_STORAGE"
 }
 
 class Notification extends Model<

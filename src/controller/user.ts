@@ -648,10 +648,13 @@ export const getMobileUserProfile = async (req, res) => {
 
 export const updatePbVerification = async (req, res) => {
   try {
+    const { id } = req.user;
+
     const result = await updatePbVerificationService(
       req.params.id,
       req.body.pbVerificationStatus,
-      req.body.reason
+      req.body.reason,
+      id
     );
 
     return res.status(result.statusCode).json(result);
