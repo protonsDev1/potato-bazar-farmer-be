@@ -25,7 +25,9 @@ export const createEventSchema = Joi.object({
     image: Joi.string().required(),
     startDate: Joi.string().required(),
     endDate: Joi.string().required(),
-  }).optional(),
+  })
+    .optional()
+    .allow(null),
 });
 
 export const updateEventSchema = Joi.object({
@@ -52,7 +54,9 @@ export const updateEventSchema = Joi.object({
     image: Joi.string().required(),
     startDate: Joi.string().required(),
     endDate: Joi.string().required(),
-  }).optional(),
+  })
+    .optional()
+    .allow(null),
 });
 
 export const updateEventStatusSchema = Joi.object({
