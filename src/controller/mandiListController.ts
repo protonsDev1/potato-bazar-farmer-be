@@ -69,38 +69,63 @@ export const getAllMandiByCity = async (req, res) => {
   try {
     const { cityId } = req.params;
 
-    const today = new Date();
-    today.setHours(23, 59, 59, 999); // include entire today
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
 
     const mandiList = await MandiList.findAll({
       where: { cityId },
       include: [
-        {
-          model: City,
-          as: "city",
-        },
+        { model: City, as: "city" },
         {
           model: MandiPrice,
           as: "mandiPrices",
-          attributes: ["date"],
           required: false,
-          separate: true,
+          attributes: ["date"],
           where: {
             date: {
-              [Op.lte]: today,
+              [Op.or]: [
+                { [Op.between]: [todayStart, todayEnd] }, // today
+                { [Op.lt]: todayStart }, // past
+                { [Op.gt]: todayEnd }, // future
+              ],
             },
           },
-          order: [["date", "DESC"]],
-          limit: 1,
+          order: [["date", "ASC"]],
         },
       ],
       order: [["updatedAt", "DESC"]],
     });
 
+    const formattedList = mandiList
+      .map((mandi) => {
+        const prices = (mandi.mandiPrices as MandiPrice[]) || [];
+
+        if (prices.length === 0) return null;
+
+        const today = prices.filter(
+          (m) => m.date >= todayStart && m.date <= todayEnd
+        );
+        const past = prices
+          .filter((m) => m.date < todayStart)
+          .sort((a, b) => b.date.getTime() - a.date.getTime());
+        const future = prices
+          .filter((m) => m.date > todayEnd)
+          .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+        return {
+          ...mandi.toJSON(),
+          mandiPrices: today[0] || past[0] || future[0] || null,
+        };
+      })
+      .filter(Boolean);
+
     return res.status(200).json({
       success: true,
       message: "All Mandis retrieved by city successfully.",
-      data: mandiList,
+      data: formattedList,
     });
   } catch (error) {
     console.error("Failed to retrieve all mandis by city:", error);

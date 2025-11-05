@@ -7,6 +7,7 @@ import {
 } from "sequelize";
 import sequelize from "./db";
 import City from "./city";
+import MandiPrice from "./mandiPrice";
 
 class MandiList extends Model<
   InferAttributes<MandiList>,
@@ -23,6 +24,7 @@ class MandiList extends Model<
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
   declare city?: City;
+  declare mandiPrices?: MandiPrice[];
 }
 
 MandiList.init(
