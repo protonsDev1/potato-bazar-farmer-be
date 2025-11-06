@@ -1,6 +1,7 @@
 import State from "../database/models/state";
 import City from "../database/models/city";
 import District from "../database/models/district";
+import sequelize from "../database/models/db";
 
 export const listStates = async (req, res) => {
   try {
@@ -29,8 +30,12 @@ export const listCities = async (req, res) => {
 
     const cities = await City.findAll({
       where: whereClause,
-      attributes: ["id", "name", "image"],
-      order: [["name", "ASC"]],
+      attributes: ["id", "name", "image", "position"],
+      order: [
+        [sequelize.literal('"position" IS NULL'), "ASC"],
+        ["position", "ASC"],
+        ["name", "ASC"],
+      ],
     });
 
     // Deduplicate by city name (case-insensitive)
@@ -94,7 +99,7 @@ export const listDistricts = async (req, res) => {
 export const updateCityImage = async (req, res) => {
   try {
     const { id } = req.params;
-    const { image } = req.body;
+    const { image, position } = req.body;
 
     const city = await City.findByPk(id);
 
@@ -105,7 +110,19 @@ export const updateCityImage = async (req, res) => {
       });
     }
 
+    if (position) {
+      const isPositionExist = await City.findOne({ where: { position } });
+
+      if (isPositionExist)
+        return res.status(403).json({
+          success: false,
+          message: `${isPositionExist.name} already has position ${position}.`,
+        });
+    }
+
     city.image = image;
+    city.position = position;
+
     await city.save();
 
     return res.json({
