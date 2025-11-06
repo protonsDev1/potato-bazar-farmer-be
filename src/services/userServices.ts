@@ -1814,7 +1814,8 @@ export const globalSearchDB = async (q: string) => {
         { potatoVariety: { [Op.iLike]: term } },
         { additionalComment: { [Op.iLike]: term } }
       ],
-      isActive: true
+      isActive: true,
+      status: 'approved',
     },
     limit: 10
   });
@@ -1827,7 +1828,8 @@ export const globalSearchDB = async (q: string) => {
         { additionalComment: { [Op.iLike]: term } },
         { location: { [Op.iLike]: term } }
       ],
-      isActive: true
+      isActive: true,
+      status: 'approved'
     },
     limit: 10
   });
