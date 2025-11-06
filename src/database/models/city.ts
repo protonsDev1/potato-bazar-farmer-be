@@ -16,6 +16,7 @@ class City extends Model<InferAttributes<City>, InferCreationAttributes<City>> {
   declare name: string;
   declare image: string | null;
   declare stateId: ForeignKey<State["id"]>;
+  declare position: number | null;
   declare state?: NonAttribute<State>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -45,6 +46,11 @@ City.init(
       },
       onDelete: "CASCADE",
     },
+    position: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: true,
+    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -65,6 +71,10 @@ City.init(
       {
         unique: true,
         fields: ["name", "stateId"],
+      },
+      {
+        unique: true,
+        fields: ["position"],
       },
     ],
   }
