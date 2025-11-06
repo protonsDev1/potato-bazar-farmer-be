@@ -16,18 +16,19 @@ import SubAdminWebPermission from "../database/models/subAdminWebPermission";
 import { PERMISSIONS, WEB_ACTIONS } from "../utils/constants/permissions";
 import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
 import MandiAgent from "../database/models/mandiAgent";
-import SellRequest from "../database/models/sellRequest";
+import SellRequest, { SELL_REQUEST_STATUS } from "../database/models/sellRequest";
 import UserSupport from "../database/models/userSupport";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { retrieveFarmerProfile } from "./farmerServices";
 import { retrieveTraderProfile } from "./traderService";
 import ColdStorageRequirement from "../database/models/coldStorageRequirement";
 import Event from "../database/models/event";
-import News from "../database/models/news";
+import News, { NEWS_STATUS } from "../database/models/news";
 import MandiList from "../database/models/mandiList";
 import GovernmentScheme from "../database/models/govScheme";
 import { sendNotificationService } from "./notificationService";
 import { NotificationType } from "../database/models/notification";
+import MandiPrice from "../database/models/mandiPrice";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -1759,6 +1760,7 @@ export const updateUserMobileNumber = async (
 
 export const globalSearchDB = async (q: string) => {
   const term = `%${q}%`;
+  const now = new Date();
 
   const coldStorages = ColdStorage.findAll({
     where: {
@@ -1767,11 +1769,24 @@ export const globalSearchDB = async (q: string) => {
         { ownerName: { [Op.iLike]: term } },
         { village: { [Op.iLike]: term } },
         { district: { [Op.iLike]: term } },
-        { state: { [Op.iLike]: term } }
+        { state: { [Op.iLike]: term } },
       ],
-      isDeleted: false
+      isDeleted: false,
+      isAvailable: true,
+      status: REGISTRATION_STATUS.APPROVED,
     },
-    limit: 10
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: [],
+        where: {
+          hasStartedUsingMobile : true,
+        },
+        required: true,
+      },
+    ],
+    limit: 10,
   });
 
   const events = Event.findAll({
@@ -1780,9 +1795,10 @@ export const globalSearchDB = async (q: string) => {
         { title: { [Op.iLike]: term } },
         { category: { [Op.iLike]: term } },
         { location: { [Op.iLike]: term } },
-      ]
+      ],
+      endDate: { [Op.gte]: now },
     },
-    limit: 10
+    limit: 10,
   });
 
   const news = News.findAll({
@@ -1790,21 +1806,30 @@ export const globalSearchDB = async (q: string) => {
       [Op.or]: [
         { title: { [Op.iLike]: term } },
         { category: { [Op.iLike]: term } },
-        { description: { [Op.iLike]: term } }
-      ]
+        { description: { [Op.iLike]: term } },
+      ],
+      status: NEWS_STATUS.PUBLISHED,
     },
-    limit: 10
+    limit: 10,
   });
 
   const mandis = MandiList.findAll({
     where: {
       [Op.or]: [
         { mandiName: { [Op.iLike]: term } },
-        { address: { [Op.iLike]: term } }
+        { address: { [Op.iLike]: term } },
       ],
-      isDeleted: false
+      isDeleted: false,
     },
-    limit: 10
+    include: [
+      {
+        model: MandiPrice,
+        as: "mandiPrices",
+        required: true,
+        attributes: [],
+      },
+    ],
+    limit: 10,
   });
 
   const buyRequests = BuyRequest.findAll({
@@ -1812,12 +1837,12 @@ export const globalSearchDB = async (q: string) => {
       [Op.or]: [
         { potatoType: { [Op.iLike]: term } },
         { potatoVariety: { [Op.iLike]: term } },
-        { additionalComment: { [Op.iLike]: term } }
+        { additionalComment: { [Op.iLike]: term } },
       ],
       isActive: true,
-      status: 'approved',
+      status: BUY_REQUEST_STATUS.APPROVED,
     },
-    limit: 10
+    limit: 10,
   });
 
   const sellRequests = SellRequest.findAll({
@@ -1826,12 +1851,12 @@ export const globalSearchDB = async (q: string) => {
         { potatoType: { [Op.iLike]: term } },
         { potatoVariety: { [Op.iLike]: term } },
         { additionalComment: { [Op.iLike]: term } },
-        { location: { [Op.iLike]: term } }
+        { location: { [Op.iLike]: term } },
       ],
+      status: SELL_REQUEST_STATUS.APPROVED,
       isActive: true,
-      status: 'approved'
     },
-    limit: 10
+    limit: 10,
   });
 
   const schemes = GovernmentScheme.findAll({
@@ -1839,11 +1864,11 @@ export const globalSearchDB = async (q: string) => {
       [Op.or]: [
         { title: { [Op.iLike]: term } },
         { category: { [Op.iLike]: term } },
-        { state: { [Op.iLike]: term } }
+        { state: { [Op.iLike]: term } },
       ],
-      isActive: true
+      isActive: true,
     },
-    limit: 10
+    limit: 10,
   });
 
   return Promise.all([
@@ -1853,14 +1878,24 @@ export const globalSearchDB = async (q: string) => {
     mandis,
     buyRequests,
     sellRequests,
-    schemes
-  ]).then(([coldStorages, events, news, mandis, buyRequests, sellRequests, schemes]) => ({
-    coldStorages,
-    events,
-    news,
-    mandis,
-    buyRequests,
-    sellRequests,
-    schemes
-  }));
+    schemes,
+  ]).then(
+    ([
+      coldStorages,
+      events,
+      news,
+      mandis,
+      buyRequests,
+      sellRequests,
+      schemes,
+    ]) => ({
+      coldStorages,
+      events,
+      news,
+      mandis,
+      buyRequests,
+      sellRequests,
+      schemes,
+    })
+  );
 };
