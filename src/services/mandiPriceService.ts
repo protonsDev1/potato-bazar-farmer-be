@@ -298,7 +298,7 @@ export const getAllMandiPricesByMandiId = async (filters, mandiId) => {
 
   return {
     total: count,
-    mandiPrices
+    mandiPrices,
   };
 };
 
@@ -519,7 +519,11 @@ export const listCitiesWithMandis = async (page = 1, limit = 10) => {
         ],
       },
     ],
-    order: [["name", "ASC"]],
+    order: [
+      [sequelize.literal('"City"."position" IS NULL'), "ASC"],
+      [sequelize.col("City.position"), "ASC"],
+      [sequelize.col("City.name"), "ASC"],
+    ],
     limit,
     offset,
   });
