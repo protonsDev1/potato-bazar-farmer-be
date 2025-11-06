@@ -3,9 +3,10 @@ import Event from "../database/models/event";
 import { buildDate, hasValue } from "../utils/parseQuery";
 import EventRequest from "../database/models/eventRequest";
 import User from "../database/models/user";
+import Banner from "../database/models/banner";
 
 export const addEvent = async (eventData) => {
-  const { startDate, endDate, startTime, endTime } = eventData;
+  const { startDate, endDate, startTime, endTime, banner } = eventData;
 
   const start = buildDate(startDate, startTime);
   const end = buildDate(endDate, endTime);
@@ -18,6 +19,13 @@ export const addEvent = async (eventData) => {
   }
 
   const event = await Event.create(eventData);
+
+  if (banner) {
+    await Banner.create({
+      ...banner,
+      eventId: event.id,
+    });
+  }
 
   return {
     success: true,
@@ -95,9 +103,16 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
 
   const { rows: events, count: total } = await Event.findAndCountAll({
     where: { ...whereCondition },
+    include: [
+      {
+        model: Banner,
+        as: "banner",
+        attributes: ["id", "image", "startDate", "endDate"],
+      },
+    ],
     limit,
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const enrichedResults = await Promise.all(
@@ -134,7 +149,16 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
 };
 
 export const getEventDetail = async (eventId) => {
-  const event = await Event.findOne({ where: { id: eventId } });
+  const event = await Event.findOne({
+    where: { id: eventId },
+    include: [
+      {
+        model: Banner,
+        as: "banner",
+        attributes: ["id", "image", "startDate", "endDate"],
+      },
+    ],
+  });
 
   if (!event)
     return {
@@ -166,7 +190,7 @@ export const getEventDetail = async (eventId) => {
       id: { [Op.ne]: eventId },
       ...whereCondition,
     },
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
     limit: 5,
   });
 
@@ -233,7 +257,7 @@ export const getAllEventRequests = async (page = 1, limit = 10, search) => {
     ],
     limit,
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   return {
@@ -247,7 +271,9 @@ export const getAllEventRequests = async (page = 1, limit = 10, search) => {
 export const updateEventService = async (eventId, payload) => {
   let { startDate, endDate, startTime, endTime } = payload;
 
-  const event = await Event.findOne({ where: { id: eventId } });
+  const event = await Event.findByPk(eventId, {
+    include: [{ model: Banner, as: "banner" }],
+  });
 
   if (!event)
     return {
@@ -291,6 +317,7 @@ export const updateEventService = async (eventId, payload) => {
     "document",
     "website",
     "contactUrl",
+    "isFeatured",
   ];
 
   for (const field of updatableFields) {
@@ -299,15 +326,37 @@ export const updateEventService = async (eventId, payload) => {
     }
   }
 
-  const [, updated] = await Event.update(updateData, {
-    where: { id: eventId },
-    returning: true,
+  await Event.update(updateData, { where: { id: eventId } });
+
+  if (payload.banner) {
+    if (event.banner) {
+      await event.banner.update(payload.banner);
+    } else {
+      await Banner.create({ ...payload.banner, eventId });
+    }
+  }
+  if ("banner" in payload) {
+    if (payload.banner === null) {
+      // delete banner
+      if (event.banner) await event.banner.destroy();
+    } else if (payload.banner) {
+      // upsert (update if exists, else create)
+      if (event.banner) {
+        await event.banner.update(payload.banner);
+      } else {
+        await Banner.create({ ...payload.banner, eventId });
+      }
+    }
+  }
+
+  const updatedEvent = await Event.findByPk(eventId, {
+    include: [{ model: Banner, as: "banner" }],
   });
 
   return {
     success: true,
     message: "Event updated successfully.",
-    data: updated[0],
+    data: updatedEvent,
   };
 };
 

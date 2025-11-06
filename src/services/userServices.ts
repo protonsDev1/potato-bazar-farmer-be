@@ -16,12 +16,19 @@ import SubAdminWebPermission from "../database/models/subAdminWebPermission";
 import { PERMISSIONS, WEB_ACTIONS } from "../utils/constants/permissions";
 import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
 import MandiAgent from "../database/models/mandiAgent";
-import SellRequest from "../database/models/sellRequest";
+import SellRequest, { SELL_REQUEST_STATUS } from "../database/models/sellRequest";
 import UserSupport from "../database/models/userSupport";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { retrieveFarmerProfile } from "./farmerServices";
 import { retrieveTraderProfile } from "./traderService";
 import ColdStorageRequirement from "../database/models/coldStorageRequirement";
+import Event from "../database/models/event";
+import News, { NEWS_STATUS } from "../database/models/news";
+import MandiList from "../database/models/mandiList";
+import GovernmentScheme from "../database/models/govScheme";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
+import MandiPrice from "../database/models/mandiPrice";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -706,7 +713,8 @@ export const updateRegistrationStatus = async (
   status: string,
   userType: string,
   entityId: number,
-  currentUser: User
+  currentUser: User,
+  reason
 ) => {
   try {
     if (
@@ -788,7 +796,15 @@ export const updateRegistrationStatus = async (
         };
     }
 
-    const user = await Model.findByPk(entityId);
+    const user = await Model.findOne({
+      where: {id: entityId},
+      include:[
+        {
+          model: User,
+          as: "user"
+        }
+      ]
+    })
     if (!user) {
       return {
         success: false,
@@ -822,6 +838,31 @@ export const updateRegistrationStatus = async (
     }
 
     await user.update({ status });
+
+    if (
+      userType === USER_TYPE.COLD_STORAGE &&
+      user.user.isUserOnBoardedOnMobile === true &&
+      user.user.hasStartedUsingMobile === true
+    ) {
+      const description =
+        status == REGISTRATION_STATUS.APPROVED
+          ? `Your ColdStorage is ${status}`
+          : reason;
+
+      if (status === REGISTRATION_STATUS.REJECTED)
+        await user.update({ reason });
+      else await user.update({ reason: null });
+
+      await sendNotificationService({
+        title: `Your ColdStorage is ${status}`,
+        description,
+        senderId: currentUser.id,
+        receiverId: user.userId,
+        referenceType: NotificationType.COLD_STORAGE,
+        referenceId: entityId,
+      });
+    }
+
     if (agentOnboardedUser) {
       await agentOnboardedUser.update({ statusOfRegistration: status });
     }
@@ -1401,7 +1442,9 @@ export const getUserTypeProfileDetails = async (userId) => {
 
 export const updatePbVerificationService = async (
   userId,
-  pbVerificationStatus
+  pbVerificationStatus,
+  reason,
+  id
 ) => {
   const user = await User.findByPk(userId);
 
@@ -1452,7 +1495,26 @@ export const updatePbVerificationService = async (
   user.pbVerificationStatus = pbVerificationStatus;
   user.pbVerified = pbVerificationStatus === PB_VERIFICATION_STATUS.APPROVED;
 
+if (pbVerificationStatus === PB_VERIFICATION_STATUS.REJECTED) {
+    user.reason = reason || null;
+  } else {
+    user.reason = null;
+  }
   await user.save();
+
+    const description =
+      user.pbVerificationStatus == PB_VERIFICATION_STATUS.APPROVED
+        ? `Your Buy Request is ${pbVerificationStatus}`
+        : user.reason;
+
+    await sendNotificationService({
+      title: `Your PB Verification Request is ${pbVerificationStatus}`,
+      description,
+      senderId: id,
+      receiverId: userId,
+      referenceType: NotificationType.USER_PB_VERIFICATION,
+      referenceId: userId,
+    });
 
   return {
     statusCode: 200,
@@ -1486,9 +1548,15 @@ export const requestPbVerificationService = async (userId) => {
       traderExists,
       coldStoageHirerExists,
     ] = await Promise.all([
-      Farmer.findOne({ where: { userId } }),
-      ColdStorage.findOne({ where: { userId } }),
-      Trader.findOne({ where: { userId } }),
+      Farmer.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
+      ColdStorage.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
+      Trader.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
       ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
     ]);
     const step2Completed =
@@ -1552,6 +1620,20 @@ export const requestPbVerificationService = async (userId) => {
 
   await user.save();
 
+     const superAdmin = await User.findOne({
+       where: { role: USER_ROLES.SUPER_ADMIN },
+     });
+
+     await sendNotificationService({
+       title: "PB Verification Request",
+       description: "New PB Verification Request has been created.",
+       senderId: userId,
+       receiverId: superAdmin.id,
+       referenceType: NotificationType.USER_PB_VERIFICATION,
+       referenceId: userId,
+     });
+
+
   return {
     statusCode: 200,
     success: true,
@@ -1581,9 +1663,15 @@ export const getPbVerificationStepStatusService = async (userId: number) => {
   // Step 2: Complete role information
   const [farmerExists, coldStorageExists, traderExists, coldStoageHirerExists] =
     await Promise.all([
-      Farmer.findOne({ where: { userId } }),
-      ColdStorage.findOne({ where: { userId } }),
-      Trader.findOne({ where: { userId } }),
+      Farmer.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
+      ColdStorage.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
+      Trader.findOne({
+        where: { userId, status: REGISTRATION_STATUS.APPROVED },
+      }),
       ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
     ]);
   const step2Completed =
@@ -1668,4 +1756,146 @@ export const updateUserMobileNumber = async (
   return {
     success: true,
   };
+};
+
+export const globalSearchDB = async (q: string) => {
+  const term = `%${q}%`;
+  const now = new Date();
+
+  const coldStorages = ColdStorage.findAll({
+    where: {
+      [Op.or]: [
+        { name: { [Op.iLike]: term } },
+        { ownerName: { [Op.iLike]: term } },
+        { village: { [Op.iLike]: term } },
+        { district: { [Op.iLike]: term } },
+        { state: { [Op.iLike]: term } },
+      ],
+      isDeleted: false,
+      isAvailable: true,
+      status: REGISTRATION_STATUS.APPROVED,
+    },
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: [],
+        where: {
+          hasStartedUsingMobile : true,
+        },
+        required: true,
+      },
+    ],
+    limit: 10,
+  });
+
+  const events = Event.findAll({
+    where: {
+      [Op.or]: [
+        { title: { [Op.iLike]: term } },
+        { category: { [Op.iLike]: term } },
+        { location: { [Op.iLike]: term } },
+      ],
+      endDate: { [Op.gte]: now },
+    },
+    limit: 10,
+  });
+
+  const news = News.findAll({
+    where: {
+      [Op.or]: [
+        { title: { [Op.iLike]: term } },
+        { category: { [Op.iLike]: term } },
+        { description: { [Op.iLike]: term } },
+      ],
+      status: NEWS_STATUS.PUBLISHED,
+    },
+    limit: 10,
+  });
+
+  const mandis = MandiList.findAll({
+    where: {
+      [Op.or]: [
+        { mandiName: { [Op.iLike]: term } },
+        { address: { [Op.iLike]: term } },
+      ],
+      isDeleted: false,
+    },
+    include: [
+      {
+        model: MandiPrice,
+        as: "mandiPrices",
+        required: true,
+        attributes: [],
+      },
+    ],
+    limit: 10,
+  });
+
+  const buyRequests = BuyRequest.findAll({
+    where: {
+      [Op.or]: [
+        { potatoType: { [Op.iLike]: term } },
+        { potatoVariety: { [Op.iLike]: term } },
+        { additionalComment: { [Op.iLike]: term } },
+      ],
+      isActive: true,
+      status: BUY_REQUEST_STATUS.APPROVED,
+    },
+    limit: 10,
+  });
+
+  const sellRequests = SellRequest.findAll({
+    where: {
+      [Op.or]: [
+        { potatoType: { [Op.iLike]: term } },
+        { potatoVariety: { [Op.iLike]: term } },
+        { additionalComment: { [Op.iLike]: term } },
+        { location: { [Op.iLike]: term } },
+      ],
+      status: SELL_REQUEST_STATUS.APPROVED,
+      isActive: true,
+    },
+    limit: 10,
+  });
+
+  const schemes = GovernmentScheme.findAll({
+    where: {
+      [Op.or]: [
+        { title: { [Op.iLike]: term } },
+        { category: { [Op.iLike]: term } },
+        { state: { [Op.iLike]: term } },
+      ],
+      isActive: true,
+    },
+    limit: 10,
+  });
+
+  return Promise.all([
+    coldStorages,
+    events,
+    news,
+    mandis,
+    buyRequests,
+    sellRequests,
+    schemes,
+  ]).then(
+    ([
+      coldStorages,
+      events,
+      news,
+      mandis,
+      buyRequests,
+      sellRequests,
+      schemes,
+    ]) => ({
+      coldStorages,
+      events,
+      news,
+      mandis,
+      buyRequests,
+      sellRequests,
+      schemes,
+    })
+  );
 };

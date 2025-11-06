@@ -16,6 +16,7 @@ class CropDiagnosis extends Model<
   declare userId: number;
   declare disease: string | null;
   declare confidence: number | null;
+  declare image: string;
   declare diagnosis: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -38,6 +39,10 @@ CropDiagnosis.init(
       onDelete: "CASCADE",
     },
     disease: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    image: {
       type: DataTypes.STRING,
       allowNull: true,
     },

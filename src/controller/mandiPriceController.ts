@@ -13,6 +13,7 @@ import {
   retrieveDashboardStats,
   updateMandiPriceService,
 } from "../services/mandiPriceService";
+import { sendMandiNotificationToFarmers } from "../services/notificationService";
 import { parseFilters } from "../utils/parseQuery";
 
 export const createMandiPrice = async (req, res) => {
@@ -23,6 +24,8 @@ export const createMandiPrice = async (req, res) => {
 
     if (!response.success)
       return res.status(400).json({ success: false, message: response.error });
+
+    await sendMandiNotificationToFarmers(userId, response.data?.mandiPrice.id )
 
     return res.status(201).json({
       success: true,
@@ -175,7 +178,8 @@ export const deleteMandiPrice = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const response = await retrieveDashboardStats();
+    const { id } = req.user;
+    const response = await retrieveDashboardStats(id);
 
     return res.status(200).json({
       success: true,

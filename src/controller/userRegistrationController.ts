@@ -8,6 +8,19 @@ export const sendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
 
+    if (!mobile)
+      return res
+        .status(400)
+        .json({ success: false, message: "Mobile is required." });
+
+    const mobilePattern = /^[6-9]\d{9}$/;
+    if (!mobilePattern.test(mobile)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid 10-digit mobile number.",
+      });
+    }
+
     const isUserAlreadyExist = await UserRegistration.findOne({
       where: { mobile },
     });
@@ -125,6 +138,7 @@ export const getAndExportAllUserRegistrations = async (req, res) => {
         { fullName: { [Op.iLike]: `%${search}%` } },
         { mobile: { [Op.iLike]: `%${search}%` } },
         { villageOrCity: { [Op.iLike]: `%${search}%` } },
+        { district: { [Op.iLike]: `%${search}%` } },
       ];
     }
 
@@ -190,5 +204,31 @@ export const getAndExportAllUserRegistrations = async (req, res) => {
       message: "Failed to fetch user registrations",
       error: error.message,
     });
+  }
+};
+
+export const deleteUserRegistration = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const userRegistration = await UserRegistration.findByPk(id);
+    if (!userRegistration) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User Registration not found" });
+    }
+
+    await userRegistration.destroy();
+    return res.status(200).json({
+      success: true,
+      message: "User Registration deleted successfully",
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: err.message || "Failed in deleting user registration.",
+      });
   }
 };

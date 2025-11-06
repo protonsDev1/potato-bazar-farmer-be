@@ -21,6 +21,13 @@ export const createEventSchema = Joi.object({
   website: Joi.string().optional().allow(null, ""),
   contactUrl: Joi.string().optional().allow(null, ""),
   isFeatured: Joi.boolean().optional().allow(null, ""),
+  banner: Joi.object({
+    image: Joi.string().required(),
+    startDate: Joi.string().required(),
+    endDate: Joi.string().required(),
+  })
+    .optional()
+    .allow(null),
 });
 
 export const updateEventSchema = Joi.object({
@@ -43,10 +50,24 @@ export const updateEventSchema = Joi.object({
   website: Joi.string().optional().allow(null, ""),
   contactUrl: Joi.string().optional().allow(null, ""),
   isFeatured: Joi.boolean().optional().allow(null, ""),
+  banner: Joi.object({
+    image: Joi.string().required(),
+    startDate: Joi.string().required(),
+    endDate: Joi.string().required(),
+  })
+    .optional()
+    .allow(null),
 });
 
 export const updateEventStatusSchema = Joi.object({
   status: Joi.string()
     .valid(EVENT_REQUEST_STATUS.APPROVED, EVENT_REQUEST_STATUS.REJECTED)
     .required(),
+});
+
+export const registerOnEventSchema = Joi.object({
+  name: Joi.string().required(),
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/),
 });

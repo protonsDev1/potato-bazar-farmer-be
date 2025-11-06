@@ -67,7 +67,7 @@ export const listSubAdminsService = async ({ search, page, limit }) => {
     distinct: true,
     offset,
     limit,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const subAdmins = rows.map((subAdmin) => {

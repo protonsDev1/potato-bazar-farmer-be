@@ -23,6 +23,7 @@ import {
   forgotPasswordVerifyOtpSchema,
   mobileUserPBVerificationSchema,
   mandiAgentUpdateSchema,
+  
 } from "../validation/userValidator";
 import {
   agentLogin,
@@ -67,6 +68,7 @@ import {
   getMandiAgentProfile,
   updateOwnMandiAgentProfile,
   verifyAndUpdateNewNumber,
+  globalSearchController
 } from "../controller/user";
 import {
   adminMiddleware,
@@ -301,10 +303,11 @@ router.put(
 );
 
 router.post(
-  "/mobile/verify_and_update",        // api to update mobile number for mobile users
+  "/mobile/verify_and_update",        
   authMiddleware,
   verifyAndUpdateNewNumber
 );
 
+router.get("/global-search", globalSearchController);
 
 export default router;

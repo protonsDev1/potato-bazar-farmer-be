@@ -173,6 +173,7 @@ export const updateRegistrationStatusSchema = Joi.object({
   status: Joi.string().required(),
   userType: Joi.string().required(),
   userId: Joi.string().required(),
+  reason: Joi.string().optional().allow(null, ""),
 });
 
 export const mobileLoginSchema = Joi.object({
@@ -253,4 +254,11 @@ export const mobileUserPBVerificationSchema = Joi.object({
   pbVerificationStatus: Joi.string()
     .valid(...Object.values(PB_VERIFICATION_STATUS))
     .required(),
+  reason: Joi.when("pbVerificationStatus", {
+    is: PB_VERIFICATION_STATUS.REJECTED,
+    then: Joi.string().required().messages({
+      "any.required": "reason is required when rejecting PB verification",
+    }),
+    otherwise: Joi.string().optional().allow(null, ""),
+  }),
 });

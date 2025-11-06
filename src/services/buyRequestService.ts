@@ -49,6 +49,7 @@ export const createBuyRequestService = async (userId: number, data: any) => {
     productionDate: data.productionDate,
     organicCertified: data.organicCertified,
     status: BUY_REQUEST_STATUS.PENDING,
+    isActive: false,
   });
 
   return newRequest;
@@ -143,7 +144,7 @@ export const listBuyRequestsService = async (
     include,
     limit: Number(perPage),
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const requestsWithFavourite = rows.map((req: any) => ({
@@ -221,7 +222,7 @@ export const listMyBuyRequestsService = async (
     ],
     limit: Number(perPage),
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const requestsWithCounts = await Promise.all(
@@ -287,7 +288,7 @@ export const listAdminBuyRequestsService = async (query: any) => {
     ],
     limit: Number(perPage),
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const [totalRequests, approvedCount, pendingCount, rejectedCount] =
@@ -450,6 +451,31 @@ export const updateBuyRequestService = async (
     };
   }
 
+  if (request.status === BUY_REQUEST_STATUS.APPROVED) {
+    if (
+      Object.keys(payload).length === 1 &&
+      payload.hasOwnProperty("isActive")
+    ) {
+      await request.update({ isActive: payload.isActive });
+      return {
+        statusCode: 200,
+        success: true,
+        message: "Sell request status updated successfully",
+        data: request,
+      };
+    }
+
+    return {
+      statusCode: 400,
+      success: false,
+      message: "Approved buy requests cannot be modified",
+    };
+  }
+
+  if (request.status === BUY_REQUEST_STATUS.REJECTED) {
+    payload.status = BUY_REQUEST_STATUS.PENDING;
+  }
+
   await request.update(payload);
 
   return {
@@ -460,7 +486,11 @@ export const updateBuyRequestService = async (
   };
 };
 
-export const updateBuyRequestStatusService = async (requestId, status) => {
+export const updateBuyRequestStatusService = async (
+  requestId,
+  status,
+  reason
+) => {
   const buyRequest = await BuyRequest.findByPk(requestId);
 
   if (!buyRequest) {
@@ -468,6 +498,13 @@ export const updateBuyRequestStatusService = async (requestId, status) => {
   }
 
   buyRequest.status = status;
+
+  if (status === BUY_REQUEST_STATUS.REJECTED) {
+    buyRequest.reason = reason || null;
+  } else {
+    buyRequest.reason = null;
+  }
+
   await buyRequest.save();
 
   return buyRequest;

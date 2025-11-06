@@ -813,6 +813,7 @@ export async function getColdStorage(
     if (listingType === "others") {
       whereCondition.userId = { [Op.ne]: userId };
       whereCondition.isAvailable = true;
+      whereCondition.status = REGISTRATION_STATUS.APPROVED;
       userInclude.where = { hasStartedUsingMobile: true };
       userInclude.required = true;
     }
@@ -983,6 +984,7 @@ export async function getColdStorage(
         "updatedAt",
         "onBoardedBy",
         "status",
+        "reason",
         "isAvailable",
       ],
       where: whereCondition,
@@ -1039,6 +1041,7 @@ export async function getColdStorage(
           storageTypes: item.storageTypes,
           onBoardedBy: item.onBoardedBy,
           status: item.status,
+          reason: item.reason,
           isAvailable: item.isAvailable,
           isLiked: !!likedRecord,
           likeCount,

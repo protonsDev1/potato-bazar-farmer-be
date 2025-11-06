@@ -1,7 +1,7 @@
 import Joi from "joi";
 
 export const createKycSchema = Joi.object({
-  panFront: Joi.string().uri().optional().messages({
+  panFront: Joi.string().uri().allow(null, "").optional().messages({
     "string.uri": "PAN Front must be a valid URL",
   }),
   aadhaarFront: Joi.string().uri().required().messages({
@@ -12,8 +12,8 @@ export const createKycSchema = Joi.object({
     "any.required": "Aadhaar Back is required",
     "string.uri": "Aadhaar Back must be a valid URL",
   }),
-  gstNumber: Joi.string().optional(),
-  fssaiNumber: Joi.string().optional(),
+  gstNumber: Joi.string().allow(null, "").optional(),
+  fssaiNumber: Joi.string().allow(null, "").optional(),
 });
 
 export const updateKycStatusSchema = Joi.object({

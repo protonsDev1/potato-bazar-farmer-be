@@ -62,8 +62,10 @@ class BuyRequest extends Model<
   declare organicCertified: boolean;
   declare isVerified: boolean;
   declare status: BUY_REQUEST_STATUS;
+  declare reason: string | null;
   declare isAdminVerified: boolean;
   declare isActive: boolean;
+  declare shapeType: string | null;
   declare buyFavourites?: FavouriteRequest[];
   declare views?: RequestView[];
   declare createdAt: CreationOptional<Date>;
@@ -215,9 +217,16 @@ BuyRequest.init(
       type: DataTypes.STRING,
       defaultValue: BUY_REQUEST_STATUS.PENDING,
     },
+    reason: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     isAdminVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    shapeType: {
+      type: DataTypes.STRING,
     },
     isActive: {
       type: DataTypes.BOOLEAN,

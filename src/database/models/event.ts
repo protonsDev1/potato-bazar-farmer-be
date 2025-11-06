@@ -7,6 +7,7 @@ import {
 } from "sequelize";
 
 import sequelize from "./db";
+import Banner from "./banner";
 
 class Event extends Model<
   InferAttributes<Event>,
@@ -32,6 +33,7 @@ class Event extends Model<
   declare website: string;
   declare contactUrl: string;
   declare isFeatured: boolean;
+  declare banner?: Banner;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }

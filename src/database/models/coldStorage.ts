@@ -88,9 +88,11 @@ class ColdStorage extends Model<InferAttributes<ColdStorage>, InferCreationAttri
   declare state: string;
   declare isDeleted: boolean;
   declare status: string;
+  declare reason: Text;
   declare isAvailable: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare user?:User;
 }
 
 ColdStorage.init({
@@ -216,6 +218,10 @@ ColdStorage.init({
   status: {
     type: DataTypes.STRING,
     defaultValue: REGISTRATION_STATUS.PENDING
+  },
+  reason: {
+   type: DataTypes.TEXT,
+   allowNull: true,
   },
   isAvailable: {
     type: DataTypes.BOOLEAN,

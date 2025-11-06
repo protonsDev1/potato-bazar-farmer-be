@@ -3,6 +3,7 @@ import News from "../database/models/news";
 import { USER_ROLES } from "../database/models/user";
 import State from "../database/models/state";
 import District from "../database/models/district";
+import NewsView from "../database/models/newsView";
 
 export const createNewsService = async (payload) => {
   const news = await News.create(payload);
@@ -19,10 +20,11 @@ export const listNewsService = async ({
   page,
   limit,
   category,
+  status,
   isFeatured,
   stateId,
   districtId,
-  date,
+  date
 }) => {
   const whereClause: any = {};
 
@@ -33,45 +35,48 @@ export const listNewsService = async ({
     ];
   }
 
-  if (category) {
-    whereClause.category = category;
-  }
-
-  if (isFeatured && isFeatured === "true") {
-    whereClause.isFeatured = true;
-  }
-
+  if (category) whereClause.category = category;
+  if (status) whereClause.status = status;
+  if (isFeatured === "true") whereClause.isFeatured = true;
   if (stateId) whereClause.stateId = stateId;
-
   if (districtId) whereClause.districtId = districtId;
-
-  if (date) {
-    const start = new Date(date);
-    const end = new Date(date);
-    end.setDate(end.getDate() + 1);
-    whereClause.createdAt = { [Op.between]: [start, end] };
-  }
 
   const offset = (page - 1) * limit;
 
+  // Fetch paginated records (sorted latest first)
   const { rows, count } = await News.findAndCountAll({
     where: whereClause,
     include: [
-      {
-        model: State,
-        as: "state",
-        attributes: ["id", "name"],
-      },
-      {
-        model: District,
-        as: "district",
-        attributes: ["id", "name"],
-      },
+      { model: State, as: "state", attributes: ["id", "name"] },
+      { model: District, as: "district", attributes: ["id", "name"] },
     ],
     offset,
     limit,
+    order: [["updatedAt", "DESC"]],
+  });
+
+  // Fetch ALL records separately for latest 2 selection
+  const allNews = await News.findAll({
+    where: whereClause,
     order: [["createdAt", "DESC"]],
   });
+
+  // Take top latest 2 records
+  const latestTwoNews = allNews.slice(0, 2);
+
+  const newsWithViews = await Promise.all(
+    rows.map(async (news) => {
+      const views = await NewsView.count({ where: { newsId: news.id } });
+      return { ...news.toJSON(), views };
+    })
+  );
+
+  const latestTwoWithViews = await Promise.all(
+    latestTwoNews.map(async (news) => {
+      const views = await NewsView.count({ where: { newsId: news.id } });
+      return { ...news.toJSON(), views };
+    })
+  );
 
   return {
     success: true,
@@ -81,10 +86,12 @@ export const listNewsService = async ({
       total: count,
       page,
       perPage: limit,
-      news: rows,
+      news: newsWithViews,
+      latestTwoNews: latestTwoWithViews, // ✅ added
     },
   };
 };
+
 
 export const getNewsByIdService = async (id, user) => {
   const news = await News.findOne({
@@ -111,10 +118,14 @@ export const getNewsByIdService = async (id, user) => {
     };
   }
 
-  // Increment view count only if not super admin
-  if (!user || user.role !== USER_ROLES.SUPER_ADMIN) {
-    await news.increment("views");
+  if (user && user.role !== USER_ROLES.SUPER_ADMIN) {
+    await NewsView.findOrCreate({
+      where: { userId: user.id, newsId: id },
+      defaults: { userId: user.id, newsId: id },
+    });
   }
+
+  const viewCount = await NewsView.count({ where: { newsId: id } });
 
   const relatedNews = await News.findAll({
     where: {
@@ -144,7 +155,7 @@ export const getNewsByIdService = async (id, user) => {
     statusCode: 200,
     message: "News fetched successfully",
     data: {
-      news,
+      news: { ...news.toJSON(), views: viewCount },
       relatedNews,
     },
   };

@@ -53,6 +53,7 @@ export const createSellRequestService = async (userId: number, data: any) => {
     images: data.images,
     location: data.location,
     status: SELL_REQUEST_STATUS.PENDING,
+    isActive: false,
   });
 
   return newRequest;
@@ -147,7 +148,7 @@ export const listSellRequestsService = async (
     include,
     limit: Number(perPage),
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const requestsWithFavourite = rows.map((req: any) => ({
@@ -225,7 +226,7 @@ export const listMySellRequestsService = async (
     ],
     limit: Number(perPage),
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const requestsWithCounts = await Promise.all(
@@ -291,7 +292,7 @@ export const listAdminSellRequestsService = async (query: any) => {
     ],
     limit: Number(perPage),
     offset,
-    order: [["createdAt", "DESC"]],
+    order: [["updatedAt", "DESC"]],
   });
 
   const [totalRequests, approvedCount, pendingCount, rejectedCount] =
@@ -457,6 +458,31 @@ export const updateSellRequestService = async (
     };
   }
 
+  if (request.status === SELL_REQUEST_STATUS.APPROVED) {
+    if (
+      Object.keys(payload).length === 1 &&
+      payload.hasOwnProperty("isActive")
+    ) {
+      await request.update({ isActive: payload.isActive });
+      return {
+        statusCode: 200,
+        success: true,
+        message: "Sell request status updated successfully",
+        data: request,
+      };
+    }
+
+    return {
+      statusCode: 400,
+      success: false,
+      message: "Approved sell requests cannot be modified",
+    };
+  }
+
+  if (request.status === SELL_REQUEST_STATUS.REJECTED) {
+    payload.status = SELL_REQUEST_STATUS.PENDING;
+  }
+
   await request.update(payload);
 
   return {
@@ -467,7 +493,11 @@ export const updateSellRequestService = async (
   };
 };
 
-export const updateSellRequestStatusService = async (requestId, status) => {
+export const updateSellRequestStatusService = async (
+  requestId,
+  status,
+  reason
+) => {
   const sellRequest = await SellRequest.findByPk(requestId);
 
   if (!sellRequest) {
@@ -475,6 +505,13 @@ export const updateSellRequestStatusService = async (requestId, status) => {
   }
 
   sellRequest.status = status;
+
+  if (status === SELL_REQUEST_STATUS.REJECTED) {
+    sellRequest.reason = reason || null;
+  } else {
+    sellRequest.reason = null;
+  }
+
   await sellRequest.save();
 
   return sellRequest;
