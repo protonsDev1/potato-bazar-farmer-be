@@ -76,17 +76,20 @@ export const markAsRead = async (req, res) => {
 export const myNotificationList = async (req, res) => {
   try {
     const { id: userId } = req.user;
-    let { page = 1, perPage: limit = 10 } = req.query;
+    let { page = 1, perPage: limit = 10, isRead } = req.query;
 
     page = Number(page);
     limit = Number(limit);
 
     const offset = (page - 1) * limit;
+    const where: any = { receiverId: userId };
+
+    if (isRead !== undefined) {
+      where.isRead = isRead === "true";
+    }
 
     const { rows, count } = await Notification.findAndCountAll({
-      where: {
-        receiverId: userId,
-      },
+      where,
       order: [
         [literal('CASE WHEN "isRead" = false THEN 0 ELSE 1 END'), "ASC"], // unread first
         ["createdAt", "DESC"], // newest on top
