@@ -173,7 +173,7 @@ export const updateBuyRequestStatus = async (req, res) => {
       referenceId: updatedRequest.id,
     });
 
-    if (status === BUY_REQUEST_STATUS.APPROVED)
+    if (status === BUY_REQUEST_STATUS.APPROVED && updatedRequest.isActive === true)
       await sendNotificationToMatchingSellers(id, updatedRequest.id);
 
     return res.json({
