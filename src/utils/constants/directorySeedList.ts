@@ -119,3 +119,41 @@ export const directoryData = [
     ],
   },
 ];
+
+export const directoryPlans = [
+  {
+    name: "PB Diamond",
+    priority: 1,
+    homePagePosition: "Top Featured",
+    categoryPagePosition: "Top",
+    slotLimit: "Max 6 Overall",
+  },
+  {
+    name: "PB Platinum",
+    priority: 2,
+    homePagePosition: "Not shown",
+    categoryPagePosition: "After diamond",
+    slotLimit: "Max 4 per category",
+  },
+  {
+    name: "PB Gold",
+    priority: 3,
+    homePagePosition: "Not shown",
+    categoryPagePosition: "3rd Position",
+    slotLimit: "Max 6 per category",
+  },
+  {
+    name: "PB Silver",
+    priority: 4,
+    homePagePosition: "Not shown",
+    categoryPagePosition: "4th Position",
+    slotLimit: "Max 8 per category",
+  },
+  {
+    name: "PB Free",
+    priority: 5,
+    homePagePosition: "Not shown",
+    categoryPagePosition: "Below Paid Plans",
+    slotLimit: "No limit",
+  },
+];

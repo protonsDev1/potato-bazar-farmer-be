@@ -1,10 +1,6 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import {
-  adminOrSubAdminMiddleware,
-  checkPermissionMiddleware,
-  superAdminMiddleware,
-} from "../utils/userAuth";
+import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
 import {
   createDirectory,
   deleteDirectory,
@@ -12,6 +8,8 @@ import {
   getDirectoryDetail,
   selfOnboardedDirectory,
   updateDirectory,
+  toggleSaveDirectory,
+  getDirectoryPlans,
 } from "../controller/directoryController";
 import {
   onboardDirectorySchema,
@@ -47,22 +45,18 @@ router.put(
   updateDirectory
 );
 
-router.get(
-  "/:directoryId",
-  checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
-  getDirectoryDetail
-);
+router.get("/plans", getDirectoryPlans);
 
-router.get(
-  "/",
-  checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
-  getDirectoryList
-);
+router.get("/", authMiddleware, getDirectoryList);
+
+router.get("/:directoryId", authMiddleware, getDirectoryDetail);
 
 router.delete(
   "/:id",
   checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
   deleteDirectory
 );
+
+router.post("/:directoryId/save", authMiddleware, toggleSaveDirectory);
 
 export default router;
