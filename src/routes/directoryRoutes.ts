@@ -26,14 +26,14 @@ router.post(
   "/create",
   checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
   validator.body(onboardDirectorySchema),
-  duplicationCheckMiddleware(Directory, "create"),
+  // duplicationCheckMiddleware(Directory, "create"),
   createDirectory
 );
 
 router.post(
   "/self_onboard",
   validator.body(onboardDirectorySchema),
-  duplicationCheckMiddleware(Directory, "create"),
+  // duplicationCheckMiddleware(Directory, "create"),
   selfOnboardedDirectory
 );
 
@@ -41,7 +41,7 @@ router.put(
   "/:directoryId",
   checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
   validator.body(updateDirectorySchema),
-  duplicationCheckMiddleware(Directory, "update", "directoryId"),
+  // duplicationCheckMiddleware(Directory, "update", "directoryId"),
   updateDirectory
 );
 
