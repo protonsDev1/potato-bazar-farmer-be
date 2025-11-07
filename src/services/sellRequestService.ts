@@ -409,6 +409,17 @@ export const deleteSellRequestService = async (
     };
   }
 
+  if (
+    request.status === SELL_REQUEST_STATUS.APPROVED &&
+    request.userId === user.id
+  ) {
+    return {
+      statusCode: 403,
+      success: false,
+      message: "You cannot delete a sell request after it has been approved.",
+    };
+  }
+
   const canDelete =
     request.userId === user.id || // owner
     user.role === USER_ROLES.SUPER_ADMIN || // super admin

@@ -103,9 +103,6 @@ GovernmentScheme.init(
     websiteUrl: {
       type: DataTypes.STRING,
       allowNull: true,
-      validate: {
-        isUrl: true,
-      },
     },
     ageLimit: {
       type: DataTypes.STRING,
@@ -114,9 +111,6 @@ GovernmentScheme.init(
     contactUrl: {
       type: DataTypes.STRING,
       allowNull: true,
-      validate: {
-        isUrl: true,
-      },
     },
     isActive: {
       type: DataTypes.BOOLEAN,
