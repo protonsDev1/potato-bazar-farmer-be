@@ -2,7 +2,6 @@ import { createValidator } from "express-joi-validation";
 import express from "express";
 
 import { checkPermissionMiddleware } from "../../../utils/userAuth";
-import { potatoSubVarietySchema } from "../../../validation/adminValidation";
 import {
   addDirectorySubCategory,
   deleteDirectorySubCategory,
@@ -11,6 +10,7 @@ import {
   updateDirectorySubCategory,
 } from "../../../controller/adminController/directory/directorySubCategoryController";
 import { PERMISSIONS } from "../../../utils/constants/permissions";
+import { directorySubCategorySchema } from "../../../validation/directoryValidation";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -18,7 +18,7 @@ const validator = createValidator({});
 router.post(
   "/",
   checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
-  validator.body(potatoSubVarietySchema),
+  validator.body(directorySubCategorySchema),
   addDirectorySubCategory
 );
 

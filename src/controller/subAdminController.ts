@@ -22,7 +22,7 @@ export const createSubAdmin = async (req, res) => {
     if (subAdmin.email) {
       const loginUrl =
         process.env.NODE_ENV === "production"
-          ? "https://app-admin-pb.vercel.app/login"
+          ? "https://manage.potatobazaar.com/login"
           : "https://app-admin-pb.vercel.app/login";
 
       const html = renderTemplate("subAdminCredentials", {

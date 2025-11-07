@@ -4,11 +4,14 @@ import {
   retrieveDirectoryProfile,
   getDirectoryListByAdmin,
   deleteDirectoryById,
-  validateCategoryMappingsPayload,
+  toggleSaveDirectoryService,
+  getDirectoryPlansService,
 } from "../services/directoryService";
-import { findUserByPkInDB, updateUserInDB } from "../services/userServices";
+import { findUserByPkInDB } from "../services/userServices";
 import { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
 import Directory from "../database/models/directory";
+import { parseFilters } from "../utils/parseQuery";
+import DirectoryPlan from "../database/models/directoryPlan";
 
 export const createDirectory = async (req, res) => {
   try {
@@ -18,13 +21,10 @@ export const createDirectory = async (req, res) => {
     const user = await findUserByPkInDB(userId);
     if (!user.success) return res.status(400).json({ message: user.error });
 
-    if (req.body.categoryMappings) {
-      const validation = validateCategoryMappingsPayload(
-        req.body.categoryMappings
-      );
-      if (!validation.ok)
-        return res.status(400).json({ message: validation.message });
-    }
+    if (!req.body.planId)
+      return res.status(400).json({ message: "planId is required" });
+    const plan = await DirectoryPlan.findByPk(req.body.planId);
+    if (!plan) return res.status(400).json({ message: "Invalid planId" });
 
     const directory = await onboardDirectory(req.body);
     return res.status(201).json({ message: "Directory created", directory });
@@ -40,16 +40,19 @@ export const selfOnboardedDirectory = async (req, res) => {
     const userId = req.body.userId;
     req.body.onBoardedBy = userId;
 
+    const pbFree = await DirectoryPlan.findOne({
+      where: { name: "PB Free" },
+    });
+    if (!pbFree)
+      return res.status(500).json({ message: "PB Free plan not found" });
+
+    req.body.planId = pbFree.id;
+    req.body.status = REGISTRATION_STATUS.PENDING;
+    delete req.body.planStartDate;
+    delete req.body.planEndDate;
+
     const user = await findUserByPkInDB(userId);
     if (!user.success) return res.status(400).json({ message: user.error });
-
-    if (req.body.categoryMappings) {
-      const validation = validateCategoryMappingsPayload(
-        req.body.categoryMappings
-      );
-      if (!validation.ok)
-        return res.status(400).json({ message: validation.message });
-    }
 
     const directory = await onboardDirectory(req.body);
     return res
@@ -79,12 +82,9 @@ export const updateDirectory = async (req, res) => {
       return res.status(403).json({ message: "Directory already approved" });
     }
 
-    if (payload.categoryMappings) {
-      const validation = validateCategoryMappingsPayload(
-        payload.categoryMappings
-      );
-      if (!validation.ok)
-        return res.status(400).json({ message: validation.message });
+    if (payload.planId) {
+      const plan = await DirectoryPlan.findByPk(payload.planId);
+      if (!plan) return res.status(400).json({ message: "Invalid planId" });
     }
 
     const updatedDirectory = await updateDirectoryService(directoryId, payload);
@@ -132,7 +132,7 @@ export const getDirectoryDetail = async (req, res) => {
 export const getDirectoryList = async (req, res) => {
   try {
     const { page, perPage, search, sortBy } = req.query;
-    const filters = req.query;
+    const filters = parseFilters(req.query);
 
     const directoryList = await getDirectoryListByAdmin(
       page,
@@ -166,5 +166,47 @@ export const deleteDirectory = async (req, res) => {
     return res
       .status(500)
       .json({ message: error.message || "Failed to delete directory" });
+  }
+};
+
+export const toggleSaveDirectory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const directoryId = Number(req.params.directoryId);
+
+    const dir = await Directory.findByPk(directoryId);
+    if (!dir)
+      return res
+        .status(404)
+        .json({ success: false, message: "Directory not found" });
+
+    const result: any = await toggleSaveDirectoryService(userId, directoryId);
+
+    if (!result.success) return res.status(result.status || 400).json(result);
+
+    const status = result.action === "saved" ? 201 : 200;
+    const responseData = result.action === "saved" ? result.data : null;
+
+    return res.status(status).json({
+      success: true,
+      action: result.action,
+      data: responseData,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const getDirectoryPlans = async (req, res) => {
+  try {
+    const plans = await getDirectoryPlansService();
+    return res.status(200).json({ success: true, data: plans });
+  } catch (err) {
+    console.error("getDirectoryPlans error:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to fetch plans",
+    });
   }
 };
