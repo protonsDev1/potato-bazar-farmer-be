@@ -20,7 +20,7 @@ export const createMandiAgent = async (req, res) => {
     if (user.email) {
       const loginUrl =
         process.env.NODE_ENV === "production"
-          ? "https://app-admin-pb.vercel.app/login-mandi-agent"
+          ? "https://manage.potatobazaar.com/login-mandi-agent"
           : "https://app-admin-pb.vercel.app/login-mandi-agent";
 
       const html = renderTemplate("mandiAgentCredentials", {
