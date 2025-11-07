@@ -102,7 +102,6 @@ export const updateDirectory = async (req, res) => {
 export const getDirectoryDetail = async (req, res) => {
   try {
     const { directoryId } = req.params;
-    const { role, id } = req.user;
 
     const directory = await Directory.findOne({ where: { id: directoryId } });
     if (!directory)
