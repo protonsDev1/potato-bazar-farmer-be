@@ -41,7 +41,7 @@ export const onboardDirectorySchema = Joi.object({
   status: Joi.string().optional().allow(null, ""),
   isActive: Joi.boolean().optional(),
 
-  userId: Joi.number().required(),
+  userId: Joi.number().optional().allow(null, ""),
   onBoardedBy: Joi.number().optional().allow(null),
 
   socialMedia: Joi.object({

@@ -29,6 +29,8 @@ import GovernmentScheme from "../database/models/govScheme";
 import { sendNotificationService } from "./notificationService";
 import { NotificationType } from "../database/models/notification";
 import MandiPrice from "../database/models/mandiPrice";
+import Directory from "../database/models/directory";
+import { retrieveDirectoryProfile } from "./directoryService";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -1392,7 +1394,7 @@ export const getUserTypeProfileDetails = async (userId) => {
       error: "Only Mobile user's profile can be viewed here.",
     };
 
-  const [isFarmer, isColdStorage, isTrader, coldStorageList] =
+  const [isFarmer, isColdStorage, isTrader, coldStorageList, isDirectory] =
     await Promise.all([
       Farmer.findOne({ where: { userId } }),
       ColdStorage.findOne({ where: { userId } }),
@@ -1416,9 +1418,10 @@ export const getUserTypeProfileDetails = async (userId) => {
           "isAvailable",
         ],
       }),
+      Directory.findOne({ where: { userId } }),
     ]);
 
-  let farmerProfile, traderProfile;
+  let farmerProfile, traderProfile, directoryProfile;
 
   if (isFarmer)
     farmerProfile = await retrieveFarmerProfile(String(isFarmer.id), false);
@@ -1426,15 +1429,20 @@ export const getUserTypeProfileDetails = async (userId) => {
   if (isTrader)
     traderProfile = await retrieveTraderProfile(String(isTrader.id), false);
 
+  if (isDirectory)
+    directoryProfile = await retrieveDirectoryProfile(String(isDirectory.id));
+
   return {
     success: true,
     data: {
       isFarmerOnboarded: !!isFarmer,
       isColdStorageOnboarded: !!isColdStorage,
       isTraderOnboarded: !!isTrader,
+      isDirectory: !!isDirectory,
       userDetail,
       farmerProfile,
       traderProfile,
+      directoryProfile,
       coldStorageList,
     },
   };
