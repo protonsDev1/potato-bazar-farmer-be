@@ -198,10 +198,8 @@ export const getDashboardStats = async (req, res) => {
 
 export const getCitiesWithMandisController = async (req, res) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
 
-    const allCities = await listCitiesWithMandis(page, limit);
+    const allCities = await listCitiesWithMandis();
 
     return res.status(200).json({
       success: true,

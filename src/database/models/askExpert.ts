@@ -7,7 +7,7 @@ import {
 } from "sequelize";
 
 import sequelize from "./db";
-import CropDiagnosis from "./cropDiagnosis";
+import User from "./user";
 
 export enum QUERY_STATUS {
   CLOSE = "close",
@@ -19,7 +19,7 @@ class AskExpert extends Model<
   InferCreationAttributes<AskExpert>
 > {
   declare id: number;
-  declare cropDiagnosedId: number;
+  declare userId: number;
   declare query: Text;
   declare response: Text;
   declare status: string;
@@ -30,11 +30,11 @@ class AskExpert extends Model<
 AskExpert.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-    cropDiagnosedId: {
+    userId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
-        model: CropDiagnosis,
+        model: User,
         key: "id",
       },
       onDelete: "CASCADE",
@@ -68,9 +68,9 @@ AskExpert.init(
 
 // Associations
 
-AskExpert.belongsTo(CropDiagnosis, {
-  foreignKey: "cropDiagnosedId",
-  as: "cropDiagnosed",
+AskExpert.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
 });
 
 export default AskExpert;
