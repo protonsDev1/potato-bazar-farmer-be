@@ -1,10 +1,27 @@
-import { Model, DataTypes } from "sequelize";
+import {
+  Model,
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+  ForeignKey,
+} from "sequelize";
 import sequelize from "./db";
 import Directory from "./directory";
 import DirectoryCategory from "./directoryCategory";
 import DirectorySubCategory from "./directorySubCategory";
 
-class DirectoryCategoryMapping extends Model {}
+class DirectoryCategoryMapping extends Model<
+  InferAttributes<DirectoryCategoryMapping>,
+  InferCreationAttributes<DirectoryCategoryMapping>
+> {
+  declare id: CreationOptional<number>;
+  declare directoryId: ForeignKey<Directory["id"]>;
+  declare categoryId: ForeignKey<DirectoryCategory["id"]>;
+  declare subCategoryId: ForeignKey<DirectorySubCategory["id"]> | null;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
+}
 
 DirectoryCategoryMapping.init(
   {
@@ -39,6 +56,14 @@ DirectoryCategoryMapping.init(
         key: "id",
       },
       onDelete: "CASCADE",
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
   },
   {

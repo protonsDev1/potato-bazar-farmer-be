@@ -1,4 +1,4 @@
-import { Model, DataTypes } from "sequelize";
+import { Model, DataTypes, DATE } from "sequelize";
 import sequelize from "./db";
 import Directory from "./directory";
 
@@ -17,6 +17,8 @@ DirectoryMedia.init(
     images: DataTypes.ARRAY(DataTypes.STRING),
     videos: DataTypes.ARRAY(DataTypes.STRING),
     brochures: DataTypes.ARRAY(DataTypes.STRING),
+    news: DataTypes.TEXT,
+    events: DataTypes.TEXT,
   },
   {
     sequelize,
