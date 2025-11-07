@@ -481,8 +481,7 @@ export const retrieveDashboardStats = async (userId) => {
   };
 };
 
-export const listCitiesWithMandis = async (page = 1, limit = 10) => {
-  const offset = (page - 1) * limit;
+export const listCitiesWithMandis = async () => {
 
   const total = await City.count({
     include: [
@@ -524,8 +523,6 @@ export const listCitiesWithMandis = async (page = 1, limit = 10) => {
       [sequelize.col("City.position"), "ASC"],
       [sequelize.col("City.name"), "ASC"],
     ],
-    limit,
-    offset,
   });
 
   const cities = citiesWithMandis.map((city) => ({
@@ -537,9 +534,6 @@ export const listCitiesWithMandis = async (page = 1, limit = 10) => {
   return {
     cities,
     total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
   };
 };
 
