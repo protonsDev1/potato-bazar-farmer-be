@@ -1,4 +1,4 @@
-import { literal, Op } from "sequelize";
+import { Op } from "sequelize";
 
 import Notification, {
   NotificationType,
@@ -90,10 +90,7 @@ export const myNotificationList = async (req, res) => {
 
     const { rows, count } = await Notification.findAndCountAll({
       where,
-      order: [
-        [literal('CASE WHEN "isRead" = false THEN 0 ELSE 1 END'), "ASC"], // unread first
-        ["createdAt", "DESC"], // newest on top
-      ],
+      order: [["createdAt", "DESC"]], // newest on top
       limit,
       offset,
     });
