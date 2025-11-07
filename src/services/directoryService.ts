@@ -188,7 +188,7 @@ export async function updateDirectoryService(directoryId, payload) {
   });
 }
 
-export const retrieveDirectoryProfile = async (directoryId, currentUserId) => {
+export const retrieveDirectoryProfile = async (directoryId, currentUserId?) => {
   try {
     const [info, socialMedia, media, categoryMappings] = await Promise.all([
       Directory.findByPk(directoryId, {
