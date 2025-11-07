@@ -108,16 +108,10 @@ export const getDirectoryDetail = async (req, res) => {
     if (!directory)
       return res.status(404).json({ message: "Directory not found" });
 
-    if (
-      role !== USER_ROLES.SUPER_ADMIN &&
-      role !== USER_ROLES.SUB_ADMIN &&
-      directory.onBoardedBy !== id
-    )
-      return res
-        .status(403)
-        .json({ message: "Unauthorized to view this profile" });
-
-    const directoryData = await retrieveDirectoryProfile(directoryId);
+    const directoryData = await retrieveDirectoryProfile(
+      directoryId,
+      req.user?.id
+    );
     return res.status(200).json({
       message: "Fetched directory profile overview",
       directory: directoryData,
@@ -139,7 +133,8 @@ export const getDirectoryList = async (req, res) => {
       perPage,
       filters,
       search,
-      sortBy
+      sortBy,
+      req.user?.id
     );
     return res
       .status(200)

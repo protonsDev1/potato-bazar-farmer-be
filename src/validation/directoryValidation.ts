@@ -62,7 +62,7 @@ export const onboardDirectorySchema = Joi.object({
   subCategoryIds: Joi.array()
     .items(Joi.number().integer().positive())
     .required(),
-  planId: Joi.number().integer().positive().required(),
+  planId: Joi.number().integer().positive().optional(),
   planStartDate: Joi.date().iso().optional().allow(null),
   planEndDate: Joi.date().iso().optional().allow(null),
 });
