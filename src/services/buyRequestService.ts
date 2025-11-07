@@ -402,6 +402,17 @@ export const deleteBuyRequestService = async (user: any, requestId: number) => {
     };
   }
 
+  if (
+    request.status === BUY_REQUEST_STATUS.APPROVED &&
+    request.userId === user.id
+  ) {
+    return {
+      statusCode: 403,
+      success: false,
+      message: "You cannot delete a buy request after it has been approved.",
+    };
+  }
+
   const canDelete =
     request.userId === user.id || // owner
     user.role === USER_ROLES.SUPER_ADMIN || // super admin
