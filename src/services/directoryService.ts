@@ -156,7 +156,6 @@ export async function updateDirectoryService(directoryId, payload) {
         throw new Error("planEndDate must be after planStartDate");
     }
 
-    // remove subCategoryIds key from update data to avoid writing it in Directory
     const updateData = { ...payload };
 
     await directory.update(updateData, { transaction: t });
@@ -189,7 +188,7 @@ export async function updateDirectoryService(directoryId, payload) {
   });
 }
 
-export const retrieveDirectoryProfile = async (directoryId) => {
+export const retrieveDirectoryProfile = async (directoryId, currentUserId) => {
   try {
     const [info, socialMedia, media, categoryMappings] = await Promise.all([
       Directory.findByPk(directoryId, {
@@ -238,11 +237,20 @@ export const retrieveDirectoryProfile = async (directoryId) => {
       }),
     ]);
 
+    let isSaved = false;
+    if (currentUserId) {
+      const saved = await SavedDirectory.findOne({
+        where: { userId: currentUserId, directoryId },
+      });
+      isSaved = !!saved;
+    }
+
     return {
       info,
       socialMedia,
       media,
       categoryMappings,
+      isSaved,
     };
   } catch (err) {
     console.error("Error in retrieveDirectoryProfile:", err);
@@ -255,7 +263,8 @@ export const getDirectoryListByAdmin = async (
   limit = 10,
   filters: any = {},
   search?,
-  sortBy?
+  sortBy?,
+  currentUserId?: number
 ) => {
   try {
     const offset = (page - 1) * limit;
@@ -270,6 +279,8 @@ export const getDirectoryListByAdmin = async (
       categoryId,
       subCategoryId,
       planId,
+      isSaved,
+      industryServed,
     } = filters;
 
     if (status) whereCondition.status = status;
@@ -297,6 +308,13 @@ export const getDirectoryListByAdmin = async (
        })
     `),
       };
+    }
+
+    if (industryServed) {
+      const industry = String(industryServed).trim();
+      if (industry) {
+        whereCondition.industriesServed = { [Op.contains]: [industry] };
+      }
     }
 
     if (registrationDate && registrationDate.length === 2) {
@@ -356,44 +374,61 @@ export const getDirectoryListByAdmin = async (
       }
     }
 
+    const include: any[] = [
+      { model: User, as: "owner", attributes: ["id", "name", "mobile"] },
+      {
+        model: User,
+        as: "onboardedByUser",
+        attributes: ["id", "name", "email", "role", "mobile"],
+        where: Object.keys(onBoardedByUserWhere).length
+          ? onBoardedByUserWhere
+          : undefined,
+        required: Object.keys(onBoardedByUserWhere).length > 0,
+      },
+      {
+        model: DirectoryPlan,
+        as: "plan",
+        attributes: [
+          "id",
+          "name",
+          "priority",
+          "homePagePosition",
+          "categoryPagePosition",
+          "slotLimit",
+        ],
+        required: false,
+      },
+    ];
+
+    if (currentUserId) {
+      include.push({
+        model: SavedDirectory,
+        as: "savedDirectories",
+        attributes: ["id"],
+        required: isSaved === "true",
+        where: { userId: currentUserId },
+      });
+    }
+
     const { count, rows } = await Directory.findAndCountAll({
       where: whereCondition,
-      limit,
+      include,
+      limit: Number(limit),
       offset,
       order,
       distinct: true,
-      include: [
-        { model: User, as: "owner", attributes: ["id", "name", "mobile"] },
-        {
-          model: User,
-          as: "onboardedByUser",
-          attributes: ["id", "name", "email", "role", "mobile"],
-          where: Object.keys(onBoardedByUserWhere).length
-            ? onBoardedByUserWhere
-            : undefined,
-          required: Object.keys(onBoardedByUserWhere).length > 0,
-        },
-        {
-          model: DirectoryPlan,
-          as: "plan",
-          attributes: [
-            "id",
-            "name",
-            "priority",
-            "homePagePosition",
-            "categoryPagePosition",
-            "slotLimit",
-          ],
-          required: false,
-        },
-      ],
     });
+
+    const directories = rows.map((dir: any) => ({
+      ...dir.toJSON(),
+      isSaved: !!(dir.savedDirectories && dir.savedDirectories.length > 0),
+    }));
 
     return {
       totalCount: count,
       currentPage: Number(page),
       totalPages: Math.ceil(count / limit),
-      directories: rows,
+      directories,
     };
   } catch (err) {
     console.error(err);
