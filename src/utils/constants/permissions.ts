@@ -20,6 +20,7 @@ export const PERMISSIONS = {
   ASK_EXPERT: "ask_expert",
   ENDORSEMENT: "endorsement",
   PROMOTIONAL_BANNERS: "promotional_banners",
+  PROMOTION_REQUESTS: "promotion_requests",
 } as const;
 
 export type PermissionType = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

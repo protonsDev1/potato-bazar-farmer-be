@@ -8,11 +8,7 @@ import {
 } from "sequelize";
 import sequelize from "./db";
 import User, { REGISTRATION_STATUS } from "./user";
-import DirectoryCategory from "./directoryCategory";
-import DirectorySubCategory from "./directorySubCategory";
-import DirectorySocialMedia from "./directorySocialMedia";
-import DirectoryCategoryMapping from "./directoryCategoryMapping";
-import DirectoryMedia from "./directoryMedia";
+import DirectoryPlan from "./directoryPlan";
 
 class Directory extends Model<
   InferAttributes<Directory>,
@@ -33,11 +29,13 @@ class Directory extends Model<
   declare city: string | null;
   declare state: string | null;
   declare pinCode: string | null;
+  declare location: string | null;
 
   declare companyShortDescription: string | null;
   declare companyProfile: string | null;
   declare yearEstablished: string | null;
   declare numberOfEmployees: string | null;
+  declare annualRevenue: string | null;
   declare keyCapabilities: string | null;
   declare industriesServed: string[] | null;
 
@@ -47,6 +45,8 @@ class Directory extends Model<
   declare tags: string[] | null;
 
   declare subsidiaries: string | null;
+  declare technologyBrands: string | null;
+  declare associations: string | null;
   declare strategicPartnerships: string | null;
   declare certifications: string | null;
 
@@ -55,6 +55,9 @@ class Directory extends Model<
 
   declare userId: ForeignKey<User["id"]> | null;
   declare onBoardedBy: ForeignKey<User["id"]> | null;
+  declare planId: ForeignKey<DirectoryPlan["id"]> | null;
+  declare planStartDate: Date | null;
+  declare planEndDate: Date | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -75,10 +78,14 @@ Directory.init(
     city: DataTypes.STRING,
     state: DataTypes.STRING,
     pinCode: DataTypes.STRING,
+    location: DataTypes.STRING,
+
     companyShortDescription: DataTypes.STRING,
     companyProfile: DataTypes.TEXT,
     yearEstablished: DataTypes.STRING,
     numberOfEmployees: DataTypes.STRING,
+    annualRevenue: DataTypes.STRING,
+
     keyCapabilities: DataTypes.TEXT,
     industriesServed: DataTypes.ARRAY(DataTypes.STRING),
     products: DataTypes.ARRAY(DataTypes.STRING),
@@ -86,6 +93,8 @@ Directory.init(
     applicationAreas: DataTypes.TEXT,
     tags: DataTypes.ARRAY(DataTypes.STRING),
     subsidiaries: DataTypes.TEXT,
+    technologyBrands: DataTypes.TEXT,
+    associations: DataTypes.TEXT,
     strategicPartnerships: DataTypes.TEXT,
     certifications: DataTypes.STRING,
     status: {
@@ -108,6 +117,21 @@ Directory.init(
       },
       onDelete: "CASCADE",
     },
+    planId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: { model: "directoryPlans", key: "id" },
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL",
+    },
+    planStartDate: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    planEndDate: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -127,5 +151,6 @@ Directory.init(
 
 Directory.belongsTo(User, { foreignKey: "userId", as: "owner" });
 Directory.belongsTo(User, { foreignKey: "onBoardedBy", as: "onboardedByUser" });
+Directory.belongsTo(DirectoryPlan, { foreignKey: "planId", as: "plan" });
 
 export default Directory;

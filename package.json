@@ -20,7 +20,8 @@
     "hard-delete:user": "ts-node src/scripts/deleteSoftDeletedUsers.ts",
     "add-entityId:agent": "ts-node src/scripts/addEntityIdForOldUserData.ts",
     "seed:mobile": "ts-node src/scripts/mobileSeed.ts",
-    "seed:directory": "ts-node src/scripts/seedDirecoryData.ts"
+    "seed:directory": "ts-node src/scripts/seedDirecoryData.ts",
+    "seed:directory-plan": "ts-node src/scripts/seedDirectoryPlans.ts"
   },
   "author": "",
   "license": "ISC",
