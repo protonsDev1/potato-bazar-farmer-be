@@ -7,6 +7,7 @@ import Farmer from "../database/models/farmer";
 import ColdStorage from "../database/models/coldStorage";
 import BuyRequest from "../database/models/buyRequest";
 import SellRequest from "../database/models/sellRequest";
+import { sendPushNotification } from "../utils/sendPushNotification";
 
 interface Payload {
   title: string;
@@ -30,6 +31,8 @@ export const sendNotificationService = async (payload: Payload) => {
     receiverIds,
     isBroadCast = false,
   } = payload;
+
+  let userIds: number[] = [];
 
   if (isBroadCast) {
     const users = await User.findAll({
@@ -56,6 +59,7 @@ export const sendNotificationService = async (payload: Payload) => {
     }));
 
     await Notification.bulkCreate(notifications);
+    userIds = users.map((u) => u.id);
   } else if (Array.isArray(receiverIds) && receiverIds.length > 0) {
     const notifications = receiverIds.map((id) => ({
       title,
@@ -66,6 +70,7 @@ export const sendNotificationService = async (payload: Payload) => {
       referenceId,
     }));
     await Notification.bulkCreate(notifications);
+    userIds = receiverIds;
   } else if (receiverId) {
     await Notification.create({
       title,
@@ -75,6 +80,25 @@ export const sendNotificationService = async (payload: Payload) => {
       referenceType,
       referenceId,
     });
+    userIds = [receiverId];
+  }
+
+  if (userIds.length > 0) {
+    const users = await User.findAll({
+      where: { id: userIds },
+      attributes: ["playerId"],
+    });
+
+    const playerIds = users.map((u) => u.playerId).filter(Boolean);
+
+    if (playerIds.length > 0) {
+      await sendPushNotification({
+        title,
+        message: description,
+        playerIds,
+        data: { referenceType, referenceId },
+      });
+    }
   }
 
   return {

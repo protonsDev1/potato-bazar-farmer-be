@@ -391,13 +391,14 @@ export const getRegistrationTypes = async (mobile) => {
   };
 };
 
-export const registerInitialUser = async (mobile, hasStartedUsingMobile) =>{
+export const registerInitialUser = async (mobile, hasStartedUsingMobile, playerId) =>{
   return await User.create({
     name: 'Guest',
     mobile,
     role:'user',
     otpVerified: true,
-    hasStartedUsingMobile: !!hasStartedUsingMobile
+    hasStartedUsingMobile: !!hasStartedUsingMobile,
+    playerId
   });
 };
 
