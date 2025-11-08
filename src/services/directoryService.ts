@@ -275,6 +275,7 @@ export const getDirectoryListByAdmin = async (
       city,
       registrationDate,
       onboardedByUser,
+      listingType,
       status,
       categoryId,
       subCategoryId,
@@ -282,6 +283,31 @@ export const getDirectoryListByAdmin = async (
       isSaved,
       industryServed,
     } = filters;
+
+    const now = new Date();
+
+    let mobileSortByPlanPriority = false;
+    if (listingType && String(listingType).toLowerCase() === "mobile") {
+      whereCondition.status = REGISTRATION_STATUS.APPROVED;
+      whereCondition.isActive = true;
+
+      whereCondition[Op.and] = [
+        {
+          [Op.or]: [
+            { planStartDate: null },
+            { planEndDate: null },
+            {
+              [Op.and]: [
+                { planStartDate: { [Op.lte]: now } },
+                { planEndDate: { [Op.gte]: now } },
+              ],
+            },
+          ],
+        },
+      ];
+
+      mobileSortByPlanPriority = true;
+    }
 
     if (status) whereCondition.status = status;
 
@@ -349,7 +375,12 @@ export const getDirectoryListByAdmin = async (
     }
 
     let order: any = [["updatedAt", "DESC"]];
-    if (sortBy) {
+    if (mobileSortByPlanPriority) {
+      order = [
+        [{ model: DirectoryPlan, as: "plan" }, "priority", "ASC"],
+        ["updatedAt", "DESC"],
+      ];
+    } else if (sortBy) {
       switch (String(sortBy).toLowerCase()) {
         case "company_asc":
           order = [["companyName", "ASC"]];

@@ -30,7 +30,7 @@ import { sendNotificationService } from "./notificationService";
 import { NotificationType } from "../database/models/notification";
 import MandiPrice from "../database/models/mandiPrice";
 import Directory from "../database/models/directory";
-import { retrieveDirectoryProfile } from "./directoryService";
+import DirectoryPlan from "../database/models/directoryPlan";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -1394,32 +1394,56 @@ export const getUserTypeProfileDetails = async (userId) => {
       error: "Only Mobile user's profile can be viewed here.",
     };
 
-  const [isFarmer, isColdStorage, isTrader, coldStorageList, isDirectory] =
-    await Promise.all([
-      Farmer.findOne({ where: { userId } }),
-      ColdStorage.findOne({ where: { userId } }),
-      Trader.findOne({ where: { userId } }),
-      ColdStorage.findAll({
-        where: { userId },
-        attributes: [
-          "id",
-          "name",
-          "firstName",
-          "lastName",
-          "ownerName",
-          "mobileNumber",
-          "state",
-          "district",
-          "totalCapacityMt",
-          "createdAt",
-          "updatedAt",
-          "onBoardedBy",
-          "status",
-          "isAvailable",
-        ],
-      }),
-      Directory.findOne({ where: { userId } }),
-    ]);
+  const [
+    isFarmer,
+    isColdStorage,
+    isTrader,
+    coldStorageList,
+    isDirectory,
+    directoryList,
+  ] = await Promise.all([
+    Farmer.findOne({ where: { userId } }),
+    ColdStorage.findOne({ where: { userId } }),
+    Trader.findOne({ where: { userId } }),
+    ColdStorage.findAll({
+      where: { userId },
+      attributes: [
+        "id",
+        "name",
+        "firstName",
+        "lastName",
+        "ownerName",
+        "mobileNumber",
+        "state",
+        "district",
+        "totalCapacityMt",
+        "createdAt",
+        "updatedAt",
+        "onBoardedBy",
+        "status",
+        "isAvailable",
+      ],
+    }),
+    Directory.findOne({ where: { userId } }),
+    Directory.findAll({
+      where: { userId },
+      include: [
+        {
+          model: DirectoryPlan,
+          as: "plan",
+          attributes: [
+            "id",
+            "name",
+            "priority",
+            "homePagePosition",
+            "categoryPagePosition",
+            "slotLimit",
+          ],
+          required: false,
+        },
+      ],
+    }),
+  ]);
 
   let farmerProfile, traderProfile, directoryProfile;
 
@@ -1428,9 +1452,6 @@ export const getUserTypeProfileDetails = async (userId) => {
 
   if (isTrader)
     traderProfile = await retrieveTraderProfile(String(isTrader.id), false);
-
-  if (isDirectory)
-    directoryProfile = await retrieveDirectoryProfile(String(isDirectory.id));
 
   return {
     success: true,
@@ -1442,8 +1463,8 @@ export const getUserTypeProfileDetails = async (userId) => {
       userDetail,
       farmerProfile,
       traderProfile,
-      directoryProfile,
       coldStorageList,
+      directoryList,
     },
   };
 };
