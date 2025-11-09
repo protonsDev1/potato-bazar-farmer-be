@@ -78,31 +78,35 @@ export const updateKycStatusInDB = async (kycId: number, status: boolean,reason?
   return kyc;
 };
 
-export const listKycFromDB = async (page: number, limit: number, search?: string) => {
+export const listKycFromDB = async (
+  page: number,
+  limit: number,
+  search?: string,
+  status?: string
+) => {
   const offset = (page - 1) * limit;
 
- const whereCondition: any = {};
- if (search) {
-   whereCondition[Op.or] = [
-     { "$user.name$": { [Op.iLike]: `%${search}%` } },
-     { "$user.mobile$": { [Op.iLike]: `%${search}%` } },
-     { gstNumber: { [Op.iLike]: `%${search}%` } },
-     { fssaiNumber: { [Op.iLike]: `%${search}%` } },
-   ];
- }
+  const whereCondition: any = {};
+
+  if (status) {
+    whereCondition.status = status;
+  }
+
+  if (search) {
+    whereCondition[Op.or] = [
+      { "$user.name$": { [Op.iLike]: `%${search}%` } },
+      { "$user.mobile$": { [Op.iLike]: `%${search}%` } },
+      { gstNumber: { [Op.iLike]: `%${search}%` } },
+      { fssaiNumber: { [Op.iLike]: `%${search}%` } },
+    ];
+  }
 
   const { rows, count } = await KycDocument.findAndCountAll({
     include: [
       {
         model: User,
         as: "user",
-        attributes: [
-          "id",
-          "name",
-          "email",
-          "mobile",
-          "role",
-        ],
+        attributes: ["id", "name", "email", "mobile", "role"],
       },
     ],
     where: whereCondition,
@@ -115,7 +119,7 @@ export const listKycFromDB = async (page: number, limit: number, search?: string
     total: count,
     page,
     limit,
-    data: rows
+    data: rows,
   };
 };
 
