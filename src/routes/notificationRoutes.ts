@@ -5,14 +5,17 @@ import { authMiddleware, superAdminMiddleware } from "../utils/userAuth";
 import {
   broadCastNotification,
   deleteNotification,
+  getNotificationSettings,
   markAsRead,
   myNotificationList,
   unreadNotificationCount,
+  updateNotificationSettings,
 } from "../controller/notificationController";
 import {
   broadcastNotificationSchema,
   deleteNotificationSchema,
   markAsReadSchema,
+  updateNotificationSettingsSchema,
 } from "../validation/notificationValidation";
 
 const router = express.Router();
@@ -40,6 +43,15 @@ router.delete(
   authMiddleware,
   validator.body(deleteNotificationSchema),
   deleteNotification
+);
+
+router.get("/settings", authMiddleware, getNotificationSettings);
+
+router.put(
+  "/settings",
+  authMiddleware,
+  validator.body(updateNotificationSettingsSchema),
+  updateNotificationSettings
 );
 
 export default router;
