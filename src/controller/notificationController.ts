@@ -4,6 +4,7 @@ import Notification, {
   NotificationType,
 } from "../database/models/notification";
 import { sendNotificationService } from "../services/notificationService";
+import UserNotificationSetting from "../database/models/userNotificationSetting";
 
 export const broadCastNotification = async (req, res) => {
   try {
@@ -188,5 +189,49 @@ export const deleteNotification = async (req, res) => {
       success: false,
       message: error.message || "Error in fetching my notificaitons ",
     });
+  }
+};
+
+export const getNotificationSettings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    let settings = await UserNotificationSetting.findOne({ where: { userId } });
+    if (!settings) {
+      settings = await UserNotificationSetting.create({ userId });
+    }
+    return res.json({ success: true, data: settings });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const updateNotificationSettings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const payload = req.body;
+
+    let settings = await UserNotificationSetting.findOne({ where: { userId } });
+    if (payload.allowAll === true) {
+      payload.buy = true;
+      payload.sell = true;
+      payload.mandiPrice = true;
+      payload.broadcast = true;
+      payload.news = true;
+      payload.event = true;
+      payload.govScheme = true;
+      payload.coldStorage = true;
+    }
+
+    if (!settings) {
+      settings = await UserNotificationSetting.create({ userId, ...payload });
+    } else {
+      await settings.update(payload);
+    }
+
+    return res.json({ success: true, data: settings });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };

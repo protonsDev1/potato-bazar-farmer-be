@@ -8,6 +8,7 @@ import ColdStorage from "../database/models/coldStorage";
 import BuyRequest from "../database/models/buyRequest";
 import SellRequest from "../database/models/sellRequest";
 import { sendPushNotification } from "../utils/sendPushNotification";
+import UserNotificationSetting from "../database/models/userNotificationSetting";
 
 interface Payload {
   title: string;
@@ -39,65 +40,97 @@ export const sendNotificationService = async (payload: Payload) => {
       where: {
         role: USER_ROLES.USER,
         [Op.and]: [
-          {
-            isUserOnBoardedOnMobile: true,
-          },
-          {
-            hasStartedUsingMobile: true,
-          },
+          { isUserOnBoardedOnMobile: true },
+          { hasStartedUsingMobile: true },
         ],
       },
+      attributes: ["id"],
+      raw: true,
     });
-
-    const notifications = users.map((user) => ({
-      title,
-      description,
-      senderId,
-      receiverId: user.id,
-      referenceType,
-      referenceId,
-    }));
-
-    await Notification.bulkCreate(notifications);
-    userIds = users.map((u) => u.id);
+    userIds = users.map((user) => user.id);
   } else if (Array.isArray(receiverIds) && receiverIds.length > 0) {
-    const notifications = receiverIds.map((id) => ({
-      title,
-      description,
-      senderId,
-      receiverId: id,
-      referenceType,
-      referenceId,
-    }));
-    await Notification.bulkCreate(notifications);
     userIds = receiverIds;
   } else if (receiverId) {
-    await Notification.create({
-      title,
-      description,
-      senderId,
-      receiverId,
-      referenceType,
-      referenceId,
-    });
     userIds = [receiverId];
   }
 
-  if (userIds.length > 0) {
-    const users = await User.findAll({
-      where: { id: userIds },
-      attributes: ["playerId"],
-    });
+  if (!userIds || userIds.length === 0) return { success: true };
 
-    const playerIds = users.map((u) => u.playerId).filter(Boolean);
+  const notifications = userIds.map((id) => ({
+    title,
+    description,
+    senderId,
+    receiverId: id,
+    referenceType,
+    referenceId,
+  }));
+  await Notification.bulkCreate(notifications);
 
-    if (playerIds.length > 0) {
+  const field = notificationTypeToField(referenceType);
+
+  const users = await User.findAll({
+    where: { id: { [Op.in]: userIds } },
+    attributes: ["id", "playerId"],
+    raw: false,
+  });
+
+  const settings = await UserNotificationSetting.findAll({
+    where: { userId: { [Op.in]: userIds } },
+    attributes: [
+      "userId",
+      "allowAll",
+      "buy",
+      "sell",
+      "mandiPrice",
+      "broadcast",
+      "news",
+      "event",
+      "govScheme",
+      "coldStorage",
+    ],
+    raw: true,
+  });
+
+  const settingsMap = new Map<number, any>();
+  settings.forEach((s: any) => settingsMap.set(s.userId, s));
+
+  const playerIdsToSend: string[] = [];
+
+  for (const user of users) {
+    const userId = user.id;
+    const playerId = user.playerId;
+    if (!playerId) continue;
+
+    // If this notification type has NO mapping then always push
+    if (field === null) {
+      playerIdsToSend.push(playerId);
+      continue;
+    }
+
+    const userSetting = settingsMap.get(userId);
+
+    const allowAll = userSetting ? userSetting.allowAll : true;
+
+    let allowed: boolean;
+    if (allowAll) {
+      allowed = true;
+    } else {
+      allowed = !!userSetting?.[field];
+    }
+
+    if (allowed) playerIdsToSend.push(playerId);
+  }
+
+  if (playerIdsToSend.length > 0) {
+    try {
       await sendPushNotification({
         title,
         message: description,
-        playerIds,
+        playerIds: playerIdsToSend,
         data: { referenceType, referenceId },
       });
+    } catch (err) {
+      console.error("sendPushNotification error:", err);
     }
   }
 
@@ -233,4 +266,28 @@ export const sendNotificationToMatchingSellers = async (
     referenceId,
     receiverIds: userIds,
   });
+};
+
+export const notificationTypeToField = (type?: string): string | null => {
+  if (!type) return null;
+  switch (String(type).toUpperCase()) {
+    case NotificationType.BUY:
+      return "buy";
+    case NotificationType.SELL:
+      return "sell";
+    case NotificationType.MANDI_PRICE:
+      return "mandiPrice";
+    case NotificationType.BROADCAST:
+      return "broadcast";
+    case NotificationType.NEWS:
+      return "news";
+    case NotificationType.EVENT:
+      return "event";
+    case NotificationType.GOV_SCHEME:
+      return "govScheme";
+    case NotificationType.COLD_STORAGE:
+      return "coldStorage";
+    default:
+      return null;
+  }
 };
