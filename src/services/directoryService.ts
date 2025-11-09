@@ -367,10 +367,22 @@ export const getDirectoryListByAdmin = async (
     if (search?.trim()) {
       const searchTerm = `%${search.trim()}%`;
       whereCondition[Op.or] = [
-        { id: isNaN(Number(search)) ? -1 : Number(search) },
         { companyName: { [Op.iLike]: searchTerm } },
         { contactPersonName: { [Op.iLike]: searchTerm } },
         { email: { [Op.iLike]: searchTerm } },
+
+        literal(`
+      "Directory"."id" IN (
+        SELECT "directoryId" 
+        FROM "directoryCategoryMappings" dcm
+        LEFT JOIN "directoryCategories" dc 
+          ON dcm."categoryId" = dc."id"
+        LEFT JOIN "directorySubCategories" dsc 
+          ON dcm."subCategoryId" = dsc."id"
+        WHERE dc."name" ILIKE '${searchTerm}'
+           OR dsc."name" ILIKE '${searchTerm}'
+      )
+    `),
       ];
     }
 
