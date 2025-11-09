@@ -77,7 +77,16 @@ export const listKyc = async (req, res) => {
     const page = req.query.page ? Number(req.query.page) : 1;
     const limit = req.query.limit ? Number(req.query.limit) : 10;
     const search = req.query.search ? String(req.query.search) : undefined;
-    const result = await listKycFromDB(Number(page), Number(limit), search);
+    const status = req.query.status
+      ? String(req.query.status).toLowerCase()
+      : undefined;
+
+    const result = await listKycFromDB(
+      Number(page),
+      Number(limit),
+      search,
+      status
+    );
     return res.status(200).json({ success: true, ...result });
   } catch (error) {
     return res.status(400).json({
