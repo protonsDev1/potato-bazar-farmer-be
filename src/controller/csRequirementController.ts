@@ -19,6 +19,7 @@ export const getRequirements = async (req, res) => {
       district,
       pbVerified,
       isFavourite,
+      sortBy,
     } = req.query;
     const userId = req.user.id;
 
@@ -27,7 +28,8 @@ export const getRequirements = async (req, res) => {
       Number(page),
       Number(perPage),
       listingType,
-      { commodityType, verified, district, pbVerified, isFavourite }
+      { commodityType, verified, district, pbVerified, isFavourite },
+      String(sortBy || "")
     );
 
     return res.status(200).json({
