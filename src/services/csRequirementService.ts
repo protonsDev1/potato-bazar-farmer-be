@@ -18,7 +18,8 @@ export const getRequirementsService = async (
     district?: string;
     pbVerified?: string;
     isFavourite?: string;
-  }
+  },
+  sortBy: string = ""
 ) => {
   const offset = (page - 1) * limit;
 
@@ -76,10 +77,24 @@ export const getRequirementsService = async (
     whereCondition.id = { [Op.in]: favouriteRequirementIds };
   }
 
+  let order: any = [["updatedAt", "DESC"]];
+  if (sortBy) {
+    switch (String(sortBy).toLowerCase()) {
+      case "created_asc":
+        order = [["createdAt", "ASC"]];
+        break;
+      case "created_desc":
+        order = [["createdAt", "DESC"]];
+        break;
+      default:
+        order = [["updatedAt", "DESC"]];
+    }
+  }
+
   const { rows, count } = await ColdStorageRequirement.findAndCountAll({
     where: whereCondition,
     include: [userInclude],
-    order: [["updatedAt", "DESC"]],
+    order,
     limit,
     offset,
   });
