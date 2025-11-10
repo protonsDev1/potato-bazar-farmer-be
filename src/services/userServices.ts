@@ -4,7 +4,7 @@ import { generateAgentId, generateRandomPassword } from '../utils/generate';
 import Farmer from "../database/models/farmer";
 import ColdStorage from "../database/models/coldStorage";
 import { createOtp, verifyOtpFromDB } from "./otpServices";
-import { Op, Sequelize } from 'sequelize';
+import { col, fn, Op, Sequelize } from 'sequelize';
 import { formatDistanceToNow } from "date-fns";
 import bcrypt from 'bcrypt';
 import Trader from "../database/models/trader/trader";
@@ -936,6 +936,7 @@ export const getMobileUsers = async ({
 }) => {
   try {
     const offset = (page - 1) * limit;
+    let order: any = [["createdAt", "DESC"]];
 
     const whereCondition: any = {
       role: USER_ROLES.USER,
@@ -966,6 +967,17 @@ export const getMobileUsers = async ({
     if (pbVerificationRequested !== undefined) {
       whereCondition.pbVerificationRequested =
         pbVerificationRequested === "true";
+      order = [
+        [
+          fn(
+            "COALESCE",
+            col("User.pbVerificationRequestedAt"),
+            col("User.updatedAt")
+          ),
+          "DESC",
+        ],
+        ["updatedAt", "DESC"],
+      ];
     }
 
     if (pbVerificationStatus && pbVerificationStatus !== "all") {
@@ -988,7 +1000,7 @@ export const getMobileUsers = async ({
       include,
       limit,
       offset,
-      order: [["createdAt", "DESC"]],
+      order,
     });
 
     return {
