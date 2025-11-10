@@ -1,5 +1,7 @@
 import AskExpert, { QUERY_STATUS } from "../database/models/askExpert";
-import User from "../database/models/user";
+import { NotificationType } from "../database/models/notification";
+import User, { USER_ROLES } from "../database/models/user";
+import { sendNotificationService } from "../services/notificationService";
 
 export const askQuery = async (req, res) => {
   try {
@@ -85,6 +87,18 @@ export const respondToQuery = async (req, res) => {
       { response, status: QUERY_STATUS.CLOSE },
       { where: { id: queryId } }
     );
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: `Expert has responded to your query.`,
+      description: `<b>Question:</b> "${isValidQueryId.query}"<br><b>Answer:</b> "${response}"`,
+      senderId: superAdmin.id,
+      receiverId: isValidQueryId.userId,
+      referenceType: NotificationType.ASK_EXPERT,
+    });
 
     return res
       .status(200)
