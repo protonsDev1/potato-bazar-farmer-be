@@ -19,6 +19,7 @@ interface Payload {
   referenceId?: number;
   receiverIds?: number[];
   isBroadCast?: boolean;
+  isMatchingCase?: boolean;
 }
 
 export const sendNotificationService = async (payload: Payload) => {
@@ -31,6 +32,7 @@ export const sendNotificationService = async (payload: Payload) => {
     referenceId,
     receiverIds,
     isBroadCast = false,
+    isMatchingCase = false,
   } = payload;
 
   let userIds: number[] = [];
@@ -63,6 +65,7 @@ export const sendNotificationService = async (payload: Payload) => {
     receiverId: id,
     referenceType,
     referenceId,
+    isMatchingCase,
   }));
   await Notification.bulkCreate(notifications);
 
@@ -238,6 +241,7 @@ export const sendNotificationToMatchingBuyers = async (
     referenceType: NotificationType.SELL,
     referenceId,
     receiverIds: userIds,
+    isMatchingCase: true,
   });
 };
 
@@ -265,6 +269,7 @@ export const sendNotificationToMatchingSellers = async (
     referenceType: NotificationType.BUY,
     referenceId,
     receiverIds: userIds,
+    isMatchingCase: true,
   });
 };
 

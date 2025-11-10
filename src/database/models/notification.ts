@@ -18,7 +18,8 @@ export enum NotificationType {
   GOV_SCHEME = "GOV_SCHEME",
   KYC = "KYC",
   USER_PB_VERIFICATION = "USER_PB_VERIFICATION",
-  COLD_STORAGE = "COLD_STORAGE"
+  COLD_STORAGE = "COLD_STORAGE",
+  ASK_EXPERT = "ask_expert",
 }
 
 class Notification extends Model<
@@ -33,6 +34,7 @@ class Notification extends Model<
   declare referenceType: string;
   declare referenceId: number;
   declare isRead: boolean;
+  declare isMatchingCase: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -73,6 +75,10 @@ Notification.init(
       allowNull: true,
     },
     isRead: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    isMatchingCase: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
