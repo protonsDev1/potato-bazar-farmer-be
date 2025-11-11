@@ -113,7 +113,7 @@ export const updateCityImage = async (req, res) => {
     if (position) {
       const isPositionExist = await City.findOne({ where: { position } });
 
-      if (isPositionExist)
+      if (isPositionExist && id !== isPositionExist.id)
         return res.status(403).json({
           success: false,
           message: `${isPositionExist.name} already has position ${position}.`,
