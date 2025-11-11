@@ -1,6 +1,10 @@
 import { createValidator } from "express-joi-validation";
 import express from "express";
-import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
+import {
+  authMiddleware,
+  checkPermissionMiddleware,
+  optionalAuthMiddleware,
+} from "../utils/userAuth";
 import {
   createDirectory,
   deleteDirectory,
@@ -16,8 +20,6 @@ import {
   updateDirectorySchema,
 } from "../validation/directoryValidation";
 import { PERMISSIONS } from "../utils/constants/permissions";
-import { duplicationCheckMiddleware } from "../middlewares/duplicationCheckMiddleware";
-import Directory from "../database/models/directory";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -47,9 +49,9 @@ router.put(
 
 router.get("/plans", getDirectoryPlans);
 
-router.get("/", authMiddleware, getDirectoryList);
+router.get("/", optionalAuthMiddleware, getDirectoryList);
 
-router.get("/:directoryId", authMiddleware, getDirectoryDetail);
+router.get("/:directoryId", optionalAuthMiddleware, getDirectoryDetail);
 
 router.delete(
   "/:id",
