@@ -11,7 +11,7 @@ import {
 export const createSubAdmin = async (req, res) => {
   try {
     const result = await createSubAdminService(req.body);
-    if (!result) {
+    if (!result.success) {
       return res
         .status(result.statusCode)
         .json({ success: false, message: result.message });
