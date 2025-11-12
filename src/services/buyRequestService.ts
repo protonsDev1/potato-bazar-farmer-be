@@ -6,6 +6,7 @@ import FavouriteRequest from "../database/models/favouriteRequest";
 import RequestView from "../database/models/requestView";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { PERMISSIONS } from "../utils/constants/permissions";
+import { canUpdateResource } from "../utils/commonCode";
 
 export const createBuyRequestService = async (userId: number, data: any) => {
   const newRequest = await BuyRequest.create({
@@ -49,7 +50,7 @@ export const createBuyRequestService = async (userId: number, data: any) => {
     productionDate: data.productionDate,
     organicCertified: data.organicCertified,
     status: BUY_REQUEST_STATUS.PENDING,
-    isActive: false,
+    isActive: true,
   });
 
   return newRequest;
@@ -80,8 +81,8 @@ export const listBuyRequestsService = async (
 
   if (userId) {
     where.userId = userId;
-  } else if (currentUserId) {
-    where.userId = { [Op.ne]: currentUserId };
+    // } else if (currentUserId) {
+    //   where.userId = { [Op.ne]: currentUserId };
   }
 
   if (currentBuyRequestId) {
@@ -388,6 +389,7 @@ export const getBuyRequestByIdService = async (
     viewCount,
     favCount,
     otherBuyRequestsCount,
+    isOwner: request.userId === currentUserId,
   };
 };
 
@@ -440,7 +442,7 @@ export const deleteBuyRequestService = async (user: any, requestId: number) => {
 };
 
 export const updateBuyRequestService = async (
-  userId: number,
+  user: User,
   requestId: number,
   payload: any
 ) => {
@@ -454,11 +456,18 @@ export const updateBuyRequestService = async (
     };
   }
 
-  if (request.userId !== userId) {
+  const hasAccess = await canUpdateResource(
+    user,
+    request.userId,
+    PERMISSIONS.BUY_REQUESTS
+  );
+
+  if (!hasAccess) {
     return {
       statusCode: 403,
       success: false,
-      message: "You are not allowed to update this request",
+      message:
+        "Only the owner, a super admin, or an authorized sub admin is allowed to update this request.",
     };
   }
 
