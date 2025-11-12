@@ -940,6 +940,39 @@ export const getUserRole = async (userId) => {
   };
 };
 
+export const toggleMobileUserActiveService = async (
+  userId: number,
+  isActive: boolean
+) => {
+  const whereCondition: any = {
+    id: userId,
+    role: USER_ROLES.USER,
+    [Op.or]: [
+      { isUserOnBoardedOnMobile: true },
+      { hasStartedUsingMobile: true },
+    ],
+  };
+
+  const user = await User.findOne({ where: whereCondition });
+
+  if (!user) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "Mobile user not found or not eligible for this operation",
+    };
+  }
+
+  await user.update({ isActive });
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: `User ${isActive ? "activated" : "deactivated"} successfully.`,
+    data: user,
+  };
+};
+
 export const getMobileUsers = async ({
   page,
   limit,
@@ -1370,9 +1403,9 @@ export const getAdminDashboardStats = async (user) => {
         })
       : Promise.resolve(null),
 
-    helpSupportAllowed ? HelpAndSupport.count() : Promise.resolve(null),
+    helpSupportAllowed ? UserSupport.count() : Promise.resolve(null),
     helpSupportAllowed
-      ? HelpAndSupport.count({
+      ? UserSupport.count({
           where: { createdAt: { [Op.gte]: oneMonthAgo } },
         })
       : Promise.resolve(null),

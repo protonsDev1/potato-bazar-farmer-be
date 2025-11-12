@@ -33,6 +33,10 @@ export const authMiddleware = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (!user.isActive) {
+      return res.status(403).json({ message: "User is deactivated" });
+    }
+
     req.user = user;
     next();
   } catch (error) {
@@ -59,12 +63,17 @@ export const optionalAuthMiddleware = async (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
     const user = await User.findByPk(decoded.id);
 
-    req.user = user ? user : null;
+    if (!user || !user.isActive) {
+      req.user = null;
+      return next();
+    }
+
+    req.user = user;
+    return next();
   } catch (error) {
     req.user = null;
+    return next();
   }
-
-  next();
 };
 
 export const superAdminMiddleware = async (req, res, next) => {
@@ -151,6 +160,10 @@ export const checkPermissionMiddleware = (permissions: string | string[]) => {
         return res.status(404).json({ message: "User not found" });
       }
 
+      if (!user.isActive) {
+        return res.status(403).json({ message: "User is deactivated" });
+      }
+
       // Attach user to request object
       req.user = user;
 
@@ -208,6 +221,10 @@ export const mandiAgentAndSuperAdminMiddleware = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (!user.isActive) {
+      return res.status(403).json({ message: "User is deactivated" });
+    }
+
     if (
       user.role !== USER_ROLES.SUPER_ADMIN &&
       user.role != USER_ROLES.MANDI_AGENT
@@ -253,6 +270,10 @@ export const adminOrSubAdminMiddleware = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    if (!user.isActive) {
+      return res.status(403).json({ message: "User is deactivated" });
+    }
+
     // Check if user is admin or sub admin web
     if (
       ![USER_ROLES.ADMIN, USER_ROLES.SUB_ADMIN_WEB].includes(
@@ -287,6 +308,10 @@ export const superAdminOrSubAdminMiddleware = async (req, res, next) => {
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: "User is deactivated" });
     }
 
     // Check if user is admin or sub admin web
@@ -325,6 +350,10 @@ export const checkWebPermissionMiddleware =
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
+      }
+
+      if (!user.isActive) {
+        return res.status(403).json({ message: "User is deactivated" });
       }
 
       req.user = user;
