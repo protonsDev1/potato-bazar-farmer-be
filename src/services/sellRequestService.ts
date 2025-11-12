@@ -8,6 +8,7 @@ import FavouriteRequest from "../database/models/favouriteRequest";
 import RequestView from "../database/models/requestView";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { PERMISSIONS } from "../utils/constants/permissions";
+import { canUpdateResource } from "../utils/commonCode";
 
 export const createSellRequestService = async (userId: number, data: any) => {
   const newRequest = await SellRequest.create({
@@ -53,7 +54,7 @@ export const createSellRequestService = async (userId: number, data: any) => {
     images: data.images,
     location: data.location,
     status: SELL_REQUEST_STATUS.PENDING,
-    isActive: false,
+    isActive: true,
   });
 
   return newRequest;
@@ -84,8 +85,8 @@ export const listSellRequestsService = async (
 
   if (userId) {
     where.userId = userId;
-  } else if (currentUserId) {
-    where.userId = { [Op.ne]: currentUserId };
+    // } else if (currentUserId) {
+    //   where.userId = { [Op.ne]: currentUserId };
   }
 
   if (currentSellRequestId) {
@@ -392,6 +393,7 @@ export const getSellRequestByIdService = async (
     viewCount,
     favCount,
     otherSellRequestsCount,
+    isOwner: request.userId === currentUserId,
   };
 };
 
@@ -447,7 +449,7 @@ export const deleteSellRequestService = async (
 };
 
 export const updateSellRequestService = async (
-  userId: number,
+  user: User,
   requestId: number,
   payload: any
 ) => {
@@ -461,11 +463,18 @@ export const updateSellRequestService = async (
     };
   }
 
-  if (request.userId !== userId) {
+  const hasAccess = await canUpdateResource(
+    user,
+    request.userId,
+    PERMISSIONS.SELL_REQUESTS
+  );
+
+  if (!hasAccess) {
     return {
       statusCode: 403,
       success: false,
-      message: "You are not allowed to update this request",
+      message:
+        "Only the owner, a super admin, or an authorized sub admin is allowed to update this request.",
     };
   }
 

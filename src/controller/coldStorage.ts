@@ -11,7 +11,6 @@ import {
   addColdStoragesToWorksheet,
   getAllColdStorages,
   likeOrDislikeService,
-  canUpdateColdStorage,
 } from "../services/coldStorageService";
 import {
   checkExistingUser,
@@ -25,6 +24,8 @@ import Farmer from "../database/models/farmer";
 import Trader from "../database/models/trader/trader";
 import Otp from "../database/models/otp";
 import { sendNotificationForColdStorage } from "../services/notificationService";
+import { canUpdateResource } from "../utils/commonCode";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 export const createColdStorage = async (req, res) => {
   try {
@@ -420,7 +421,11 @@ export const updateColdStorageAvailability = async (req, res) => {
       return res.status(404).json({ message: "Cold storage not found" });
     }
 
-    const hasAccess = await canUpdateColdStorage(req.user, coldStorage);
+    const hasAccess = await canUpdateResource(
+      req.user,
+      coldStorage.userId,
+      PERMISSIONS.COLD_STORAGE
+    );
 
     if (!hasAccess) {
       return res.status(403).json({
