@@ -314,3 +314,12 @@ export const checkWebPermissionMiddleware =
       return res.status(401).json({ message: "Invalid or Expired Token" });
     }
   };
+
+export const runMiddleware = (req, res, middleware): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    middleware(req, res, (err?: any) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+};

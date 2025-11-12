@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import Event from "../database/models/event";
 import { buildDate, hasValue } from "../utils/parseQuery";
 import EventRequest from "../database/models/eventRequest";
-import User from "../database/models/user";
+import User, { USER_ROLES } from "../database/models/user";
 import Banner from "../database/models/banner";
 
 export const addEvent = async (eventData) => {
@@ -148,7 +148,7 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
   };
 };
 
-export const getEventDetail = async (eventId) => {
+export const getEventDetail = async (eventId, userId, role) => {
   const event = await Event.findOne({
     where: { id: eventId },
     include: [
@@ -219,16 +219,62 @@ export const getEventDetail = async (eventId) => {
     })
   );
 
-  return {
-    success: true,
-    event: {
-      ...event.toJSON(),
-      isEventUpcoming,
-      isEventGoing,
-      peopleInterested,
-    },
-    moreEvents: enrichedResults,
-  };
+  if (
+    role &&
+    (role === USER_ROLES.SUPER_ADMIN || role === USER_ROLES.SUB_ADMIN)
+  ) {
+    const requestedUsers = await EventRequest.findAll({
+      where: { eventId },
+      attributes: ["mobile", "name"],
+      include: [
+        {
+          model: User,
+          as: "requestedByUser",
+          attributes: ["id", "name", "mobile", "state", "district"],
+        },
+      ],
+    });
+
+    return {
+      success: true,
+      event: {
+        ...event.toJSON(),
+        isEventUpcoming,
+        isEventGoing,
+        peopleInterested,
+      },
+      moreEvents: enrichedResults,
+      requestedUsers,
+    };
+  } else if (role && role === USER_ROLES.USER) {
+    const registeredByUser = await EventRequest.findAll({
+      where: { requestCreatedBy: userId },
+      attributes: ["requestCreatedBy", "mobile", "name"],
+    });
+
+    return {
+      success: true,
+      event: {
+        ...event.toJSON(),
+        isEventUpcoming,
+        isEventGoing,
+        peopleInterested,
+      },
+      moreEvents: enrichedResults,
+      registeredByUser,
+    };
+  } else {
+    return {
+      success: true,
+      event: {
+        ...event.toJSON(),
+        isEventUpcoming,
+        isEventGoing,
+        peopleInterested,
+      },
+      moreEvents: enrichedResults,
+    };
+  }
 };
 
 export const getAllEventRequests = async (page = 1, limit = 10, search) => {
