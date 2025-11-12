@@ -19,15 +19,15 @@ const validator = createValidator({});
 router.post("/", authMiddleware, validator.body(createQuerySchema), askQuery);
 router.get(
   "/",
-  checkPermissionMiddleware(PERMISSIONS.ASK_EXPERT),
+  checkPermissionMiddleware(PERMISSIONS.CROP_DIAGNOSIS),
   getAllQueries
 );
 router.put(
   "/:queryId",
-  checkPermissionMiddleware(PERMISSIONS.ASK_EXPERT),
+  checkPermissionMiddleware(PERMISSIONS.CROP_DIAGNOSIS),
   validator.body(respondQuerySchema),
   respondToQuery
 );
-router.get("/my_queries", authMiddleware, getAllMyQueries)
+router.get("/my_queries", authMiddleware, getAllMyQueries);
 
 export default router;

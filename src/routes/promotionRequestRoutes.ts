@@ -22,17 +22,17 @@ router.post(
 );
 router.get(
   "/",
-  checkPermissionMiddleware(PERMISSIONS.PROMOTION_REQUESTS),
+  checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
   getPromotionRequests
 );
 router.get(
   "/:id",
-  checkPermissionMiddleware(PERMISSIONS.PROMOTION_REQUESTS),
+  checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
   getPromotionRequestById
 );
 router.delete(
   "/:id",
-  checkPermissionMiddleware(PERMISSIONS.PROMOTION_REQUESTS),
+  checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
   deletePromotionRequest
 );
 

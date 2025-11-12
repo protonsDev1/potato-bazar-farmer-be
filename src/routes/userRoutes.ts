@@ -23,7 +23,6 @@ import {
   forgotPasswordVerifyOtpSchema,
   mobileUserPBVerificationSchema,
   mandiAgentUpdateSchema,
-  
 } from "../validation/userValidator";
 import {
   agentLogin,
@@ -68,7 +67,7 @@ import {
   getMandiAgentProfile,
   updateOwnMandiAgentProfile,
   verifyAndUpdateNewNumber,
-  globalSearchController
+  globalSearchController,
 } from "../controller/user";
 import {
   adminMiddleware,
@@ -76,6 +75,7 @@ import {
   checkPermissionMiddleware,
   checkWebPermissionMiddleware,
   superAdminMiddleware,
+  superAdminOrSubAdminMiddleware,
 } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 import {
@@ -238,7 +238,7 @@ router.delete("/mobile/:userId", superAdminMiddleware, deleteMobileUserByAdmin);
 
 router.get(
   "/admin/dash_stats",
-  superAdminMiddleware, // mobile admin  dashboard stats
+  superAdminOrSubAdminMiddleware, // mobile admin/sub admin dashboard stats
   retrieveAdminDashboardStats
 );
 router.post(
@@ -303,7 +303,7 @@ router.put(
 );
 
 router.post(
-  "/mobile/verify_and_update",        
+  "/mobile/verify_and_update",
   authMiddleware,
   verifyAndUpdateNewNumber
 );

@@ -19,7 +19,9 @@ export const authMiddleware = async (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: "Access Denied: No Token Provided" });
+    return res
+      .status(401)
+      .json({ message: "Access Denied: No Token Provided" });
   }
 
   try {
@@ -30,8 +32,6 @@ export const authMiddleware = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
-   
 
     req.user = user;
     next();
@@ -44,7 +44,7 @@ export const optionalAuthMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    req.user = null; 
+    req.user = null;
     return next();
   }
 
@@ -68,60 +68,68 @@ export const optionalAuthMiddleware = async (req, res, next) => {
 };
 
 export const superAdminMiddleware = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
+  const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: 'Access Denied: No Token Provided' });
+    return res
+      .status(401)
+      .json({ message: "Access Denied: No Token Provided" });
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
 
     const user = await User.findByPk(decoded.id);
-    
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Check if user is super admin
     if (user.role !== USER_ROLES.SUPER_ADMIN) {
-      return res.status(403).json({ message: 'Access Denied: You are not a super admin' });
+      return res
+        .status(403)
+        .json({ message: "Access Denied: You are not a super admin" });
     }
 
     // Attach user to request object
     req.user = user;
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid or Expired Token' });
+    return res.status(401).json({ message: "Invalid or Expired Token" });
   }
 };
 
 export const adminMiddleware = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
+  const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: 'Access Denied: No Token Provided' });
+    return res
+      .status(401)
+      .json({ message: "Access Denied: No Token Provided" });
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
 
     const user = await User.findByPk(decoded.id);
-    
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Check if user is admin
-    if (user.role !== 'admin') {
-      return res.status(403).json({ message: 'Access Denied: You are not an admin' });
+    if (user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Access Denied: You are not an admin" });
     }
 
     // Attach user to request object
     req.user = user;
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid or Expired Token' });
+    return res.status(401).json({ message: "Invalid or Expired Token" });
   }
 };
 
@@ -204,12 +212,10 @@ export const mandiAgentAndSuperAdminMiddleware = async (req, res, next) => {
       user.role !== USER_ROLES.SUPER_ADMIN &&
       user.role != USER_ROLES.MANDI_AGENT
     )
-      return res
-        .status(403)
-        .json({
-          message:
-            "Access Denied: You are neither a mandi agent nor a super admin.",
-        });
+      return res.status(403).json({
+        message:
+          "Access Denied: You are neither a mandi agent nor a super admin.",
+      });
 
     // Attach user to request object
     req.user = user;
@@ -222,10 +228,10 @@ export const mandiAgentAndSuperAdminMiddleware = async (req, res, next) => {
 export const checkOtpVerified = async (req, res, next) => {
   const { mobile } = req.body;
 
-  const user= await User.findOne({where:{mobile}});
+  const user = await User.findOne({ where: { mobile } });
 
-  if(!user.otpVerified)
-    return res.status(401).json({message:"Otp not verified."});
+  if (!user.otpVerified)
+    return res.status(401).json({ message: "Otp not verified." });
 
   next();
 };
@@ -248,7 +254,47 @@ export const adminOrSubAdminMiddleware = async (req, res, next) => {
     }
 
     // Check if user is admin or sub admin web
-    if (![USER_ROLES.ADMIN, USER_ROLES.SUB_ADMIN_WEB].includes(user.role as USER_ROLES)) {
+    if (
+      ![USER_ROLES.ADMIN, USER_ROLES.SUB_ADMIN_WEB].includes(
+        user.role as USER_ROLES
+      )
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Access Denied: Unauthorized role" });
+    }
+
+    req.user = user;
+
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or Expired Token" });
+  }
+};
+
+export const superAdminOrSubAdminMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Access Denied: No Token Provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+    const user = await User.findByPk(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if user is admin or sub admin web
+    if (
+      ![USER_ROLES.SUPER_ADMIN, USER_ROLES.SUB_ADMIN].includes(
+        user.role as USER_ROLES
+      )
+    ) {
       return res
         .status(403)
         .json({ message: "Access Denied: Unauthorized role" });
@@ -263,7 +309,8 @@ export const adminOrSubAdminMiddleware = async (req, res, next) => {
 };
 
 export const checkWebPermissionMiddleware =
-  (module: string, action: string, isAgentAllowed: boolean) => async (req, res, next) => {
+  (module: string, action: string, isAgentAllowed: boolean) =>
+  async (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
@@ -282,15 +329,17 @@ export const checkWebPermissionMiddleware =
 
       req.user = user;
 
-     if (
-      user.role === USER_ROLES.ADMIN ||
-      (isAgentAllowed && user.role === USER_ROLES.AGENT) // agent allowed only when flag is true
-    ) {
-      return next();
-    }
+      if (
+        user.role === USER_ROLES.ADMIN ||
+        (isAgentAllowed && user.role === USER_ROLES.AGENT) // agent allowed only when flag is true
+      ) {
+        return next();
+      }
 
       if (user.role === USER_ROLES.SUB_ADMIN_WEB) {
-        const userPermissions = await SubAdminWebPermission.findAll({ where: { userId: user.id } })
+        const userPermissions = await SubAdminWebPermission.findAll({
+          where: { userId: user.id },
+        });
 
         const hasPermission = userPermissions.some(
           (p) =>

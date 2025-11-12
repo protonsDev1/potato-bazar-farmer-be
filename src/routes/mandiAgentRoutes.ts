@@ -20,32 +20,32 @@ const validator = createValidator({});
 
 router.post(
   "/",
-  checkPermissionMiddleware(PERMISSIONS.MANDI_AGENTS),
+  checkPermissionMiddleware(PERMISSIONS.MANDI_MANAGEMENT),
   validator.body(createMandiAgentSchema),
   createMandiAgent
 );
 router.get(
   "/",
-  checkPermissionMiddleware(PERMISSIONS.MANDI_AGENTS),
+  checkPermissionMiddleware(PERMISSIONS.MANDI_MANAGEMENT),
   retrieveMandiAgents
 );
 
 router.get(
   "/profile/:mandiAgentId",
-  checkPermissionMiddleware(PERMISSIONS.MANDI_AGENTS),
+  checkPermissionMiddleware(PERMISSIONS.MANDI_MANAGEMENT),
   retrieveMandiAgentProfile
 );
 
 router.put(
   "/:mandiAgentId",
-  checkPermissionMiddleware(PERMISSIONS.MANDI_AGENTS),
+  checkPermissionMiddleware(PERMISSIONS.MANDI_MANAGEMENT),
   validator.body(updateMandiAgentSchema),
   updateMandiAgent
 );
 
 router.delete(
   "/:mandiAgentId",
-  checkPermissionMiddleware(PERMISSIONS.MANDI_AGENTS),
+  checkPermissionMiddleware(PERMISSIONS.MANDI_MANAGEMENT),
   deleteMandiAgent
 );
 
