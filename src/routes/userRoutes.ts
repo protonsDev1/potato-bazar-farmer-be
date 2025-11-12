@@ -23,6 +23,7 @@ import {
   forgotPasswordVerifyOtpSchema,
   mobileUserPBVerificationSchema,
   mandiAgentUpdateSchema,
+  updateMobileUserStatusSchema,
 } from "../validation/userValidator";
 import {
   agentLogin,
@@ -68,6 +69,7 @@ import {
   updateOwnMandiAgentProfile,
   verifyAndUpdateNewNumber,
   globalSearchController,
+  toggleMobileUserActive,
 } from "../controller/user";
 import {
   adminMiddleware,
@@ -309,5 +311,12 @@ router.post(
 );
 
 router.get("/global-search", globalSearchController);
+
+router.put(
+  "/mobile/:id/active",
+  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
+  validator.body(updateMobileUserStatusSchema),
+  toggleMobileUserActive
+);
 
 export default router;
