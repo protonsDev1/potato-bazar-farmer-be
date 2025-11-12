@@ -35,20 +35,20 @@ router.get("/:id", authMiddleware, getCropDiagnosisById);
 
 router.post(
   "/endorsements",
-  checkPermissionMiddleware(PERMISSIONS.ENDORSEMENT),
+  checkPermissionMiddleware(PERMISSIONS.CROP_DIAGNOSIS),
   validator.body(createEndorsementSchema),
   createEndorsement
 );
 
 router.put(
   "/endorsements/:id",
-  checkPermissionMiddleware(PERMISSIONS.ENDORSEMENT),
+  checkPermissionMiddleware(PERMISSIONS.CROP_DIAGNOSIS),
   updateEndorsement
 );
 
 router.delete(
   "/endorsements/:id",
-  checkPermissionMiddleware(PERMISSIONS.ENDORSEMENT),
+  checkPermissionMiddleware(PERMISSIONS.CROP_DIAGNOSIS),
   deleteEndorsement
 );
 export default router;
