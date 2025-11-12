@@ -13,6 +13,8 @@ export const createNewsSchema = Joi.object({
   isFeatured: Joi.boolean().default(false),
   createdBy: Joi.string().trim().optional(),
   source: Joi.string().trim().optional(),
+  ytVideos: Joi.array().items(Joi.string()).optional(),
+  isPanIndia: Joi.boolean().optional(),
   stateId: Joi.number().optional().allow(null),
   districtId: Joi.number().optional().allow(null),
 
@@ -47,4 +49,6 @@ export const updateNewsSchema = Joi.object({
   isFeatured: Joi.boolean().optional(),
   stateId: Joi.number().optional().allow(null),
   districtId: Joi.number().optional().allow(null),
+  ytVideos: Joi.array().items(Joi.string()).optional(),
+  isPanIndia: Joi.boolean().optional(),
 });
