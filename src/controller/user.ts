@@ -809,7 +809,7 @@ export const deleteCurrentMobileUser = async (req, res) => {
 
 export const retrieveAdminDashboardStats = async (req, res) => {
   try {
-    const dashboarStatistics = await getAdminDashboardStats();
+    const dashboarStatistics = await getAdminDashboardStats(req.user);
 
     return res
       .status(200)
