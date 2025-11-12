@@ -133,7 +133,7 @@ export const deleteBuyRequest = async (req, res) => {
 
 export const updateBuyRequest = async (req, res) => {
   const result = await updateBuyRequestService(
-    req.user.id,
+    req.user,
     req.params.id,
     req.body
   );
@@ -173,7 +173,10 @@ export const updateBuyRequestStatus = async (req, res) => {
       referenceId: updatedRequest.id,
     });
 
-    if (status === BUY_REQUEST_STATUS.APPROVED && updatedRequest.isActive === true)
+    if (
+      status === BUY_REQUEST_STATUS.APPROVED &&
+      updatedRequest.isActive === true
+    )
       await sendNotificationToMatchingSellers(id, updatedRequest.id);
 
     return res.json({

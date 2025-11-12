@@ -107,7 +107,7 @@ export const updateRequirement = async (req, res) => {
   try {
     const result = await updateRequirementService(
       req.params.id,
-      req.user.id,
+      req.user,
       req.body
     );
 
