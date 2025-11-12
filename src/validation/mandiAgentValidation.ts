@@ -30,4 +30,5 @@ export const updateMandiAgentSchema = Joi.object({
   licenseNumber: Joi.string().optional().allow(null),
   remarks: Joi.string().optional().allow(null, ""),
   mandiIds: Joi.array().items(Joi.number()).optional(),
+  isActive: Joi.boolean().optional(),
 });

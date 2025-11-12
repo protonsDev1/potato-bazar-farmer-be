@@ -264,3 +264,7 @@ export const mobileUserPBVerificationSchema = Joi.object({
     otherwise: Joi.string().optional().allow(null, ""),
   }),
 });
+
+export const updateMobileUserStatusSchema = Joi.object({
+  isActive: Joi.boolean().required(),
+});
