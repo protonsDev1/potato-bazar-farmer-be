@@ -1,8 +1,7 @@
 export const PERMISSIONS = {
   USER_MANAGEMENT: "user_management",
+  MANDI_MANAGEMENT: "mandi_management",
   PB_VERIFICATION: "pb_verification",
-  MANDI_AGENTS: "mandi_agents",
-  MANDI_LISTS: "mandi_list",
   KYC_REQUESTS: "kyc_requests",
   BUY_REQUESTS: "buy_requests",
   SELL_REQUESTS: "sell_requests",
@@ -10,6 +9,7 @@ export const PERMISSIONS = {
   GOVT_SCHEMES: "govt_schemes",
   EVENTS: "events",
   NEWS: "news",
+  KNOWLEDGE_HUB: "knowledge_hub",
   DIRECTORY: "directory",
   CONTENT_MANAGEMENT: "content_management",
   ADVERTISEMENT: "advertisement",
@@ -17,10 +17,8 @@ export const PERMISSIONS = {
   CALL_SUPPORT: "call_support",
   HELP_SUPPORT: "help_support",
   REPORTS: "reports",
-  ASK_EXPERT: "ask_expert",
-  ENDORSEMENT: "endorsement",
+  CROP_DIAGNOSIS: "crop_diagnosis",
   PROMOTIONAL_BANNERS: "promotional_banners",
-  PROMOTION_REQUESTS: "promotion_requests",
 } as const;
 
 export type PermissionType = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
