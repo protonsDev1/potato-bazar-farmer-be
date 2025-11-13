@@ -52,12 +52,12 @@ export const createRequirementWithInterests = async (req, res) => {
       createdBy: req.user.id,
     };
 
-    if (req.user.role !== USER_ROLES.USER) {
-      return res.status(403).json({
-        success: false,
-        message: "Only Users are allowed to create cold storage requirements",
-      });
-    }
+    // if (req.user.role !== USER_ROLES.USER) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: "Only Users are allowed to create cold storage requirements",
+    //   });
+    // }
 
     const result = await createRequirementAndInterests(requirementData);
 
