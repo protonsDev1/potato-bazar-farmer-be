@@ -9,6 +9,8 @@ import RequestView from "../database/models/requestView";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { PERMISSIONS } from "../utils/constants/permissions";
 import { canUpdateResource } from "../utils/commonCode";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export const createSellRequestService = async (userId: number, data: any) => {
   const newRequest = await SellRequest.create({
@@ -501,6 +503,20 @@ export const updateSellRequestService = async (
 
   if (request.status === SELL_REQUEST_STATUS.REJECTED) {
     payload.status = SELL_REQUEST_STATUS.PENDING;
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Sell Request",
+      description:
+        "A Rejected Sell Request has been moved to pending, please check it.",
+      senderId: user.id,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.SELL,
+      referenceId: requestId,
+    });
   }
 
   await request.update(payload);
