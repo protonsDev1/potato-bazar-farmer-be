@@ -20,6 +20,7 @@ export enum NotificationType {
   USER_PB_VERIFICATION = "USER_PB_VERIFICATION",
   COLD_STORAGE = "COLD_STORAGE",
   ASK_EXPERT = "ask_expert",
+  KNOWLEDGE_HUB = "knowledge_hub",
 }
 
 class Notification extends Model<

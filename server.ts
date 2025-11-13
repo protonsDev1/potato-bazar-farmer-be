@@ -70,6 +70,7 @@ import directoryRoutes from "./src/routes/directoryRoutes";
 import directoryCategoryRoutes from "./src/routes/adminRoutes/directory/directoryCategoryRoutes";
 import directorySubCategoryRoutes from "./src/routes/adminRoutes/directory/directorySubCategoryRoutes";
 import notificationRoutes from "./src/routes/notificationRoutes";
+import knowledgeHubRoutes from "./src/routes/knowledgeHubRoutes";
 
 const cors = require("cors");
 
@@ -152,6 +153,7 @@ app.use("/api/directory_categories", directoryCategoryRoutes);
 app.use("/api/directory_sub_categories", directorySubCategoryRoutes);
 app.use("/api/directories", directoryRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/knowledge_hubs", knowledgeHubRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
