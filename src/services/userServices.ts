@@ -987,7 +987,7 @@ export const getMobileUsers = async ({
     let order: any = [["createdAt", "DESC"]];
 
     const whereCondition: any = {
-      role: USER_ROLES.USER,
+      // role: USER_ROLES.USER,
       [Op.or]: [
         { isUserOnBoardedOnMobile: true },
         { hasStartedUsingMobile: true },
