@@ -29,7 +29,6 @@ import UserSupport from "../database/models/userSupport";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { retrieveFarmerProfile } from "./farmerServices";
 import { retrieveTraderProfile } from "./traderService";
-import ColdStorageRequirement from "../database/models/coldStorageRequirement";
 import Event from "../database/models/event";
 import News, { NEWS_STATUS } from "../database/models/news";
 import MandiList from "../database/models/mandiList";
@@ -42,7 +41,6 @@ import DirectoryPlan from "../database/models/directoryPlan";
 import Banner from "../database/models/banner";
 import Advertisement from "../database/models/advertisement";
 import ContactSupport from "../database/models/contactSupport";
-import HelpAndSupport from "../database/models/helpAndSupport";
 import PromotionRequest from "../database/models/promotionRequest";
 import AskExpert, { QUERY_STATUS } from "../database/models/askExpert";
 
@@ -1930,31 +1928,26 @@ export const requestPbVerificationService = async (userId) => {
       message: "PB verification can only be updated for mobile users.",
     };
 
-  const [farmerExists, coldStorageExists, traderExists, coldStoageHirerExists] =
-    await Promise.all([
-      Farmer.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      ColdStorage.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      Trader.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
-    ]);
+  const [farmerExists, coldStorageExists, traderExists] = await Promise.all([
+    Farmer.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+    ColdStorage.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+    Trader.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+  ]);
   const step2Completed =
-    !!farmerExists ||
-    !!coldStorageExists ||
-    !!traderExists ||
-    !!coldStoageHirerExists;
+    !!farmerExists || !!coldStorageExists || !!traderExists;
 
   if (!step2Completed) {
     return {
       statusCode: 400,
       success: false,
       message:
-        "Complete your role information (farmer, cold storage, trader or cold storage hirer) before requesting PB verification.",
+        "Complete your role information (farmer, cold storage or trader) before requesting PB verification.",
     };
   }
 
@@ -2044,28 +2037,23 @@ export const getPbVerificationStepStatusService = async (userId: number) => {
     : "Complete your basic information before requesting PB verification.";
 
   // Step 2: Complete role information
-  const [farmerExists, coldStorageExists, traderExists, coldStoageHirerExists] =
-    await Promise.all([
-      Farmer.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      ColdStorage.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      Trader.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
-    ]);
+  const [farmerExists, coldStorageExists, traderExists] = await Promise.all([
+    Farmer.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+    ColdStorage.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+    Trader.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+  ]);
   const step2Completed =
-    !!farmerExists ||
-    !!coldStorageExists ||
-    !!traderExists ||
-    !!coldStoageHirerExists;
+    !!farmerExists || !!coldStorageExists || !!traderExists;
   steps.step2Completed = step2Completed;
   steps.step2Message = step2Completed
     ? "Role information completed."
-    : "Complete your role information (farmer, cold storage, trader, or cold storage hirer) before requesting PB verification.";
+    : "Complete your role information (farmer, cold storage or trader) before requesting PB verification.";
 
   // Step 3: Complete KYC upload
   const kyc = await KycDocument.findOne({ where: { userId } });
