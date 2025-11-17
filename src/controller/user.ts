@@ -409,12 +409,17 @@ export const UserLoginOnMobile = async (req, res) => {
   try {
     const userOnboardedOnMobile = await mobileOnboardingLoginService(req.body);
 
-    const token = jwt.sign({ id: userOnboardedOnMobile.id }, JWT_SECRET);
+    if (!userOnboardedOnMobile.success)
+      return res
+        .status(400)
+        .json({ success: false, message: userOnboardedOnMobile.error });
+
+    const token = jwt.sign({ id: userOnboardedOnMobile.data.id }, JWT_SECRET);
 
     return res.status(200).json({
       success: true,
       message: "User Onboarded on mobile Successfully.",
-      user: { token, ...userOnboardedOnMobile.toJSON() },
+      user: { token, ...userOnboardedOnMobile.data.toJSON() },
     });
   } catch (error) {
     return res.status(500).json({
@@ -887,7 +892,7 @@ export const deleteMobileUserByAdmin = async (req, res) => {
     if (
       userDetail.role !== USER_ROLES.USER ||
       (userDetail.hasStartedUsingMobile === false &&
-        userDetail.isUserOnBoardedOnMobile === false)
+        userDetail.isUserOnBoardedOnMobile === true)
     )
       return res.status(400).json({
         success: false,
@@ -921,7 +926,7 @@ export const deleteCurrentMobileUser = async (req, res) => {
     if (
       userDetail.role !== USER_ROLES.USER ||
       (userDetail.hasStartedUsingMobile === false &&
-        userDetail.isUserOnBoardedOnMobile === false)
+        userDetail.isUserOnBoardedOnMobile === true)
     )
       return res.status(400).json({
         success: false,

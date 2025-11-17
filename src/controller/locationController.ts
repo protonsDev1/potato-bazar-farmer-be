@@ -30,7 +30,7 @@ export const listCities = async (req, res) => {
 
     const cities = await City.findAll({
       where: whereClause,
-      attributes: ["id", "name", "image", "position"],
+      attributes: ["id", "name", "image", "position", "stateId"],
       order: [
         [sequelize.literal('"position" IS NULL'), "ASC"],
         ["position", "ASC"],

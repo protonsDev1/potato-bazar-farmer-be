@@ -2,7 +2,7 @@ import {
   Model,
   DataTypes,
   InferAttributes,
-  InferCreationAttributes,
+  InferCreationAttributes,  
   CreationOptional,
 } from "sequelize";
 import bcrypt from "bcrypt";
