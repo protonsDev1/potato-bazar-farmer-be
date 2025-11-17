@@ -979,6 +979,7 @@ export const getMobileUsers = async ({
   activeStatus,
   pbVerificationRequested,
   pbVerificationStatus,
+  userType,
 }) => {
   try {
     const offset = (page - 1) * limit;
@@ -991,6 +992,31 @@ export const getMobileUsers = async ({
         { hasStartedUsingMobile: true },
       ],
     };
+
+    // Accept: comma-separated string "farmer,trader" OR array ['farmer','trader']
+    if (userType) {
+      let userTypeArray: string[] = [];
+
+      if (Array.isArray(userType)) {
+        // express repeated query param ?userType=a&userType=b -> ['a','b']
+        userTypeArray = userType.flatMap((t) =>
+          String(t)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        );
+      } else if (typeof userType === "string") {
+        // comma separated "a,b"
+        userTypeArray = userType
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+
+      if (userTypeArray.length > 0) {
+        whereCondition.userType = { [Op.overlap]: userTypeArray };
+      }
+    }
 
     if (search && search.trim()) {
       const searchTerm = `%${search.trim()}%`;

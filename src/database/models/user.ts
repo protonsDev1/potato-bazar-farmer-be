@@ -33,6 +33,17 @@ export enum PB_VERIFICATION_STATUS {
   REJECTED = "rejected",
 }
 
+export enum USER_REGISTRATION_TYPES {
+  FARMER = "farmer",
+  COLD_STORAGE = "cold_storage",
+  TRADER = "trader",
+  POTATO_PROCESSOR = "potato_processor",
+  EQUIPMENT_SUPPLIER = "equipment_supplier",
+  INPUT_SUPPLIER = "input_supplier",
+  SERVICE_PROVIDER = "service_provider",
+  OTHER = "other",
+}
+
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare id: number;
   declare name: string;
@@ -207,7 +218,7 @@ User.init(
     playerId: {
       type: DataTypes.STRING,
       allowNull: true,
-    }
+    },
   },
   {
     sequelize,

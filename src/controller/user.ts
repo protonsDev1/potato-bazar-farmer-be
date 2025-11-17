@@ -705,6 +705,7 @@ export const retrieveMobileUsers = async (req, res) => {
       activeStatus,
       pbVerificationRequested,
       pbVerificationStatus,
+      userType
     } = req.query;
 
     const response = await getMobileUsers({
@@ -715,6 +716,7 @@ export const retrieveMobileUsers = async (req, res) => {
       activeStatus,
       pbVerificationRequested,
       pbVerificationStatus,
+      userType
     });
 
     if (!response.success)
