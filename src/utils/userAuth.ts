@@ -34,7 +34,9 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ message: "User is deactivated" });
+      return res.status(403).json({
+        message: "User has been deactivated. Please contact the admin",
+      });
     }
 
     req.user = user;
@@ -161,7 +163,9 @@ export const checkPermissionMiddleware = (permissions: string | string[]) => {
       }
 
       if (!user.isActive) {
-        return res.status(403).json({ message: "User is deactivated" });
+        return res.status(403).json({
+          message: "User has been deactivated. Please contact the admin",
+        });
       }
 
       // Attach user to request object
@@ -222,7 +226,9 @@ export const mandiAgentAndSuperAdminMiddleware = async (req, res, next) => {
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ message: "User is deactivated" });
+      return res.status(403).json({
+        message: "User has been deactivated. Please contact the admin",
+      });
     }
 
     if (
@@ -271,7 +277,9 @@ export const adminOrSubAdminMiddleware = async (req, res, next) => {
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ message: "User is deactivated" });
+      return res.status(403).json({
+        message: "User has been deactivated. Please contact the admin",
+      });
     }
 
     // Check if user is admin or sub admin web
@@ -311,7 +319,9 @@ export const superAdminOrSubAdminMiddleware = async (req, res, next) => {
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ message: "User is deactivated" });
+      return res.status(403).json({
+        message: "User has been deactivated. Please contact the admin",
+      });
     }
 
     // Check if user is admin or sub admin web
@@ -353,7 +363,9 @@ export const checkWebPermissionMiddleware =
       }
 
       if (!user.isActive) {
-        return res.status(403).json({ message: "User is deactivated" });
+        return res.status(403).json({
+          message: "User has been deactivated. Please contact the admin",
+        });
       }
 
       req.user = user;
