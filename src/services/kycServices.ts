@@ -112,7 +112,7 @@ export const listKycFromDB = async (
     where: whereCondition,
     offset,
     limit,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   return {

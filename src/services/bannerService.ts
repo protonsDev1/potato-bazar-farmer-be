@@ -129,7 +129,7 @@ export const getPublicBannersService = async () => {
     },
     order: [
       ["position", "ASC"],
-      ["updatedAt", "DESC"],
+      ["createdAt", "DESC"],
     ],
     limit: 3,
   });

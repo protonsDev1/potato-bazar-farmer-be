@@ -477,7 +477,7 @@ export const getTraderListByAdmin = async (
       ];
     }
 
-    let order: any[] = [["updatedAt", "DESC"]];
+    let order: any[] = [["createdAt", "DESC"]];
 
     if (sortBy) {
       switch (sortBy.toLowerCase()) {
@@ -684,7 +684,7 @@ export const getAllTraders = async (filters, search) => {
         required: Object.keys(onBoardedByUserWhere).length > 0,
       },
     ],
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   return traders;
