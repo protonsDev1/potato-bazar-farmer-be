@@ -102,7 +102,7 @@ export const login = async (req, res) => {
 
     if (!user.isActive) {
       return res.status(403).json({
-        message: "Your account is deactivated. Please contact admin.",
+        message: "User has been deactivated. Please contact the admin.",
       });
     }
 
@@ -218,7 +218,8 @@ export const agentLogin = async (req, res) => {
 
     if (!agent.isActive) {
       return res.status(403).json({
-        message: "Agent account is deactivated. Please contact admin.",
+        message:
+          "Agent account has been deactivated. Please contact the admin.",
       });
     }
 
@@ -273,7 +274,7 @@ export const sendOtp = async (req, res) => {
       !existingUser.isActive
     ) {
       return res.status(403).json({
-        message: "Your account is deactivated. Please contact admin.",
+        message: "User has been deactivated. Please contact the admin.",
       });
     }
 
@@ -303,6 +304,17 @@ export const verifyOtp = async (req, res) => {
 
     const existingUser = await checkExistingUser(mobile);
     if (existingUser) {
+      if (
+        (existingUser.hasStartedUsingMobile ||
+          existingUser.isUserOnBoardedOnMobile) &&
+        !existingUser.isActive
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "User has been deactivated. Please contact the admin.",
+        });
+      }
+
       if (hasStartedUsingMobile) {
         await existingUser.update({ hasStartedUsingMobile: true, playerId });
       }
@@ -350,7 +362,7 @@ export const resendOtp = async (req, res) => {
         !existingUser.isActive
       ) {
         return res.status(403).json({
-          message: "Your account is deactivated. Please contact admin.",
+          message: "User has been deactivated. Please contact the admin.",
         });
       }
     }
