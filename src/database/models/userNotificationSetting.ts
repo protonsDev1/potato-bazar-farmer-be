@@ -26,6 +26,7 @@ class UserNotificationSetting extends Model<
   declare event: CreationOptional<boolean>;
   declare govScheme: CreationOptional<boolean>;
   declare coldStorage: CreationOptional<boolean>;
+  declare knowledgeHub: CreationOptional<boolean>;
 
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -51,7 +52,7 @@ UserNotificationSetting.init(
     event: { type: DataTypes.BOOLEAN, defaultValue: true },
     govScheme: { type: DataTypes.BOOLEAN, defaultValue: true },
     coldStorage: { type: DataTypes.BOOLEAN, defaultValue: true },
-
+    knowledgeHub: { type: DataTypes.BOOLEAN, defaultValue: true },
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     updatedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   },

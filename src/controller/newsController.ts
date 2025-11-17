@@ -49,6 +49,7 @@ export const listNews = async (req, res) => {
       stateId,
       districtId,
       date,
+      isAiNews
     } = req.query;
     const result = await listNewsService({
       search: search.toString(),
@@ -60,6 +61,7 @@ export const listNews = async (req, res) => {
       stateId,
       districtId,
       date,
+      isAiNews
     });
     return res.status(result.statusCode).json(result);
   } catch (err) {
