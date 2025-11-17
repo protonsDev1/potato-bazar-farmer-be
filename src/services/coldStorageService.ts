@@ -908,7 +908,7 @@ export async function getColdStorage(
       ];
     }
 
-    let order: any[] = [["updatedAt", "DESC"]];
+    let order: any[] = [["createdAt", "DESC"]];
 
     let favouriteColdStorageIds: number[] = [];
     if (isFavourite && isFavourite === "true") {
@@ -942,7 +942,7 @@ export async function getColdStorage(
               ),
               "ASC",
             ],
-            ["updatedAt", "DESC"],
+            ["createdAt", "DESC"],
           ];
           break;
         case "name_asc":
@@ -964,7 +964,7 @@ export async function getColdStorage(
           order = [["createdAt", "DESC"]];
           break;
         default:
-          order = [["updatedAt", "DESC"]];
+          order = [["createdAt", "DESC"]];
           break;
       }
     }
@@ -1177,7 +1177,7 @@ export async function getAllColdStorages(filters: any, search: string) {
           required: Object.keys(onBoardedByUserWhere).length > 0,
         },
       ],
-      order: [["updatedAt", "DESC"]],
+      order: [["createdAt", "DESC"]],
     });
 
     return coldStorages;

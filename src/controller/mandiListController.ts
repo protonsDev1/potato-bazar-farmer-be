@@ -96,7 +96,7 @@ export const getAllMandiByCity = async (req, res) => {
           order: [["date", "ASC"]],
         },
       ],
-      order: [["updatedAt", "DESC"]],
+      order: [["createdAt", "DESC"]],
     });
 
     const formattedList = mandiList
@@ -175,7 +175,7 @@ export const getAllMandi = async (req, res) => {
       ],
       limit,
       offset,
-      order: [["updatedAt", "DESC"]],
+      order: [["createdAt", "DESC"]],
     });
 
     return res.status(200).json({

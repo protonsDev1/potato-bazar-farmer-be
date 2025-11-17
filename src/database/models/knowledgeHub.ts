@@ -16,12 +16,11 @@ export enum KNOWLEDGE_HUB_STATUS {
 }
 
 export enum KNOWLEDGE_HUB_CATEGORY {
-  MARKET = "Market",
-  TRADE = "Trade",
-  WEATHER = "Weather",
-  CROP_ALERTS = "Crop Alerts",
-  FARMING_NEWS = "Farming News",
-  SUPPLY_CHAIN = "Supply Chain",
+  FARMING = "Farming(Agronomy)",
+  SUPPLY_CHAIN = "Supply Chain(Post Harvest Storage & Logistics)",
+  MARKET_TRADE = "Market & Trade",
+  PROCESSING = "Processing",
+  RESEARCH_INNOVATION = "Research & Innovation",
 }
 
 class KnowledgeHub extends Model<
@@ -152,6 +151,9 @@ KnowledgeHub.belongsTo(District, {
   as: "district",
 });
 
-District.hasMany(KnowledgeHub, { foreignKey: "districtId", as: "knowledgeHubs" });
+District.hasMany(KnowledgeHub, {
+  foreignKey: "districtId",
+  as: "knowledgeHubs",
+});
 
 export default KnowledgeHub;

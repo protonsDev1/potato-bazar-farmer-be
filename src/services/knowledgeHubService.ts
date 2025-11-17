@@ -58,7 +58,7 @@ export const listKnowledgeHubService = async ({
     ],
     offset,
     limit,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const knowledgeHubWithViews = await Promise.all(
