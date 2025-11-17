@@ -1,6 +1,7 @@
 import User, {
   PB_VERIFICATION_STATUS,
   REGISTRATION_STATUS,
+  USER_REGISTRATION_TYPES,
   USER_ROLES,
 } from "../database/models/user";
 import Agent from "../database/models/agent";
@@ -909,10 +910,23 @@ export const mobileOnboardingLoginService = async (userData) => {
     pinCode,
   } = userData;
 
+  const VALID_USER_TYPES = Object.values(USER_REGISTRATION_TYPES);
+
+  if (Array.isArray(userType) && !userType.every((type) => VALID_USER_TYPES.includes(type)))
+    return {
+      success: false,
+      error:
+        "Invalid user type found. Only allowed values are: " +
+        VALID_USER_TYPES.join(", "),
+    };
+
   const user = await User.findOne({ where: { mobile } });
 
   if (!user) {
-    throw new Error("User not found");
+    return {
+      success: false,
+      error: "User not found",
+    };
   }
 
   const updatedUser = await user.update({
@@ -928,7 +942,10 @@ export const mobileOnboardingLoginService = async (userData) => {
     isUserOnBoardedOnMobile: true,
   });
 
-  return updatedUser;
+  return {
+    success: true,
+    data: updatedUser,
+  };
 };
 
 export const getUserRole = async (userId) => {
@@ -944,8 +961,8 @@ export const toggleMobileUserActiveService = async (
 ) => {
   const whereCondition: any = {
     id: userId,
-    role: USER_ROLES.USER,
-    [Op.or]: [
+    // role: USER_ROLES.USER,
+    [Op.and]: [
       { isUserOnBoardedOnMobile: true },
       { hasStartedUsingMobile: true },
     ],
@@ -987,7 +1004,7 @@ export const getMobileUsers = async ({
 
     const whereCondition: any = {
       // role: USER_ROLES.USER,
-      [Op.or]: [
+      [Op.and]: [
         { isUserOnBoardedOnMobile: true },
         { hasStartedUsingMobile: true },
       ],
@@ -1310,8 +1327,8 @@ export const getAdminDashboardStats = async (user) => {
     userMgmtAllowed
       ? User.count({
           where: {
-            role: USER_ROLES.USER,
-            [Op.or]: [
+            // role: USER_ROLES.USER,
+            [Op.and]: [
               { isUserOnBoardedOnMobile: true },
               { hasStartedUsingMobile: true },
             ],
@@ -1323,8 +1340,8 @@ export const getAdminDashboardStats = async (user) => {
     userMgmtAllowed
       ? User.count({
           where: {
-            role: USER_ROLES.USER,
-            [Op.or]: [
+            // role: USER_ROLES.USER,
+            [Op.and]: [
               { isUserOnBoardedOnMobile: true },
               { hasStartedUsingMobile: true },
             ],
@@ -1444,8 +1461,8 @@ export const getAdminDashboardStats = async (user) => {
     userMgmtAllowed
       ? User.findAll({
           where: {
-            role: USER_ROLES.USER,
-            [Op.or]: [
+            // role: USER_ROLES.USER,
+            [Op.and]: [
               { isUserOnBoardedOnMobile: true },
               { hasStartedUsingMobile: true },
             ],
@@ -1768,9 +1785,9 @@ export const getUserTypeProfileDetails = async (userId) => {
     };
 
   if (
-    userDetail.role !== USER_ROLES.USER ||
+    // userDetail.role !== USER_ROLES.USER ||
     (userDetail.hasStartedUsingMobile === false &&
-      userDetail.isUserOnBoardedOnMobile === false)
+      userDetail.isUserOnBoardedOnMobile === true)
   )
     return {
       success: false,
@@ -1865,9 +1882,9 @@ export const updatePbVerificationService = async (
   }
 
   if (
-    user.role !== USER_ROLES.USER ||
+    // user.role !== USER_ROLES.USER ||
     (user.hasStartedUsingMobile === false &&
-      user.isUserOnBoardedOnMobile === false)
+      user.isUserOnBoardedOnMobile === true)
   )
     return {
       statusCode: 403,
@@ -1944,9 +1961,9 @@ export const requestPbVerificationService = async (userId) => {
   }
 
   if (
-    user.role !== USER_ROLES.USER ||
+    // user.role !== USER_ROLES.USER ||
     (user.hasStartedUsingMobile === false &&
-      user.isUserOnBoardedOnMobile === false)
+      user.isUserOnBoardedOnMobile === true)
   )
     return {
       statusCode: 403,
