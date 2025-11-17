@@ -79,7 +79,7 @@ export const getRequirementsService = async (
     whereCondition.id = { [Op.in]: favouriteRequirementIds };
   }
 
-  let order: any = [["updatedAt", "DESC"]];
+  let order: any = [["createdAt", "DESC"]];
   if (sortBy) {
     switch (String(sortBy).toLowerCase()) {
       case "created_asc":
@@ -89,7 +89,7 @@ export const getRequirementsService = async (
         order = [["createdAt", "DESC"]];
         break;
       default:
-        order = [["updatedAt", "DESC"]];
+        order = [["createdAt", "DESC"]];
     }
   }
 

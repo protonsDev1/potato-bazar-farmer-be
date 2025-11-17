@@ -190,7 +190,7 @@ export const getAllMandiAgents = async (
     ],
     limit,
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const enrichedResults = rows.map((entry) => {

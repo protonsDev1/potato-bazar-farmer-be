@@ -1018,11 +1018,11 @@ export const getMobileUsers = async ({
           fn(
             "COALESCE",
             col("User.pbVerificationRequestedAt"),
-            col("User.updatedAt")
+            col("User.createdAt")
           ),
           "DESC",
         ],
-        ["updatedAt", "DESC"],
+        ["createdAt", "DESC"],
       ];
     }
 
@@ -1434,7 +1434,7 @@ export const getAdminDashboardStats = async (user) => {
     kycAllowed
       ? KycDocument.findAll({
           limit: 10,
-          order: [["updatedAt", "DESC"]],
+          order: [["createdAt", "DESC"]],
           attributes: ["id", "status", "updatedAt", "isVerified"],
         })
       : Promise.resolve(null),

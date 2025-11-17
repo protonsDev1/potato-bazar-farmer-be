@@ -56,7 +56,7 @@ export const getAllFaqs = async (req, res) => {
       ],
       limit,
       offset,
-      order: [["updatedAt", "DESC"]],
+      order: [["createdAt", "DESC"]],
     });
 
     return res.status(200).json({

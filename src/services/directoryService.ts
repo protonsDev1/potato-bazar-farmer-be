@@ -386,11 +386,11 @@ export const getDirectoryListByAdmin = async (
       ];
     }
 
-    let order: any = [["updatedAt", "DESC"]];
+    let order: any = [["createdAt", "DESC"]];
     if (mobileSortByPlanPriority) {
       order = [
         [{ model: DirectoryPlan, as: "plan" }, "priority", "ASC"],
-        ["updatedAt", "DESC"],
+        ["createdAt", "DESC"],
       ];
     } else if (sortBy) {
       switch (String(sortBy).toLowerCase()) {
@@ -413,7 +413,7 @@ export const getDirectoryListByAdmin = async (
           order = [["updatedAt", "DESC"]];
           break;
         default:
-          order = [["updatedAt", "DESC"]];
+          order = [["createdAt", "DESC"]];
       }
     }
 

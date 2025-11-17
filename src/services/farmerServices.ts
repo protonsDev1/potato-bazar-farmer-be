@@ -729,7 +729,7 @@ export async function getFarmerListByAdmin(
       ];
     }
 
-    let order: any = [["updatedAt", "DESC"]];
+    let order: any = [["createdAt", "DESC"]];
 
     if (sortBy) {
       switch (sortBy.toLowerCase()) {
@@ -1066,7 +1066,7 @@ export async function getAllFarmers(filters: any, search: string) {
         required: Object.keys(landDetailsWhere).length > 0,
       },
     ],
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
   return farmers;
 }
