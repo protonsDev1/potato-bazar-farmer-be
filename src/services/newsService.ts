@@ -25,6 +25,7 @@ export const listNewsService = async ({
   stateId,
   districtId,
   date,
+  isAiNews = "",
 }) => {
   const whereClause: any = {};
 
@@ -45,6 +46,11 @@ export const listNewsService = async ({
     const end = new Date(date);
     end.setDate(end.getDate() + 1);
     whereClause.createdAt = { [Op.between]: [start, end] };
+  }
+  if (isAiNews === "true") {
+    whereClause.createdBy = "ai-agent";
+  } else if (isAiNews === "false") {
+    whereClause.createdBy = { [Op.ne]: "ai-agent" };
   }
 
   const offset = (page - 1) * limit;
