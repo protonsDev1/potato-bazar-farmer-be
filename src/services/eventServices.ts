@@ -112,7 +112,7 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
     ],
     limit,
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const enrichedResults = await Promise.all(
@@ -190,7 +190,7 @@ export const getEventDetail = async (eventId, userId, role) => {
       id: { [Op.ne]: eventId },
       ...whereCondition,
     },
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
     limit: 5,
   });
 
@@ -303,7 +303,7 @@ export const getAllEventRequests = async (page = 1, limit = 10, search) => {
     ],
     limit,
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   return {
