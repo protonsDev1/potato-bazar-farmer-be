@@ -221,6 +221,7 @@ export const updateNotificationSettings = async (req, res) => {
       payload.event = true;
       payload.govScheme = true;
       payload.coldStorage = true;
+      payload.knowledgeHub = true;
     }
 
     if (!settings) {

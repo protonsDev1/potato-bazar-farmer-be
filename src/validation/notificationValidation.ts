@@ -25,6 +25,7 @@ export const updateNotificationSettingsSchema = Joi.object({
   event: Joi.boolean().optional(),
   govScheme: Joi.boolean().optional(),
   coldStorage: Joi.boolean().optional(),
+  knowledegeHub: Joi.boolean().optional(),
 })
   .min(1)
   .messages({
