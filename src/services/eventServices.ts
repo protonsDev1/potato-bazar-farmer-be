@@ -248,7 +248,7 @@ export const getEventDetail = async (eventId, userId, role) => {
     };
   } else if (role && role === USER_ROLES.USER) {
     const registeredByUser = await EventRequest.findAll({
-      where: { requestCreatedBy: userId },
+      where: { requestCreatedBy: userId, eventId },
       attributes: ["requestCreatedBy", "mobile", "name"],
     });
 

@@ -10,7 +10,11 @@ import TraderDocument from "../database/models/trader/traderDocument";
 import TraderInterest from "../database/models/trader/traderInterest";
 import TraderType from "../database/models/trader/traderType";
 import TraderVariety from "../database/models/trader/traderVariety";
-import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
+import User, {
+  REGISTRATION_STATUS,
+  USER_REGISTRATION_TYPES,
+  USER_ROLES,
+} from "../database/models/user";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
@@ -71,6 +75,33 @@ export async function onboardTrader(payload) {
           subVariety: payload.subVariety,
         },
         { transaction: t }
+      );
+
+      const userData = await User.findOne({
+        where: { id: payload.userId },
+        transaction: t,
+      });
+
+      let updatedTypes = userData.userType || [];
+
+      if (!updatedTypes.includes(USER_REGISTRATION_TYPES.TRADER)) {
+        updatedTypes.push(USER_REGISTRATION_TYPES.TRADER);
+      }
+
+      await User.update(
+        {
+          name: payload.fullName,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          email: payload.email,
+          state: payload.state,
+          district: payload.district,
+          pinCode: payload.pinCode,
+          cityOrVillage: payload.cityOrVillage,
+          isUserOnBoardedOnMobile: true,
+          userType: updatedTypes,
+        },
+        { where: { id: payload.userId }, transaction: t }
       );
 
       if (payload.traderInterests) {

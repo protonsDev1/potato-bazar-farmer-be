@@ -40,7 +40,7 @@ export const sendNotificationService = async (payload: Payload) => {
   if (isBroadCast) {
     const users = await User.findAll({
       where: {
-        role: USER_ROLES.USER,
+        // role: USER_ROLES.USER,
         [Op.and]: [
           { isUserOnBoardedOnMobile: true },
           { hasStartedUsingMobile: true },

@@ -13,7 +13,11 @@ import MajorSellingChallenge from "../database/models/majorSellingChallenge";
 import PriceDiscoveryMethod from "../database/models/priceDiscoveryMethod";
 
 import { literal, Model, ModelStatic, Op, Sequelize } from "sequelize";
-import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
+import User, {
+  REGISTRATION_STATUS,
+  USER_REGISTRATION_TYPES,
+  USER_ROLES,
+} from "../database/models/user";
 import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
 import BrandPreferenceReason from "../database/models/brandPreferenceReason";
 import SellingPrice from "../database/models/sellingPrice";
@@ -117,6 +121,32 @@ export async function onboardFarmer(payload: Payload) {
           userId: payload.userId,
         },
         { transaction: t }
+      );
+
+      const userData = await User.findOne({
+        where: { id: payload.userId },
+        transaction: t,
+      });
+
+      let updatedTypes = userData.userType || [];
+
+      if (!updatedTypes.includes(USER_REGISTRATION_TYPES.FARMER)) {
+        updatedTypes.push(USER_REGISTRATION_TYPES.FARMER);
+      }
+
+      await User.update(
+        {
+          name: payload.name,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          state: payload.state,
+          district: payload.district,
+          pinCode: payload.pinCode,
+          cityOrVillage: payload.village,
+          isUserOnBoardedOnMobile: true,
+          userType: updatedTypes,
+        },
+        { where: { id: payload.userId }, transaction: t }
       );
 
       if (payload.landDetails) {
