@@ -912,7 +912,10 @@ export const mobileOnboardingLoginService = async (userData) => {
 
   const VALID_USER_TYPES = Object.values(USER_REGISTRATION_TYPES);
 
-  if (Array.isArray(userType) && !userType.every((type) => VALID_USER_TYPES.includes(type)))
+  if (
+    Array.isArray(userType) &&
+    !userType.every((type) => VALID_USER_TYPES.includes(type))
+  )
     return {
       success: false,
       error:
@@ -1786,8 +1789,8 @@ export const getUserTypeProfileDetails = async (userId) => {
 
   if (
     // userDetail.role !== USER_ROLES.USER ||
-    (userDetail.hasStartedUsingMobile === false &&
-      userDetail.isUserOnBoardedOnMobile === true)
+    userDetail.hasStartedUsingMobile === false &&
+    userDetail.isUserOnBoardedOnMobile === true
   )
     return {
       success: false,
@@ -1883,8 +1886,8 @@ export const updatePbVerificationService = async (
 
   if (
     // user.role !== USER_ROLES.USER ||
-    (user.hasStartedUsingMobile === false &&
-      user.isUserOnBoardedOnMobile === true)
+    user.hasStartedUsingMobile === false &&
+    user.isUserOnBoardedOnMobile === true
   )
     return {
       statusCode: 403,
@@ -1962,8 +1965,8 @@ export const requestPbVerificationService = async (userId) => {
 
   if (
     // user.role !== USER_ROLES.USER ||
-    (user.hasStartedUsingMobile === false &&
-      user.isUserOnBoardedOnMobile === true)
+    user.hasStartedUsingMobile === false &&
+    user.isUserOnBoardedOnMobile === true
   )
     return {
       statusCode: 403,
@@ -2022,7 +2025,9 @@ export const requestPbVerificationService = async (userId) => {
         message: "PB verification is already approved.",
         data: user,
       };
-    } else {
+    }
+
+    if (user.pbVerificationStatus === PB_VERIFICATION_STATUS.PENDING) {
       return {
         statusCode: 200,
         success: true,
