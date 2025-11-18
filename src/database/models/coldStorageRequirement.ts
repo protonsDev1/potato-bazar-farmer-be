@@ -21,6 +21,7 @@ class ColdStorageRequirement extends Model<
   declare state: string | null;
   declare verified: boolean;
   declare quantity: string | null;
+  declare unit: string | null;
   declare commodityType: string | null;
   declare storageTypes: string[] | null;
   declare bagTypes: string[] | null;
@@ -55,6 +56,9 @@ ColdStorageRequirement.init(
       defaultValue: false,
     },
     quantity: {
+      type: DataTypes.STRING,
+    },
+    unit: {
       type: DataTypes.STRING,
     },
     commodityType: {
