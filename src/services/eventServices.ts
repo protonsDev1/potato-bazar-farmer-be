@@ -374,13 +374,6 @@ export const updateEventService = async (eventId, payload) => {
 
   await Event.update(updateData, { where: { id: eventId } });
 
-  if (payload.banner) {
-    if (event.banner) {
-      await event.banner.update(payload.banner);
-    } else {
-      await Banner.create({ ...payload.banner, eventId });
-    }
-  }
   if ("banner" in payload) {
     if (payload.banner === null) {
       // delete banner
