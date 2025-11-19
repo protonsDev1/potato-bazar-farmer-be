@@ -36,7 +36,7 @@ class MandiPrice extends Model<
   declare updatedAt: CreationOptional<Date>;
 
   // Associations
-  declare grades?: MandiGradePrice;
+  declare grades?: MandiGradePrice[];
   declare mandi?: MandiList;
 }
 
