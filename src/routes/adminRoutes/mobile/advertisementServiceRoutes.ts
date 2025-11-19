@@ -2,7 +2,6 @@ import { createValidator } from "express-joi-validation";
 import express from "express";
 
 import { checkPermissionMiddleware } from "../../../utils/userAuth";
-import { adminColdStorageSchema } from "../../../validation/adminValidation";
 import {
   addAdvertisementService,
   deleteAdvertisementService,
@@ -11,6 +10,7 @@ import {
   updateAdvertisementService,
 } from "../../../controller/adminController/mobile/advertisementServiceController";
 import { PERMISSIONS } from "../../../utils/constants/permissions";
+import { createAdvertisementServiceSchema } from "../../../validation/advertisementValidation";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -18,7 +18,7 @@ const validator = createValidator({});
 router.post(
   "/",
   checkPermissionMiddleware(PERMISSIONS.ADVERTISEMENT),
-  validator.body(adminColdStorageSchema),
+  validator.body(createAdvertisementServiceSchema),
   addAdvertisementService
 );
 
