@@ -206,23 +206,22 @@ export const registerOnEvent = async (req, res) => {
         message: response.error,
       });
 
-    const superAdmin = await User.findOne({
-      where: { role: USER_ROLES.SUPER_ADMIN },
-    });
+    // const superAdmin = await User.findOne({
+    //   where: { role: USER_ROLES.SUPER_ADMIN },
+    // });
 
-    await sendNotificationService({
-      title: "Request To Join an Event",
-      description: "User is Requesting to join an Event",
-      senderId: userId,
-      receiverId: superAdmin.id,
-      referenceType: NotificationType.EVENT,
-      referenceId: eventId,
-    });
+    // await sendNotificationService({
+    //   title: "Request To Join an Event",
+    //   description: "User is Requesting to join an Event",
+    //   senderId: userId,
+    //   receiverId: superAdmin.id,
+    //   referenceType: NotificationType.EVENT,
+    //   referenceId: eventId,
+    // });
 
     return res.status(201).json({
       success: response.success,
-      message:
-        "Request to register on this event has been submitted successfully.",
+      message: "Given mobile number is registered for the event successfully.",
       data: response.data,
     });
   } catch (error) {

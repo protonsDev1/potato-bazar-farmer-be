@@ -1,7 +1,9 @@
 import { Op } from "sequelize";
 import Event from "../database/models/event";
 import { buildDate, hasValue } from "../utils/parseQuery";
-import EventRequest from "../database/models/eventRequest";
+import EventRequest, {
+  EVENT_REQUEST_STATUS,
+} from "../database/models/eventRequest";
 import User, { USER_ROLES } from "../database/models/user";
 import Banner from "../database/models/banner";
 
@@ -410,11 +412,12 @@ export const requestToJoinEvent = async (userId, eventId, name, mobile) => {
   });
 
   if (eventRequest) {
-    return {
-      success: false,
-      error:
-        "User already has raised request for given user to register for this event.",
-    };
+    if (eventRequest.status === EVENT_REQUEST_STATUS.APPROVED) {
+      return {
+        success: false,
+        error: "Given mobile number is already registered for this event.",
+      };
+    }
   }
 
   const newEventRequest = await EventRequest.create({
@@ -422,6 +425,7 @@ export const requestToJoinEvent = async (userId, eventId, name, mobile) => {
     mobile,
     requestCreatedBy: userId,
     eventId,
+    status: EVENT_REQUEST_STATUS.APPROVED,
   });
 
   return {
