@@ -90,8 +90,9 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
 
   // expired events filter
   if (!includeExpired || includeExpired === "false") {
-    const now = new Date();
-    whereCondition.endDate = { [Op.gte]: now };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    whereCondition.endDate = { [Op.gte]: today };
   }
 
   if (search) {
