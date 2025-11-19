@@ -257,19 +257,18 @@ export const listMyBuyRequestsService = async (
 };
 
 export const listAdminBuyRequestsService = async (query: any) => {
-  const { page = 1, perPage = 10, status, search } = query;
+  const { page = 1, perPage = 10, status, isActive, search } = query;
   const offset = (Number(page) - 1) * Number(perPage);
 
   const where: any = {};
 
-  if (status) {
-    if (status.toLowerCase() === "active") {
-      where.isActive = true;
-    } else if (status.toLowerCase() === "inactive") {
-      where.isActive = false;
-    } else if (Object.values(BUY_REQUEST_STATUS).includes(status)) {
-      where.status = status;
-    }
+  if (status && Object.values(BUY_REQUEST_STATUS).includes(status)) {
+    where.status = status;
+  }
+
+  if (isActive !== undefined && isActive !== null && isActive !== "") {
+    if (isActive === "true") where.isActive = true;
+    else if (isActive === "false") where.isActive = false;
   }
 
   if (search) {
