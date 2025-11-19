@@ -2235,7 +2235,7 @@ export const globalSearchDB = async (q: string) => {
     limit: 10,
   });
 
-  const knowledgeHub = KnowledgeHub.findAll({
+  const knowledgeHubs = KnowledgeHub.findAll({
     where: {
       [Op.or]: [
         { title: { [Op.iLike]: term } },
@@ -2309,7 +2309,7 @@ export const globalSearchDB = async (q: string) => {
     coldStorages,
     events,
     news,
-    knowledgeHub,
+    knowledgeHubs,
     mandis,
     buyRequests,
     sellRequests,
@@ -2319,7 +2319,7 @@ export const globalSearchDB = async (q: string) => {
       coldStorages,
       events,
       news,
-      knowledgeHub,
+      knowledgeHubs,
       mandis,
       buyRequests,
       sellRequests,
@@ -2328,7 +2328,7 @@ export const globalSearchDB = async (q: string) => {
       coldStorages,
       events,
       news,
-      knowledgeHub,
+      knowledgeHubs,
       mandis,
       buyRequests,
       sellRequests,
