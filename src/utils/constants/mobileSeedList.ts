@@ -1,19 +1,28 @@
 export const advertisementServiceList = [
   {
     name: "Banner ads",
+    subName: "Static banners on homepage, category pages and listings.",
     position: 1,
   },
   {
     name: "Video ads",
+    subName: "Short promotional videos in high-visibility sections.",
     position: 2,
   },
   {
-    name: "Promotional Articles",
+    name: "Sponsored Posts",
+    subName: "Boosted updates for offers, launches and announcements.",
     position: 3,
   },
   {
-    name: "Guest/sponsored posts",
+    name: "Promotional Articles",
+    subName: "Long-form content featured in News/Knowledge Hub.",
     position: 4,
+  },
+  {
+    name: "Product Placement - Crop Diagnostic",
+    subName: "Show your product in remedy recommendations for farmers.",
+    position: 5,
   },
 ];
 
@@ -142,8 +151,7 @@ export const faqQuestionsAndAnswers = [
   },
   {
     category: "ACCOUNT & PROFILE",
-    question:
-      "Can I create more than one account using the same phone number?",
+    question: "Can I create more than one account using the same phone number?",
     answer:
       "No, for safety and authenticity, one mobile number is allowed for one account only.",
   },
@@ -265,8 +273,7 @@ export const faqQuestionsAndAnswers = [
   },
   {
     category: "MANDI PRICE & MARKET INTELLIGENCE",
-    question:
-      "Does the app show export prices or international potato trends?",
+    question: "Does the app show export prices or international potato trends?",
     answer:
       "The app will gradually include export and international trends for better decision-making.",
   },
@@ -278,8 +285,7 @@ export const faqQuestionsAndAnswers = [
   },
   {
     category: "CROP DIAGNOSTIC & ADVISORY",
-    question:
-      "Can I upload crop images to get disease detection or advisory?",
+    question: "Can I upload crop images to get disease detection or advisory?",
     answer:
       "Yes, you can upload photos and receive expert guidance on crop health and solutions.",
   },

@@ -5,3 +5,10 @@ export const createAdvertisementRequestValidation = Joi.object({
   serviceDuration: Joi.string().required(),
   description: Joi.string().optional(),
 });
+
+export const createAdvertisementServiceSchema = Joi.object({
+  name: Joi.string().required(),
+  subName: Joi.string().optional(),
+  position: Joi.number().optional(),
+  isActive: Joi.boolean().optional(),
+});

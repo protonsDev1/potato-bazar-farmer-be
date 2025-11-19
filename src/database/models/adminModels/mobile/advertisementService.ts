@@ -14,6 +14,7 @@ class AdvertisementService extends Model<
 > {
   declare id: CreationOptional<number>;
   declare name: string;
+  declare subName: string;
   declare isActive: boolean;
   declare position: number;
   declare isDeleted: boolean;
@@ -23,6 +24,7 @@ AdvertisementService.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     name: { type: DataTypes.STRING, unique: true, allowNull: false },
+    subName: { type: DataTypes.STRING, allowNull: true },
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
