@@ -89,7 +89,7 @@ export const getAllMandiByCity = async (req, res) => {
               [Op.or]: [
                 { [Op.between]: [todayStart, todayEnd] }, // today
                 { [Op.lt]: todayStart }, // past
-                { [Op.gt]: todayEnd }, // future
+                // { [Op.gt]: todayEnd }, // future
               ],
             },
           },
@@ -111,13 +111,13 @@ export const getAllMandiByCity = async (req, res) => {
         const past = prices
           .filter((m) => m.date < todayStart)
           .sort((a, b) => b.date.getTime() - a.date.getTime());
-        const future = prices
-          .filter((m) => m.date > todayEnd)
-          .sort((a, b) => a.date.getTime() - b.date.getTime());
+        // const future = prices
+        //   .filter((m) => m.date > todayEnd)
+        //   .sort((a, b) => a.date.getTime() - b.date.getTime());
 
         return {
           ...mandi.toJSON(),
-          mandiPrices: today[0] || past[0] || future[0] || null,
+          mandiPrices: today[0] || past[0] || null,
         };
       })
       .filter(Boolean);
