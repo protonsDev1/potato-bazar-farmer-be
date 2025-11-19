@@ -8,7 +8,7 @@ import {
   getPromotionRequestById,
   getPromotionRequests,
 } from "../controller/promotionRequestController";
-import { createPromotionRequestValidation } from "../validation/promitionRequestValidation";
+import { createPromotionRequestValidation } from "../validation/promotionRequestValidation";
 import { PERMISSIONS } from "../utils/constants/permissions";
 
 const router = express.Router();

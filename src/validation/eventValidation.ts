@@ -18,7 +18,7 @@ export const createEventSchema = Joi.object({
   city: Joi.string().optional().allow(null, ""),
   location: Joi.string().required(),
   document: Joi.array().items(Joi.string()).optional(),
-  website: Joi.string().optional().allow(null, ""),
+  website: Joi.string().required(),
   contactUrl: Joi.string().optional().allow(null, ""),
   isFeatured: Joi.boolean().optional().allow(null, ""),
   banner: Joi.object({

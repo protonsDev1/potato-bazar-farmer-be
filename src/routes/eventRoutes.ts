@@ -55,11 +55,11 @@ router.post(
   registerOnEvent
 );
 
-router.put(
-  "/update_status/:requestId",
-  checkPermissionMiddleware(PERMISSIONS.EVENTS),
-  validator.body(updateEventStatusSchema),
-  updateEventStatus
-);
+// router.put(
+//   "/update_status/:requestId",
+//   checkPermissionMiddleware(PERMISSIONS.EVENTS),
+//   validator.body(updateEventStatusSchema),
+//   updateEventStatus
+// );
 
 export default router;
