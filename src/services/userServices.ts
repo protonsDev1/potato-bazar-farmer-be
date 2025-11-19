@@ -44,6 +44,9 @@ import Advertisement from "../database/models/advertisement";
 import ContactSupport from "../database/models/contactSupport";
 import PromotionRequest from "../database/models/promotionRequest";
 import AskExpert, { QUERY_STATUS } from "../database/models/askExpert";
+import KnowledgeHub, {
+  KNOWLEDGE_HUB_STATUS,
+} from "../database/models/knowledgeHub";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -2232,6 +2235,18 @@ export const globalSearchDB = async (q: string) => {
     limit: 10,
   });
 
+  const knowledgeHub = KnowledgeHub.findAll({
+    where: {
+      [Op.or]: [
+        { title: { [Op.iLike]: term } },
+        { category: { [Op.iLike]: term } },
+        { description: { [Op.iLike]: term } },
+      ],
+      status: KNOWLEDGE_HUB_STATUS.PUBLISHED,
+    },
+    limit: 10,
+  });
+
   const mandis = MandiList.findAll({
     where: {
       [Op.or]: [
@@ -2294,6 +2309,7 @@ export const globalSearchDB = async (q: string) => {
     coldStorages,
     events,
     news,
+    knowledgeHub,
     mandis,
     buyRequests,
     sellRequests,
@@ -2303,6 +2319,7 @@ export const globalSearchDB = async (q: string) => {
       coldStorages,
       events,
       news,
+      knowledgeHub,
       mandis,
       buyRequests,
       sellRequests,
@@ -2311,6 +2328,7 @@ export const globalSearchDB = async (q: string) => {
       coldStorages,
       events,
       news,
+      knowledgeHub,
       mandis,
       buyRequests,
       sellRequests,
