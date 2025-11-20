@@ -130,7 +130,7 @@ export const sendNotificationService = async (payload: Payload) => {
         title,
         message: description,
         playerIds: playerIdsToSend,
-        data: { referenceType, referenceId },
+        data: { referenceType, referenceId, isMatchingCase },
       });
     } catch (err) {
       console.error("sendPushNotification error:", err);

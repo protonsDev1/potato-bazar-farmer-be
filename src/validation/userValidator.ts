@@ -85,6 +85,12 @@ export const otpVerifySchema = Joi.object({
   playerId: Joi.string().optional().allow(null),
 });
 
+export const createUserSchema = Joi.object({
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/)
+});
+
 export const registrationTypesSchema = Joi.object({
   mobile: Joi.string().required().messages({
     "any.required": "Mobile is required",
