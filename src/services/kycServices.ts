@@ -1,6 +1,6 @@
-import KycDocument from '../database/models/kycDocuments';
-import User from '../database/models/user';
-import { Op } from 'sequelize';
+import KycDocument from "../database/models/kycDocuments";
+import User from "../database/models/user";
+import { Op } from "sequelize";
 interface UpsertKycResult {
   status: number;
   message: string;
@@ -64,16 +64,28 @@ export const createKycInDB = async (kycData: any) => {
   return await KycDocument.create(kycData);
 };
 
-export const updateKycStatusInDB = async (kycId: number, status: boolean,reason?:string) => {
+export const updateKycStatusInDB = async (
+  kycId: number,
+  isVerified: boolean,
+  reason?: string
+) => {
   const kyc = await KycDocument.findByPk(kycId);
   if (!kyc) throw new Error("KYC record not found");
-  const applicationStatus = status ? 'approved' : 'rejected';
-  kyc.isVerified = status;
-  kyc.status=applicationStatus;
+
+  const applicationStatus = isVerified ? "approved" : "rejected";
+  kyc.isVerified = isVerified;
+  kyc.status = applicationStatus;
+
+  if (isVerified) {
+    kyc.approvedAt = new Date();
+  } else {
+    kyc.approvedAt = null;
+  }
+
   if (reason !== undefined && reason !== null && reason.trim() !== "") {
     kyc.reason = reason;
   }
-  
+
   await kyc.save();
   return kyc;
 };
@@ -130,11 +142,10 @@ export const getKycDetailFromDB = async (id: number) => {
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "role"]
-      }
-    ]
+        attributes: ["id", "name", "email", "mobile", "role"],
+      },
+    ],
   });
 
   return kyc;
 };
-
