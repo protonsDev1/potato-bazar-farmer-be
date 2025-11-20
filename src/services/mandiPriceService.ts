@@ -7,6 +7,7 @@ import MandiList from "../database/models/mandiList";
 import MandiAllotedToMandiAgent from "../database/models/mandiAllotedToMandiAgent";
 import MandiAgent from "../database/models/mandiAgent";
 import { calculateArrivalStatus } from "../utils/calculateArrivalStatus";
+import State from "../database/models/state";
 
 interface MandiPriceResponse {
   success: boolean;
@@ -276,6 +277,12 @@ export const getAllMandiPricesByMandiId = async (filters, mandiId) => {
           {
             model: City,
             as: "city",
+            include: [
+              {
+                model: State,
+                as: "state",
+              },
+            ],
           },
         ],
       },
