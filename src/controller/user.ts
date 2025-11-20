@@ -269,7 +269,7 @@ export const sendOtp = async (req, res) => {
 
     if (
       existingUser &&
-      (existingUser.hasStartedUsingMobile ||
+      (existingUser.hasStartedUsingMobile &&
         existingUser.isUserOnBoardedOnMobile) &&
       !existingUser.isActive
     ) {
@@ -289,6 +289,62 @@ export const sendOtp = async (req, res) => {
   }
 };
 
+export const createUserWithoutOtpVerification = async (req, res) => {
+  try {
+    const { mobile } = req.body;
+    const { role } = req.user;
+
+    if (
+      role !== USER_ROLES.ADMIN &&
+      role !== USER_ROLES.SUB_ADMIN_WEB &&
+      role !== USER_ROLES.AGENT
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: `Only ${USER_ROLES.ADMIN}, ${USER_ROLES.AGENT} and ${USER_ROLES.SUB_ADMIN_WEB} with valid permission is allowed to create user.`,
+      });
+    }
+
+    const registrationType = await getRegistrationTypes(mobile);
+
+    const existingUser = await checkExistingUser(mobile);
+    if (existingUser) {
+      if (!existingUser.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "User has been deactivated. Please contact the admin.",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "User already exists, proceed to onboarding forms.",
+        user: existingUser,
+        registrationType,
+      });
+    }
+
+    const createUser = await registerInitialUser(
+      mobile,
+      false,
+      null
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "User created successfully.",
+      user: createUser,
+      registrationType,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to create user.",
+    });
+  }
+};
+
+
 export const verifyOtp = async (req, res) => {
   try {
     const { mobile, email, otp, hasStartedUsingMobile, playerId } = req.body;
@@ -305,7 +361,7 @@ export const verifyOtp = async (req, res) => {
     const existingUser = await checkExistingUser(mobile);
     if (existingUser) {
       if (
-        (existingUser.hasStartedUsingMobile ||
+        (existingUser.hasStartedUsingMobile &&
           existingUser.isUserOnBoardedOnMobile) &&
         !existingUser.isActive
       ) {
