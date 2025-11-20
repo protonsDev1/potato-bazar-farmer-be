@@ -24,6 +24,7 @@ import {
   mobileUserPBVerificationSchema,
   mandiAgentUpdateSchema,
   updateMobileUserStatusSchema,
+  createUserSchema,
 } from "../validation/userValidator";
 import {
   agentLogin,
@@ -70,6 +71,7 @@ import {
   verifyAndUpdateNewNumber,
   globalSearchController,
   toggleMobileUserActive,
+  createUserWithoutOtpVerification,
 } from "../controller/user";
 import {
   adminMiddleware,
@@ -110,6 +112,13 @@ router.post(
 );
 
 router.post("/verify-otp", validator.body(otpVerifySchema), verifyOtp);
+
+router.post(
+  "/create_user",
+  authMiddleware,
+  validator.body(createUserSchema),
+  createUserWithoutOtpVerification
+);
 
 router.post(
   "/resend-otp",
