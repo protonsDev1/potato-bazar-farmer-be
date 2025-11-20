@@ -49,7 +49,7 @@ export const listNews = async (req, res) => {
       stateId,
       districtId,
       date,
-      isAiNews
+      isAiNews,
     } = req.query;
     const result = await listNewsService({
       search: search.toString(),
@@ -61,7 +61,7 @@ export const listNews = async (req, res) => {
       stateId,
       districtId,
       date,
-      isAiNews
+      isAiNews,
     });
     return res.status(result.statusCode).json(result);
   } catch (err) {
@@ -98,7 +98,12 @@ export const deleteNews = async (req, res) => {
 
 export const createNewsAI = async (req, res) => {
   try {
-    const result = await createNewsService(req.body);
+    const payload = {
+      ...req.body,
+      isPanIndia: true,
+    };
+
+    const result = await createNewsService(payload);
     return res.status(result.statusCode).json(result);
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
