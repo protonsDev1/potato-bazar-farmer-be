@@ -186,7 +186,7 @@ export const mobileLoginSchema = Joi.object({
   state: Joi.string().required(),
   district: Joi.string().required(),
   cityOrVillage: Joi.string().required(),
-  pinCode: Joi.string().required(),
+  pinCode: Joi.string().optional().allow(null, ""),
   playerId: Joi.string().optional().allow(null),
 });
 
