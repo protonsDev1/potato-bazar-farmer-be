@@ -20,6 +20,7 @@ class KycDocument extends Model<
   declare gstNumber: string | null;
   declare fssaiNumber: string | null;
   declare isVerified: boolean;
+  declare approvedAt: Date;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
   declare status: String;
@@ -65,6 +66,9 @@ KycDocument.init(
     isVerified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    approvedAt: {
+      type: DataTypes.DATE,
     },
     createdAt: {
       type: DataTypes.DATE,
