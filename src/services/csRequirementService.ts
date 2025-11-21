@@ -30,7 +30,7 @@ export const getRequirementsService = async (
   if (listingType === "own") {
     whereCondition.createdBy = userId;
   } else if (listingType === "others") {
-    whereCondition.createdBy = { [Op.ne]: userId };
+    // whereCondition.createdBy = { [Op.ne]: userId };
     whereCondition.isActive = true;
   }
 
