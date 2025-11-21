@@ -183,6 +183,8 @@ export const getAllMandiAgents = async (
           "state",
           "email",
           "pinCode",
+          "createdAt",
+          "updatedAt"
         ],
         as: "user",
         required: false,

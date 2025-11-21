@@ -1016,6 +1016,8 @@ export async function getColdStorage(
         "status",
         "reason",
         "isAvailable",
+        "createdAt",
+        "updatedAt",
       ],
       where: whereCondition,
       include: [

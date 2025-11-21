@@ -228,12 +228,12 @@ export const getEventDetail = async (eventId, userId, role) => {
   ) {
     const requestedUsers = await EventRequest.findAll({
       where: { eventId },
-      attributes: ["mobile", "name"],
+      attributes: ["mobile", "name", "createdAt", "updatedAt", "status"],
       include: [
         {
           model: User,
           as: "requestedByUser",
-          attributes: ["id", "name", "mobile", "state", "district"],
+          attributes: ["id", "name", "mobile", "state", "district", "createdAt", "updatedAt"],
         },
       ],
     });

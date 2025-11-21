@@ -8,6 +8,11 @@ import {
 import sequelize from "./db";
 import User from "./user";
 
+export enum CONTACT_SUPPORT_STATUS {
+  CLOSE = "close",
+  OPEN = "open",
+}
+
 class ContactSupport extends Model<
   InferAttributes<ContactSupport>,
   InferCreationAttributes<ContactSupport>
@@ -18,6 +23,7 @@ class ContactSupport extends Model<
   declare mobileNumber: string;
   declare preferredDate: Date;
   declare preferredTime: string;
+  declare status: string;
   declare updatedAt?: Date;
   declare createdAt?: Date;
 }
@@ -31,10 +37,10 @@ ContactSupport.init(
     },
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: true,            // optional userId
+      allowNull: true, // optional userId
       references: {
         model: "users",
-        key: "id",
+        key: "id",  
       },
       onDelete: "CASCADE",
     },
@@ -53,6 +59,10 @@ ContactSupport.init(
     preferredTime: {
       type: DataTypes.TIME,
       allowNull: true,
+    },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: CONTACT_SUPPORT_STATUS.OPEN,
     },
   },
   {
