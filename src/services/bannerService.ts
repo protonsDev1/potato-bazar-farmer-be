@@ -45,10 +45,7 @@ export const getAllBannersService = async (query) => {
         as: "event",
       },
     ],
-    order: [
-      ["position", "ASC"],
-      ["createdAt", "DESC"],
-    ],
+    order: [["createdAt", "DESC"]],
     limit: Number(limit),
     offset,
   });
