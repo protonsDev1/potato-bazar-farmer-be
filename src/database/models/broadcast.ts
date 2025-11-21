@@ -17,6 +17,7 @@ class Broadcast extends Model<
   declare title: string;
   declare description: string;
   declare senderId: number | null;
+  declare audience: object;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -41,6 +42,10 @@ Broadcast.init(
       allowNull: true,
       references: { model: "users", key: "id" },
       onDelete: "CASCADE",
+    },
+    audience: {
+      type: DataTypes.JSONB,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,
