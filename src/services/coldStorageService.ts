@@ -841,7 +841,7 @@ export async function getColdStorage(
 
     // Other user's available cold storages
     if (listingType === "others") {
-      whereCondition.userId = { [Op.ne]: userId };
+      // whereCondition.userId = { [Op.ne]: userId };
       whereCondition.isAvailable = true;
       whereCondition.status = REGISTRATION_STATUS.APPROVED;
       userInclude.where = { hasStartedUsingMobile: true };
