@@ -49,7 +49,7 @@ export const createAdvertisementRequest = async (req, res) => {
 
 export const getAllAdvertisementRequestByAdmin = async (req, res) => {
   try {
-    let { page = 1, perPage: limit = 10, search, serviceId } = req.query;
+    let { page = 1, perPage: limit = 10, search, serviceId, status } = req.query;
 
     page = Number(page);
     limit = Number(limit);
@@ -60,6 +60,8 @@ export const getAllAdvertisementRequestByAdmin = async (req, res) => {
     const userWhereCondition: any = {};
 
     if (serviceId) whereCondition.serviceId = serviceId;
+
+    if (status) whereCondition.status = status;
 
     if (search?.trim()) {
       const searchTerm = `%${search.trim()}%`;
