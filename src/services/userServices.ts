@@ -860,25 +860,39 @@ export const updateRegistrationStatus = async (
     await user.update({ status });
 
     if (
-      userType === USER_TYPE.COLD_STORAGE &&
       user.user.isUserOnBoardedOnMobile === true &&
       user.user.hasStartedUsingMobile === true
     ) {
-      const description =
-        status == REGISTRATION_STATUS.APPROVED
-          ? `Your ColdStorage is ${status}`
-          : reason;
+      const UserTypeKeyMap = {
+        [USER_TYPE.COLD_STORAGE]: "Cold Storage",
+        [USER_TYPE.FARMER]: "Farmer",
+        [USER_TYPE.TRADER]: "Trader",
+      };
 
-      if (status === REGISTRATION_STATUS.REJECTED)
+      let description = `Your ${UserTypeKeyMap[userType]} is ${status}`;
+
+      if (reason && reason.trim() !== "") {
+        description = reason;
+      }
+
+      if (
+        userType === USER_TYPE.COLD_STORAGE &&
+        status === REGISTRATION_STATUS.REJECTED
+      )
         await user.update({ reason });
       else await user.update({ reason: null });
 
       await sendNotificationService({
-        title: `Your ColdStorage is ${status}`,
+        title: `Your ${UserTypeKeyMap[userType]} is ${status}`,
         description,
         senderId: currentUser.id,
         receiverId: user.userId,
-        referenceType: NotificationType.COLD_STORAGE,
+        referenceType:
+          userType === USER_TYPE.COLD_STORAGE
+            ? NotificationType.COLD_STORAGE
+            : userType === USER_TYPE.FARMER
+            ? NotificationType.FARMER
+            : NotificationType.TRADER,
         referenceId: entityId,
       });
     }
