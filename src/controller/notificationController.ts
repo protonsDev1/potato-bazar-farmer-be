@@ -11,13 +11,14 @@ import { differenceInMonths, format, formatDistanceToNow } from "date-fns";
 
 export const broadCastNotification = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, audience } = req.body;
     const { id } = req.user;
 
     const broadcast = await Broadcast.create({
       title,
       description,
       senderId: id,
+      audience: audience || { all: true },
     });
 
     await sendNotificationService({
@@ -27,6 +28,7 @@ export const broadCastNotification = async (req, res) => {
       referenceType: NotificationType.BROADCAST,
       isBroadCast: true,
       broadcastId: broadcast.id,
+      audience,
     });
 
     return res.status(200).json({
