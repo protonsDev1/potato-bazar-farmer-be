@@ -4,7 +4,7 @@ module.exports = {
     await queryInterface.addColumn("contactSupport", "status", {
       type: Sequelize.STRING,
       allowNull: false,
-      deafultValue: "open",
+      defaultValue: "open",
     });
   },
   async down(queryInterface) {
