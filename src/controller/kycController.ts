@@ -19,8 +19,8 @@ export const upsertKyc = async (req, res) => {
     });
 
     await sendNotificationService({
-      title: "Kyc Request",
-      description: "New Kyc Request has been created.",
+      title: "KYC Request",
+      description: "New KYC Request has been created.",
       senderId: userId,
       receiverId: superAdmin.id,
       referenceType: NotificationType.KYC,
@@ -47,11 +47,11 @@ export const approveOrRejectKyc = async (req, res) => {
     const { id: adminId } = req.user;
 
     const description = isVerified
-      ? `Your Kyc Request is approved`
+      ? `Your KYC Request is approved`
       : (updated.reason as string);
 
     await sendNotificationService({
-      title: `Your Kyc Request is ${updated.status}`,
+      title: `Your KYC Request is ${updated.status}`,
       description,
       senderId: adminId,
       receiverId: updated.userId,

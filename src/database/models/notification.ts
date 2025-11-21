@@ -19,6 +19,9 @@ export enum NotificationType {
   KYC = "KYC",
   USER_PB_VERIFICATION = "USER_PB_VERIFICATION",
   COLD_STORAGE = "COLD_STORAGE",
+  FARMER = "FARMER",
+  TRADER = "TRADER",
+  ADVERTISEMENT = "ADVERTISEMENT",
   ASK_EXPERT = "ask_expert",
   KNOWLEDGE_HUB = "knowledge_hub",
 }

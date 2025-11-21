@@ -6,6 +6,7 @@ import {
   createAdvertisementRequest,
   deleteAdvertisementRequest,
   getAllAdvertisementRequestByAdmin,
+  updateAdvertisementStatus,
 } from "../controller/advertisementController";
 import { createAdvertisementRequestValidation } from "../validation/advertisementValidation";
 import { PERMISSIONS } from "../utils/constants/permissions";
@@ -28,6 +29,12 @@ router.delete(
   "/:id",
   checkPermissionMiddleware(PERMISSIONS.ADVERTISEMENT),
   deleteAdvertisementRequest
+);
+
+router.put(
+  "/:id",
+  checkPermissionMiddleware(PERMISSIONS.ADVERTISEMENT),
+  updateAdvertisementStatus
 );
 
 export default router;
