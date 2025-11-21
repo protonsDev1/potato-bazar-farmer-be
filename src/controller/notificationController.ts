@@ -7,6 +7,7 @@ import { sendNotificationService } from "../services/notificationService";
 import UserNotificationSetting from "../database/models/userNotificationSetting";
 import User from "../database/models/user";
 import Broadcast from "../database/models/broadcast";
+import { differenceInMonths, format, formatDistanceToNow } from "date-fns";
 
 export const broadCastNotification = async (req, res) => {
   try {
@@ -159,14 +160,33 @@ export const myNotificationList = async (req, res) => {
       offset,
     });
 
+    const notifications = rows.map((u) => {
+      const createdAt = new Date(u.createdAt);
+
+      const monthsDiff = differenceInMonths(new Date(), createdAt);
+
+      let formattedTime;
+
+      if (monthsDiff < 1) {
+        formattedTime = formatDistanceToNow(createdAt, { addSuffix: true });
+      } else {
+        formattedTime = format(createdAt, "dd MMM yyyy, hh:mm a");
+      }
+
+      return {
+        ...u.toJSON(),
+        timeAgo: formattedTime,
+      };
+    });
+
     return res.status(200).json({
       success: true,
       message: "Notifications fetched successfully.",
       data: {
+        notifications,
         currentPage: page,
         total: count,
         totalPages: Math.ceil(count / limit),
-        notifications: rows,
       },
     });
   } catch (error) {

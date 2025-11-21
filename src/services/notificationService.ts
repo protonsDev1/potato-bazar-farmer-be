@@ -210,8 +210,9 @@ export const sendNotificationForColdStorage = async (senderId, referenceId) => {
     });
 
     await sendNotificationService({
-      title: "New ColdStorage is added.",
-      description: "New ColdStorage is added.",
+      title: "New Cold Storage is added.",
+      description:
+        "A new Cold Storage has been registered, please verify details.",
       senderId,
       referenceType: NotificationType.COLD_STORAGE,
       referenceId,
@@ -234,8 +235,11 @@ export const sendNotificationToMatchingBuyers = async (
   });
 
   const userIds = buyers
+    .filter((b) => b.userId !== sellRequest.userId)
     .map((f) => f.userId)
     .filter((id): id is number => Boolean(id));
+
+  if (userIds.length === 0) return;
 
   await sendNotificationService({
     title: "Matching Sell Request is added.",
@@ -262,8 +266,11 @@ export const sendNotificationToMatchingSellers = async (
   });
 
   const userIds = sellers
+    .filter((s) => s.userId !== buyRequest.userId)
     .map((f) => f.userId)
     .filter((id): id is number => Boolean(id));
+
+  if (userIds.length === 0) return;
 
   await sendNotificationService({
     title: "Matching Buy Request is added.",
