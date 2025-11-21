@@ -6,6 +6,9 @@ import FavouriteRequest from "../database/models/favouriteRequest";
 import RequestView from "../database/models/requestView";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { PERMISSIONS } from "../utils/constants/permissions";
+import { canUpdateResource } from "../utils/commonCode";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export const createBuyRequestService = async (userId: number, data: any) => {
   const newRequest = await BuyRequest.create({
@@ -49,7 +52,7 @@ export const createBuyRequestService = async (userId: number, data: any) => {
     productionDate: data.productionDate,
     organicCertified: data.organicCertified,
     status: BUY_REQUEST_STATUS.PENDING,
-    isActive: false,
+    isActive: true,
   });
 
   return newRequest;
@@ -80,8 +83,8 @@ export const listBuyRequestsService = async (
 
   if (userId) {
     where.userId = userId;
-  } else if (currentUserId) {
-    where.userId = { [Op.ne]: currentUserId };
+    // } else if (currentUserId) {
+    //   where.userId = { [Op.ne]: currentUserId };
   }
 
   if (currentBuyRequestId) {
@@ -144,7 +147,7 @@ export const listBuyRequestsService = async (
     include,
     limit: Number(perPage),
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const requestsWithFavourite = rows.map((req: any) => ({
@@ -222,7 +225,7 @@ export const listMyBuyRequestsService = async (
     ],
     limit: Number(perPage),
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const requestsWithCounts = await Promise.all(
@@ -254,19 +257,18 @@ export const listMyBuyRequestsService = async (
 };
 
 export const listAdminBuyRequestsService = async (query: any) => {
-  const { page = 1, perPage = 10, status, search } = query;
+  const { page = 1, perPage = 10, status, isActive, search } = query;
   const offset = (Number(page) - 1) * Number(perPage);
 
   const where: any = {};
 
-  if (status) {
-    if (status.toLowerCase() === "active") {
-      where.isActive = true;
-    } else if (status.toLowerCase() === "inactive") {
-      where.isActive = false;
-    } else if (Object.values(BUY_REQUEST_STATUS).includes(status)) {
-      where.status = status;
-    }
+  if (status && Object.values(BUY_REQUEST_STATUS).includes(status)) {
+    where.status = status;
+  }
+
+  if (isActive !== undefined && isActive !== null && isActive !== "") {
+    if (isActive === "true") where.isActive = true;
+    else if (isActive === "false") where.isActive = false;
   }
 
   if (search) {
@@ -288,7 +290,7 @@ export const listAdminBuyRequestsService = async (query: any) => {
     ],
     limit: Number(perPage),
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const [totalRequests, approvedCount, pendingCount, rejectedCount] =
@@ -388,6 +390,7 @@ export const getBuyRequestByIdService = async (
     viewCount,
     favCount,
     otherBuyRequestsCount,
+    isOwner: request.userId === currentUserId,
   };
 };
 
@@ -399,6 +402,17 @@ export const deleteBuyRequestService = async (user: any, requestId: number) => {
       statusCode: 404,
       success: false,
       message: "Buy request not found",
+    };
+  }
+
+  if (
+    request.status === BUY_REQUEST_STATUS.APPROVED &&
+    request.userId === user.id
+  ) {
+    return {
+      statusCode: 403,
+      success: false,
+      message: "You cannot delete a buy request after it has been approved.",
     };
   }
 
@@ -429,7 +443,7 @@ export const deleteBuyRequestService = async (user: any, requestId: number) => {
 };
 
 export const updateBuyRequestService = async (
-  userId: number,
+  user: User,
   requestId: number,
   payload: any
 ) => {
@@ -443,11 +457,18 @@ export const updateBuyRequestService = async (
     };
   }
 
-  if (request.userId !== userId) {
+  const hasAccess = await canUpdateResource(
+    user,
+    request.userId,
+    PERMISSIONS.BUY_REQUESTS
+  );
+
+  if (!hasAccess) {
     return {
       statusCode: 403,
       success: false,
-      message: "You are not allowed to update this request",
+      message:
+        "Only the owner, a super admin, or an authorized sub admin is allowed to update this request.",
     };
   }
 
@@ -474,6 +495,20 @@ export const updateBuyRequestService = async (
 
   if (request.status === BUY_REQUEST_STATUS.REJECTED) {
     payload.status = BUY_REQUEST_STATUS.PENDING;
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Buy Request",
+      description:
+        "A Rejected Buy Request has been moved to pending, please check it.",
+      senderId: user.id,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.BUY,
+      referenceId: requestId,
+    });
   }
 
   await request.update(payload);

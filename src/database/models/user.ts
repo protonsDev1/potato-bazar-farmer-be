@@ -2,7 +2,7 @@ import {
   Model,
   DataTypes,
   InferAttributes,
-  InferCreationAttributes,
+  InferCreationAttributes,  
   CreationOptional,
 } from "sequelize";
 import bcrypt from "bcrypt";
@@ -31,6 +31,17 @@ export enum PB_VERIFICATION_STATUS {
   APPROVED = "approved",
   PENDING = "pending",
   REJECTED = "rejected",
+}
+
+export enum USER_REGISTRATION_TYPES {
+  FARMER = "farmer",
+  COLD_STORAGE = "cold_storage",
+  TRADER = "trader",
+  POTATO_PROCESSOR = "potato_processor",
+  EQUIPMENT_SUPPLIER = "equipment_supplier",
+  INPUT_SUPPLIER = "input_supplier",
+  SERVICE_PROVIDER = "service_provider",
+  OTHER = "other",
 }
 
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
@@ -68,6 +79,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare webPermissions?: SubAdminWebPermission[];
   declare createdAt: CreationOptional<Date>;
   declare passwordUpdatedAt: CreationOptional<Date>;
+  declare playerId: string | null;
   declare updatedAt: CreationOptional<Date>;
 
   async validatePassword(password: string): Promise<boolean> {
@@ -201,6 +213,10 @@ User.init(
     },
     pbVerificationRequestedAt: {
       type: DataTypes.DATE,
+      allowNull: true,
+    },
+    playerId: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
   },

@@ -6,6 +6,7 @@ export const createColdStorageRequirementSchema = Joi.object({
   state: Joi.string().trim().allow(null, "").optional(),
   verified: Joi.boolean().default(false),
   quantity: Joi.string().trim().required(),
+  unit: Joi.string().trim().allow(null, "").optional(),
   commodityType: Joi.string().trim().required(),
   storageTypes: Joi.array().items(Joi.string()).allow(null).optional(),
   bagTypes: Joi.array().items(Joi.string()).allow(null).optional(),
@@ -16,7 +17,7 @@ export const createColdStorageRequirementSchema = Joi.object({
     .trim()
     .allow(null, "")
     .optional(),
-  isActive: Joi.boolean().default(false),
+  isActive: Joi.boolean().default(true),
 });
 
 export const updateColdStorageRequirementSchema = Joi.object({
@@ -25,6 +26,7 @@ export const updateColdStorageRequirementSchema = Joi.object({
   state: Joi.string().trim().allow(null, "").optional(),
   verified: Joi.boolean().optional(),
   quantity: Joi.string().trim().allow(null, "").optional(),
+  unit: Joi.string().trim().allow(null, "").optional(),
   commodityType: Joi.string().trim().allow(null, "").optional(),
   storageTypes: Joi.array().items(Joi.string()).allow(null).optional(),
   bagTypes: Joi.array().items(Joi.string()).allow(null).optional(),

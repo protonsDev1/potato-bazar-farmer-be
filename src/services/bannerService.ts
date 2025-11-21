@@ -45,7 +45,10 @@ export const getAllBannersService = async (query) => {
         as: "event",
       },
     ],
-    order: [["position", "ASC"]],
+    order: [
+      ["position", "ASC"],
+      ["createdAt", "DESC"],
+    ],
     limit: Number(limit),
     offset,
   });
@@ -129,7 +132,7 @@ export const getPublicBannersService = async () => {
     },
     order: [
       ["position", "ASC"],
-      ["updatedAt", "DESC"],
+      ["createdAt", "DESC"],
     ],
     limit: 3,
   });

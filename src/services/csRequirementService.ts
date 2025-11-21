@@ -6,6 +6,8 @@ import { generateUniqueRequirementUid } from "../utils/generate";
 import User, { USER_ROLES } from "../database/models/user";
 import LikeCSRequirement from "../database/models/likeCSRequirement";
 import CSRequirementView from "../database/models/csRequirementView";
+import { canUpdateResource } from "../utils/commonCode";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 export const getRequirementsService = async (
   userId: number,
@@ -18,7 +20,8 @@ export const getRequirementsService = async (
     district?: string;
     pbVerified?: string;
     isFavourite?: string;
-  }
+  },
+  sortBy: string = ""
 ) => {
   const offset = (page - 1) * limit;
 
@@ -76,10 +79,24 @@ export const getRequirementsService = async (
     whereCondition.id = { [Op.in]: favouriteRequirementIds };
   }
 
+  let order: any = [["createdAt", "DESC"]];
+  if (sortBy) {
+    switch (String(sortBy).toLowerCase()) {
+      case "created_asc":
+        order = [["createdAt", "ASC"]];
+        break;
+      case "created_desc":
+        order = [["createdAt", "DESC"]];
+        break;
+      default:
+        order = [["createdAt", "DESC"]];
+    }
+  }
+
   const { rows, count } = await ColdStorageRequirement.findAndCountAll({
     where: whereCondition,
     include: [userInclude],
-    order: [["updatedAt", "DESC"]],
+    order,
     limit,
     offset,
   });
@@ -188,7 +205,7 @@ export const getRequirementByIdService = async (
 
 export const updateRequirementService = async (
   id: number,
-  userId: number,
+  user: User,
   data: any
 ) => {
   const requirement = await ColdStorageRequirement.findByPk(id);
@@ -201,11 +218,18 @@ export const updateRequirementService = async (
     };
   }
 
-  if (requirement.createdBy !== userId) {
+  const hasAccess = await canUpdateResource(
+    user,
+    requirement.createdBy,
+    PERMISSIONS.COLD_STORAGE
+  );
+
+  if (!hasAccess) {
     return {
-      success: false,
       statusCode: 403,
-      message: "You are not allowed to update this requirement",
+      success: false,
+      message:
+        "Only the owner, a super admin, or an authorized sub admin is allowed to update this requirement.",
     };
   }
 

@@ -1,8 +1,10 @@
 import { Op } from "sequelize";
 import Event from "../database/models/event";
 import { buildDate, hasValue } from "../utils/parseQuery";
-import EventRequest from "../database/models/eventRequest";
-import User from "../database/models/user";
+import EventRequest, {
+  EVENT_REQUEST_STATUS,
+} from "../database/models/eventRequest";
+import User, { USER_ROLES } from "../database/models/user";
 import Banner from "../database/models/banner";
 
 export const addEvent = async (eventData) => {
@@ -90,8 +92,9 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
 
   // expired events filter
   if (!includeExpired || includeExpired === "false") {
-    const now = new Date();
-    whereCondition.endDate = { [Op.gte]: now };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    whereCondition.endDate = { [Op.gte]: today };
   }
 
   if (search) {
@@ -112,7 +115,7 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
     ],
     limit,
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const enrichedResults = await Promise.all(
@@ -148,7 +151,7 @@ export const getAllEvents = async (search, page = 1, limit = 10, filters) => {
   };
 };
 
-export const getEventDetail = async (eventId) => {
+export const getEventDetail = async (eventId, userId, role) => {
   const event = await Event.findOne({
     where: { id: eventId },
     include: [
@@ -190,7 +193,7 @@ export const getEventDetail = async (eventId) => {
       id: { [Op.ne]: eventId },
       ...whereCondition,
     },
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
     limit: 5,
   });
 
@@ -219,16 +222,62 @@ export const getEventDetail = async (eventId) => {
     })
   );
 
-  return {
-    success: true,
-    event: {
-      ...event.toJSON(),
-      isEventUpcoming,
-      isEventGoing,
-      peopleInterested,
-    },
-    moreEvents: enrichedResults,
-  };
+  if (
+    role &&
+    (role === USER_ROLES.SUPER_ADMIN || role === USER_ROLES.SUB_ADMIN)
+  ) {
+    const requestedUsers = await EventRequest.findAll({
+      where: { eventId },
+      attributes: ["mobile", "name"],
+      include: [
+        {
+          model: User,
+          as: "requestedByUser",
+          attributes: ["id", "name", "mobile", "state", "district"],
+        },
+      ],
+    });
+
+    return {
+      success: true,
+      event: {
+        ...event.toJSON(),
+        isEventUpcoming,
+        isEventGoing,
+        peopleInterested,
+      },
+      moreEvents: enrichedResults,
+      requestedUsers,
+    };
+  } else if (role && role === USER_ROLES.USER) {
+    const registeredByUser = await EventRequest.findAll({
+      where: { requestCreatedBy: userId, eventId },
+      attributes: ["requestCreatedBy", "mobile", "name"],
+    });
+
+    return {
+      success: true,
+      event: {
+        ...event.toJSON(),
+        isEventUpcoming,
+        isEventGoing,
+        peopleInterested,
+      },
+      moreEvents: enrichedResults,
+      registeredByUser,
+    };
+  } else {
+    return {
+      success: true,
+      event: {
+        ...event.toJSON(),
+        isEventUpcoming,
+        isEventGoing,
+        peopleInterested,
+      },
+      moreEvents: enrichedResults,
+    };
+  }
 };
 
 export const getAllEventRequests = async (page = 1, limit = 10, search) => {
@@ -257,7 +306,7 @@ export const getAllEventRequests = async (page = 1, limit = 10, search) => {
     ],
     limit,
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   return {
@@ -328,13 +377,6 @@ export const updateEventService = async (eventId, payload) => {
 
   await Event.update(updateData, { where: { id: eventId } });
 
-  if (payload.banner) {
-    if (event.banner) {
-      await event.banner.update(payload.banner);
-    } else {
-      await Banner.create({ ...payload.banner, eventId });
-    }
-  }
   if ("banner" in payload) {
     if (payload.banner === null) {
       // delete banner
@@ -370,11 +412,12 @@ export const requestToJoinEvent = async (userId, eventId, name, mobile) => {
   });
 
   if (eventRequest) {
-    return {
-      success: false,
-      error:
-        "User already has raised request for given user to register for this event.",
-    };
+    if (eventRequest.status === EVENT_REQUEST_STATUS.APPROVED) {
+      return {
+        success: false,
+        error: "Given mobile number is already registered for this event.",
+      };
+    }
   }
 
   const newEventRequest = await EventRequest.create({
@@ -382,6 +425,7 @@ export const requestToJoinEvent = async (userId, eventId, name, mobile) => {
     mobile,
     requestCreatedBy: userId,
     eventId,
+    status: EVENT_REQUEST_STATUS.APPROVED,
   });
 
   return {

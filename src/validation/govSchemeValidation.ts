@@ -18,8 +18,9 @@ export const createGovSchemeSchema = Joi.object({
   document: Joi.string().uri().allow("").optional(),
   mobile: Joi.string()
     .pattern(/^[6-9]\d{9}$/)
-    .required(),
-  email: Joi.string().email().required(),
+    .optional()
+    .allow("", null),
+  email: Joi.string().email().optional().allow("", null),
   websiteUrl: Joi.string().uri().allow(null, "").optional(),
   ageLimit: Joi.string().allow(null, "").optional(),
   contactUrl: Joi.string().uri().allow(null, "").optional(),

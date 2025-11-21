@@ -57,7 +57,7 @@ export const retrieveAllUsers = async (
         where: whereCondition,
         limit,
         offset,
-        order: [["updatedAt", "DESC"]],
+        order: [["createdAt", "DESC"]],
       }
     );
 
@@ -345,7 +345,7 @@ export const getPaginatedAgents = async (
       }
     : {};
 
-  let order: any[] = [["updatedAt", "DESC"]];
+  let order: any[] = [["createdAt", "DESC"]];
 
   if (sortBy) {
     switch (sortBy.toLowerCase()) {
@@ -888,7 +888,7 @@ export const getAllAgentsWithAssociations = async (search?: string) => {
         attributes: ["id", "name", "email"],
       },
     ],
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   return agents;

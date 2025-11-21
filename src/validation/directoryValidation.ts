@@ -16,7 +16,7 @@ export const onboardDirectorySchema = Joi.object({
   pinCode: Joi.string().max(10).optional().allow(null, ""),
   location: Joi.string().max(255).optional().allow(null, ""),
 
-  companyShortDescription: Joi.string().max(1024).optional().allow(null, ""),
+  companyShortDescription: Joi.string().max(255).optional().allow(null, ""),
   companyProfile: Joi.string().optional().allow(null, ""),
   yearEstablished: Joi.string().max(10).optional().allow(null, ""),
   numberOfEmployees: Joi.string().max(255).optional().allow(null, ""),
@@ -41,7 +41,7 @@ export const onboardDirectorySchema = Joi.object({
   status: Joi.string().optional().allow(null, ""),
   isActive: Joi.boolean().optional(),
 
-  userId: Joi.number().required(),
+  userId: Joi.number().optional().allow(null, ""),
   onBoardedBy: Joi.number().optional().allow(null),
 
   socialMedia: Joi.object({
@@ -62,7 +62,7 @@ export const onboardDirectorySchema = Joi.object({
   subCategoryIds: Joi.array()
     .items(Joi.number().integer().positive())
     .required(),
-  planId: Joi.number().integer().positive().required(),
+  planId: Joi.number().integer().positive().optional(),
   planStartDate: Joi.date().iso().optional().allow(null),
   planEndDate: Joi.date().iso().optional().allow(null),
 });
@@ -83,7 +83,7 @@ export const updateDirectorySchema = Joi.object({
   pinCode: Joi.string().max(10).optional().allow(null, ""),
   location: Joi.string().max(255).optional().allow(null, ""),
 
-  companyShortDescription: Joi.string().max(1024).optional().allow(null, ""),
+  companyShortDescription: Joi.string().max(255).optional().allow(null, ""),
   companyProfile: Joi.string().optional().allow(null, ""),
   yearEstablished: Joi.string().max(10).optional().allow(null, ""),
   numberOfEmployees: Joi.string().max(255).optional().allow(null, ""),

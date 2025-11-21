@@ -38,6 +38,8 @@ class News extends Model<InferAttributes<News>, InferCreationAttributes<News>> {
   declare isFeatured: boolean;
   declare createdBy: string | null;
   declare source: string | null;
+  declare ytVideos: string[] | null;
+  declare isPanIndia: boolean;
   declare stateId: number;
   declare districtId: number;
 
@@ -102,6 +104,14 @@ News.init(
     source: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    ytVideos: {
+      type: DataTypes.ARRAY(DataTypes.TEXT),
+      allowNull: true,
+    },
+    isPanIndia: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     stateId: {
       type: DataTypes.INTEGER,

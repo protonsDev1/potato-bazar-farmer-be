@@ -8,6 +8,9 @@ import FavouriteRequest from "../database/models/favouriteRequest";
 import RequestView from "../database/models/requestView";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { PERMISSIONS } from "../utils/constants/permissions";
+import { canUpdateResource } from "../utils/commonCode";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export const createSellRequestService = async (userId: number, data: any) => {
   const newRequest = await SellRequest.create({
@@ -53,7 +56,7 @@ export const createSellRequestService = async (userId: number, data: any) => {
     images: data.images,
     location: data.location,
     status: SELL_REQUEST_STATUS.PENDING,
-    isActive: false,
+    isActive: true,
   });
 
   return newRequest;
@@ -84,8 +87,8 @@ export const listSellRequestsService = async (
 
   if (userId) {
     where.userId = userId;
-  } else if (currentUserId) {
-    where.userId = { [Op.ne]: currentUserId };
+    // } else if (currentUserId) {
+    //   where.userId = { [Op.ne]: currentUserId };
   }
 
   if (currentSellRequestId) {
@@ -148,7 +151,7 @@ export const listSellRequestsService = async (
     include,
     limit: Number(perPage),
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const requestsWithFavourite = rows.map((req: any) => ({
@@ -226,7 +229,7 @@ export const listMySellRequestsService = async (
     ],
     limit: Number(perPage),
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const requestsWithCounts = await Promise.all(
@@ -258,19 +261,18 @@ export const listMySellRequestsService = async (
 };
 
 export const listAdminSellRequestsService = async (query: any) => {
-  const { page = 1, perPage = 10, status, search } = query;
+  const { page = 1, perPage = 10, status, isActive, search } = query;
   const offset = (Number(page) - 1) * Number(perPage);
 
   const where: any = {};
 
-  if (status) {
-    if (status.toLowerCase() === "active") {
-      where.isActive = true;
-    } else if (status.toLowerCase() === "inactive") {
-      where.isActive = false;
-    } else if (Object.values(SELL_REQUEST_STATUS).includes(status)) {
-      where.status = status;
-    }
+  if (status && Object.values(SELL_REQUEST_STATUS).includes(status)) {
+    where.status = status;
+  }
+
+  if (isActive !== undefined && isActive !== null && isActive !== "") {
+    if (isActive === "true") where.isActive = true;
+    else if (isActive === "false") where.isActive = false;
   }
 
   if (search) {
@@ -292,7 +294,7 @@ export const listAdminSellRequestsService = async (query: any) => {
     ],
     limit: Number(perPage),
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const [totalRequests, approvedCount, pendingCount, rejectedCount] =
@@ -392,6 +394,7 @@ export const getSellRequestByIdService = async (
     viewCount,
     favCount,
     otherSellRequestsCount,
+    isOwner: request.userId === currentUserId,
   };
 };
 
@@ -406,6 +409,17 @@ export const deleteSellRequestService = async (
       statusCode: 404,
       success: false,
       message: "Sell request not found",
+    };
+  }
+
+  if (
+    request.status === SELL_REQUEST_STATUS.APPROVED &&
+    request.userId === user.id
+  ) {
+    return {
+      statusCode: 403,
+      success: false,
+      message: "You cannot delete a sell request after it has been approved.",
     };
   }
 
@@ -436,7 +450,7 @@ export const deleteSellRequestService = async (
 };
 
 export const updateSellRequestService = async (
-  userId: number,
+  user: User,
   requestId: number,
   payload: any
 ) => {
@@ -450,11 +464,18 @@ export const updateSellRequestService = async (
     };
   }
 
-  if (request.userId !== userId) {
+  const hasAccess = await canUpdateResource(
+    user,
+    request.userId,
+    PERMISSIONS.SELL_REQUESTS
+  );
+
+  if (!hasAccess) {
     return {
       statusCode: 403,
       success: false,
-      message: "You are not allowed to update this request",
+      message:
+        "Only the owner, a super admin, or an authorized sub admin is allowed to update this request.",
     };
   }
 
@@ -481,6 +502,20 @@ export const updateSellRequestService = async (
 
   if (request.status === SELL_REQUEST_STATUS.REJECTED) {
     payload.status = SELL_REQUEST_STATUS.PENDING;
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Sell Request",
+      description:
+        "A Rejected Sell Request has been moved to pending, please check it.",
+      senderId: user.id,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.SELL,
+      referenceId: requestId,
+    });
   }
 
   await request.update(payload);

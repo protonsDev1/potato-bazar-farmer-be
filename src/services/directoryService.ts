@@ -156,7 +156,6 @@ export async function updateDirectoryService(directoryId, payload) {
         throw new Error("planEndDate must be after planStartDate");
     }
 
-    // remove subCategoryIds key from update data to avoid writing it in Directory
     const updateData = { ...payload };
 
     await directory.update(updateData, { transaction: t });
@@ -189,7 +188,7 @@ export async function updateDirectoryService(directoryId, payload) {
   });
 }
 
-export const retrieveDirectoryProfile = async (directoryId) => {
+export const retrieveDirectoryProfile = async (directoryId, currentUserId?) => {
   try {
     const [info, socialMedia, media, categoryMappings] = await Promise.all([
       Directory.findByPk(directoryId, {
@@ -238,11 +237,20 @@ export const retrieveDirectoryProfile = async (directoryId) => {
       }),
     ]);
 
+    let isSaved = false;
+    if (currentUserId) {
+      const saved = await SavedDirectory.findOne({
+        where: { userId: currentUserId, directoryId },
+      });
+      isSaved = !!saved;
+    }
+
     return {
       info,
       socialMedia,
       media,
       categoryMappings,
+      isSaved,
     };
   } catch (err) {
     console.error("Error in retrieveDirectoryProfile:", err);
@@ -255,7 +263,8 @@ export const getDirectoryListByAdmin = async (
   limit = 10,
   filters: any = {},
   search?,
-  sortBy?
+  sortBy?,
+  currentUserId?: number
 ) => {
   try {
     const offset = (page - 1) * limit;
@@ -266,11 +275,39 @@ export const getDirectoryListByAdmin = async (
       city,
       registrationDate,
       onboardedByUser,
+      listingType,
       status,
       categoryId,
       subCategoryId,
       planId,
+      isSaved,
+      industryServed,
     } = filters;
+
+    const now = new Date();
+
+    let mobileSortByPlanPriority = false;
+    if (listingType && String(listingType).toLowerCase() === "mobile") {
+      whereCondition.status = REGISTRATION_STATUS.APPROVED;
+      whereCondition.isActive = true;
+
+      whereCondition[Op.and] = [
+        {
+          [Op.or]: [
+            { planStartDate: null },
+            { planEndDate: null },
+            {
+              [Op.and]: [
+                { planStartDate: { [Op.lte]: now } },
+                { planEndDate: { [Op.gte]: now } },
+              ],
+            },
+          ],
+        },
+      ];
+
+      mobileSortByPlanPriority = true;
+    }
 
     if (status) whereCondition.status = status;
 
@@ -299,6 +336,13 @@ export const getDirectoryListByAdmin = async (
       };
     }
 
+    if (industryServed) {
+      const industry = String(industryServed).trim();
+      if (industry) {
+        whereCondition.industriesServed = { [Op.contains]: [industry] };
+      }
+    }
+
     if (registrationDate && registrationDate.length === 2) {
       const [startDate, endDate] = registrationDate;
       if (startDate && endDate) {
@@ -323,15 +367,32 @@ export const getDirectoryListByAdmin = async (
     if (search?.trim()) {
       const searchTerm = `%${search.trim()}%`;
       whereCondition[Op.or] = [
-        { id: isNaN(Number(search)) ? -1 : Number(search) },
         { companyName: { [Op.iLike]: searchTerm } },
         { contactPersonName: { [Op.iLike]: searchTerm } },
         { email: { [Op.iLike]: searchTerm } },
+
+        literal(`
+      "Directory"."id" IN (
+        SELECT "directoryId" 
+        FROM "directoryCategoryMappings" dcm
+        LEFT JOIN "directoryCategories" dc 
+          ON dcm."categoryId" = dc."id"
+        LEFT JOIN "directorySubCategories" dsc 
+          ON dcm."subCategoryId" = dsc."id"
+        WHERE dc."name" ILIKE '${searchTerm}'
+           OR dsc."name" ILIKE '${searchTerm}'
+      )
+    `),
       ];
     }
 
-    let order: any = [["updatedAt", "DESC"]];
-    if (sortBy) {
+    let order: any = [["createdAt", "DESC"]];
+    if (mobileSortByPlanPriority) {
+      order = [
+        [{ model: DirectoryPlan, as: "plan" }, "priority", "ASC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (sortBy) {
       switch (String(sortBy).toLowerCase()) {
         case "company_asc":
           order = [["companyName", "ASC"]];
@@ -352,48 +413,65 @@ export const getDirectoryListByAdmin = async (
           order = [["updatedAt", "DESC"]];
           break;
         default:
-          order = [["updatedAt", "DESC"]];
+          order = [["createdAt", "DESC"]];
       }
+    }
+
+    const include: any[] = [
+      { model: User, as: "owner", attributes: ["id", "name", "mobile"] },
+      {
+        model: User,
+        as: "onboardedByUser",
+        attributes: ["id", "name", "email", "role", "mobile"],
+        where: Object.keys(onBoardedByUserWhere).length
+          ? onBoardedByUserWhere
+          : undefined,
+        required: Object.keys(onBoardedByUserWhere).length > 0,
+      },
+      {
+        model: DirectoryPlan,
+        as: "plan",
+        attributes: [
+          "id",
+          "name",
+          "priority",
+          "homePagePosition",
+          "categoryPagePosition",
+          "slotLimit",
+        ],
+        required: false,
+      },
+    ];
+
+    if (currentUserId) {
+      include.push({
+        model: SavedDirectory,
+        as: "savedDirectories",
+        attributes: ["id"],
+        required: isSaved === "true",
+        where: { userId: currentUserId },
+      });
     }
 
     const { count, rows } = await Directory.findAndCountAll({
       where: whereCondition,
-      limit,
+      include,
+      limit: Number(limit),
       offset,
       order,
       distinct: true,
-      include: [
-        { model: User, as: "owner", attributes: ["id", "name", "mobile"] },
-        {
-          model: User,
-          as: "onboardedByUser",
-          attributes: ["id", "name", "email", "role", "mobile"],
-          where: Object.keys(onBoardedByUserWhere).length
-            ? onBoardedByUserWhere
-            : undefined,
-          required: Object.keys(onBoardedByUserWhere).length > 0,
-        },
-        {
-          model: DirectoryPlan,
-          as: "plan",
-          attributes: [
-            "id",
-            "name",
-            "priority",
-            "homePagePosition",
-            "categoryPagePosition",
-            "slotLimit",
-          ],
-          required: false,
-        },
-      ],
     });
+
+    const directories = rows.map((dir: any) => ({
+      ...dir.toJSON(),
+      isSaved: !!(dir.savedDirectories && dir.savedDirectories.length > 0),
+    }));
 
     return {
       totalCount: count,
       currentPage: Number(page),
       totalPages: Math.ceil(count / limit),
-      directories: rows,
+      directories,
     };
   } catch (err) {
     console.error(err);

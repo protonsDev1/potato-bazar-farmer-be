@@ -157,17 +157,17 @@ export const getAllMandiAgents = async (
 ) => {
   const offset = (page - 1) * limit;
 
-  const whereCondition: any ={};
+  const whereCondition: any = {};
 
-if (search?.trim()) {
-  const searchTerm = `%${search.trim()}%`;
-  whereCondition[Op.or] = [
-    { licenseNumber: { [Op.iLike]: searchTerm } },
-    { "$user.name$": { [Op.iLike]: searchTerm } },
-    { "$user.email$": { [Op.iLike]: searchTerm } },
-    { "$user.state$": { [Op.iLike]: searchTerm } },
-  ];
-}
+  if (search?.trim()) {
+    const searchTerm = `%${search.trim()}%`;
+    whereCondition[Op.or] = [
+      { licenseNumber: { [Op.iLike]: searchTerm } },
+      { "$user.name$": { [Op.iLike]: searchTerm } },
+      { "$user.email$": { [Op.iLike]: searchTerm } },
+      { "$user.state$": { [Op.iLike]: searchTerm } },
+    ];
+  }
   const { count, rows } = await MandiAgent.findAndCountAll({
     where: whereCondition,
     include: [
@@ -190,7 +190,7 @@ if (search?.trim()) {
     ],
     limit,
     offset,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const enrichedResults = rows.map((entry) => {
@@ -273,6 +273,7 @@ export const updateMandiAgentService = async (
     city,
     pinCode,
     mandiIds,
+    isActive,
   } = updateFields;
 
   const mandiUser = await MandiAgent.findOne({
@@ -291,6 +292,7 @@ export const updateMandiAgentService = async (
           "state",
           "email",
           "pinCode",
+          "isActive",
         ],
         as: "user",
       },
@@ -375,6 +377,10 @@ export const updateMandiAgentService = async (
   if (licenseNumber !== undefined)
     mandiAgentUpdates.licenseNumber = licenseNumber;
   if (remarks !== undefined) mandiAgentUpdates.remarks = remarks;
+  if (hasValue(isActive)) {
+    mandiAgentUpdates.isActive = isActive;
+    userUpdates.isActive = isActive;
+  }
   if (hasValue(firstName)) userUpdates.firstName = firstName;
   if (hasValue(lastName)) userUpdates.lastName = lastName;
   if (hasValue(email)) userUpdates.email = email;

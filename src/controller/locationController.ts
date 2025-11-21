@@ -30,7 +30,7 @@ export const listCities = async (req, res) => {
 
     const cities = await City.findAll({
       where: whereClause,
-      attributes: ["id", "name", "image", "position"],
+      attributes: ["id", "name", "image", "position", "stateId"],
       order: [
         [sequelize.literal('"position" IS NULL'), "ASC"],
         ["position", "ASC"],
@@ -113,7 +113,7 @@ export const updateCityImage = async (req, res) => {
     if (position) {
       const isPositionExist = await City.findOne({ where: { position } });
 
-      if (isPositionExist)
+      if (isPositionExist && id !== isPositionExist.id.toString())
         return res.status(403).json({
           success: false,
           message: `${isPositionExist.name} already has position ${position}.`,

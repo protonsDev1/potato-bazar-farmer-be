@@ -12,6 +12,8 @@ import {
 import { sendNotificationService } from "../services/notificationService";
 import { parseFilters } from "../utils/parseQuery";
 import User, { USER_ROLES } from "../database/models/user";
+import { checkPermissionMiddleware, runMiddleware } from "../utils/userAuth";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 export const createEvent = async (req, res) => {
   try {
@@ -71,11 +73,23 @@ export const retrieveAllEvents = async (req, res) => {
   }
 };
 
-export const retrieveEventDetail = async (req, res) => {
+export const retrieveEventDetail = async (req, res, next) => {
   try {
     const { eventId } = req.params;
 
-    const eventDetail = await getEventDetail(eventId);
+    const user = req.user;
+    const userId = user?.id || null;
+    const role = user?.role || null;
+
+    if (role === USER_ROLES.SUB_ADMIN) {
+      await runMiddleware(
+        req,
+        res,
+        checkPermissionMiddleware(PERMISSIONS.EVENTS)
+      );
+    }
+
+    const eventDetail = await getEventDetail(eventId, userId, role);
 
     if (!eventDetail.success)
       return res
@@ -192,23 +206,22 @@ export const registerOnEvent = async (req, res) => {
         message: response.error,
       });
 
-    const superAdmin = await User.findOne({
-      where: { role: USER_ROLES.SUPER_ADMIN },
-    });
+    // const superAdmin = await User.findOne({
+    //   where: { role: USER_ROLES.SUPER_ADMIN },
+    // });
 
-    await sendNotificationService({
-      title: "Request To Join an Event",
-      description: "User is Requesting to join an Event",
-      senderId: userId,
-      receiverId: superAdmin.id,
-      referenceType: NotificationType.EVENT,
-      referenceId: eventId,
-    });
+    // await sendNotificationService({
+    //   title: "Request To Join an Event",
+    //   description: "User is Requesting to join an Event",
+    //   senderId: userId,
+    //   receiverId: superAdmin.id,
+    //   referenceType: NotificationType.EVENT,
+    //   referenceId: eventId,
+    // });
 
     return res.status(201).json({
       success: response.success,
-      message:
-        "Request to register on this event has been submitted successfully.",
+      message: "Given mobile number is registered for the event successfully.",
       data: response.data,
     });
   } catch (error) {

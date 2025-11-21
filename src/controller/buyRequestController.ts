@@ -18,10 +18,10 @@ import {
 
 export const createBuyRequest = async (req, res) => {
   try {
-    if (req.user.role !== USER_ROLES.USER)
-      return res.status(403).json({
-        message: "Only user is authorized to create buy request.",
-      });
+    // if (req.user.role !== USER_ROLES.USER)
+    //   return res.status(403).json({
+    //     message: "Only user is authorized to create buy request.",
+    //   });
 
     const buyRequest = await createBuyRequestService(req.user.id, req.body);
 
@@ -133,7 +133,7 @@ export const deleteBuyRequest = async (req, res) => {
 
 export const updateBuyRequest = async (req, res) => {
   const result = await updateBuyRequestService(
-    req.user.id,
+    req.user,
     req.params.id,
     req.body
   );
@@ -173,7 +173,10 @@ export const updateBuyRequestStatus = async (req, res) => {
       referenceId: updatedRequest.id,
     });
 
-    if (status === BUY_REQUEST_STATUS.APPROVED)
+    if (
+      status === BUY_REQUEST_STATUS.APPROVED &&
+      updatedRequest.isActive === true
+    )
       await sendNotificationToMatchingSellers(id, updatedRequest.id);
 
     return res.json({

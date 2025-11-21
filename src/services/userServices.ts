@@ -1,27 +1,35 @@
-import User, { PB_VERIFICATION_STATUS, REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
-import Agent from '../database/models/agent';
-import { generateAgentId, generateRandomPassword } from '../utils/generate';
+import User, {
+  PB_VERIFICATION_STATUS,
+  REGISTRATION_STATUS,
+  USER_REGISTRATION_TYPES,
+  USER_ROLES,
+} from "../database/models/user";
+import Agent from "../database/models/agent";
+import { generateAgentId, generateRandomPassword } from "../utils/generate";
 import Farmer from "../database/models/farmer";
 import ColdStorage from "../database/models/coldStorage";
 import { createOtp, verifyOtpFromDB } from "./otpServices";
-import { Op, Sequelize } from 'sequelize';
+import { col, fn, Op, Sequelize } from "sequelize";
 import { formatDistanceToNow } from "date-fns";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 import Trader from "../database/models/trader/trader";
 import { formatDate } from "../utils/dateFormat";
-import AgentOnboardedUser, { USER_TYPE } from "../database/models/agentOnboardedUsers";
+import AgentOnboardedUser, {
+  USER_TYPE,
+} from "../database/models/agentOnboardedUsers";
 import KycDocument from "../database/models/kycDocuments";
 import { hasValue } from "../utils/parseQuery";
 import SubAdminWebPermission from "../database/models/subAdminWebPermission";
 import { PERMISSIONS, WEB_ACTIONS } from "../utils/constants/permissions";
 import BuyRequest, { BUY_REQUEST_STATUS } from "../database/models/buyRequest";
 import MandiAgent from "../database/models/mandiAgent";
-import SellRequest, { SELL_REQUEST_STATUS } from "../database/models/sellRequest";
+import SellRequest, {
+  SELL_REQUEST_STATUS,
+} from "../database/models/sellRequest";
 import UserSupport from "../database/models/userSupport";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { retrieveFarmerProfile } from "./farmerServices";
 import { retrieveTraderProfile } from "./traderService";
-import ColdStorageRequirement from "../database/models/coldStorageRequirement";
 import Event from "../database/models/event";
 import News, { NEWS_STATUS } from "../database/models/news";
 import MandiList from "../database/models/mandiList";
@@ -29,6 +37,16 @@ import GovernmentScheme from "../database/models/govScheme";
 import { sendNotificationService } from "./notificationService";
 import { NotificationType } from "../database/models/notification";
 import MandiPrice from "../database/models/mandiPrice";
+import Directory from "../database/models/directory";
+import DirectoryPlan from "../database/models/directoryPlan";
+import Banner from "../database/models/banner";
+import Advertisement from "../database/models/advertisement";
+import ContactSupport from "../database/models/contactSupport";
+import PromotionRequest from "../database/models/promotionRequest";
+import AskExpert, { QUERY_STATUS } from "../database/models/askExpert";
+import KnowledgeHub, {
+  KNOWLEDGE_HUB_STATUS,
+} from "../database/models/knowledgeHub";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -39,12 +57,12 @@ export const createUserInDB = async (userModuleData: any) => {
 };
 
 export const findUserByEmail = async (email: string) => {
-    try {
-      return await User.findOne({ where: { email } });
-    } catch (error) {
-      throw error;
-    }
-  };
+  try {
+    return await User.findOne({ where: { email } });
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const createUserWithAgent = async ({
   name,
@@ -118,7 +136,7 @@ export const createUserWithAgent = async ({
 export const findAgentWithUser = async (agentId: string) => {
   return await Agent.findOne({
     where: { agentId },
-    include: [{ model: User, as: 'user' }],
+    include: [{ model: User, as: "user" }],
   });
 };
 
@@ -137,7 +155,7 @@ export const getDashboardCounts = async () => {
   const { oneWeekAgo, oneMonthAgo } = getDateRange();
 
   const [totalAgents, agentsLastWeek, agentsLastMonth] = await Promise.all([
-    Agent.count({ where: { isDeleted: false} }),
+    Agent.count({ where: { isDeleted: false } }),
     Agent.count({
       where: { isDeleted: false, createdAt: { [Op.gte]: oneWeekAgo } },
     }),
@@ -216,7 +234,6 @@ export const getDashboardCounts = async () => {
             Sequelize.col("userId")
           ),
         ],
-        
       },
     }),
     ColdStorage.count({
@@ -385,29 +402,31 @@ export const getRegistrationTypes = async (mobile) => {
     isFarmerOnboarded: !!isFarmer,
     isColdStorageOnboarded: !!isColdStorage,
     isTraderOnboarded: !!isTrader,
-    coldStorageList: coldStorageList
+    coldStorageList: coldStorageList,
   };
 };
 
-export const registerInitialUser = async (mobile, hasStartedUsingMobile) =>{
+export const registerInitialUser = async (
+  mobile,
+  hasStartedUsingMobile,
+  playerId
+) => {
   return await User.create({
-    name: 'Guest',
+    name: "Guest",
     mobile,
-    role:'user',
+    role: "user",
     otpVerified: true,
-    hasStartedUsingMobile: !!hasStartedUsingMobile
+    hasStartedUsingMobile: !!hasStartedUsingMobile,
+    playerId,
   });
 };
 
-export const updateRegistrationTypes = async (
-  mobile,
-  newTypes
-) => {
+export const updateRegistrationTypes = async (mobile, newTypes) => {
   const user = await User.findOne({ where: { mobile } });
   if (!user) return null;
 
   const currentTypes = user.registration_types || [];
-  const updatedTypes = Array.from(new Set([...currentTypes, ...newTypes])); 
+  const updatedTypes = Array.from(new Set([...currentTypes, ...newTypes]));
 
   user.registration_types = updatedTypes;
   await user.save();
@@ -417,10 +436,9 @@ export const updateRegistrationTypes = async (
 
 export const updateUserInDB = async (userId: number, updateData: any) => {
   try {
-   return  await User.update(updateData, {
+    return await User.update(updateData, {
       where: { id: userId },
     });
-
   } catch (error) {
     throw error;
   }
@@ -451,7 +469,7 @@ export const getUserProfileDB = async (id) => {
     const [farmerCount, coldStorageCount, traderCount] = await Promise.all([
       Farmer.count({ where: { onBoardedBy: agentId } }),
       ColdStorage.count({ where: { onBoardedBy: agentId } }),
-      Trader.count({where: {onBoardedBy: agentId}})
+      Trader.count({ where: { onBoardedBy: agentId } }),
     ]);
 
     result.onboardingStats = {
@@ -570,24 +588,26 @@ export const changePasswordService = async (
   id
 ) => {
   try {
+    const userData = await findUserByPkInDB(id);
 
-    const userData= await findUserByPkInDB(id);
+    if (!userData.success) return { success: false, error: userData.error };
 
-    if(!userData.success)return {success:false,error:userData.error};
-
-   const isMatch=await userData.data.validatePassword(oldPassword);
+    const isMatch = await userData.data.validatePassword(oldPassword);
 
     if (!isMatch)
-    return {
+      return {
         success: false,
         error: "Old Password does not match.",
       };
 
     if (newPassword !== confirmNewPassword)
-    return {success:false,error:"New Password and Confirm New Password should be same."}
+      return {
+        success: false,
+        error: "New Password and Confirm New Password should be same.",
+      };
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await User.update({ password_hash: hashedPassword }, { where: {id} });
+    await User.update({ password_hash: hashedPassword }, { where: { id } });
 
     return {
       success: true,
@@ -611,12 +631,12 @@ export const updateProfileService = async (data, userId, role) => {
     }
 
     if (mobile) {
-
-       if(role === USER_ROLES.ADMIN)
-         return {
-           success: false,
-           error: "Admin is not allowed to update mobile number without verification.",
-         };
+      if (role === USER_ROLES.ADMIN)
+        return {
+          success: false,
+          error:
+            "Admin is not allowed to update mobile number without verification.",
+        };
 
       const user = await checkExistingUser(mobile);
       if (user && user.id !== userId)
@@ -652,15 +672,15 @@ export const retrieveRecentRegisteredForAdmin = async () => {
     const [farmers, coldStorages, traders] = await Promise.all([
       Farmer.findAll({
         order: [["createdAt", "DESC"]],
-        limit: 5
+        limit: 5,
       }),
       ColdStorage.findAll({
         order: [["createdAt", "DESC"]],
-        limit: 5
+        limit: 5,
       }),
       Trader.findAll({
         order: [["createdAt", "DESC"]],
-        limit: 5
+        limit: 5,
       }),
     ]);
 
@@ -707,7 +727,7 @@ const normalizeUserType = (userType: string): string | null => {
   };
 
   return mapping[userType] || null;
-}
+};
 
 export const updateRegistrationStatus = async (
   status: string,
@@ -797,14 +817,14 @@ export const updateRegistrationStatus = async (
     }
 
     const user = await Model.findOne({
-      where: {id: entityId},
-      include:[
+      where: { id: entityId },
+      include: [
         {
           model: User,
-          as: "user"
-        }
-      ]
-    })
+          as: "user",
+        },
+      ],
+    });
     if (!user) {
       return {
         success: false,
@@ -893,10 +913,26 @@ export const mobileOnboardingLoginService = async (userData) => {
     pinCode,
   } = userData;
 
+  const VALID_USER_TYPES = Object.values(USER_REGISTRATION_TYPES);
+
+  if (
+    Array.isArray(userType) &&
+    !userType.every((type) => VALID_USER_TYPES.includes(type))
+  )
+    return {
+      success: false,
+      error:
+        "Invalid user type found. Only allowed values are: " +
+        VALID_USER_TYPES.join(", "),
+    };
+
   const user = await User.findOne({ where: { mobile } });
 
   if (!user) {
-    throw new Error("User not found");
+    return {
+      success: false,
+      error: "User not found",
+    };
   }
 
   const updatedUser = await user.update({
@@ -912,13 +948,49 @@ export const mobileOnboardingLoginService = async (userData) => {
     isUserOnBoardedOnMobile: true,
   });
 
-  return updatedUser;
+  return {
+    success: true,
+    data: updatedUser,
+  };
 };
 
 export const getUserRole = async (userId) => {
   const user = await User.findByPk(userId);
   return {
-    role: user.role
+    role: user.role,
+  };
+};
+
+export const toggleMobileUserActiveService = async (
+  userId: number,
+  isActive: boolean
+) => {
+  const whereCondition: any = {
+    id: userId,
+    // role: USER_ROLES.USER,
+    [Op.and]: [
+      { isUserOnBoardedOnMobile: true },
+      { hasStartedUsingMobile: true },
+    ],
+  };
+
+  const user = await User.findOne({ where: whereCondition });
+
+  if (!user) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "Mobile user not found or not eligible for this operation",
+    };
+  }
+
+  await user.update({ isActive });
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: `User ${isActive ? "activated" : "deactivated"} successfully.`,
+    data: user,
   };
 };
 
@@ -930,17 +1002,44 @@ export const getMobileUsers = async ({
   activeStatus,
   pbVerificationRequested,
   pbVerificationStatus,
+  userType,
 }) => {
   try {
     const offset = (page - 1) * limit;
+    let order: any = [["createdAt", "DESC"]];
 
     const whereCondition: any = {
-      role: USER_ROLES.USER,
-      [Op.or]: [
+      // role: USER_ROLES.USER,
+      [Op.and]: [
         { isUserOnBoardedOnMobile: true },
         { hasStartedUsingMobile: true },
       ],
     };
+
+    // Accept: comma-separated string "farmer,trader" OR array ['farmer','trader']
+    if (userType) {
+      let userTypeArray: string[] = [];
+
+      if (Array.isArray(userType)) {
+        // express repeated query param ?userType=a&userType=b -> ['a','b']
+        userTypeArray = userType.flatMap((t) =>
+          String(t)
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        );
+      } else if (typeof userType === "string") {
+        // comma separated "a,b"
+        userTypeArray = userType
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+
+      if (userTypeArray.length > 0) {
+        whereCondition.userType = { [Op.overlap]: userTypeArray };
+      }
+    }
 
     if (search && search.trim()) {
       const searchTerm = `%${search.trim()}%`;
@@ -963,6 +1062,17 @@ export const getMobileUsers = async ({
     if (pbVerificationRequested !== undefined) {
       whereCondition.pbVerificationRequested =
         pbVerificationRequested === "true";
+      order = [
+        [
+          fn(
+            "COALESCE",
+            col("User.pbVerificationRequestedAt"),
+            col("User.createdAt")
+          ),
+          "DESC",
+        ],
+        ["createdAt", "DESC"],
+      ];
     }
 
     if (pbVerificationStatus && pbVerificationStatus !== "all") {
@@ -985,7 +1095,7 @@ export const getMobileUsers = async ({
       include,
       limit,
       offset,
-      order: [["createdAt", "DESC"]],
+      order,
     });
 
     return {
@@ -1005,7 +1115,6 @@ export const getMobileUsers = async ({
       error: error.message || "Failed to fetch mobile users.",
     };
   }
-  
 };
 
 export const updateMobileService = async (userId, payload) => {
@@ -1017,7 +1126,6 @@ export const updateMobileService = async (userId, payload) => {
       success: false,
       error: "User not found.",
     };
-
 
   if (hasValue(email)) {
     const isEmailTaken = await User.findOne({ where: { email } });
@@ -1037,7 +1145,7 @@ export const updateMobileService = async (userId, payload) => {
     "location",
     "bio",
     "profilePicture",
-    "userType"
+    "userType",
   ];
 
   const updateData: Record<string, any> = {};
@@ -1059,23 +1167,61 @@ export const updateMobileService = async (userId, payload) => {
   };
 };
 
-export const getAdminDashboardStats = async () => {
+export const getAdminDashboardStats = async (user) => {
   const { oneWeekAgo, oneMonthAgo } = getDateRange();
 
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
-
   const now = new Date();
+
+  // helper to fetch sub-admin permissions as a Set
+  const getSubAdminPermSet = async (user) => {
+    if (!user || user.role !== USER_ROLES.SUB_ADMIN) return new Set<string>();
+    const perms = await SubAdminPermission.findAll({
+      where: { userId: user.id },
+      attributes: ["permission"],
+    });
+    return new Set(perms.map((p) => p.permission));
+  };
+
+  // If super admin -> full access, skip permission checks
+  const isSuperAdmin = user && user.role === USER_ROLES.SUPER_ADMIN;
+  const isSubAdmin = user && user.role === USER_ROLES.SUB_ADMIN;
+  const subAdminPermSet = isSubAdmin
+    ? await getSubAdminPermSet(user)
+    : new Set();
+
+  const hasPerm = (perm: string) => {
+    if (isSuperAdmin) return true;
+    if (isSubAdmin) return subAdminPermSet.has(perm);
+    return false;
+  };
 
   const userInclude: any = {
     model: User,
     as: "user",
     attributes: ["id", "name", "hasStartedUsingMobile", "pbVerified"],
+    where: { hasStartedUsingMobile: true },
+    required: true,
   };
 
-  userInclude.where = { hasStartedUsingMobile: true };
-  userInclude.required = true; // ensures inner join
+  const kycAllowed = hasPerm(PERMISSIONS.KYC_REQUESTS);
+  const buyAllowed = hasPerm(PERMISSIONS.BUY_REQUESTS);
+  const sellAllowed = hasPerm(PERMISSIONS.SELL_REQUESTS);
+  const userMgmtAllowed = hasPerm(PERMISSIONS.USER_MANAGEMENT);
+  const mandiAllowed = hasPerm(PERMISSIONS.MANDI_MANAGEMENT);
+  const coldStorageAllowed = hasPerm(PERMISSIONS.COLD_STORAGE);
+  const pbVerificationAllowed = hasPerm(PERMISSIONS.PB_VERIFICATION);
+  const govtSchemesAllowed = hasPerm(PERMISSIONS.GOVT_SCHEMES);
+  const eventsAllowed = hasPerm(PERMISSIONS.EVENTS);
+  const newsAllowed = hasPerm(PERMISSIONS.NEWS);
+  const directoryAllowed = hasPerm(PERMISSIONS.DIRECTORY);
+  const promoBannerAllowed = hasPerm(PERMISSIONS.PROMOTIONAL_BANNERS);
+  const advertisementAllowed = hasPerm(PERMISSIONS.ADVERTISEMENT);
+  const callSupportAllowed = hasPerm(PERMISSIONS.CALL_SUPPORT);
+  const helpSupportAllowed = hasPerm(PERMISSIONS.HELP_SUPPORT);
+  const cropDiagnosisAllowed = hasPerm(PERMISSIONS.CROP_DIAGNOSIS);
 
   const [
     pendingKycStats,
@@ -1083,6 +1229,8 @@ export const getAdminDashboardStats = async () => {
     rejectedKycStats,
     pendingBuyRequestStats,
     lastWeekBuyRequestStats,
+    activeBuyRequestStats,
+    lastWeekActiveBuyRequestStats,
     activeSellRequestStats,
     lastWeekActiveSellRequestStats,
     totalUsersCount,
@@ -1091,127 +1239,315 @@ export const getAdminDashboardStats = async () => {
     lastMonthMandiAgentsCount,
     coldStorageCount,
     lastMonthColdStorageCount,
+    pbPendingCount,
+    pbApprovedCount,
+    pbRejectedCount,
+
+    govtSchemesCount,
+    lastMonthGovtSchemesCount,
+
+    eventsTotalCount,
+    eventsOngoingCount,
+
+    newsTotalCount,
+    newsPublishedCount,
+
+    directoryTotalCount,
+    directoryLastMonthCount,
+
+    promotionalBannerTotal,
+    promotionalBannerActive,
+
+    advertisementTotal,
+    advertisementLastMonthCount,
+
+    callSupportTotal,
+    callSupportLastMonthCount,
+
+    helpSupportTotal,
+    helpSupportLastMonthCount,
+
+    cropPromotionalRequestCount,
+    cropOpenExpertQueriesCount,
+
+    recentUsers,
+    recentKyc,
+    recentBuyRequests,
+    recentSellRequests,
   ] = await Promise.all([
-    KycDocument.count({ where: { status: "pending" } }),
-    KycDocument.count({ where: { status: "approved" } }),
-    KycDocument.count({ where: { status: "rejected" } }),
+    // KYC
+    kycAllowed
+      ? KycDocument.count({ where: { status: "pending" } })
+      : Promise.resolve(null),
+    kycAllowed
+      ? KycDocument.count({ where: { status: "approved" } })
+      : Promise.resolve(null),
+    kycAllowed
+      ? KycDocument.count({ where: { status: "rejected" } })
+      : Promise.resolve(null),
 
-    BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.PENDING } }),
-    BuyRequest.count({
-      where: {
-        status: BUY_REQUEST_STATUS.PENDING,
-        createdAt: { [Op.gte]: oneWeekAgo },
-      },
-    }),
+    // BuyRequests
+    buyAllowed
+      ? BuyRequest.count({ where: { status: BUY_REQUEST_STATUS.PENDING } })
+      : Promise.resolve(null),
+    buyAllowed
+      ? BuyRequest.count({
+          where: {
+            status: BUY_REQUEST_STATUS.PENDING,
+            createdAt: { [Op.gte]: oneWeekAgo },
+          },
+        })
+      : Promise.resolve(null),
+    buyAllowed
+      ? BuyRequest.count({
+          where: { status: BUY_REQUEST_STATUS.APPROVED, isActive: true },
+        })
+      : Promise.resolve(null),
+    buyAllowed
+      ? BuyRequest.count({
+          where: {
+            status: BUY_REQUEST_STATUS.APPROVED,
+            isActive: true,
+            createdAt: { [Op.gte]: oneWeekAgo },
+          },
+        })
+      : Promise.resolve(null),
 
-    SellRequest.count({ where: { isActive: true } }),
-    SellRequest.count({
-      where: { isActive: true, createdAt: { [Op.gte]: oneWeekAgo } },
-    }),
+    // SellRequests
+    sellAllowed
+      ? SellRequest.count({
+          where: { status: SELL_REQUEST_STATUS.APPROVED, isActive: true },
+        })
+      : Promise.resolve(null),
+    sellAllowed
+      ? SellRequest.count({
+          where: {
+            status: SELL_REQUEST_STATUS.APPROVED,
+            isActive: true,
+            createdAt: { [Op.gte]: oneWeekAgo },
+          },
+        })
+      : Promise.resolve(null),
 
-    User.count({
-      where: {
-        role: USER_ROLES.USER,
-        [Op.or]: [
-          { isUserOnBoardedOnMobile: true },
-          { hasStartedUsingMobile: true },
-        ],
-        isActive: true,
-      },
-    }),
-    User.count({
-      where: {
-        role: USER_ROLES.USER,
-        [Op.or]: [
-          { isUserOnBoardedOnMobile: true },
-          { hasStartedUsingMobile: true },
-        ],
-        createdAt: { [Op.gte]: oneMonthAgo },
-        isActive: true,
-      },
-    }),
+    // Users (user management)
+    userMgmtAllowed
+      ? User.count({
+          where: {
+            // role: USER_ROLES.USER,
+            [Op.and]: [
+              { isUserOnBoardedOnMobile: true },
+              { hasStartedUsingMobile: true },
+            ],
+            isActive: true,
+          },
+        })
+      : Promise.resolve(null),
 
-    MandiAgent.count({ where: { isActive: true } }),
-    MandiAgent.count({
-      where: {
-        createdAt: { [Op.gte]: oneMonthAgo },
-        isActive: true,
-      },
-    }),
+    userMgmtAllowed
+      ? User.count({
+          where: {
+            // role: USER_ROLES.USER,
+            [Op.and]: [
+              { isUserOnBoardedOnMobile: true },
+              { hasStartedUsingMobile: true },
+            ],
+            createdAt: { [Op.gte]: oneMonthAgo },
+            isActive: true,
+          },
+        })
+      : Promise.resolve(null),
 
-    ColdStorage.count({ include: [userInclude] }),
-    ColdStorage.count({
-      where: { createdAt: { [Op.gte]: startOfMonth, [Op.lte]: now } },
-      include: [userInclude],
-    }),
+    // Mandi agents
+    mandiAllowed
+      ? MandiAgent.count({ where: { isActive: true } })
+      : Promise.resolve(null),
+    mandiAllowed
+      ? MandiAgent.count({
+          where: {
+            createdAt: { [Op.gte]: oneMonthAgo },
+            isActive: true,
+          },
+        })
+      : Promise.resolve(null),
+
+    // Cold storages (respect userInclude)
+    coldStorageAllowed
+      ? ColdStorage.count({ include: [userInclude] })
+      : Promise.resolve(null),
+    coldStorageAllowed
+      ? ColdStorage.count({
+          where: { createdAt: { [Op.gte]: startOfMonth, [Op.lte]: now } },
+          include: [userInclude],
+        })
+      : Promise.resolve(null),
+
+    // PB verification (users where pbVerificationStatus)
+    pbVerificationAllowed
+      ? User.count({
+          where: { pbVerificationStatus: PB_VERIFICATION_STATUS.PENDING },
+        })
+      : Promise.resolve(null),
+    pbVerificationAllowed
+      ? User.count({
+          where: { pbVerificationStatus: PB_VERIFICATION_STATUS.APPROVED },
+        })
+      : Promise.resolve(null),
+    pbVerificationAllowed
+      ? User.count({
+          where: { pbVerificationStatus: PB_VERIFICATION_STATUS.REJECTED },
+        })
+      : Promise.resolve(null),
+
+    // Govt schemes
+    govtSchemesAllowed
+      ? GovernmentScheme.count({ where: { isActive: true } })
+      : Promise.resolve(null),
+    govtSchemesAllowed
+      ? GovernmentScheme.count({
+          where: { createdAt: { [Op.gte]: oneMonthAgo }, isActive: true },
+        })
+      : Promise.resolve(null),
+
+    // Events: total and ongoing
+    eventsAllowed ? Event.count() : Promise.resolve(null),
+    eventsAllowed
+      ? Event.count({
+          where: { startDate: { [Op.lte]: now }, endDate: { [Op.gte]: now } },
+        })
+      : Promise.resolve(null),
+
+    // News
+    newsAllowed ? News.count() : Promise.resolve(null),
+    newsAllowed
+      ? News.count({ where: { status: NEWS_STATUS.PUBLISHED } }) // adjust status value if different
+      : Promise.resolve(null),
+
+    // Directory
+    directoryAllowed ? Directory.count() : Promise.resolve(null),
+    directoryAllowed
+      ? Directory.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } })
+      : Promise.resolve(null),
+
+    // Promotional banners
+    promoBannerAllowed ? Banner.count() : Promise.resolve(null),
+    promoBannerAllowed
+      ? Banner.count({ where: { isActive: true } })
+      : Promise.resolve(null),
+
+    // Advertisements
+    advertisementAllowed ? Advertisement.count() : Promise.resolve(null),
+    advertisementAllowed
+      ? Advertisement.count({
+          where: { createdAt: { [Op.gte]: oneMonthAgo } },
+        })
+      : Promise.resolve(null),
+
+    // Call support / Help support
+    callSupportAllowed ? ContactSupport.count() : Promise.resolve(null),
+    callSupportAllowed
+      ? ContactSupport.count({
+          where: { createdAt: { [Op.gte]: oneMonthAgo } },
+        })
+      : Promise.resolve(null),
+
+    helpSupportAllowed ? UserSupport.count() : Promise.resolve(null),
+    helpSupportAllowed
+      ? UserSupport.count({
+          where: { createdAt: { [Op.gte]: oneMonthAgo } },
+        })
+      : Promise.resolve(null),
+
+    // Crop diagnosis
+    cropDiagnosisAllowed ? PromotionRequest.count() : Promise.resolve(null), // promotional requests for crop diagnosis
+    cropDiagnosisAllowed
+      ? AskExpert.count({ where: { status: QUERY_STATUS.OPEN } })
+      : Promise.resolve(null),
+
+    // Recent lists
+    userMgmtAllowed
+      ? User.findAll({
+          where: {
+            // role: USER_ROLES.USER,
+            [Op.and]: [
+              { isUserOnBoardedOnMobile: true },
+              { hasStartedUsingMobile: true },
+            ],
+            isActive: true,
+          },
+          limit: 10,
+          order: [["createdAt", "DESC"]],
+          attributes: ["id", "createdAt"],
+        })
+      : Promise.resolve(null),
+
+    kycAllowed
+      ? KycDocument.findAll({
+          limit: 10,
+          order: [["createdAt", "DESC"]],
+          attributes: ["id", "status", "updatedAt", "isVerified"],
+        })
+      : Promise.resolve(null),
+
+    buyAllowed
+      ? BuyRequest.findAll({
+          limit: 10,
+          order: [["createdAt", "DESC"]],
+          attributes: ["id", "status", "createdAt"],
+        })
+      : Promise.resolve(null),
+
+    sellAllowed
+      ? SellRequest.findAll({
+          limit: 10,
+          order: [["createdAt", "DESC"]],
+          attributes: ["id", "status", "createdAt"],
+        })
+      : Promise.resolve(null),
   ]);
 
-  const [recentUsers, recentKyc, recentBuyRequests, recentSellRequests] =
-    await Promise.all([
-      User.findAll({
-        where: {
-          role: USER_ROLES.USER,
-          [Op.or]: [
-            { isUserOnBoardedOnMobile: true },
-            { hasStartedUsingMobile: true },
-          ],
-          isActive: true,
-        },
-        limit: 10,
-        order: [["createdAt", "DESC"]],
-        attributes: ["id", "createdAt"],
-      }),
-      KycDocument.findAll({
-        limit: 10,
-        order: [["updatedAt", "DESC"]],
-        attributes: ["id", "status", "updatedAt"],
-      }),
-      BuyRequest.findAll({
-        limit: 10,
-        order: [["createdAt", "DESC"]],
-        attributes: ["id", "status", "createdAt"],
-      }),
-      SellRequest.findAll({
-        limit: 10,
-        order: [["createdAt", "DESC"]],
-        attributes: ["id", "status", "createdAt"],
-      }),
-    ]);
-
-  const activities: any = [
-    ...recentUsers.map((u) => ({
+  // Build activities only from allowed recent lists
+  const activities: any[] = [
+    ...(recentUsers || []).map((u) => ({
       message: "New user registered",
       timeAgo: formatDistanceToNow(new Date(u.createdAt), { addSuffix: true }),
       createdAt: u.createdAt,
+      type: "user",
     })),
-    ...recentKyc.map((k) => ({
-      message: `KYC ${k.isVerified ? "Approved" : "Rejected"} `,
+    ...(recentKyc || []).map((k) => ({
+      message: `KYC ${k.isVerified ? "Approved" : "Rejected"}`,
       timeAgo: formatDistanceToNow(new Date(k.updatedAt), { addSuffix: true }),
       createdAt: k.updatedAt,
+      type: "kyc",
     })),
-    ...recentBuyRequests.map((b) => ({
+    ...(recentBuyRequests || []).map((b) => ({
       message: "New Buy Request created",
       timeAgo: formatDistanceToNow(new Date(b.createdAt), { addSuffix: true }),
       createdAt: b.createdAt,
+      type: "buy_request",
     })),
-    ...recentSellRequests.map((s) => ({
+    ...(recentSellRequests || []).map((s) => ({
       message: "New Sell Request created",
       timeAgo: formatDistanceToNow(new Date(s.createdAt), { addSuffix: true }),
       createdAt: s.createdAt,
+      type: "sell_request",
     })),
   ];
 
   activities.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    (a, b) =>
+      (new Date(b.createdAt).getTime() || 0) -
+      (new Date(a.createdAt).getTime() || 0)
   );
 
-  return {
+  const result: any = {
     kycStats: {
+      allowed: kycAllowed,
       pendingKycStats,
       approvedKycStats,
       rejectedKycStats,
     },
     buyRequestStats: {
+      allowed: buyAllowed,
       pendingBuyRequestStats,
       lastWeekBuyRequestPercent:
         pendingBuyRequestStats === 0
@@ -1222,9 +1558,19 @@ export const getAdminDashboardStats = async () => {
                 100
               ).toFixed(0)
             ),
+      activeBuyRequestStats,
+      lastWeekActiveBuyRequestPercent:
+        activeBuyRequestStats === 0
+          ? 0
+          : parseFloat(
+              (
+                (lastWeekActiveBuyRequestStats / activeBuyRequestStats) *
+                100
+              ).toFixed(0)
+            ),
     },
-
     sellRequestStats: {
+      allowed: sellAllowed,
       activeSellRequestStats,
       lastWeekActiveSellRequestStats:
         activeSellRequestStats === 0
@@ -1236,12 +1582,13 @@ export const getAdminDashboardStats = async () => {
               ).toFixed(0)
             ),
     },
-
     mandiAgentStats: {
+      allowed: mandiAllowed,
       mandiAgentsCount,
       lastMonthMandiAgentsCount,
     },
     userStats: {
+      allowed: userMgmtAllowed,
       totalUsersCount,
       lastMonthTotalUsersPercent:
         totalUsersCount === 0
@@ -1251,11 +1598,68 @@ export const getAdminDashboardStats = async () => {
             ),
     },
     coldStorageStats: {
+      allowed: coldStorageAllowed,
       coldStorageCount,
       lastMonthColdStorageCount,
     },
-    recentActivities: activities.slice(0, 5),
+
+    pbVerificationStats: {
+      allowed: pbVerificationAllowed,
+      pending: pbPendingCount,
+      approved: pbApprovedCount,
+      rejected: pbRejectedCount,
+    },
+    govtSchemesStats: {
+      allowed: govtSchemesAllowed,
+      totalActive: govtSchemesCount,
+      lastMonthCount: lastMonthGovtSchemesCount,
+    },
+    eventsStats: {
+      allowed: eventsAllowed,
+      total: eventsTotalCount,
+      ongoing: eventsOngoingCount,
+    },
+    newsStats: {
+      allowed: newsAllowed,
+      total: newsTotalCount,
+      published: newsPublishedCount,
+    },
+    directoryStats: {
+      allowed: directoryAllowed,
+      total: directoryTotalCount,
+      lastMonthCount: directoryLastMonthCount,
+    },
+    promotionalBannerStats: {
+      allowed: promoBannerAllowed,
+      total: promotionalBannerTotal,
+      active: promotionalBannerActive,
+    },
+    advertisementStats: {
+      allowed: advertisementAllowed,
+      total: advertisementTotal,
+      lastMonthCount: advertisementLastMonthCount,
+    },
+    callSupportStats: {
+      allowed: callSupportAllowed,
+      total: callSupportTotal,
+      lastMonthCount: callSupportLastMonthCount,
+    },
+    helpSupportStats: {
+      allowed: helpSupportAllowed,
+      total: helpSupportTotal,
+      lastMonthCount: helpSupportLastMonthCount,
+    },
+    cropDiagnosisStats: {
+      allowed: cropDiagnosisAllowed,
+      promotionalRequestCount: cropPromotionalRequestCount,
+      openExpertQueriesCount: cropOpenExpertQueriesCount,
+    },
   };
+  if (isSuperAdmin) {
+    result.recentActivities = activities.slice(0, 5);
+  }
+
+  return result;
 };
 
 export const createSupportTicket = async (
@@ -1271,7 +1675,7 @@ export const createSupportTicket = async (
     //@ts-ignore
     priority,
     //@ts-ignore
-    status: "Open", 
+    status: "Open",
   });
 };
 
@@ -1314,9 +1718,7 @@ export const getSupportTickets = async (
       model: User,
       as: "User",
       attributes: ["id", "name", "email"],
-      where: search
-        ? { name: { [Op.iLike]: `%${search}%` } }
-        : undefined,
+      where: search ? { name: { [Op.iLike]: `%${search}%` } } : undefined,
     },
   ];
 
@@ -1330,9 +1732,15 @@ export const getSupportTickets = async (
 
   const totalTickets = await UserSupport.count();
   const openTickets = await UserSupport.count({ where: { status: "Open" } });
-  const inProgressTickets = await UserSupport.count({ where: { status: "In Progress" } });
-  const resolvedTickets = await UserSupport.count({ where: { status: "Resolved" } });
-  const closedTickets = await UserSupport.count({ where: { status: "Closed" } });
+  const inProgressTickets = await UserSupport.count({
+    where: { status: "In Progress" },
+  });
+  const resolvedTickets = await UserSupport.count({
+    where: { status: "Resolved" },
+  });
+  const closedTickets = await UserSupport.count({
+    where: { status: "Closed" },
+  });
 
   return {
     tickets,
@@ -1358,8 +1766,8 @@ export const getSupportTicketById = async (ticketId: number) => {
       {
         model: User,
         as: "User",
-        attributes: ["id", "name", "email"]
-      }
+        attributes: ["id", "name", "email"],
+      },
     ],
   });
 
@@ -1383,42 +1791,67 @@ export const getUserTypeProfileDetails = async (userId) => {
     };
 
   if (
-    userDetail.role !== USER_ROLES.USER ||
-    (userDetail.hasStartedUsingMobile === false &&
-      userDetail.isUserOnBoardedOnMobile === false)
+    // userDetail.role !== USER_ROLES.USER ||
+    userDetail.hasStartedUsingMobile === false &&
+    userDetail.isUserOnBoardedOnMobile === true
   )
     return {
       success: false,
       error: "Only Mobile user's profile can be viewed here.",
     };
 
-  const [isFarmer, isColdStorage, isTrader, coldStorageList] =
-    await Promise.all([
-      Farmer.findOne({ where: { userId } }),
-      ColdStorage.findOne({ where: { userId } }),
-      Trader.findOne({ where: { userId } }),
-      ColdStorage.findAll({
-        where: { userId },
-        attributes: [
-          "id",
-          "name",
-          "firstName",
-          "lastName",
-          "ownerName",
-          "mobileNumber",
-          "state",
-          "district",
-          "totalCapacityMt",
-          "createdAt",
-          "updatedAt",
-          "onBoardedBy",
-          "status",
-          "isAvailable",
-        ],
-      }),
-    ]);
+  const [
+    isFarmer,
+    isColdStorage,
+    isTrader,
+    coldStorageList,
+    isDirectory,
+    directoryList,
+  ] = await Promise.all([
+    Farmer.findOne({ where: { userId } }),
+    ColdStorage.findOne({ where: { userId } }),
+    Trader.findOne({ where: { userId } }),
+    ColdStorage.findAll({
+      where: { userId },
+      attributes: [
+        "id",
+        "name",
+        "firstName",
+        "lastName",
+        "ownerName",
+        "mobileNumber",
+        "state",
+        "district",
+        "totalCapacityMt",
+        "createdAt",
+        "updatedAt",
+        "onBoardedBy",
+        "status",
+        "isAvailable",
+      ],
+    }),
+    Directory.findOne({ where: { userId } }),
+    Directory.findAll({
+      where: { userId },
+      include: [
+        {
+          model: DirectoryPlan,
+          as: "plan",
+          attributes: [
+            "id",
+            "name",
+            "priority",
+            "homePagePosition",
+            "categoryPagePosition",
+            "slotLimit",
+          ],
+          required: false,
+        },
+      ],
+    }),
+  ]);
 
-  let farmerProfile, traderProfile;
+  let farmerProfile, traderProfile, directoryProfile;
 
   if (isFarmer)
     farmerProfile = await retrieveFarmerProfile(String(isFarmer.id), false);
@@ -1432,10 +1865,12 @@ export const getUserTypeProfileDetails = async (userId) => {
       isFarmerOnboarded: !!isFarmer,
       isColdStorageOnboarded: !!isColdStorage,
       isTraderOnboarded: !!isTrader,
+      isDirectory: !!isDirectory,
       userDetail,
       farmerProfile,
       traderProfile,
       coldStorageList,
+      directoryList,
     },
   };
 };
@@ -1453,9 +1888,9 @@ export const updatePbVerificationService = async (
   }
 
   if (
-    user.role !== USER_ROLES.USER ||
-    (user.hasStartedUsingMobile === false &&
-      user.isUserOnBoardedOnMobile === false)
+    // user.role !== USER_ROLES.USER ||
+    user.hasStartedUsingMobile === false &&
+    user.isUserOnBoardedOnMobile === true
   )
     return {
       statusCode: 403,
@@ -1491,30 +1926,30 @@ export const updatePbVerificationService = async (
         "User has not requested PB verification yet. Cannot update verification status.",
     };
   }
-  
+
   user.pbVerificationStatus = pbVerificationStatus;
   user.pbVerified = pbVerificationStatus === PB_VERIFICATION_STATUS.APPROVED;
 
-if (pbVerificationStatus === PB_VERIFICATION_STATUS.REJECTED) {
+  if (pbVerificationStatus === PB_VERIFICATION_STATUS.REJECTED) {
     user.reason = reason || null;
   } else {
     user.reason = null;
   }
   await user.save();
 
-    const description =
-      user.pbVerificationStatus == PB_VERIFICATION_STATUS.APPROVED
-        ? `Your Buy Request is ${pbVerificationStatus}`
-        : user.reason;
+  const description =
+    user.pbVerificationStatus == PB_VERIFICATION_STATUS.APPROVED
+      ? `Your PB Verification Request is ${pbVerificationStatus}`
+      : user.reason;
 
-    await sendNotificationService({
-      title: `Your PB Verification Request is ${pbVerificationStatus}`,
-      description,
-      senderId: id,
-      receiverId: userId,
-      referenceType: NotificationType.USER_PB_VERIFICATION,
-      referenceId: userId,
-    });
+  await sendNotificationService({
+    title: `Your PB Verification Request is ${pbVerificationStatus}`,
+    description,
+    senderId: id,
+    receiverId: userId,
+    referenceType: NotificationType.USER_PB_VERIFICATION,
+    referenceId: userId,
+  });
 
   return {
     statusCode: 200,
@@ -1532,9 +1967,9 @@ export const requestPbVerificationService = async (userId) => {
   }
 
   if (
-    user.role !== USER_ROLES.USER ||
-    (user.hasStartedUsingMobile === false &&
-      user.isUserOnBoardedOnMobile === false)
+    // user.role !== USER_ROLES.USER ||
+    user.hasStartedUsingMobile === false &&
+    user.isUserOnBoardedOnMobile === true
   )
     return {
       statusCode: 403,
@@ -1542,37 +1977,28 @@ export const requestPbVerificationService = async (userId) => {
       message: "PB verification can only be updated for mobile users.",
     };
 
-    const [
-      farmerExists,
-      coldStorageExists,
-      traderExists,
-      coldStoageHirerExists,
-    ] = await Promise.all([
-      Farmer.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      ColdStorage.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      Trader.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
-    ]);
-    const step2Completed =
-      !!farmerExists ||
-      !!coldStorageExists ||
-      !!traderExists ||
-      !!coldStoageHirerExists;
+  const [farmerExists, coldStorageExists, traderExists] = await Promise.all([
+    Farmer.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+    ColdStorage.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+    Trader.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+  ]);
+  const step2Completed =
+    !!farmerExists || !!coldStorageExists || !!traderExists;
 
-    if (!step2Completed) {
-      return {
-        statusCode: 400,
-        success: false,
-        message:
-          "Complete your role information (farmer, cold storage, trader or cold storage hirer) before requesting PB verification.",
-      };
-    }
+  if (!step2Completed) {
+    return {
+      statusCode: 400,
+      success: false,
+      message:
+        "Complete your role information (farmer, cold storage or trader) before requesting PB verification.",
+    };
+  }
 
   const kyc = await KycDocument.findOne({ where: { userId } });
 
@@ -1600,15 +2026,17 @@ export const requestPbVerificationService = async (userId) => {
         statusCode: 200,
         success: true,
         message: "PB verification is already approved.",
-        data: user
+        data: user,
       };
-    } else {
+    }
+
+    if (user.pbVerificationStatus === PB_VERIFICATION_STATUS.PENDING) {
       return {
         statusCode: 200,
         success: true,
         message:
           "You have already requested PB verification. Please wait for admin approval.",
-        data: user
+        data: user,
       };
     }
   }
@@ -1620,19 +2048,18 @@ export const requestPbVerificationService = async (userId) => {
 
   await user.save();
 
-     const superAdmin = await User.findOne({
-       where: { role: USER_ROLES.SUPER_ADMIN },
-     });
+  const superAdmin = await User.findOne({
+    where: { role: USER_ROLES.SUPER_ADMIN },
+  });
 
-     await sendNotificationService({
-       title: "PB Verification Request",
-       description: "New PB Verification Request has been created.",
-       senderId: userId,
-       receiverId: superAdmin.id,
-       referenceType: NotificationType.USER_PB_VERIFICATION,
-       referenceId: userId,
-     });
-
+  await sendNotificationService({
+    title: "PB Verification Request",
+    description: "New PB Verification Request has been created.",
+    senderId: userId,
+    receiverId: superAdmin.id,
+    referenceType: NotificationType.USER_PB_VERIFICATION,
+    referenceId: userId,
+  });
 
   return {
     statusCode: 200,
@@ -1661,28 +2088,23 @@ export const getPbVerificationStepStatusService = async (userId: number) => {
     : "Complete your basic information before requesting PB verification.";
 
   // Step 2: Complete role information
-  const [farmerExists, coldStorageExists, traderExists, coldStoageHirerExists] =
-    await Promise.all([
-      Farmer.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      ColdStorage.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      Trader.findOne({
-        where: { userId, status: REGISTRATION_STATUS.APPROVED },
-      }),
-      ColdStorageRequirement.findOne({ where: { createdBy: userId } }),
-    ]);
+  const [farmerExists, coldStorageExists, traderExists] = await Promise.all([
+    Farmer.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+    ColdStorage.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+    Trader.findOne({
+      where: { userId, status: REGISTRATION_STATUS.APPROVED },
+    }),
+  ]);
   const step2Completed =
-    !!farmerExists ||
-    !!coldStorageExists ||
-    !!traderExists ||
-    !!coldStoageHirerExists;
+    !!farmerExists || !!coldStorageExists || !!traderExists;
   steps.step2Completed = step2Completed;
   steps.step2Message = step2Completed
     ? "Role information completed."
-    : "Complete your role information (farmer, cold storage, trader, or cold storage hirer) before requesting PB verification.";
+    : "Complete your role information (farmer, cold storage or trader) before requesting PB verification.";
 
   // Step 3: Complete KYC upload
   const kyc = await KycDocument.findOne({ where: { userId } });
@@ -1781,7 +2203,7 @@ export const globalSearchDB = async (q: string) => {
         as: "user",
         attributes: [],
         where: {
-          hasStartedUsingMobile : true,
+          hasStartedUsingMobile: true,
         },
         required: true,
       },
@@ -1809,6 +2231,18 @@ export const globalSearchDB = async (q: string) => {
         { description: { [Op.iLike]: term } },
       ],
       status: NEWS_STATUS.PUBLISHED,
+    },
+    limit: 10,
+  });
+
+  const knowledgeHubs = KnowledgeHub.findAll({
+    where: {
+      [Op.or]: [
+        { title: { [Op.iLike]: term } },
+        { category: { [Op.iLike]: term } },
+        { description: { [Op.iLike]: term } },
+      ],
+      status: KNOWLEDGE_HUB_STATUS.PUBLISHED,
     },
     limit: 10,
   });
@@ -1875,6 +2309,7 @@ export const globalSearchDB = async (q: string) => {
     coldStorages,
     events,
     news,
+    knowledgeHubs,
     mandis,
     buyRequests,
     sellRequests,
@@ -1884,6 +2319,7 @@ export const globalSearchDB = async (q: string) => {
       coldStorages,
       events,
       news,
+      knowledgeHubs,
       mandis,
       buyRequests,
       sellRequests,
@@ -1892,6 +2328,7 @@ export const globalSearchDB = async (q: string) => {
       coldStorages,
       events,
       news,
+      knowledgeHubs,
       mandis,
       buyRequests,
       sellRequests,

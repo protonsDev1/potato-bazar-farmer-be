@@ -1,21 +1,62 @@
-import { changePasswordService, checkExistingUser, createUserInDB, createUserWithAgent, findAgentWithUser, findUserByEmail, findUserByPkInDB, forgotPasswordService, getDashboardCounts, getRegistrationTypes, getUserProfileDB, registerInitialUser, resetPasswordService, retrieveRecentRegisteredForAdmin, updateProfileService, updateRegistrationTypes, updateRegistrationStatus, mobileOnboardingLoginService, updateMobileService, getMobileUsers, getAdminDashboardStats, createSupportTicket, addReplyToTicket, changeTicketStatus, getSupportTickets, getSupportTicketById, updatePbVerificationService, requestPbVerificationService, getUserTypeProfileDetails, getPbVerificationStepStatusService, updateUserMobileNumber, globalSearchDB } from '../services/userServices';
-import jwt from 'jsonwebtoken';
-import { createOtp,verifyOtpFromDB } from '../services/otpServices';
-import User, { USER_ROLES } from '../database/models/user';
-import SubAdminWebPermission from '../database/models/subAdminWebPermission';
-import { buildPermissionsResponse, buildSubAdminPermissionsResponse } from '../utils/commonCode';
-import SubAdminPermission from '../database/models/subAdminPermission';
-import MobileUpdateSession, { MOBILE_TYPE } from '../database/models/mobileUpdateSession';
-import { getFarmerProfileCompletion } from '../services/farmerServices';
-import { getColdStorageProfileCompletion } from '../services/coldStorageService';
-import { getTraderProfileCompletion } from '../services/traderService';
-import { renderTemplate } from '../services/emailTemplate';
-import { sendEmail } from '../services/emailService';
-import { Op } from 'sequelize';
-import { getProfileOverview, updateOwnMandiAgentService } from '../services/mandiAgentService';
-import MandiAgent from '../database/models/mandiAgent';
-import KycDocument from '../database/models/kycDocuments';
-
+import {
+  changePasswordService,
+  checkExistingUser,
+  createUserInDB,
+  createUserWithAgent,
+  findAgentWithUser,
+  findUserByEmail,
+  findUserByPkInDB,
+  forgotPasswordService,
+  getDashboardCounts,
+  getRegistrationTypes,
+  getUserProfileDB,
+  registerInitialUser,
+  resetPasswordService,
+  retrieveRecentRegisteredForAdmin,
+  updateProfileService,
+  updateRegistrationTypes,
+  updateRegistrationStatus,
+  mobileOnboardingLoginService,
+  updateMobileService,
+  getMobileUsers,
+  getAdminDashboardStats,
+  createSupportTicket,
+  addReplyToTicket,
+  changeTicketStatus,
+  getSupportTickets,
+  getSupportTicketById,
+  updatePbVerificationService,
+  requestPbVerificationService,
+  getUserTypeProfileDetails,
+  getPbVerificationStepStatusService,
+  updateUserMobileNumber,
+  globalSearchDB,
+  toggleMobileUserActiveService,
+} from "../services/userServices";
+import jwt from "jsonwebtoken";
+import { createOtp, verifyOtpFromDB } from "../services/otpServices";
+import User, { USER_ROLES } from "../database/models/user";
+import SubAdminWebPermission from "../database/models/subAdminWebPermission";
+import {
+  buildPermissionsResponse,
+  buildSubAdminPermissionsResponse,
+} from "../utils/commonCode";
+import SubAdminPermission from "../database/models/subAdminPermission";
+import MobileUpdateSession, {
+  MOBILE_TYPE,
+} from "../database/models/mobileUpdateSession";
+import { getFarmerProfileCompletion } from "../services/farmerServices";
+import { getColdStorageProfileCompletion } from "../services/coldStorageService";
+import { getTraderProfileCompletion } from "../services/traderService";
+import { renderTemplate } from "../services/emailTemplate";
+import { sendEmail } from "../services/emailService";
+import { Op } from "sequelize";
+import {
+  getProfileOverview,
+  updateOwnMandiAgentService,
+} from "../services/mandiAgentService";
+import MandiAgent from "../database/models/mandiAgent";
+import KycDocument from "../database/models/kycDocuments";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -31,7 +72,7 @@ export const signup = async (req, res) => {
     });
 
     return res.status(201).json({
-      message: 'User created successfully',
+      message: "User created successfully",
       user: {
         id: user.id,
         name: user.name,
@@ -41,80 +82,88 @@ export const signup = async (req, res) => {
     });
   } catch (error) {
     return res.status(400).json({
-      message: error.message || 'An error occurred during signup',
+      message: error.message || "An error occurred during signup",
     });
   }
 };
 
 export const login = async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      // Validate input using the Joi schema
-        
-  
-      // Find the user by email
-      const user = await findUserByEmail(email);
-      if (!user) {
-        return res.status(404).json({ success: false, message: 'User not found' });
-      }
-  
-      // Compare the password with the hashed password in the database
-      const isPasswordValid = await user.validatePassword(password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ success: false, message: 'Invalid password' });
-      }
-  
-      // Generate the JWT token
-      const token = jwt.sign(
-        { id: user.id },
-        JWT_SECRET,
-        { expiresIn: "24h" } // Token expires in 1 day
-      );
-  
-      let permissions = null;
-      if (user.role === USER_ROLES.SUB_ADMIN_WEB) {
-        const subAdminPermissions = await SubAdminWebPermission.findAll({
-          where: { userId: user.id },
-          attributes: ["module", "action"],
-        });
+  try {
+    const { email, password } = req.body;
+    // Validate input using the Joi schema
 
-        const allowed = subAdminPermissions.map((p) => `${p.module}:${p.action}`);
-        permissions = buildPermissionsResponse(allowed);
-      }
+    // Find the user by email
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
 
-      if (user.role === USER_ROLES.SUB_ADMIN) {
-        const subAdminPermissions = await SubAdminPermission.findAll({
-          where: { userId: user.id },
-          attributes: ["permission"],
-        });
-
-        const allowed = subAdminPermissions.map((p) => p.permission);
-        permissions = buildSubAdminPermissionsResponse(allowed);
-      }
-
-      // Return the success response with the token
-      return res.status(200).json({
-        message: 'Login successful',
-        success: true,
-        token,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          mobile: user.mobile,
-          secondaryMobile: user.secondaryMobile,
-          permissions,
-        },
-      });
-    } catch (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.message || 'An error occurred during login',
+    if (!user.isActive) {
+      return res.status(403).json({
+        message: "User has been deactivated. Please contact the admin.",
       });
     }
-  };
 
+    // Compare the password with the hashed password in the database
+    const isPasswordValid = await user.validatePassword(password);
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid password" });
+    }
+
+    // Generate the JWT token
+    const token = jwt.sign(
+      { id: user.id },
+      JWT_SECRET,
+      { expiresIn: "24h" } // Token expires in 1 day
+    );
+
+    let permissions = null;
+    if (user.role === USER_ROLES.SUB_ADMIN_WEB) {
+      const subAdminPermissions = await SubAdminWebPermission.findAll({
+        where: { userId: user.id },
+        attributes: ["module", "action"],
+      });
+
+      const allowed = subAdminPermissions.map((p) => `${p.module}:${p.action}`);
+      permissions = buildPermissionsResponse(allowed);
+    }
+
+    if (user.role === USER_ROLES.SUB_ADMIN) {
+      const subAdminPermissions = await SubAdminPermission.findAll({
+        where: { userId: user.id },
+        attributes: ["permission"],
+      });
+
+      const allowed = subAdminPermissions.map((p) => p.permission);
+      permissions = buildSubAdminPermissionsResponse(allowed);
+    }
+
+    // Return the success response with the token
+    return res.status(200).json({
+      message: "Login successful",
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        mobile: user.mobile,
+        secondaryMobile: user.secondaryMobile,
+        permissions,
+      },
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message || "An error occurred during login",
+    });
+  }
+};
 
 export const createAgent = async (req, res) => {
   try {
@@ -169,7 +218,8 @@ export const agentLogin = async (req, res) => {
 
     if (!agent.isActive) {
       return res.status(403).json({
-        message: "Agent account is deactivated. Please contact admin.",
+        message:
+          "Agent account has been deactivated. Please contact the admin.",
       });
     }
 
@@ -215,9 +265,23 @@ export const agentLogin = async (req, res) => {
 export const sendOtp = async (req, res) => {
   try {
     const { mobile } = req.body;
+    const existingUser = await checkExistingUser(mobile);
+
+    if (
+      existingUser &&
+      (existingUser.hasStartedUsingMobile &&
+        existingUser.isUserOnBoardedOnMobile) &&
+      !existingUser.isActive
+    ) {
+      return res.status(403).json({
+        message: "User has been deactivated. Please contact the admin.",
+      });
+    }
 
     await createOtp(mobile);
-    return res.status(200).json({ success: true, message: "OTP has been sent successfully." });
+    return res
+      .status(200)
+      .json({ success: true, message: "OTP has been sent successfully." });
   } catch (err: any) {
     return res
       .status(500)
@@ -225,9 +289,65 @@ export const sendOtp = async (req, res) => {
   }
 };
 
+export const createUserWithoutOtpVerification = async (req, res) => {
+  try {
+    const { mobile } = req.body;
+    const { role } = req.user;
+
+    if (
+      role !== USER_ROLES.ADMIN &&
+      role !== USER_ROLES.SUB_ADMIN_WEB &&
+      role !== USER_ROLES.AGENT
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: `Only ${USER_ROLES.ADMIN}, ${USER_ROLES.AGENT} and ${USER_ROLES.SUB_ADMIN_WEB} with valid permission is allowed to create user.`,
+      });
+    }
+
+    const registrationType = await getRegistrationTypes(mobile);
+
+    const existingUser = await checkExistingUser(mobile);
+    if (existingUser) {
+      if (!existingUser.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "User has been deactivated. Please contact the admin.",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "User already exists, proceed to onboarding forms.",
+        user: existingUser,
+        registrationType,
+      });
+    }
+
+    const createUser = await registerInitialUser(
+      mobile,
+      false,
+      null
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "User created successfully.",
+      user: createUser,
+      registrationType,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to create user.",
+    });
+  }
+};
+
+
 export const verifyOtp = async (req, res) => {
   try {
-    const { mobile, email, otp, hasStartedUsingMobile } = req.body;
+    const { mobile, email, otp, hasStartedUsingMobile, playerId } = req.body;
 
     const isValid = await verifyOtpFromDB(mobile, otp, email);
     if (!isValid) {
@@ -240,8 +360,19 @@ export const verifyOtp = async (req, res) => {
 
     const existingUser = await checkExistingUser(mobile);
     if (existingUser) {
+      if (
+        (existingUser.hasStartedUsingMobile &&
+          existingUser.isUserOnBoardedOnMobile) &&
+        !existingUser.isActive
+      ) {
+        return res.status(403).json({
+          success: false,
+          message: "User has been deactivated. Please contact the admin.",
+        });
+      }
+
       if (hasStartedUsingMobile) {
-        await existingUser.update({ hasStartedUsingMobile: true });
+        await existingUser.update({ hasStartedUsingMobile: true, playerId });
       }
 
       const token = jwt.sign({ id: existingUser.id }, JWT_SECRET);
@@ -254,30 +385,43 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    const createUser = await registerInitialUser(mobile, hasStartedUsingMobile);
+    const createUser = await registerInitialUser(
+      mobile,
+      hasStartedUsingMobile,
+      playerId
+    );
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "OTP verified",
-        createUser,
-        registrationType,
-      });
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified",
+      createUser,
+      registrationType,
+    });
   } catch (err: any) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: err.message || "OTP verification failed",
-      });
+    return res.status(500).json({
+      success: false,
+      message: err.message || "OTP verification failed",
+    });
   }
 };
 
 export const resendOtp = async (req, res) => {
   try {
     const { mobile, email } = req.body;
+    if (mobile) {
+      const existingUser = await checkExistingUser(mobile);
 
+      if (
+        existingUser &&
+        (existingUser.hasStartedUsingMobile ||
+          existingUser.isUserOnBoardedOnMobile) &&
+        !existingUser.isActive
+      ) {
+        return res.status(403).json({
+          message: "User has been deactivated. Please contact the admin.",
+        });
+      }
+    }
     await createOtp(mobile, email);
     return res
       .status(200)
@@ -292,12 +436,14 @@ export const resendOtp = async (req, res) => {
 export const sendExportOtps = async (req, res) => {
   try {
     const { mobile, secondaryMobile } = req.body;
-    const { mobile: userMobile, secondaryMobile: userSecondaryMobile } = req.user;
+    const { mobile: userMobile, secondaryMobile: userSecondaryMobile } =
+      req.user;
 
     if (mobile !== userMobile || secondaryMobile !== userSecondaryMobile) {
       return res.status(403).json({
         success: false,
-        message: "Provided mobile numbers do not match the admin account records",
+        message:
+          "Provided mobile numbers do not match the admin account records",
       });
     }
 
@@ -309,7 +455,9 @@ export const sendExportOtps = async (req, res) => {
       message: "OTPs sent to both registered mobile numbers",
     });
   } catch (err: any) {
-    return res.status(500).json({ success: false, message: err.message || "Failed to send OTPs" });
+    return res
+      .status(500)
+      .json({ success: false, message: err.message || "Failed to send OTPs" });
   }
 };
 
@@ -317,12 +465,17 @@ export const UserLoginOnMobile = async (req, res) => {
   try {
     const userOnboardedOnMobile = await mobileOnboardingLoginService(req.body);
 
-    const token = jwt.sign({ id: userOnboardedOnMobile.id }, JWT_SECRET);
+    if (!userOnboardedOnMobile.success)
+      return res
+        .status(400)
+        .json({ success: false, message: userOnboardedOnMobile.error });
+
+    const token = jwt.sign({ id: userOnboardedOnMobile.data.id }, JWT_SECRET);
 
     return res.status(200).json({
       success: true,
       message: "User Onboarded on mobile Successfully.",
-      user: { token, ...userOnboardedOnMobile.toJSON() },
+      user: { token, ...userOnboardedOnMobile.data.toJSON() },
     });
   } catch (error) {
     return res.status(500).json({
@@ -335,9 +488,11 @@ export const UserLoginOnMobile = async (req, res) => {
 export const getDashboardStats = async (req, res) => {
   try {
     const counts = await getDashboardCounts();
-    return res.status(200).json({ message: 'Success', data: counts });
+    return res.status(200).json({ message: "Success", data: counts });
   } catch (err: any) {
-    return res.status(500).json({ message: err.message || 'Failed to fetch dashboard stats' });
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to fetch dashboard stats" });
   }
 };
 
@@ -346,35 +501,46 @@ export const updateUserRegistrationTypes = async (req, res) => {
     const { mobile, registration_types } = req.body;
 
     if (!mobile || !Array.isArray(registration_types)) {
-      return res.status(400).json({ message: 'mobile and registration_types[] are required' });
+      return res
+        .status(400)
+        .json({ message: "mobile and registration_types[] are required" });
     }
 
-    const updatedUser = await updateRegistrationTypes(mobile, registration_types);
+    const updatedUser = await updateRegistrationTypes(
+      mobile,
+      registration_types
+    );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    return res.status(200).json({ message: 'Registration types updated', user: updatedUser });
+    return res
+      .status(200)
+      .json({ message: "Registration types updated", user: updatedUser });
   } catch (err: any) {
-    return res.status(500).json({ message: err.message || 'Failed to update registration types' });
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to update registration types" });
   }
 };
 
 export const getUserProfile = async (req, res) => {
-  try{
+  try {
     const userId = req.user.id;
     const userData = await getUserProfileDB(userId);
-    return res.status(200).json({ message: 'User Profile', userData });
-  }catch(err){
-    return res.status(500).json({ message: err.message || 'Failed to update registration types' });
+    return res.status(200).json({ message: "User Profile", userData });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to update registration types" });
   }
-}
+};
 
 export const forgotPassword = async (req, res) => {
   try {
     const { mobile, email } = req.body;
-   
+
     const response = await forgotPasswordService(mobile, email);
 
     if (!response.success)
@@ -444,14 +610,14 @@ export const resetPassword = async (req, res) => {
 
 export const changePassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword,confirmNewPassword } = req.body;
+    const { oldPassword, newPassword, confirmNewPassword } = req.body;
     const { id } = req.user;
 
     const response = await changePasswordService(
       oldPassword,
       newPassword,
       confirmNewPassword,
-       id
+      id
     );
 
     if (!response.success)
@@ -480,8 +646,8 @@ export const updateProfile = async (req, res) => {
       role !== USER_ROLES.SUB_ADMIN_WEB
     ) {
       return res.status(403).json({
-        message: 
-          "Only Super Admin, Admin, Agent, Sub Admin, and Sub Admin Web roles can update the profile."
+        message:
+          "Only Super Admin, Admin, Agent, Sub Admin, and Sub Admin Web roles can update the profile.",
       });
     }
 
@@ -501,19 +667,16 @@ export const updateProfile = async (req, res) => {
 
 export const retrieveRegistrationTypes = async (req, res) => {
   try {
-    const {mobile} = req.query;
+    const { mobile } = req.query;
     const registrationTypes = await getRegistrationTypes(mobile);
 
     return res
       .status(200)
       .json({ message: "Registration Types", registrationTypes });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        message:
-          error.message || "Failed to retrieve user's registration types.",
-      });
+    return res.status(500).json({
+      message: error.message || "Failed to retrieve user's registration types.",
+    });
   }
 };
 
@@ -564,6 +727,35 @@ export const adminUpdateRegistrationStatus = async (req, res) => {
   }
 };
 
+export const toggleMobileUserActive = async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+    const { isActive } = req.body;
+
+    const result: any = await toggleMobileUserActiveService(userId, isActive);
+
+    if (!result.success) {
+      return res.status(result.statusCode || 400).json({
+        success: false,
+        message: result.message || result.error,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+      data: result.data,
+    });
+  } catch (err) {
+    console.error("Failed to toggle mobile user active:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update user status",
+      error: err.message,
+    });
+  }
+};
+
 export const retrieveMobileUsers = async (req, res) => {
   try {
     const {
@@ -574,6 +766,7 @@ export const retrieveMobileUsers = async (req, res) => {
       activeStatus,
       pbVerificationRequested,
       pbVerificationStatus,
+      userType
     } = req.query;
 
     const response = await getMobileUsers({
@@ -584,6 +777,7 @@ export const retrieveMobileUsers = async (req, res) => {
       activeStatus,
       pbVerificationRequested,
       pbVerificationStatus,
+      userType
     });
 
     if (!response.success)
@@ -609,13 +803,11 @@ export const updateMobileUserProfile = async (req, res) => {
         .status(400)
         .json({ success: response.success, message: response.error });
 
-    return res
-      .status(200)
-      .json({
-        success: response.success,
-        message: "User profile updated successfully.",
-        data: response.data,
-      });
+    return res.status(200).json({
+      success: response.success,
+      message: "User profile updated successfully.",
+      data: response.data,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -737,8 +929,7 @@ export const getMobileUserRoleInformation = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message:
-        error.message || "Unable to fetch user role information.",
+      message: error.message || "Unable to fetch user role information.",
     });
   }
 };
@@ -749,13 +940,15 @@ export const deleteMobileUserByAdmin = async (req, res) => {
 
     const userDetail = await User.findByPk(userId);
 
-    if(!userDetail)
-      return res.status(400).json({success: false, message: "User not found."});
+    if (!userDetail)
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found." });
 
     if (
       userDetail.role !== USER_ROLES.USER ||
       (userDetail.hasStartedUsingMobile === false &&
-        userDetail.isUserOnBoardedOnMobile === false)
+        userDetail.isUserOnBoardedOnMobile === true)
     )
       return res.status(400).json({
         success: false,
@@ -781,13 +974,15 @@ export const deleteCurrentMobileUser = async (req, res) => {
 
     const userDetail = await User.findByPk(userId);
 
-    if(!userDetail)
-      return res.status(400).json({success: false, message: "User not found."});
+    if (!userDetail)
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found." });
 
     if (
       userDetail.role !== USER_ROLES.USER ||
       (userDetail.hasStartedUsingMobile === false &&
-        userDetail.isUserOnBoardedOnMobile === false)
+        userDetail.isUserOnBoardedOnMobile === true)
     )
       return res.status(400).json({
         success: false,
@@ -796,9 +991,10 @@ export const deleteCurrentMobileUser = async (req, res) => {
 
     await User.destroy({ where: { id: userId } });
 
-    return res
-      .status(200)
-      .json({ success: true, message: "Mobile user account deleted successfully." });
+    return res.status(200).json({
+      success: true,
+      message: "Mobile user account deleted successfully.",
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -809,15 +1005,13 @@ export const deleteCurrentMobileUser = async (req, res) => {
 
 export const retrieveAdminDashboardStats = async (req, res) => {
   try {
-    const dashboarStatistics = await getAdminDashboardStats();
+    const dashboarStatistics = await getAdminDashboardStats(req.user);
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Admin Dashboard Statistics retrieved successfully.",
-        data: dashboarStatistics,
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Admin Dashboard Statistics retrieved successfully.",
+      data: dashboarStatistics,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -829,9 +1023,14 @@ export const retrieveAdminDashboardStats = async (req, res) => {
 export const createTicket = async (req, res) => {
   try {
     const userId = req.user.id;
-    const {  subject, category, priority } = req.body;
+    const { subject, category, priority } = req.body;
 
-    const ticket = await createSupportTicket(userId, subject, category, priority);
+    const ticket = await createSupportTicket(
+      userId,
+      subject,
+      category,
+      priority
+    );
 
     return res.status(201).json({
       success: true,
@@ -858,7 +1057,7 @@ export const replyToSupportTicket = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: response.message,
-      ticket: response.ticket
+      ticket: response.ticket,
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message });
@@ -877,7 +1076,7 @@ export const updateSupportTicketStatus = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: response.message,
-      ticket: response.ticket
+      ticket: response.ticket,
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message });
@@ -914,7 +1113,7 @@ export const getTicketDetails = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Support ticket details retrieved successfully.",
-      ticketDetails: ticket
+      ticketDetails: ticket,
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message });
@@ -1031,7 +1230,6 @@ export const verifyNewMobileNumberBeforeUpdate = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 export const getProfileCompletion = async (req, res) => {
   try {
@@ -1170,7 +1368,7 @@ export const globalSearchController = async (req, res) => {
     if (!q) {
       return res.status(400).json({
         success: false,
-        message: "Query parameter 'q' is required"
+        message: "Query parameter 'q' is required",
       });
     }
 
@@ -1179,14 +1377,13 @@ export const globalSearchController = async (req, res) => {
     return res.json({
       success: true,
       query: q,
-      results
+      results,
     });
-
   } catch (err) {
     console.error("Global Search Error:", err);
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error"
+      message: "Internal Server Error",
     });
   }
 };

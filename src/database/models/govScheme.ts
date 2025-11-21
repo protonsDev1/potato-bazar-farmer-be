@@ -91,21 +91,15 @@ GovernmentScheme.init(
     },
     mobile: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     email: {
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        isEmail: true,
-      },
+      allowNull: true,
     },
     websiteUrl: {
       type: DataTypes.STRING,
       allowNull: true,
-      validate: {
-        isUrl: true,
-      },
     },
     ageLimit: {
       type: DataTypes.STRING,
@@ -114,9 +108,6 @@ GovernmentScheme.init(
     contactUrl: {
       type: DataTypes.STRING,
       allowNull: true,
-      validate: {
-        isUrl: true,
-      },
     },
     isActive: {
       type: DataTypes.BOOLEAN,

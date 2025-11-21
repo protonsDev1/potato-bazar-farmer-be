@@ -37,8 +37,10 @@ export const listGovSchemesService = async ({
     whereClause.category = category;
   }
 
-  if (typeof isActive !== "undefined") {
-    whereClause.isActive = isActive === "true";
+  if (isActive === "true") {
+    whereClause.isActive = true;
+  } else if (isActive === "false") {
+    whereClause.isActive = false;
   }
 
   const offset = (page - 1) * limit;
@@ -47,7 +49,7 @@ export const listGovSchemesService = async ({
     where: whereClause,
     offset,
     limit,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const schemes = rows.map((scheme) => {
@@ -74,7 +76,6 @@ export const listGovSchemesService = async ({
     },
   };
 };
-
 
 export const getGovSchemeByIdService = async (id) => {
   const scheme = await GovernmentScheme.findByPk(id);

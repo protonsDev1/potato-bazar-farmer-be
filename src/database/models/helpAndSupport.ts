@@ -32,6 +32,8 @@ class HelpAndSupport extends Model<
   declare reply: string;
   declare status: StatusEnum;
   declare agentId: number;
+  declare updatedAt?: Date;
+  declare createdAt?: Date;
 }
 
 HelpAndSupport.init(

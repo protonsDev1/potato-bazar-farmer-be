@@ -82,6 +82,13 @@ export const otpVerifySchema = Joi.object({
     .pattern(/^[6-9]\d{9}$/),
   otp: Joi.string().required().length(6),
   hasStartedUsingMobile: Joi.boolean().optional().allow(null),
+  playerId: Joi.string().optional().allow(null),
+});
+
+export const createUserSchema = Joi.object({
+  mobile: Joi.string()
+    .required()
+    .pattern(/^[6-9]\d{9}$/)
 });
 
 export const registrationTypesSchema = Joi.object({
@@ -185,7 +192,8 @@ export const mobileLoginSchema = Joi.object({
   state: Joi.string().required(),
   district: Joi.string().required(),
   cityOrVillage: Joi.string().required(),
-  pinCode: Joi.string().required(),
+  pinCode: Joi.string().optional().allow(null, ""),
+  playerId: Joi.string().optional().allow(null),
 });
 
 export const mobileUpdateSchema = Joi.object({
@@ -261,4 +269,8 @@ export const mobileUserPBVerificationSchema = Joi.object({
     }),
     otherwise: Joi.string().optional().allow(null, ""),
   }),
+});
+
+export const updateMobileUserStatusSchema = Joi.object({
+  isActive: Joi.boolean().required(),
 });

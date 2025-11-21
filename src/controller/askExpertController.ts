@@ -1,23 +1,15 @@
 import AskExpert, { QUERY_STATUS } from "../database/models/askExpert";
-import CropDiagnosis from "../database/models/cropDiagnosis";
-import User from "../database/models/user";
+import { NotificationType } from "../database/models/notification";
+import User, { USER_ROLES } from "../database/models/user";
+import { sendNotificationService } from "../services/notificationService";
 
 export const askQuery = async (req, res) => {
   try {
-    const { cropDiagnosedId, query } = req.body;
-
-    const isValidCropDiagnosedId = await CropDiagnosis.findOne({
-      where: { id: cropDiagnosedId },
-    });
-
-    if (!isValidCropDiagnosedId)
-      return res.status(400).json({
-        success: false,
-        message: "Please provide valid crop diagnosed id.",
-      });
+    const { query } = req.body;
+    const { id: userId } = req.user;
 
     const userQuery = await AskExpert.create({
-      cropDiagnosedId,
+      userId,
       query,
     });
 
@@ -51,14 +43,8 @@ export const getAllQueries = async (req, res) => {
       where: whereCondition,
       include: [
         {
-          model: CropDiagnosis,
-          as: "cropDiagnosed",
-          include: [
-            {
-              model: User,
-              as: "user",
-            },
-          ],
+          model: User,
+          as: "user",
         },
       ],
       limit,
@@ -102,6 +88,18 @@ export const respondToQuery = async (req, res) => {
       { where: { id: queryId } }
     );
 
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: `Expert has responded to your query.`,
+      description: `<b>Question:</b> "${isValidQueryId.query}"<br><b>Answer:</b> "${response}"`,
+      senderId: superAdmin.id,
+      receiverId: isValidQueryId.userId,
+      referenceType: NotificationType.ASK_EXPERT,
+    });
+
     return res
       .status(200)
       .json({ success: true, message: "Query responded successfully." });
@@ -116,34 +114,23 @@ export const respondToQuery = async (req, res) => {
 
 export const getAllMyQueries = async (req, res) => {
   try {
-    const { id } = req.user;
-    let { page = 1, perPage: limit = 10, cropDiagnosedId } = req.query;
+    const { id: userId } = req.user;
+    let { page = 1, perPage: limit = 10 } = req.query;
 
     page = Number(page);
     limit = Number(limit);
 
     const offset = (page - 1) * limit;
 
-     const whereCondition:any = {
-       "$cropDiagnosed.userId$": id, 
-     };
-
-     if (cropDiagnosedId) {
-       whereCondition.cropDiagnosedId = Number(cropDiagnosedId);
-     }
-
     const { rows, count } = await AskExpert.findAndCountAll({
-      where: whereCondition,
+      where: {
+        userId,
+      },
+
       include: [
         {
-          model: CropDiagnosis,
-          as: "cropDiagnosed",
-          include: [
-            {
-              model: User,
-              as: "user",
-            },
-          ],
+          model: User,
+          as: "user",
         },
       ],
       limit,

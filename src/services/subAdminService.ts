@@ -6,16 +6,28 @@ import { PERMISSIONS } from "../utils/constants/permissions";
 interface CreateSubAdminPayload {
   name: string;
   email: string;
+  mobile: string;
   password: string;
   privileges?: string[];
 }
 
 export const createSubAdminService = async (payload: CreateSubAdminPayload) => {
-  const { name, email, password, privileges } = payload;
+  const { name, email, mobile, password, privileges } = payload;
 
   const existingEmailUser = await User.findOne({ where: { email } });
   if (existingEmailUser) {
     return { success: false, statusCode: 409, message: "Email already exists" };
+  }
+
+  if (mobile) {
+    const isMobileTaken = await User.findOne({ where: { mobile } });
+    if (isMobileTaken) {
+      return {
+        success: false,
+        statusCode: 409,
+        message: "Mobile number already exists.",
+      };
+    }
   }
 
   const subAdmin = await User.create({
@@ -67,7 +79,7 @@ export const listSubAdminsService = async ({ search, page, limit }) => {
     distinct: true,
     offset,
     limit,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const subAdmins = rows.map((subAdmin) => {
@@ -118,13 +130,40 @@ export const listSubAdminsService = async ({ search, page, limit }) => {
 };
 
 export const updateSubAdminService = async (id, payload) => {
-  const { privileges, ...updateFields } = payload;
+  const { privileges, ...updateFieldsRaw } = payload;
+  const updateFields = { ...updateFieldsRaw };
 
   const subAdmin = await User.findOne({
     where: { id, role: USER_ROLES.SUB_ADMIN },
   });
   if (!subAdmin) {
     return { success: false, statusCode: 404, message: "Sub admin not found" };
+  }
+
+  if (updateFields.email) {
+    const isEmailTaken = await User.findOne({
+      where: { email: updateFields.email, id: { [Op.ne]: id } },
+    });
+    if (isEmailTaken) {
+      return {
+        success: false,
+        statusCode: 409,
+        message: "Email already exists.",
+      };
+    }
+  }
+
+  if (updateFields.mobile) {
+    const isMobileTaken = await User.findOne({
+      where: { mobile: updateFields.mobile, id: { [Op.ne]: id } },
+    });
+    if (isMobileTaken) {
+      return {
+        success: false,
+        statusCode: 409,
+        message: "Mobile number already exists.",
+      };
+    }
   }
 
   await subAdmin.update(updateFields);

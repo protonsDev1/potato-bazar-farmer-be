@@ -8,7 +8,7 @@ import {
   getPromotionRequestById,
   getPromotionRequests,
 } from "../controller/promotionRequestController";
-import { createPromotionRequestValidation } from "../validation/promitionRequestValidation";
+import { createPromotionRequestValidation } from "../validation/promotionRequestValidation";
 import { PERMISSIONS } from "../utils/constants/permissions";
 
 const router = express.Router();
@@ -22,17 +22,17 @@ router.post(
 );
 router.get(
   "/",
-  checkPermissionMiddleware(PERMISSIONS.PROMOTION_REQUESTS),
+  checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
   getPromotionRequests
 );
 router.get(
   "/:id",
-  checkPermissionMiddleware(PERMISSIONS.PROMOTION_REQUESTS),
+  checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
   getPromotionRequestById
 );
 router.delete(
   "/:id",
-  checkPermissionMiddleware(PERMISSIONS.PROMOTION_REQUESTS),
+  checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
   deletePromotionRequest
 );
 

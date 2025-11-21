@@ -20,7 +20,11 @@ import RoofType from "../database/models/roofType";
 import SeasonWiseBookingSystem from "../database/models/seasonWiseStorageSystem";
 import SlabWiseDiscount from "../database/models/slabWiseDiscount";
 import StorageBookingSystem from "../database/models/storageBookingSystem";
-import User, { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
+import User, {
+  REGISTRATION_STATUS,
+  USER_REGISTRATION_TYPES,
+  USER_ROLES,
+} from "../database/models/user";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
@@ -123,6 +127,32 @@ export async function onboardColdStorage(payload: any) {
           state: payload.state,
         },
         { transaction: t }
+      );
+
+      const userData = await User.findOne({
+        where: { id: payload.userId },
+        transaction: t,
+      });
+
+      let updatedTypes = userData.userType || [];
+
+      if (!updatedTypes.includes(USER_REGISTRATION_TYPES.COLD_STORAGE)) {
+        updatedTypes.push(USER_REGISTRATION_TYPES.COLD_STORAGE);
+      }
+
+      await User.update(
+        {
+          name: payload.ownerName,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          state: payload.state,
+          district: payload.district,
+          pinCode: payload.pinCode,
+          cityOrVillage: payload.village,
+          isUserOnBoardedOnMobile: true,
+          userType: updatedTypes,
+        },
+        { where: { id: payload.userId }, transaction: t }
       );
 
       if (Array.isArray(payload.storageTypes)) {
@@ -908,7 +938,7 @@ export async function getColdStorage(
       ];
     }
 
-    let order: any[] = [["updatedAt", "DESC"]];
+    let order: any[] = [["createdAt", "DESC"]];
 
     let favouriteColdStorageIds: number[] = [];
     if (isFavourite && isFavourite === "true") {
@@ -942,7 +972,7 @@ export async function getColdStorage(
               ),
               "ASC",
             ],
-            ["updatedAt", "DESC"],
+            ["createdAt", "DESC"],
           ];
           break;
         case "name_asc":
@@ -964,7 +994,7 @@ export async function getColdStorage(
           order = [["createdAt", "DESC"]];
           break;
         default:
-          order = [["updatedAt", "DESC"]];
+          order = [["createdAt", "DESC"]];
           break;
       }
     }
@@ -1177,7 +1207,7 @@ export async function getAllColdStorages(filters: any, search: string) {
           required: Object.keys(onBoardedByUserWhere).length > 0,
         },
       ],
-      order: [["updatedAt", "DESC"]],
+      order: [["createdAt", "DESC"]],
     });
 
     return coldStorages;

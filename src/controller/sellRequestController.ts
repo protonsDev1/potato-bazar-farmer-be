@@ -18,10 +18,10 @@ import {
 
 export const createSellRequest = async (req, res) => {
   try {
-    if (req.user.role !== USER_ROLES.USER)
-      return res.status(403).json({
-        message: "Only user is authorized to create sell request.",
-      });
+    // if (req.user.role !== USER_ROLES.USER)
+    //   return res.status(403).json({
+    //     message: "Only user is authorized to create sell request.",
+    //   });
 
     const sellRequest = await createSellRequestService(req.user.id, req.body);
 
@@ -133,7 +133,7 @@ export const deleteSellRequest = async (req, res) => {
 
 export const updateSellRequest = async (req, res) => {
   const result = await updateSellRequestService(
-    req.user.id,
+    req.user,
     req.params.id,
     req.body
   );
@@ -173,7 +173,10 @@ export const updateSellRequestStatus = async (req, res) => {
       referenceId: updatedRequest.id,
     });
 
-    if (status === SELL_REQUEST_STATUS.APPROVED)
+    if (
+      status === SELL_REQUEST_STATUS.APPROVED &&
+      updatedRequest.isActive === true
+    )
       await sendNotificationToMatchingBuyers(id, updatedRequest.id);
 
     return res.json({

@@ -17,7 +17,11 @@ import {
   updateEventSchema,
   updateEventStatusSchema,
 } from "../validation/eventValidation";
-import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
+import {
+  authMiddleware,
+  checkPermissionMiddleware,
+  optionalAuthMiddleware,
+} from "../utils/userAuth";
 import { PERMISSIONS } from "../utils/constants/permissions";
 
 const router = express.Router();
@@ -31,7 +35,7 @@ router.post(
 );
 router.get("/", retrieveAllEvents);
 router.get("/event_requests", retrieveAllEventRequests);
-router.get("/:eventId", retrieveEventDetail);
+router.get("/:eventId", optionalAuthMiddleware, retrieveEventDetail);
 router.put(
   "/:eventId",
   checkPermissionMiddleware(PERMISSIONS.EVENTS),
@@ -44,13 +48,18 @@ router.delete(
   deleteEvent
 );
 
-router.post("/join_event/:eventId", authMiddleware, validator.body(registerOnEventSchema), registerOnEvent);
-
-router.put(
-  "/update_status/:requestId",
-  checkPermissionMiddleware(PERMISSIONS.EVENTS),
-  validator.body(updateEventStatusSchema),
-  updateEventStatus
+router.post(
+  "/join_event/:eventId",
+  authMiddleware,
+  validator.body(registerOnEventSchema),
+  registerOnEvent
 );
+
+// router.put(
+//   "/update_status/:requestId",
+//   checkPermissionMiddleware(PERMISSIONS.EVENTS),
+//   validator.body(updateEventStatusSchema),
+//   updateEventStatus
+// );
 
 export default router;

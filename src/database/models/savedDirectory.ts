@@ -26,10 +26,17 @@ SavedDirectory.init(
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      references: { model: "users", key: "id" },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
     },
     directoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      unique: true,
+      references: { model: "directories", key: "id" },
+      onUpdate: "CASCADE",
+      onDelete: "CASCADE",
     },
   },
   {
@@ -45,7 +52,10 @@ SavedDirectory.init(
   }
 );
 
-Directory.hasMany(SavedDirectory, { foreignKey: "directoryId", as: "savedBy" });
+Directory.hasMany(SavedDirectory, {
+  foreignKey: "directoryId",
+  as: "savedDirectories",
+});
 SavedDirectory.belongsTo(Directory, {
   foreignKey: "directoryId",
   as: "directory",

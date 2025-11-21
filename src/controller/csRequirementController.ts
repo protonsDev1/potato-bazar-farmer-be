@@ -19,6 +19,7 @@ export const getRequirements = async (req, res) => {
       district,
       pbVerified,
       isFavourite,
+      sortBy,
     } = req.query;
     const userId = req.user.id;
 
@@ -27,7 +28,8 @@ export const getRequirements = async (req, res) => {
       Number(page),
       Number(perPage),
       listingType,
-      { commodityType, verified, district, pbVerified, isFavourite }
+      { commodityType, verified, district, pbVerified, isFavourite },
+      String(sortBy || "")
     );
 
     return res.status(200).json({
@@ -50,12 +52,12 @@ export const createRequirementWithInterests = async (req, res) => {
       createdBy: req.user.id,
     };
 
-    if (req.user.role !== USER_ROLES.USER) {
-      return res.status(403).json({
-        success: false,
-        message: "Only Users are allowed to create cold storage requirements",
-      });
-    }
+    // if (req.user.role !== USER_ROLES.USER) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: "Only Users are allowed to create cold storage requirements",
+    //   });
+    // }
 
     const result = await createRequirementAndInterests(requirementData);
 
@@ -105,7 +107,7 @@ export const updateRequirement = async (req, res) => {
   try {
     const result = await updateRequirementService(
       req.params.id,
-      req.user.id,
+      req.user,
       req.body
     );
 

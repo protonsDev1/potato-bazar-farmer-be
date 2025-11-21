@@ -23,7 +23,8 @@ import {
   forgotPasswordVerifyOtpSchema,
   mobileUserPBVerificationSchema,
   mandiAgentUpdateSchema,
-  
+  updateMobileUserStatusSchema,
+  createUserSchema,
 } from "../validation/userValidator";
 import {
   agentLogin,
@@ -68,7 +69,9 @@ import {
   getMandiAgentProfile,
   updateOwnMandiAgentProfile,
   verifyAndUpdateNewNumber,
-  globalSearchController
+  globalSearchController,
+  toggleMobileUserActive,
+  createUserWithoutOtpVerification,
 } from "../controller/user";
 import {
   adminMiddleware,
@@ -76,6 +79,7 @@ import {
   checkPermissionMiddleware,
   checkWebPermissionMiddleware,
   superAdminMiddleware,
+  superAdminOrSubAdminMiddleware,
 } from "../utils/userAuth";
 import { limitOtpMiddleware } from "../utils/limitOtpRequest";
 import {
@@ -108,6 +112,13 @@ router.post(
 );
 
 router.post("/verify-otp", validator.body(otpVerifySchema), verifyOtp);
+
+router.post(
+  "/create_user",
+  authMiddleware,
+  validator.body(createUserSchema),
+  createUserWithoutOtpVerification
+);
 
 router.post(
   "/resend-otp",
@@ -238,7 +249,7 @@ router.delete("/mobile/:userId", superAdminMiddleware, deleteMobileUserByAdmin);
 
 router.get(
   "/admin/dash_stats",
-  superAdminMiddleware, // mobile admin  dashboard stats
+  superAdminOrSubAdminMiddleware, // mobile admin/sub admin dashboard stats
   retrieveAdminDashboardStats
 );
 router.post(
@@ -303,11 +314,18 @@ router.put(
 );
 
 router.post(
-  "/mobile/verify_and_update",        
+  "/mobile/verify_and_update",
   authMiddleware,
   verifyAndUpdateNewNumber
 );
 
 router.get("/global-search", globalSearchController);
+
+router.put(
+  "/mobile/:id/active",
+  checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
+  validator.body(updateMobileUserStatusSchema),
+  toggleMobileUserActive
+);
 
 export default router;

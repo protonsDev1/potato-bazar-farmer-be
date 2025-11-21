@@ -6,6 +6,8 @@ import City from "../database/models/city";
 import MandiList from "../database/models/mandiList";
 import MandiAllotedToMandiAgent from "../database/models/mandiAllotedToMandiAgent";
 import MandiAgent from "../database/models/mandiAgent";
+import { calculateArrivalStatus } from "../utils/calculateArrivalStatus";
+import State from "../database/models/state";
 
 interface MandiPriceResponse {
   success: boolean;
@@ -211,7 +213,7 @@ export const getAllMandiPricesService = async (
     limit,
     offset,
     distinct: true,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
   const data = rows.map((item) => ({
@@ -275,30 +277,102 @@ export const getAllMandiPricesByMandiId = async (filters, mandiId) => {
           {
             model: City,
             as: "city",
+            include: [
+              {
+                model: State,
+                as: "state",
+              },
+            ],
           },
         ],
       },
     ],
     distinct: true,
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
   });
 
-  const mandiPrices = rows.map((item) => ({
-    id: item.id,
-    mandiId: item.mandiId,
-    mandiDetail: item?.mandi,
-    date: item.date,
-    variety: item.variety,
-    category: item.category,
-    arrivalStatus: item.arrivalStatus,
-    totalArrivalBags: item.totalArrivalBags,
-    normalMandiArrivalBags: item.normalMandiArrivalBags,
-    gradeWisePricing: item.grades,
-  }));
+  let totalArrivalBags = 0,
+    normalArrivalBags = 0,
+    totalMts = 0,
+    overallArrivalStatus = "";
+
+  rows.forEach((item) => {
+    totalArrivalBags += Number(item.totalArrivalBags);
+    normalArrivalBags += Number(item.normalMandiArrivalBags);
+  });
+
+  totalMts = (totalArrivalBags * 50) / 1000;
+  overallArrivalStatus = calculateArrivalStatus(
+    totalArrivalBags,
+    normalArrivalBags
+  );
+
+  const mandiPrices = await Promise.all(
+    rows.map(async (item) => {
+      const todayDate = item.date;
+      const { variety } = item;
+
+      let totalArrivalBagsContributionPercentage =
+        (item.totalArrivalBags / totalArrivalBags) * 100;
+
+      // Fetch nearest past mandi price record for same variety
+      const previousPrice = await MandiPrice.findOne({
+        where: {
+          mandiId,
+          variety,
+          date: { [Op.lt]: todayDate },
+        },
+        include: [
+          {
+            model: MandiGradePrice,
+            as: "grades",
+          },
+        ],
+        order: [["date", "DESC"]], // nearest past date
+      });
+
+      const gradeComparison = item.grades.map((grade) => {
+        const prevGrade = previousPrice?.grades?.find(
+          (g) => g.mandiGradeType === grade.mandiGradeType
+        );
+
+        let arrow = "up"; // default when no previous price exists
+
+        if (prevGrade) {
+          const currentPrice = Number(grade.gradePricePerKg);
+          const pastPrice = Number(prevGrade.gradePricePerKg);
+
+          arrow = currentPrice < pastPrice ? "down" : "up";
+        }
+
+        return {
+          ...grade.toJSON(),
+          arrow,
+        };
+      });
+
+      return {
+        id: item.id,
+        mandiId: item.mandiId,
+        mandiDetail: item?.mandi,
+        date: item.date,
+        variety: item.variety,
+        category: item.category,
+        arrivalStatus: item.arrivalStatus,
+        totalArrivalBags: item.totalArrivalBags,
+        normalMandiArrivalBags: item.normalMandiArrivalBags,
+        totalArrivalBagsContributionPercentage,
+        gradeWisePricing: gradeComparison,
+      };
+    })
+  );
 
   return {
     total: count,
     mandiPrices,
+    totalArrivalBags,
+    totalMts,
+    overallArrivalStatus,
   };
 };
 
@@ -481,9 +555,7 @@ export const retrieveDashboardStats = async (userId) => {
   };
 };
 
-export const listCitiesWithMandis = async (page = 1, limit = 10) => {
-  const offset = (page - 1) * limit;
-
+export const listCitiesWithMandis = async () => {
   const total = await City.count({
     include: [
       {
@@ -524,8 +596,6 @@ export const listCitiesWithMandis = async (page = 1, limit = 10) => {
       [sequelize.col("City.position"), "ASC"],
       [sequelize.col("City.name"), "ASC"],
     ],
-    limit,
-    offset,
   });
 
   const cities = citiesWithMandis.map((city) => ({
@@ -537,9 +607,6 @@ export const listCitiesWithMandis = async (page = 1, limit = 10) => {
   return {
     cities,
     total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
   };
 };
 
