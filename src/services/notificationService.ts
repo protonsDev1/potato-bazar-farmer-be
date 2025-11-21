@@ -20,6 +20,7 @@ interface Payload {
   receiverIds?: number[];
   isBroadCast?: boolean;
   isMatchingCase?: boolean;
+  broadcastId?: number;
 }
 
 export const sendNotificationService = async (payload: Payload) => {
@@ -33,6 +34,7 @@ export const sendNotificationService = async (payload: Payload) => {
     receiverIds,
     isBroadCast = false,
     isMatchingCase = false,
+    broadcastId,
   } = payload;
 
   let userIds: number[] = [];
@@ -66,6 +68,7 @@ export const sendNotificationService = async (payload: Payload) => {
     referenceType,
     referenceId,
     isMatchingCase,
+    broadcastId: broadcastId || null,
   }));
   await Notification.bulkCreate(notifications);
 
