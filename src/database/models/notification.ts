@@ -36,6 +36,7 @@ class Notification extends Model<
   declare referenceId: number;
   declare isRead: boolean;
   declare isMatchingCase: boolean;
+  declare broadcastId: number | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -82,6 +83,12 @@ Notification.init(
     isMatchingCase: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    broadcastId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: { model: "broadcasts", key: "id" },
+      onDelete: "SET NULL",
     },
     createdAt: {
       type: DataTypes.DATE,
