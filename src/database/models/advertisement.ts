@@ -9,6 +9,11 @@ import sequelize from "./db";
 import AdvertisementService from "./adminModels/mobile/advertisementService";
 import User from "./user";
 
+export enum ADVERTISEMENT_STATUS {
+  CLOSE = "close",
+  OPEN = "open",
+}
+
 class Advertisement extends Model<
   InferAttributes<Advertisement>,
   InferCreationAttributes<Advertisement>
@@ -18,7 +23,7 @@ class Advertisement extends Model<
   declare serviceId: number;
   declare serviceDuration: string;
   declare description: Text;
-  declare status: boolean;
+  declare status: string;
   declare updatedAt?: Date;
   declare createdAt?: Date;
 }
@@ -55,8 +60,8 @@ Advertisement.init(
       type: DataTypes.TEXT,
     },
     status: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      type: DataTypes.STRING,
+      defaultValue: ADVERTISEMENT_STATUS.OPEN,
     },
   },
   {
