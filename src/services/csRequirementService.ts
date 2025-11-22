@@ -25,6 +25,7 @@ export const getRequirementsService = async (
 ) => {
   const offset = (page - 1) * limit;
 
+  const userWhere: any = {};
   const whereCondition: any = {};
 
   if (listingType === "own") {
@@ -32,6 +33,8 @@ export const getRequirementsService = async (
   } else if (listingType === "others") {
     // whereCondition.createdBy = { [Op.ne]: userId };
     whereCondition.isActive = true;
+    userWhere.isActive = true;
+    userWhere.isDeleted = false;
   }
 
   if (filters.commodityType && filters.commodityType.toLowerCase() !== "all") {
@@ -49,7 +52,19 @@ export const getRequirementsService = async (
   const userInclude: any = {
     model: User,
     as: "creator",
-    attributes: ["id", "name", "role", "email", "mobile", "pbVerified"],
+    attributes: [
+      "id",
+      "name",
+      "role",
+      "email",
+      "mobile",
+      "pbVerified",
+      "isActive",
+      "isDeleted",
+      "createdAt",
+      "updatedAt",
+    ],
+    where: userWhere,
   };
 
   if (filters.pbVerified && filters.pbVerified.toLowerCase() !== "all") {

@@ -233,7 +233,17 @@ export const getEventDetail = async (eventId, userId, role) => {
         {
           model: User,
           as: "requestedByUser",
-          attributes: ["id", "name", "mobile", "state", "district", "createdAt", "updatedAt"],
+          attributes: [
+            "id",
+            "name",
+            "mobile",
+            "state",
+            "district",
+            "createdAt",
+            "updatedAt",
+            "isActive",
+            "isDeleted",
+          ],
         },
       ],
     });
@@ -301,7 +311,16 @@ export const getAllEventRequests = async (page = 1, limit = 10, search) => {
       {
         model: User,
         as: "requestedByUser",
-        attributes: ["id", "name", "email", "mobile"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "createdAt",
+          "updatedAt",
+          "isActive",
+          "isDeleted",
+        ],
       },
     ],
     limit,

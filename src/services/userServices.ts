@@ -1017,6 +1017,7 @@ export const getMobileUsers = async ({
   pbVerificationRequested,
   pbVerificationStatus,
   userType,
+  isDeleted,
 }) => {
   try {
     const offset = (page - 1) * limit;
@@ -1029,6 +1030,12 @@ export const getMobileUsers = async ({
         { hasStartedUsingMobile: true },
       ],
     };
+
+    if (isDeleted !== undefined) {
+      whereCondition[Op.and].push({
+        isDeleted: isDeleted === "true",
+      });
+    }
 
     // Accept: comma-separated string "farmer,trader" OR array ['farmer','trader']
     if (userType) {
@@ -1051,31 +1058,35 @@ export const getMobileUsers = async ({
       }
 
       if (userTypeArray.length > 0) {
-        whereCondition.userType = { [Op.overlap]: userTypeArray };
+        whereCondition[Op.and].push({
+          userType: { [Op.overlap]: userTypeArray },
+        });
       }
     }
 
     if (search && search.trim()) {
       const searchTerm = `%${search.trim()}%`;
       const searchId = Number(search);
-      whereCondition[Op.and] = [
-        {
-          [Op.or]: [
-            { id: !isNaN(searchId) ? searchId : -1 },
-            { name: { [Op.iLike]: searchTerm } },
-            { mobile: { [Op.iLike]: searchTerm } },
-          ],
-        },
-      ];
+      whereCondition[Op.and].push({
+        [Op.or]: [
+          { id: !isNaN(searchId) ? searchId : -1 },
+          { name: { [Op.iLike]: searchTerm } },
+          { mobile: { [Op.iLike]: searchTerm } },
+        ],
+      });
     }
 
     if (activeStatus && activeStatus !== "all") {
-      whereCondition.isActive = activeStatus === "active" ? true : false;
+      whereCondition[Op.and].push({
+        isActive: activeStatus === "active",
+      });
     }
 
     if (pbVerificationRequested !== undefined) {
-      whereCondition.pbVerificationRequested =
-        pbVerificationRequested === "true";
+      whereCondition[Op.and].push({
+        pbVerificationRequested: pbVerificationRequested === "true",
+      });
+
       order = [
         [
           fn(
@@ -1090,8 +1101,11 @@ export const getMobileUsers = async ({
     }
 
     if (pbVerificationStatus && pbVerificationStatus !== "all") {
-      whereCondition.pbVerificationStatus = pbVerificationStatus;
+      whereCondition[Op.and].push({
+        pbVerificationStatus,
+      });
     }
+
     const include = [] as any;
     if (kycStatus && kycStatus !== "all") {
       include.push({
@@ -1106,6 +1120,7 @@ export const getMobileUsers = async ({
 
     const { count, rows: users } = await User.findAndCountAll({
       where: whereCondition,
+      attributes: { exclude: ["password_hash", "playerId"] },
       include,
       limit,
       offset,

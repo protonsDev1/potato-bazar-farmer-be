@@ -118,7 +118,17 @@ export const listKycFromDB = async (
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "role"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "role",
+          "isActive",
+          "isDeleted",
+          "createdAt",
+          "updatedAt",
+        ],
       },
     ],
     where: whereCondition,
@@ -142,7 +152,17 @@ export const getKycDetailFromDB = async (id: number) => {
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "role"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "role",
+          "isActive",
+          "isDeleted",
+          "createdAt",
+          "updatedAt",
+        ],
       },
     ],
   });
