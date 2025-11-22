@@ -51,6 +51,7 @@ class Directory extends Model<
   declare certifications: string | null;
 
   declare status: string | null;
+  declare reason: string | null;
   declare isActive: CreationOptional<boolean>;
 
   declare userId: ForeignKey<User["id"]> | null;
@@ -100,6 +101,9 @@ Directory.init(
     status: {
       type: DataTypes.STRING,
       defaultValue: REGISTRATION_STATUS.PENDING,
+    },
+    reason: {
+      type: DataTypes.TEXT,
     },
     isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
     userId: {
