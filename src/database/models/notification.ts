@@ -21,6 +21,7 @@ export enum NotificationType {
   COLD_STORAGE = "COLD_STORAGE",
   FARMER = "FARMER",
   TRADER = "TRADER",
+  DIRECTORY = "DIRECTORY",
   ADVERTISEMENT = "ADVERTISEMENT",
   ASK_EXPERT = "ask_expert",
   KNOWLEDGE_HUB = "knowledge_hub",
