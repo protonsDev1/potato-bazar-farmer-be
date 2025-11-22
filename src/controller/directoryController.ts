@@ -6,6 +6,7 @@ import {
   deleteDirectoryById,
   toggleSaveDirectoryService,
   getDirectoryPlansService,
+  updateDirectoryStatusService,
 } from "../services/directoryService";
 import { findUserByPkInDB } from "../services/userServices";
 import { REGISTRATION_STATUS, USER_ROLES } from "../database/models/user";
@@ -201,6 +202,43 @@ export const getDirectoryPlans = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: err.message || "Failed to fetch plans",
+    });
+  }
+};
+
+export const updateDirectoryStatus = async (req, res) => {
+  try {
+    const { directoryId } = req.params;
+    const { status, reason } = req.body;
+    const currentUser = req.user;
+
+    const result: any = await updateDirectoryStatusService({
+      directoryId: Number(directoryId),
+      status,
+      reason: reason ? String(reason).trim() : null,
+      currentUserId: currentUser.id,
+    });
+
+    if (!result || result.success === false) {
+      const code = result && result.statusCode ? result.statusCode : 500;
+      const msg =
+        result && result.message
+          ? result.message
+          : "Failed to update directory status";
+      return res.status(code).json({ message: msg });
+    }
+
+    const response = {
+      message: `Directory status updated to ${status}`,
+      directory: result.directory,
+    };
+
+    return res.status(200).json(response);
+  } catch (err) {
+    console.error("updateDirectoryStatus error:", err);
+    return res.status(500).json({
+      message:
+        err && err.message ? err.message : "Failed to update directory status",
     });
   }
 };
