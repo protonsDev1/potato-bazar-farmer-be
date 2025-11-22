@@ -37,7 +37,7 @@ export const createDirectory = async (req, res) => {
 
 export const selfOnboardedDirectory = async (req, res) => {
   try {
-    const userId = req.body.userId;
+    const userId = req.body?.userId;
     req.body.onBoardedBy = userId;
 
     const pbFree = await DirectoryPlan.findOne({
@@ -51,8 +51,8 @@ export const selfOnboardedDirectory = async (req, res) => {
     delete req.body.planStartDate;
     delete req.body.planEndDate;
 
-    const user = await findUserByPkInDB(userId);
-    if (!user.success) return res.status(400).json({ message: user.error });
+    // const user = await findUserByPkInDB(userId);
+    // if (!user.success) return res.status(400).json({ message: user.error });
 
     const directory = await onboardDirectory(req.body);
     return res
