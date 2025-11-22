@@ -198,7 +198,17 @@ export const retrieveDirectoryProfile = async (directoryId, currentUserId?) => {
           {
             model: User,
             as: "owner",
-            attributes: ["id", "name", "role", "email", "mobile"],
+            attributes: [
+              "id",
+              "name",
+              "role",
+              "email",
+              "mobile",
+              "isActive",
+              "isDeleted",
+              "createdAt",
+              "updatedAt",
+            ],
           },
           {
             model: User,
@@ -271,6 +281,7 @@ export const getDirectoryListByAdmin = async (
   try {
     const offset = (page - 1) * limit;
     const whereCondition: any = {};
+    const userWhere: any = {};
 
     const {
       state,
@@ -291,6 +302,8 @@ export const getDirectoryListByAdmin = async (
     let mobileSortByPlanPriority = false;
     if (listingType && String(listingType).toLowerCase() === "mobile") {
       whereCondition.status = REGISTRATION_STATUS.APPROVED;
+      userWhere.isActive = true;
+      userWhere.isDeleted = false;
       whereCondition.isActive = true;
 
       whereCondition[Op.and] = [
@@ -431,7 +444,20 @@ export const getDirectoryListByAdmin = async (
     }
 
     const include: any[] = [
-      { model: User, as: "owner", attributes: ["id", "name", "mobile"] },
+      {
+        model: User,
+        as: "owner",
+        attributes: [
+          "id",
+          "name",
+          "mobile",
+          "isActive",
+          "isDeleted",
+          "createdAt",
+          "updatedAt",
+        ],
+        where: userWhere,
+      },
       {
         model: User,
         as: "onboardedByUser",
