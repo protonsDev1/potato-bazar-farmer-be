@@ -302,8 +302,13 @@ export const getDirectoryListByAdmin = async (
     let mobileSortByPlanPriority = false;
     if (listingType && String(listingType).toLowerCase() === "mobile") {
       whereCondition.status = REGISTRATION_STATUS.APPROVED;
-      userWhere.isActive = true;
-      userWhere.isDeleted = false;
+
+      userWhere[Op.and] = [
+        { id: { [Op.ne]: null } }, // user must exist
+        { isActive: true },
+        { isDeleted: false },
+      ];
+
       whereCondition.isActive = true;
 
       whereCondition[Op.and] = [
@@ -322,6 +327,17 @@ export const getDirectoryListByAdmin = async (
       ];
 
       mobileSortByPlanPriority = true;
+
+      whereCondition[Op.or] = [
+        { userId: null },
+        literal(`
+          "Directory"."userId" IN (
+            SELECT "id" FROM "users"
+            WHERE "isActive" = true
+            AND "isDeleted" = false
+          )
+        `),
+      ];
     }
 
     if (status) whereCondition.status = status;
@@ -456,7 +472,9 @@ export const getDirectoryListByAdmin = async (
           "createdAt",
           "updatedAt",
         ],
-        where: userWhere,
+
+        where: Object.keys(userWhere).length ? userWhere : undefined,
+        required: Object.keys(userWhere).length > 0,
       },
       {
         model: User,
