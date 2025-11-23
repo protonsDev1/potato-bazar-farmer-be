@@ -1068,6 +1068,8 @@ export async function getColdStorage(
           district: item.district,
           totalCapacityMt: item.totalCapacityMt,
           registrationDate: formatDate(item.createdAt),
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
           user: item.user,
           onBoardedByUser: item.onBoardedByUser,
           storageTypes: item.storageTypes,
