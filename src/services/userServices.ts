@@ -2094,12 +2094,8 @@ export const getPbVerificationStepStatusService = async (userId: number) => {
   const steps: any = {};
 
   // Step 1: Complete basic information
-  const step1Completed =
-    user.hasStartedUsingMobile && user.isUserOnBoardedOnMobile;
-  steps.step1Completed = step1Completed;
-  steps.step1Message = step1Completed
-    ? "Basic information completed."
-    : "Complete your basic information before requesting PB verification.";
+  const actualStep1Completed =
+    !!user.hasStartedUsingMobile && !!user.isUserOnBoardedOnMobile;
 
   // Step 2: Complete role information
   const [farmerExists, coldStorageExists, traderExists] = await Promise.all([
@@ -2113,29 +2109,49 @@ export const getPbVerificationStepStatusService = async (userId: number) => {
       where: { userId, status: REGISTRATION_STATUS.APPROVED },
     }),
   ]);
-  const step2Completed =
+  const actualStep2Completed =
     !!farmerExists || !!coldStorageExists || !!traderExists;
-  steps.step2Completed = step2Completed;
-  steps.step2Message = step2Completed
-    ? "Role information completed."
-    : "Complete your role information (farmer, cold storage or trader) before requesting PB verification.";
 
   // Step 3: Complete KYC upload
   const kyc = await KycDocument.findOne({ where: { userId } });
-  const step3Completed = !!kyc;
+  const actualStep3Completed = !!kyc;
+
+  // Step 4: KYC verified
+  const actualStep4Completed = kyc?.isVerified ?? false;
+
+  // Apply step-wise gating: once a previous step is false, subsequent ones are locked (false)
+  const step1Completed = actualStep1Completed;
+  let step2Completed = step1Completed ? actualStep2Completed : false;
+  let step3Completed = step2Completed ? actualStep3Completed : false;
+  let step4Completed = step3Completed ? actualStep4Completed : false;
+
+  steps.step1Completed = step1Completed;
+  steps.step1Message = step1Completed
+    ? "Basic information completed."
+    : "Complete your basic information before requesting PB verification.";
+
+  steps.step2Completed = step2Completed;
+  steps.step2Message = step2Completed
+    ? "Role information completed."
+    : !step1Completed
+    ? "Complete Step 1 (basic information) to unlock role information step."
+    : "Complete your role information (farmer, cold storage or trader) before requesting PB verification.";
+
   steps.step3Completed = step3Completed;
   steps.step3Message = step3Completed
     ? "KYC document uploaded."
+    : !step2Completed
+    ? "Complete Step 2 (role information) to unlock KYC upload step."
     : "Upload KYC document before requesting PB verification.";
 
-  // Step 4: KYC verified
-  const step4Completed = kyc?.isVerified ?? false;
   steps.step4Completed = step4Completed;
   steps.step4Message = step4Completed
     ? "KYC verified."
+    : !step3Completed
+    ? "Complete Step 3 (KYC upload) to unlock KYC verification step."
     : "Your KYC is not verified. PB verification cannot be requested.";
 
-  // Can request PB verification if all steps completed
+  // Can request PB verification if all gated steps are true
   const canRequestPbVerification =
     step1Completed && step2Completed && step3Completed && step4Completed;
 
@@ -2148,6 +2164,12 @@ export const getPbVerificationStepStatusService = async (userId: number) => {
     data: {
       steps,
       canRequestPbVerification,
+      actual: {
+        actualStep1Completed,
+        actualStep2Completed,
+        actualStep3Completed,
+        actualStep4Completed,
+      },
     },
   };
 };
