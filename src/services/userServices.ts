@@ -155,12 +155,18 @@ export const getDashboardCounts = async () => {
   const { oneWeekAgo, oneMonthAgo } = getDateRange();
 
   const [totalAgents, agentsLastWeek, agentsLastMonth] = await Promise.all([
-    Agent.count({ where: { isDeleted: false } }),
+    Agent.count({ 
+      // where: { isDeleted: false }
+     }),
     Agent.count({
-      where: { isDeleted: false, createdAt: { [Op.gte]: oneWeekAgo } },
+      where: { 
+        // isDeleted: false,
+         createdAt: { [Op.gte]: oneWeekAgo } },
     }),
     Agent.count({
-      where: { isDeleted: false, createdAt: { [Op.gte]: oneMonthAgo } },
+      where: { 
+        // isDeleted: false, 
+        createdAt: { [Op.gte]: oneMonthAgo } },
     }),
   ]);
 
@@ -1033,7 +1039,7 @@ export const getMobileUsers = async ({
 
     if (isDeleted !== undefined) {
       whereCondition[Op.and].push({
-        isDeleted: isDeleted === "true",
+        isDeleted: isDeleted === "true" ? true : false,
       });
     }
 
@@ -1078,7 +1084,7 @@ export const getMobileUsers = async ({
 
     if (activeStatus && activeStatus !== "all") {
       whereCondition[Op.and].push({
-        isActive: activeStatus === "active",
+        isActive: activeStatus === "active" ? true: false,
       });
     }
 
