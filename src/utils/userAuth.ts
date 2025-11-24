@@ -39,6 +39,12 @@ export const authMiddleware = async (req, res, next) => {
       });
     }
 
+     if (user.isDeleted) {
+      return res.status(403).json({
+        message: "User is deleted. Please login on mobile app to restore user.",
+      });
+    }
+
     req.user = user;
     next();
   } catch (error) {
