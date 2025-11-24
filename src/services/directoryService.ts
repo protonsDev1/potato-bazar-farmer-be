@@ -198,7 +198,17 @@ export const retrieveDirectoryProfile = async (directoryId, currentUserId?) => {
           {
             model: User,
             as: "owner",
-            attributes: ["id", "name", "role", "email", "mobile"],
+            attributes: [
+              "id",
+              "name",
+              "role",
+              "email",
+              "mobile",
+              "isActive",
+              "isDeleted",
+              "createdAt",
+              "updatedAt",
+            ],
           },
           {
             model: User,
@@ -271,6 +281,7 @@ export const getDirectoryListByAdmin = async (
   try {
     const offset = (page - 1) * limit;
     const whereCondition: any = {};
+    const userWhere: any = {};
 
     const {
       state,
@@ -291,6 +302,13 @@ export const getDirectoryListByAdmin = async (
     let mobileSortByPlanPriority = false;
     if (listingType && String(listingType).toLowerCase() === "mobile") {
       whereCondition.status = REGISTRATION_STATUS.APPROVED;
+
+      userWhere[Op.and] = [
+        { id: { [Op.ne]: null } }, // user must exist
+        { isActive: true },
+        { isDeleted: false },
+      ];
+
       whereCondition.isActive = true;
 
       whereCondition[Op.and] = [
@@ -309,6 +327,17 @@ export const getDirectoryListByAdmin = async (
       ];
 
       mobileSortByPlanPriority = true;
+
+      whereCondition[Op.or] = [
+        { userId: null },
+        literal(`
+          "Directory"."userId" IN (
+            SELECT "id" FROM "users"
+            WHERE "isActive" = true
+            AND "isDeleted" = false
+          )
+        `),
+      ];
     }
 
     if (status) whereCondition.status = status;
@@ -431,7 +460,22 @@ export const getDirectoryListByAdmin = async (
     }
 
     const include: any[] = [
-      { model: User, as: "owner", attributes: ["id", "name", "mobile"] },
+      {
+        model: User,
+        as: "owner",
+        attributes: [
+          "id",
+          "name",
+          "mobile",
+          "isActive",
+          "isDeleted",
+          "createdAt",
+          "updatedAt",
+        ],
+
+        where: Object.keys(userWhere).length ? userWhere : undefined,
+        required: Object.keys(userWhere).length > 0,
+      },
       {
         model: User,
         as: "onboardedByUser",

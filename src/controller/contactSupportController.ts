@@ -60,6 +60,7 @@ export const getContactSupportList = async (req, res) => {
         {
           model: User,
           as: "user",
+          attributes: { exclude: ["password_hash", "playerId"] },
         },
       ],
       limit,
