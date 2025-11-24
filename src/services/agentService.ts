@@ -366,7 +366,7 @@ export const getPaginatedAgents = async (
 
   const { rows: agents, count: total } = await Agent.findAndCountAll({
     where: {
-      isDeleted: false,
+      // isDeleted: false,
       ...searchCondition,
     },
     attributes: { exclude: ["userId", "isDeleted"] },
@@ -397,7 +397,7 @@ export const updateAgentById = async (agentId: number, updateData: any) => {
   const agent = await Agent.findOne({
     where: {
       id: agentId,
-      isDeleted: false,
+      // isDeleted: false,
     },
     attributes: { exclude: ["userId", "isDeleted"] },
     include: [
@@ -491,7 +491,7 @@ export const getAgentDetailsById = async (agentId: number) => {
   const agent = await Agent.findOne({
     where: {
       id: agentId,
-      isDeleted: false,
+      // isDeleted: false,
     },
     attributes: { exclude: ["userId", "isDeleted"] },
     include: [
@@ -527,7 +527,7 @@ export const resetAgentPassword = async (agentId: number) => {
   const agent = await Agent.findOne({
     where: {
       id: agentId,
-      isDeleted: false,
+      // isDeleted: false,
     },
     include: [
       {
@@ -878,7 +878,7 @@ export const getAllAgentsWithAssociations = async (search?: string) => {
 
   const agents = await Agent.findAll({
     where: {
-      isDeleted: false,
+      // isDeleted: false,
       ...searchCondition,
     },
     include: [

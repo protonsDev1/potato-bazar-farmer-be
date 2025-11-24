@@ -376,7 +376,7 @@ export const verifyOtp = async (req, res) => {
         return res.status(403).json({
           success: false,
           message:
-            "User is deleted, Please login on mobile app to restore user.",
+            "User is deleted. Please login on mobile app to restore user.",
         });
       }
 
