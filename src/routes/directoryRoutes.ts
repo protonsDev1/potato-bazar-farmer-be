@@ -14,10 +14,12 @@ import {
   updateDirectory,
   toggleSaveDirectory,
   getDirectoryPlans,
+  updateDirectoryStatus,
 } from "../controller/directoryController";
 import {
   onboardDirectorySchema,
   updateDirectorySchema,
+  updateDirectoryStatusSchema,
 } from "../validation/directoryValidation";
 import { PERMISSIONS } from "../utils/constants/permissions";
 
@@ -60,5 +62,12 @@ router.delete(
 );
 
 router.post("/:directoryId/save", authMiddleware, toggleSaveDirectory);
+
+router.put(
+  "/:directoryId/status",
+  checkPermissionMiddleware(PERMISSIONS.DIRECTORY),
+  validator.body(updateDirectoryStatusSchema),
+  updateDirectoryStatus
+);
 
 export default router;

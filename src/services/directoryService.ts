@@ -11,6 +11,8 @@ import DirectoryCategory from "../database/models/directoryCategory";
 import DirectorySubCategory from "../database/models/directorySubCategory";
 import SavedDirectory from "../database/models/savedDirectory";
 import DirectoryPlan from "../database/models/directoryPlan";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export async function onboardDirectory(payload) {
   try {
@@ -196,7 +198,17 @@ export const retrieveDirectoryProfile = async (directoryId, currentUserId?) => {
           {
             model: User,
             as: "owner",
-            attributes: ["id", "name", "role", "email", "mobile"],
+            attributes: [
+              "id",
+              "name",
+              "role",
+              "email",
+              "mobile",
+              "isActive",
+              "isDeleted",
+              "createdAt",
+              "updatedAt",
+            ],
           },
           {
             model: User,
@@ -269,6 +281,7 @@ export const getDirectoryListByAdmin = async (
   try {
     const offset = (page - 1) * limit;
     const whereCondition: any = {};
+    const userWhere: any = {};
 
     const {
       state,
@@ -289,6 +302,13 @@ export const getDirectoryListByAdmin = async (
     let mobileSortByPlanPriority = false;
     if (listingType && String(listingType).toLowerCase() === "mobile") {
       whereCondition.status = REGISTRATION_STATUS.APPROVED;
+
+      userWhere[Op.and] = [
+        { id: { [Op.ne]: null } }, // user must exist
+        { isActive: true },
+        { isDeleted: false },
+      ];
+
       whereCondition.isActive = true;
 
       whereCondition[Op.and] = [
@@ -307,6 +327,17 @@ export const getDirectoryListByAdmin = async (
       ];
 
       mobileSortByPlanPriority = true;
+
+      whereCondition[Op.or] = [
+        { userId: null },
+        literal(`
+          "Directory"."userId" IN (
+            SELECT "id" FROM "users"
+            WHERE "isActive" = true
+            AND "isDeleted" = false
+          )
+        `),
+      ];
     }
 
     if (status) whereCondition.status = status;
@@ -358,10 +389,21 @@ export const getDirectoryListByAdmin = async (
 
     let onBoardedByUserWhere: any = {};
     if (onboardedByUser && onboardedByUser.toLowerCase() !== "all") {
-      if (onboardedByUser === "self")
-        onBoardedByUserWhere.role = USER_ROLES.USER;
-      else if (onboardedByUser === "super_admin")
-        onBoardedByUserWhere.role = USER_ROLES.SUPER_ADMIN;
+      const type = onboardedByUser.toLowerCase();
+
+      if (type === "self") {
+        onBoardedByUserWhere = {
+          [Op.or]: [{ role: USER_ROLES.USER }],
+        };
+      }
+
+      if (type === "admin") {
+        onBoardedByUserWhere = {
+          role: {
+            [Op.in]: [USER_ROLES.SUPER_ADMIN, USER_ROLES.SUB_ADMIN],
+          },
+        };
+      }
     }
 
     if (search?.trim()) {
@@ -418,7 +460,22 @@ export const getDirectoryListByAdmin = async (
     }
 
     const include: any[] = [
-      { model: User, as: "owner", attributes: ["id", "name", "mobile"] },
+      {
+        model: User,
+        as: "owner",
+        attributes: [
+          "id",
+          "name",
+          "mobile",
+          "isActive",
+          "isDeleted",
+          "createdAt",
+          "updatedAt",
+        ],
+
+        where: Object.keys(userWhere).length ? userWhere : undefined,
+        required: Object.keys(userWhere).length > 0,
+      },
       {
         model: User,
         as: "onboardedByUser",
@@ -640,4 +697,83 @@ export const getDirectoryPlansService = async () => {
     ],
   });
   return plans;
+};
+
+export const updateDirectoryStatusService = async (payload) => {
+  const { directoryId, status, reason = null, currentUserId } = payload;
+
+  if (!["approved", "rejected"].includes(String(status))) {
+    return {
+      success: false,
+      statusCode: 400,
+      message: "Invalid status. Allowed values: 'approved', 'rejected'",
+    };
+  }
+
+  if (String(status) === "rejected" && !reason) {
+    return {
+      success: false,
+      statusCode: 400,
+      message: "Reason is required when rejecting",
+    };
+  }
+
+  try {
+    return await sequelize.transaction(async (t) => {
+      const directory = await Directory.findByPk(directoryId, {
+        transaction: t,
+      });
+
+      if (!directory) {
+        return {
+          success: false,
+          statusCode: 404,
+          message: "Directory not found",
+        };
+      }
+
+      if (directory.status === status) {
+        return {
+          success: false,
+          statusCode: 409,
+          message: `Directory already ${status}`,
+        };
+      }
+
+      // Update directory status and optional reason (statusReason column)
+      const updateData = { status, reason };
+      if (status === "rejected") updateData.reason = reason;
+      else updateData.reason = null;
+
+      await directory.update(updateData, { transaction: t });
+
+      // reload fresh data
+      await directory.reload({ transaction: t });
+
+      if (directory.userId) {
+        const title = `Your Directory is ${status}`;
+        const description =
+          status === "rejected" ? reason : `Your directory has been ${status}.`;
+
+        await sendNotificationService({
+          title,
+          description,
+          senderId: currentUserId,
+          receiverId: directory.userId,
+          referenceType: NotificationType.DIRECTORY,
+          referenceId: directory.id,
+        });
+      }
+
+      return { success: true, directory };
+    });
+  } catch (err) {
+    // catch unexpected errors (DB errors etc.) and return error object
+    console.error("updateDirectoryStatusService unexpected error:", err);
+    return {
+      success: false,
+      statusCode: 500,
+      message: err && err.message ? err.message : "Internal server error",
+    };
+  }
 };

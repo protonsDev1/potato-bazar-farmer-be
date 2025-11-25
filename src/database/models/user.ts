@@ -2,7 +2,7 @@ import {
   Model,
   DataTypes,
   InferAttributes,
-  InferCreationAttributes,  
+  InferCreationAttributes,
   CreationOptional,
 } from "sequelize";
 import bcrypt from "bcrypt";
@@ -81,6 +81,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare passwordUpdatedAt: CreationOptional<Date>;
   declare playerId: string | null;
   declare updatedAt: CreationOptional<Date>;
+  declare isDeleted: boolean;
 
   async validatePassword(password: string): Promise<boolean> {
     return bcrypt.compare(password, this.password_hash);
@@ -218,6 +219,10 @@ User.init(
     playerId: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {

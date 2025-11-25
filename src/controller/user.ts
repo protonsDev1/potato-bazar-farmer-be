@@ -269,8 +269,8 @@ export const sendOtp = async (req, res) => {
 
     if (
       existingUser &&
-      (existingUser.hasStartedUsingMobile &&
-        existingUser.isUserOnBoardedOnMobile) &&
+      existingUser.hasStartedUsingMobile &&
+      existingUser.isUserOnBoardedOnMobile &&
       !existingUser.isActive
     ) {
       return res.status(403).json({
@@ -324,11 +324,7 @@ export const createUserWithoutOtpVerification = async (req, res) => {
       });
     }
 
-    const createUser = await registerInitialUser(
-      mobile,
-      false,
-      null
-    );
+    const createUser = await registerInitialUser(mobile, false, null);
 
     return res.status(200).json({
       success: true,
@@ -343,7 +339,6 @@ export const createUserWithoutOtpVerification = async (req, res) => {
     });
   }
 };
-
 
 export const verifyOtp = async (req, res) => {
   try {
@@ -361,8 +356,8 @@ export const verifyOtp = async (req, res) => {
     const existingUser = await checkExistingUser(mobile);
     if (existingUser) {
       if (
-        (existingUser.hasStartedUsingMobile &&
-          existingUser.isUserOnBoardedOnMobile) &&
+        existingUser.hasStartedUsingMobile &&
+        existingUser.isUserOnBoardedOnMobile &&
         !existingUser.isActive
       ) {
         return res.status(403).json({
@@ -372,7 +367,17 @@ export const verifyOtp = async (req, res) => {
       }
 
       if (hasStartedUsingMobile) {
-        await existingUser.update({ hasStartedUsingMobile: true, playerId });
+        await existingUser.update({
+          hasStartedUsingMobile: true,
+          playerId,
+          isDeleted: false,
+        });
+      } else if (existingUser.isDeleted) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "User is deleted. Please login on mobile app to restore user.",
+        });
       }
 
       const token = jwt.sign({ id: existingUser.id }, JWT_SECRET);
@@ -766,7 +771,8 @@ export const retrieveMobileUsers = async (req, res) => {
       activeStatus,
       pbVerificationRequested,
       pbVerificationStatus,
-      userType
+      userType,
+      isDeleted,
     } = req.query;
 
     const response = await getMobileUsers({
@@ -777,7 +783,8 @@ export const retrieveMobileUsers = async (req, res) => {
       activeStatus,
       pbVerificationRequested,
       pbVerificationStatus,
-      userType
+      userType,
+      isDeleted,
     });
 
     if (!response.success)
@@ -945,6 +952,11 @@ export const deleteMobileUserByAdmin = async (req, res) => {
         .status(400)
         .json({ success: false, message: "User not found." });
 
+    if (userDetail.isDeleted)
+      return res
+        .status(400)
+        .json({ success: false, message: "User is already deleted." });
+
     if (
       userDetail.role !== USER_ROLES.USER ||
       (userDetail.hasStartedUsingMobile === false &&
@@ -955,7 +967,8 @@ export const deleteMobileUserByAdmin = async (req, res) => {
         message: "Only Mobile user can be deleted here.",
       });
 
-    await User.destroy({ where: { id: userId } });
+    // await User.destroy({ where: { id: userId } });
+    await User.update({ isDeleted: true }, { where: { id: userId } });
 
     return res
       .status(200)
@@ -974,6 +987,11 @@ export const deleteCurrentMobileUser = async (req, res) => {
 
     const userDetail = await User.findByPk(userId);
 
+    if (userDetail.isDeleted)
+      return res
+        .status(400)
+        .json({ success: false, message: "User is already deleted." });
+
     if (!userDetail)
       return res
         .status(400)
@@ -989,7 +1007,8 @@ export const deleteCurrentMobileUser = async (req, res) => {
         message: "Account deletion is only allowed for mobile users.",
       });
 
-    await User.destroy({ where: { id: userId } });
+    // await User.destroy({ where: { id: userId } });
+    await User.update({ isDeleted: true }, { where: { id: userId } });
 
     return res.status(200).json({
       success: true,

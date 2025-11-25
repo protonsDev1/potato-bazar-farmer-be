@@ -11,6 +11,7 @@ import {
   createContactSupport,
   deleteContactSupport,
   getContactSupportList,
+  updateContactSupportStatus,
 } from "../controller/contactSupportController";
 
 const router = express.Router();
@@ -31,6 +32,12 @@ router.delete(
   "/:id",
   checkPermissionMiddleware(PERMISSIONS.CALL_SUPPORT),
   deleteContactSupport
+);
+
+router.put(
+  "/:id",
+  checkPermissionMiddleware(PERMISSIONS.CALL_SUPPORT),
+  updateContactSupportStatus
 );
 
 export default router;

@@ -5,11 +5,21 @@ import Notification, {
 } from "../database/models/notification";
 import { sendNotificationService } from "../services/notificationService";
 import UserNotificationSetting from "../database/models/userNotificationSetting";
+import User from "../database/models/user";
+import Broadcast from "../database/models/broadcast";
+import { differenceInMonths, format, formatDistanceToNow } from "date-fns";
 
 export const broadCastNotification = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, audience } = req.body;
     const { id } = req.user;
+
+    const broadcast = await Broadcast.create({
+      title,
+      description,
+      senderId: id,
+      audience: audience || { all: true },
+    });
 
     await sendNotificationService({
       title,
@@ -17,6 +27,8 @@ export const broadCastNotification = async (req, res) => {
       senderId: id,
       referenceType: NotificationType.BROADCAST,
       isBroadCast: true,
+      broadcastId: broadcast.id,
+      audience,
     });
 
     return res.status(200).json({
@@ -27,6 +39,60 @@ export const broadCastNotification = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Error in broadcasting notification",
+    });
+  }
+};
+
+export const broadcastNotificationList = async (req, res) => {
+  try {
+    let { page = 1, perPage: limit = 10, search, senderId } = req.query;
+
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (senderId) {
+      where.senderId = Number(senderId);
+    }
+
+    if (search) {
+      where[Op.or] = [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } },
+      ];
+    }
+
+    const { rows, count } = await Broadcast.findAndCountAll({
+      where,
+      order: [["createdAt", "DESC"]],
+      limit,
+      offset,
+      include: [
+        {
+          model: User,
+          as: "sender",
+          attributes: ["id", "name", "email"],
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Broadcast notifications fetched successfully.",
+      data: {
+        currentPage: page,
+        total: count,
+        totalPages: Math.ceil(count / limit),
+        notifications: rows,
+      },
+    });
+  } catch (error) {
+    console.error("broadcastNotificationList error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error in fetching broadcast notifications",
     });
   }
 };
@@ -96,11 +162,30 @@ export const myNotificationList = async (req, res) => {
       offset,
     });
 
+    const notifications = rows.map((u) => {
+      const createdAt = new Date(u.createdAt);
+
+      const monthsDiff = differenceInMonths(new Date(), createdAt);
+
+      let formattedTime;
+
+      if (monthsDiff < 1) {
+        formattedTime = formatDistanceToNow(createdAt, { addSuffix: true });
+      } else {
+        formattedTime = format(createdAt, "dd MMM yyyy, hh:mm a");
+      }
+
+      return {
+        ...u.toJSON(),
+        timeAgo: formattedTime,
+      };
+    });
+
     return res.status(200).json({
       success: true,
       message: "Notifications fetched successfully.",
       data: {
-        notifications: rows,
+        notifications,
         currentPage: page,
         total: count,
         totalPages: Math.ceil(count / limit),

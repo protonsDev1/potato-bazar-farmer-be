@@ -1,6 +1,8 @@
 import { Op } from "sequelize";
 import AdvertisementService from "../database/models/adminModels/mobile/advertisementService";
-import Advertisement from "../database/models/advertisement";
+import Advertisement, {
+  ADVERTISEMENT_STATUS,
+} from "../database/models/advertisement";
 import User from "../database/models/user";
 
 export const createAdvertisementRequest = async (req, res) => {
@@ -47,7 +49,13 @@ export const createAdvertisementRequest = async (req, res) => {
 
 export const getAllAdvertisementRequestByAdmin = async (req, res) => {
   try {
-    let { page = 1, perPage: limit = 10, search, serviceId } = req.query;
+    let {
+      page = 1,
+      perPage: limit = 10,
+      search,
+      serviceId,
+      status,
+    } = req.query;
 
     page = Number(page);
     limit = Number(limit);
@@ -58,6 +66,8 @@ export const getAllAdvertisementRequestByAdmin = async (req, res) => {
     const userWhereCondition: any = {};
 
     if (serviceId) whereCondition.serviceId = serviceId;
+
+    if (status) whereCondition.status = status;
 
     if (search?.trim()) {
       const searchTerm = `%${search.trim()}%`;
@@ -74,6 +84,7 @@ export const getAllAdvertisementRequestByAdmin = async (req, res) => {
           model: User,
           as: "user",
           where: userWhereCondition,
+          attributes: { exclude: ["password_hash", "playerId"] },
         },
         {
           model: AdvertisementService,
@@ -118,6 +129,28 @@ export const deleteAdvertisementRequest = async (req, res) => {
     return res.status(500).json({
       success: false,
       error: error.message || "Failed in deleting advertisement requests.",
+    });
+  }
+};
+
+export const updateAdvertisementStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await Advertisement.update(
+      { status: ADVERTISEMENT_STATUS.CLOSE },
+      { where: { id } }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Advertisement Request status updated successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error:
+        error.message || "Failed in updating advertisement request's status.",
     });
   }
 };

@@ -836,15 +836,28 @@ export async function getColdStorage(
     const userInclude: any = {
       model: User,
       as: "user",
-      attributes: ["id", "name", "hasStartedUsingMobile", "pbVerified"],
+      attributes: [
+        "id",
+        "name",
+        "hasStartedUsingMobile",
+        "pbVerified",
+        "isActive",
+        "isDeleted",
+        "createdAt",
+        "updatedAt",
+      ],
     };
 
     // Other user's available cold storages
     if (listingType === "others") {
-      whereCondition.userId = { [Op.ne]: userId };
+      // whereCondition.userId = { [Op.ne]: userId };
       whereCondition.isAvailable = true;
       whereCondition.status = REGISTRATION_STATUS.APPROVED;
-      userInclude.where = { hasStartedUsingMobile: true };
+      userInclude.where = {
+        hasStartedUsingMobile: true,
+        isActive: true,
+        isDeleted: false,
+      };
       userInclude.required = true;
     }
 
@@ -1066,6 +1079,8 @@ export async function getColdStorage(
           district: item.district,
           totalCapacityMt: item.totalCapacityMt,
           registrationDate: formatDate(item.createdAt),
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
           user: item.user,
           onBoardedByUser: item.onBoardedByUser,
           storageTypes: item.storageTypes,

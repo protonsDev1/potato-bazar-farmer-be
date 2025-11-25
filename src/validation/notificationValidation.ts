@@ -1,8 +1,25 @@
 import Joi from "joi";
+import { USER_REGISTRATION_TYPES } from "../database/models/user";
 
 export const broadcastNotificationSchema = Joi.object({
   title: Joi.string().trim().max(255).required(),
   description: Joi.string().trim().required(), //  Text field
+  // audience: optional. If omitted => all users.
+  audience: Joi.object({
+    all: Joi.boolean().default(true),
+
+    // allowed userTypes (only when all !== true)
+    userTypes: Joi.array()
+      .items(Joi.string().valid(...Object.values(USER_REGISTRATION_TYPES)))
+      .when("all", {
+        is: true,
+        then: Joi.forbidden(), // cannot provide userTypes when all === true
+        otherwise: Joi.array().min(1).required(),
+      }),
+  })
+    .optional()
+    // If audience is provided but empty object, default to all true
+    .default({ all: true }),
 });
 
 export const markAsReadSchema = Joi.object({

@@ -79,7 +79,10 @@ export const listBuyRequestsService = async (
   const offset = (Number(page) - 1) * Number(perPage);
 
   const where: any = { isActive: true, status: BUY_REQUEST_STATUS.APPROVED };
-  const userWhere: any = {};
+  const userWhere: any = {
+    isActive: true,
+    isDeleted: false,
+  };
 
   if (userId) {
     where.userId = userId;
@@ -127,6 +130,10 @@ export const listBuyRequestsService = async (
         "state",
         "district",
         "pbVerified",
+        "isActive",
+        "isDeleted",
+        "createdAt",
+        "updatedAt",
       ],
       where: Object.keys(userWhere).length ? userWhere : undefined,
     },
@@ -285,7 +292,17 @@ export const listAdminBuyRequestsService = async (query: any) => {
       {
         model: User,
         as: "user",
-        attributes: ["id", "name", "email", "mobile", "pbVerified"],
+        attributes: [
+          "id",
+          "name",
+          "email",
+          "mobile",
+          "pbVerified",
+          "isActive",
+          "isDeleted",
+          "createdAt",
+          "updatedAt",
+        ],
       },
     ],
     limit: Number(perPage),

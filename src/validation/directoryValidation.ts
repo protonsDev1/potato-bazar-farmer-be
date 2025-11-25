@@ -145,3 +145,12 @@ export const directorySubCategorySchema = Joi.object({
   position: Joi.number().optional(),
   isActive: Joi.boolean().optional(),
 });
+
+export const updateDirectoryStatusSchema = Joi.object({
+  status: Joi.string().valid("approved", "rejected").required(),
+  reason: Joi.when("status", {
+    is: "rejected",
+    then: Joi.string().trim().required(),
+    otherwise: Joi.string().optional().allow(null, ""),
+  }),
+});

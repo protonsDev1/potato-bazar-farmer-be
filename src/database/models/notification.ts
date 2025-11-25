@@ -19,6 +19,10 @@ export enum NotificationType {
   KYC = "KYC",
   USER_PB_VERIFICATION = "USER_PB_VERIFICATION",
   COLD_STORAGE = "COLD_STORAGE",
+  FARMER = "FARMER",
+  TRADER = "TRADER",
+  DIRECTORY = "DIRECTORY",
+  ADVERTISEMENT = "ADVERTISEMENT",
   ASK_EXPERT = "ask_expert",
   KNOWLEDGE_HUB = "knowledge_hub",
 }
@@ -36,6 +40,7 @@ class Notification extends Model<
   declare referenceId: number;
   declare isRead: boolean;
   declare isMatchingCase: boolean;
+  declare broadcastId: number | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -82,6 +87,12 @@ Notification.init(
     isMatchingCase: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    broadcastId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: { model: "broadcasts", key: "id" },
+      onDelete: "SET NULL",
     },
     createdAt: {
       type: DataTypes.DATE,

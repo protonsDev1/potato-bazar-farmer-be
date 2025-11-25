@@ -20,6 +20,8 @@ interface Payload {
   receiverIds?: number[];
   isBroadCast?: boolean;
   isMatchingCase?: boolean;
+  broadcastId?: number;
+  audience?: { all?: boolean; userTypes?: string[] };
 }
 
 export const sendNotificationService = async (payload: Payload) => {
@@ -33,23 +35,47 @@ export const sendNotificationService = async (payload: Payload) => {
     receiverIds,
     isBroadCast = false,
     isMatchingCase = false,
+    broadcastId,
+    audience,
   } = payload;
 
   let userIds: number[] = [];
 
   if (isBroadCast) {
-    const users = await User.findAll({
-      where: {
-        // role: USER_ROLES.USER,
-        [Op.and]: [
-          { isUserOnBoardedOnMobile: true },
-          { hasStartedUsingMobile: true },
-        ],
-      },
-      attributes: ["id"],
-      raw: true,
-    });
-    userIds = users.map((user) => user.id);
+    // if audience.all === true OR audience is omitted -> send to all onboarded mobile users
+    if (!audience || audience.all === true) {
+      const users = await User.findAll({
+        where: {
+          [Op.and]: [
+            { isUserOnBoardedOnMobile: true },
+            { hasStartedUsingMobile: true },
+          ],
+        },
+        attributes: ["id"],
+        raw: true,
+      });
+      userIds = users.map((u) => u.id);
+    } else if (
+      Array.isArray(audience.userTypes) &&
+      audience.userTypes.length > 0
+    ) {
+      const users = await User.findAll({
+        where: {
+          // role: USER_ROLES.USER,
+          [Op.and]: [
+            { isUserOnBoardedOnMobile: true },
+            { hasStartedUsingMobile: true },
+            { userType: { [Op.overlap]: audience.userTypes } },
+          ],
+        },
+        attributes: ["id"],
+        raw: true,
+      });
+      userIds = users.map((u) => u.id);
+    } else {
+      // audience present but empty userTypes -> nothing to send
+      userIds = [];
+    }
   } else if (Array.isArray(receiverIds) && receiverIds.length > 0) {
     userIds = receiverIds;
   } else if (receiverId) {
@@ -66,6 +92,7 @@ export const sendNotificationService = async (payload: Payload) => {
     referenceType,
     referenceId,
     isMatchingCase,
+    broadcastId: broadcastId || null,
   }));
   await Notification.bulkCreate(notifications);
 
@@ -207,8 +234,9 @@ export const sendNotificationForColdStorage = async (senderId, referenceId) => {
     });
 
     await sendNotificationService({
-      title: "New ColdStorage is added.",
-      description: "New ColdStorage is added.",
+      title: "New Cold Storage is added.",
+      description:
+        "A new Cold Storage has been registered, please verify details.",
       senderId,
       referenceType: NotificationType.COLD_STORAGE,
       referenceId,
@@ -231,8 +259,11 @@ export const sendNotificationToMatchingBuyers = async (
   });
 
   const userIds = buyers
+    .filter((b) => b.userId !== sellRequest.userId)
     .map((f) => f.userId)
     .filter((id): id is number => Boolean(id));
+
+  if (userIds.length === 0) return;
 
   await sendNotificationService({
     title: "Matching Sell Request is added.",
@@ -259,8 +290,11 @@ export const sendNotificationToMatchingSellers = async (
   });
 
   const userIds = sellers
+    .filter((s) => s.userId !== buyRequest.userId)
     .map((f) => f.userId)
     .filter((id): id is number => Boolean(id));
+
+  if (userIds.length === 0) return;
 
   await sendNotificationService({
     title: "Matching Buy Request is added.",
