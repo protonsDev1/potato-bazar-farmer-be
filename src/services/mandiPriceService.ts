@@ -617,18 +617,6 @@ export const getTopMandiPricesService = async (page = 1, limit = 10) => {
     where: { isTopMandi: true },
     include: [
       {
-        model: MandiPrice,
-        as: "mandiPrices",
-        limit: 5,
-        order: [["date", "DESC"]],
-        include: [
-          {
-            model: MandiGradePrice,
-            as: "grades",
-          },
-        ],
-      },
-      {
         model: City,
         as: "city",
       },
@@ -638,6 +626,23 @@ export const getTopMandiPricesService = async (page = 1, limit = 10) => {
     limit,
     offset,
   });
+
+  for (const mandi of rows) {
+    const prices = await MandiPrice.findAll({
+      where: { mandiId: mandi.id },
+      order: [["date", "DESC"]],
+      limit: 5,
+      include: [
+        {
+          model: MandiGradePrice,
+          as: "grades",
+        },
+      ],
+    });
+
+    mandi.dataValues.mandiPrices = prices;
+    mandi.dataValues.redirectionDate = prices.length > 0 ? prices[0].date : null;
+  }
 
   return {
     total: count,
