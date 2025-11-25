@@ -25,6 +25,7 @@ class MandiList extends Model<
   declare updatedAt: CreationOptional<Date>;
   declare city?: City;
   declare mandiPrices?: MandiPrice[];
+  declare redirectionDate?: any;
 }
 
 MandiList.init(
