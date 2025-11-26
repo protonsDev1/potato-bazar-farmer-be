@@ -10,6 +10,11 @@ import User from "./user";
 import InterestRequest from "./interestRequest";
 import LikeCSRequirement from "./likeCSRequirement";
 
+export enum CS_REQUIREMENT_STATUS {
+  APPROVED = "approved",
+  PENDING = "pending",
+  REJECTED = "rejected",
+}
 class ColdStorageRequirement extends Model<
   InferAttributes<ColdStorageRequirement>,
   InferCreationAttributes<ColdStorageRequirement>
@@ -31,6 +36,8 @@ class ColdStorageRequirement extends Model<
   declare specialcoldStorageRequirements: string | null;
   declare isActive: boolean;
   declare createdBy: number;
+  declare status: CS_REQUIREMENT_STATUS;
+  declare reason: string | null;
   declare likes?: LikeCSRequirement[];
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -86,6 +93,14 @@ ColdStorageRequirement.init(
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    status: {
+      type: DataTypes.STRING,
+      defaultValue: CS_REQUIREMENT_STATUS.PENDING,
+    },
+    reason: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     createdBy: {
       type: DataTypes.INTEGER,

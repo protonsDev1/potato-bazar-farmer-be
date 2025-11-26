@@ -1,6 +1,8 @@
 import { Op } from "sequelize";
 
-import ColdStorageRequirement from "../database/models/coldStorageRequirement";
+import ColdStorageRequirement, {
+  CS_REQUIREMENT_STATUS,
+} from "../database/models/coldStorageRequirement";
 import sequelize from "../database/models/db";
 import { generateUniqueRequirementUid } from "../utils/generate";
 import User, { USER_ROLES } from "../database/models/user";
@@ -8,6 +10,8 @@ import LikeCSRequirement from "../database/models/likeCSRequirement";
 import CSRequirementView from "../database/models/csRequirementView";
 import { canUpdateResource } from "../utils/commonCode";
 import { PERMISSIONS } from "../utils/constants/permissions";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export const getRequirementsService = async (
   userId: number,
@@ -20,6 +24,7 @@ export const getRequirementsService = async (
     district?: string;
     pbVerified?: string;
     isFavourite?: string;
+    status?: string;
   },
   sortBy: string = ""
 ) => {
@@ -32,6 +37,7 @@ export const getRequirementsService = async (
     whereCondition.createdBy = userId;
   } else if (listingType === "others") {
     // whereCondition.createdBy = { [Op.ne]: userId };
+    whereCondition.status = CS_REQUIREMENT_STATUS.APPROVED;
     whereCondition.isActive = true;
     userWhere.isActive = true;
     userWhere.isDeleted = false;
@@ -47,6 +53,10 @@ export const getRequirementsService = async (
 
   if (filters.district && filters.district.toLowerCase() !== "all") {
     whereCondition.district = { [Op.iLike]: filters.district };
+  }
+
+  if (filters.status && filters.status.toLowerCase() !== "all") {
+    whereCondition.status = { [Op.iLike]: filters.status };
   }
 
   const userInclude: any = {
@@ -248,6 +258,42 @@ export const updateRequirementService = async (
     };
   }
 
+  if (requirement.status === CS_REQUIREMENT_STATUS.APPROVED) {
+    if (Object.keys(data).length === 1 && data.hasOwnProperty("isActive")) {
+      await requirement.update({ isActive: data.isActive });
+      return {
+        statusCode: 200,
+        success: true,
+        message: "Requirement status updated successfully",
+        data: requirement,
+      };
+    }
+
+    return {
+      statusCode: 400,
+      success: false,
+      message: "Approved requirement cannot be modified",
+    };
+  }
+
+  if (requirement.status === CS_REQUIREMENT_STATUS.REJECTED) {
+    data.status = CS_REQUIREMENT_STATUS.PENDING;
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Cold Request Requirement",
+      description:
+        "A Rejected Cold Storage Requirement has been moved to pending, please check it.",
+      senderId: user.id,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.COLD_STORAGE_REQUIREMENT,
+      referenceId: id,
+    });
+  }
+
   await requirement.update(data);
 
   return {
@@ -319,4 +365,28 @@ export const likeOrDislikeRequirementService = async (
       data: "Cold Storage Requirement liked successfully!",
     };
   }
+};
+
+export const updateCSRequirementStatusService = async (
+  requirementId,
+  status,
+  reason
+) => {
+  const requirement = await ColdStorageRequirement.findByPk(requirementId);
+
+  if (!requirement) {
+    return null;
+  }
+
+  requirement.status = status;
+
+  if (status === CS_REQUIREMENT_STATUS.REJECTED) {
+    requirement.reason = reason || null;
+  } else {
+    requirement.reason = null;
+  }
+
+  await requirement.save();
+
+  return requirement;
 };
