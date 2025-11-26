@@ -627,11 +627,25 @@ export const getTopMandiPricesService = async (page = 1, limit = 10) => {
     offset,
   });
 
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const todayEnd = new Date();
+  todayEnd.setHours(23, 59, 59, 999);
+
   for (const mandi of rows) {
-    const prices = await MandiPrice.findAll({
-      where: { mandiId: mandi.id },
+    const rawPrices = await MandiPrice.findAll({
+      where: {
+        mandiId: mandi.id,
+        date: {
+          [Op.or]: [
+            { [Op.between]: [todayStart, todayEnd] }, // today
+            { [Op.lt]: todayStart }, // past
+          ],
+        },
+      },
       order: [["date", "DESC"]],
-      limit: 5,
+      limit: 20,
       include: [
         {
           model: MandiGradePrice,
@@ -640,8 +654,24 @@ export const getTopMandiPricesService = async (page = 1, limit = 10) => {
       ],
     });
 
-    mandi.dataValues.mandiPrices = prices;
-    mandi.dataValues.redirectionDate = prices.length > 0 ? prices[0].date : null;
+    const uniqueVarietiesMap = new Map();
+
+    for (const price of rawPrices) {
+      if (!uniqueVarietiesMap.has(price.variety)) {
+        uniqueVarietiesMap.set(price.variety, price);
+      }
+    }
+
+    const uniquePrices = Array.from(uniqueVarietiesMap.values())
+      .sort(
+        (a, b) =>
+          new Date(b.date as any).getTime() - new Date(a.date as any).getTime()
+      )
+      .slice(0, 5);
+
+    mandi.dataValues.mandiPrices = uniquePrices;
+    mandi.dataValues.redirectionDate =
+      uniquePrices.length > 0 ? uniquePrices[0].date : null;
   }
 
   return {
