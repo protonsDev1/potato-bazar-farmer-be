@@ -1,12 +1,16 @@
-import { USER_ROLES } from "../database/models/user";
+import { CS_REQUIREMENT_STATUS } from "../database/models/coldStorageRequirement";
+import { NotificationType } from "../database/models/notification";
+import User, { USER_ROLES } from "../database/models/user";
 import {
   createRequirementAndInterests,
   deleteRequirementService,
   getRequirementByIdService,
   getRequirementsService,
   likeOrDislikeRequirementService,
+  updateCSRequirementStatusService,
   updateRequirementService,
 } from "../services/csRequirementService";
+import { sendNotificationService } from "../services/notificationService";
 
 export const getRequirements = async (req, res) => {
   try {
@@ -19,6 +23,7 @@ export const getRequirements = async (req, res) => {
       district,
       pbVerified,
       isFavourite,
+      status,
       sortBy,
     } = req.query;
     const userId = req.user.id;
@@ -28,7 +33,7 @@ export const getRequirements = async (req, res) => {
       Number(page),
       Number(perPage),
       listingType,
-      { commodityType, verified, district, pbVerified, isFavourite },
+      { commodityType, verified, district, pbVerified, isFavourite, status },
       String(sortBy || "")
     );
 
@@ -59,12 +64,25 @@ export const createRequirementWithInterests = async (req, res) => {
     //   });
     // }
 
-    const result = await createRequirementAndInterests(requirementData);
+    const requirement = await createRequirementAndInterests(requirementData);
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Cold Storage Requirement",
+      description: "New Cold Storage Requirement has been created.",
+      senderId: req.user.id,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.COLD_STORAGE_REQUIREMENT,
+      referenceId: requirement.id,
+    });
 
     return res.status(201).json({
       success: true,
       message: "Cold storage requirement created successfully",
-      data: result,
+      data: requirement,
     });
   } catch (error) {
     console.error("Controller Error:", error);
@@ -156,5 +174,48 @@ export const likeOrDislikeCSRequirement = async (req, res) => {
       message: "Failed to like or dislike cold storage requirement",
       error: error.message,
     });
+  }
+};
+
+export const updateCSRequirementStatus = async (req, res) => {
+  try {
+    const { requirementId } = req.params;
+    const { status, reason } = req.body;
+    const { id } = req.user;
+
+    const updatedRequirement = await updateCSRequirementStatusService(
+      requirementId,
+      status,
+      reason
+    );
+
+    if (!updatedRequirement) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Requirement not found" });
+    }
+
+    const description =
+      status == CS_REQUIREMENT_STATUS.APPROVED
+        ? `Your Cold Storage Requirement is ${status}`
+        : updatedRequirement.reason;
+
+    await sendNotificationService({
+      title: `Your Cold Storage Requirement is ${status}`,
+      description,
+      senderId: id,
+      receiverId: updatedRequirement.createdBy,
+      referenceType: NotificationType.COLD_STORAGE_REQUIREMENT,
+      referenceId: updatedRequirement.id,
+    });
+
+    return res.json({
+      success: true,
+      message: "Cold Storage Requirement status updated successfully",
+      data: updatedRequirement,
+    });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
