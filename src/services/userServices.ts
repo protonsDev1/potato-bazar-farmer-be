@@ -155,18 +155,20 @@ export const getDashboardCounts = async () => {
   const { oneWeekAgo, oneMonthAgo } = getDateRange();
 
   const [totalAgents, agentsLastWeek, agentsLastMonth] = await Promise.all([
-    Agent.count({ 
-      // where: { isDeleted: false }
-     }),
     Agent.count({
-      where: { 
-        // isDeleted: false,
-         createdAt: { [Op.gte]: oneWeekAgo } },
+      // where: { isDeleted: false }
     }),
     Agent.count({
-      where: { 
-        // isDeleted: false, 
-        createdAt: { [Op.gte]: oneMonthAgo } },
+      where: {
+        // isDeleted: false,
+        createdAt: { [Op.gte]: oneWeekAgo },
+      },
+    }),
+    Agent.count({
+      where: {
+        // isDeleted: false,
+        createdAt: { [Op.gte]: oneMonthAgo },
+      },
     }),
   ]);
 
@@ -1084,7 +1086,7 @@ export const getMobileUsers = async ({
 
     if (activeStatus && activeStatus !== "all") {
       whereCondition[Op.and].push({
-        isActive: activeStatus === "active" ? true: false,
+        isActive: activeStatus === "active" ? true : false,
       });
     }
 
@@ -2185,6 +2187,7 @@ export const getPbVerificationStepStatusService = async (userId: number) => {
     data: {
       steps,
       canRequestPbVerification,
+      user,
       actual: {
         actualStep1Completed,
         actualStep2Completed,
