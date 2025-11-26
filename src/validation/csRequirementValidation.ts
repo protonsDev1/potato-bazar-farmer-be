@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { CS_REQUIREMENT_STATUS } from "../database/models/coldStorageRequirement";
 
 export const createColdStorageRequirementSchema = Joi.object({
   location: Joi.string().trim().allow(null, "").optional(),
@@ -38,4 +39,17 @@ export const updateColdStorageRequirementSchema = Joi.object({
     .allow(null, "")
     .optional(),
   isActive: Joi.boolean().optional(),
+});
+
+export const updateCSRequirementStatusSchema = Joi.object({
+  status: Joi.string()
+    .valid(...Object.values(CS_REQUIREMENT_STATUS))
+    .required(),
+  reason: Joi.when("status", {
+    is: CS_REQUIREMENT_STATUS.REJECTED,
+    then: Joi.string().required().messages({
+      "any.required": "reason is required when rejecting buy request",
+    }),
+    otherwise: Joi.string().optional().allow(null, ""),
+  }),
 });
