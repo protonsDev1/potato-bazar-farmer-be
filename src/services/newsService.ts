@@ -4,9 +4,18 @@ import { USER_ROLES } from "../database/models/user";
 import State from "../database/models/state";
 import District from "../database/models/district";
 import NewsView from "../database/models/newsView";
+import { generateNewsTranslationsAndAudio } from "../utils/newsLocalizationService";
 
 export const createNewsService = async (payload) => {
   const news = await News.create(payload);
+   try {
+    await generateNewsTranslationsAndAudio(news);
+  } catch (err: any) {
+    console.error(
+      `[News ${news.id}] Failed to generate translations/audio:`,
+      err?.message || err
+    );
+  }
   return {
     success: true,
     statusCode: 201,
