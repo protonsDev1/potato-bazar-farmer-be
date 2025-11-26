@@ -42,6 +42,17 @@ class News extends Model<InferAttributes<News>, InferCreationAttributes<News>> {
   declare isPanIndia: boolean;
   declare stateId: number;
   declare districtId: number;
+  declare localizedContent: Record<
+    string,
+    {
+      title: string;
+      description: string;
+      category: string;
+      dateText: string;
+    }
+  > | null;
+
+  declare audioUrls: Record<string, string> | null;
 
   // New optional fields
   declare introduction: string | null;
@@ -169,6 +180,14 @@ News.init(
     },
     references: {
       type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    audioUrls: {
+      type: DataTypes.JSON,
       allowNull: true,
     },
 
