@@ -27,6 +27,8 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-ses": "^3.901.0",
+    "@google-cloud/text-to-speech": "^6.4.0",
+    "@google-cloud/translate": "^9.3.0",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
