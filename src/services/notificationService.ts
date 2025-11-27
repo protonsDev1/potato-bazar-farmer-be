@@ -9,6 +9,7 @@ import BuyRequest from "../database/models/buyRequest";
 import SellRequest from "../database/models/sellRequest";
 import { sendPushNotification } from "../utils/sendPushNotification";
 import UserNotificationSetting from "../database/models/userNotificationSetting";
+import { formatDate } from "../utils/dateFormat";
 
 interface Payload {
   title: string;
@@ -169,7 +170,11 @@ export const sendNotificationService = async (payload: Payload) => {
   };
 };
 
-export const sendMandiNotificationToFarmers = async (senderId, referenceId) => {
+export const sendMandiNotificationToFarmers = async (
+  senderId,
+  mandiPriceData,
+  mandiDetail
+) => {
   const farmers = await Farmer.findAll({
     where: { status: REGISTRATION_STATUS.APPROVED },
     include: [
@@ -197,11 +202,13 @@ export const sendMandiNotificationToFarmers = async (senderId, referenceId) => {
 
   if (Array.isArray(userIds) && userIds.length > 0) {
     await sendNotificationService({
-      title: "New Mandi Price data is added.",
-      description: "New Mandi Price data is added",
+      title: `New Mandi Price Data Added for ${mandiDetail.mandiName}, ${mandiDetail.city.name}`,
+      description: `New mandi price data for ${mandiDetail.mandiName} in ${
+        mandiDetail.city.name
+      } has been added for ${formatDate(mandiPriceData.date)}.`,
       senderId,
       referenceType: NotificationType.MANDI_PRICE,
-      referenceId,
+      referenceId: mandiPriceData.id,
       receiverIds: userIds,
     });
   }

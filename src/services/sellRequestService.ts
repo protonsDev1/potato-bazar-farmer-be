@@ -25,6 +25,7 @@ export const createSellRequestService = async (userId: number, data: any) => {
     qualityGrade: data.qualityGrade,
     packagingType: data.packagingType,
     delivery: data.delivery,
+    deliveryLocation: data.deliveryLocation,
     size: data.size,
     sugarContent: data.sugarContent,
     skinSet: data.skinSet,

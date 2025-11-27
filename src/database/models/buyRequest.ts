@@ -66,6 +66,7 @@ class BuyRequest extends Model<
   declare isAdminVerified: boolean;
   declare isActive: boolean;
   declare shapeType: string | null;
+  declare deliveryLocation: string | null;
   declare buyFavourites?: FavouriteRequest[];
   declare views?: RequestView[];
   declare createdAt: CreationOptional<Date>;
@@ -121,6 +122,9 @@ BuyRequest.init(
       type: DataTypes.STRING,
     },
     delivery: {
+      type: DataTypes.STRING,
+    },
+    deliveryLocation: {
       type: DataTypes.STRING,
     },
     size: {
