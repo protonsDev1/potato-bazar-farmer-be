@@ -68,6 +68,7 @@ class SellRequest extends Model<
   declare isAdminVerified: boolean;
   declare isActive: boolean;
   declare shapeType: string | null;
+  declare deliveryLocation: string | null;
   declare sellFavourites?: FavouriteRequest[];
   declare views?: RequestView[];
   declare createdAt: CreationOptional<Date>;
@@ -123,6 +124,9 @@ SellRequest.init(
       type: DataTypes.STRING,
     },
     delivery: {
+      type: DataTypes.STRING,
+    },
+    deliveryLocation: {
       type: DataTypes.STRING,
     },
     size: {
