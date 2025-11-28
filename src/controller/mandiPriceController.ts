@@ -25,7 +25,23 @@ export const createMandiPrice = async (req, res) => {
     if (!response.success)
       return res.status(400).json({ success: false, message: response.error });
 
-    await sendMandiNotificationToFarmers(userId, response.data?.mandiPrice.id )
+    const mandiDetail = await MandiList.findOne({
+      where: {
+        id: req.body.mandiId,
+      },
+      include: [
+        {
+          model: City,
+          as: "city",
+        },
+      ],
+    });
+
+    await sendMandiNotificationToFarmers(
+      userId,
+      response.data?.mandiPrice,
+      mandiDetail
+    );
 
     return res.status(201).json({
       success: true,
@@ -198,7 +214,6 @@ export const getDashboardStats = async (req, res) => {
 
 export const getCitiesWithMandisController = async (req, res) => {
   try {
-
     const allCities = await listCitiesWithMandis();
 
     return res.status(200).json({

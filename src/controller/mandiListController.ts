@@ -247,7 +247,7 @@ export const updateMandi = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Mandi name updated successfully.",
+      message: "Mandi updated successfully.",
     });
   } catch (error) {
     console.error("Failed to update mandi:", error);

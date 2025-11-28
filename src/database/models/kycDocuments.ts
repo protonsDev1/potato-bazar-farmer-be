@@ -25,6 +25,7 @@ class KycDocument extends Model<
   declare updatedAt: CreationOptional<Date>;
   declare status: String;
   declare reason: String;
+  declare user?: User;
 }
 
 KycDocument.init(

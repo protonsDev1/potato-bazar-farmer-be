@@ -95,7 +95,7 @@ export const respondToQuery = async (req, res) => {
 
     await sendNotificationService({
       title: `Expert has responded to your query.`,
-      description: `Question: ${isValidQueryId.query} Answer: ${response}`,
+      description: `Question: ${isValidQueryId.query}, Answer: ${response}`,
       senderId: superAdmin.id,
       receiverId: isValidQueryId.userId,
       referenceType: NotificationType.ASK_EXPERT,

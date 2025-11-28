@@ -617,18 +617,6 @@ export const getTopMandiPricesService = async (page = 1, limit = 10) => {
     where: { isTopMandi: true },
     include: [
       {
-        model: MandiPrice,
-        as: "mandiPrices",
-        limit: 5,
-        order: [["date", "DESC"]],
-        include: [
-          {
-            model: MandiGradePrice,
-            as: "grades",
-          },
-        ],
-      },
-      {
         model: City,
         as: "city",
       },
@@ -639,9 +627,60 @@ export const getTopMandiPricesService = async (page = 1, limit = 10) => {
     offset,
   });
 
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const todayEnd = new Date();
+  todayEnd.setHours(23, 59, 59, 999);
+
+  for (const mandi of rows) {
+    const rawPrices = await MandiPrice.findAll({
+      where: {
+        mandiId: mandi.id,
+        date: {
+          [Op.or]: [
+            { [Op.between]: [todayStart, todayEnd] }, // today
+            { [Op.lt]: todayStart }, // past
+          ],
+        },
+      },
+      order: [["date", "DESC"]],
+      limit: 20,
+      include: [
+        {
+          model: MandiGradePrice,
+          as: "grades",
+        },
+      ],
+    });
+
+    const uniqueVarietiesMap = new Map();
+
+    for (const price of rawPrices) {
+      if (!uniqueVarietiesMap.has(price.variety)) {
+        uniqueVarietiesMap.set(price.variety, price);
+      }
+    }
+
+    const uniquePrices = Array.from(uniqueVarietiesMap.values())
+      .sort(
+        (a, b) =>
+          new Date(b.date as any).getTime() - new Date(a.date as any).getTime()
+      )
+      .slice(0, 5);
+
+    mandi.dataValues.mandiPrices = uniquePrices;
+    mandi.dataValues.redirectionDate =
+      uniquePrices.length > 0 ? uniquePrices[0].date : null;
+  }
+
+  const filteredMandis = rows.filter(
+  (mandi) => mandi.dataValues.mandiPrices?.length > 0
+);
+
   return {
-    total: count,
-    mandis: rows,
+    total: filteredMandis.length,
+    mandis: filteredMandis,
     currentPage: page,
     totalPages: Math.ceil(count / limit),
   };

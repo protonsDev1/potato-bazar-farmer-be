@@ -14,6 +14,12 @@ export const upsertKycForUser = async (
   return await KycDocument.sequelize!.transaction(async (t) => {
     const kyc = await KycDocument.findOne({
       where: { userId },
+      include: [
+        {
+          model: User,
+          as: "user",
+        },
+      ],
       transaction: t,
     });
 

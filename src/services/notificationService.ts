@@ -9,6 +9,7 @@ import BuyRequest from "../database/models/buyRequest";
 import SellRequest from "../database/models/sellRequest";
 import { sendPushNotification } from "../utils/sendPushNotification";
 import UserNotificationSetting from "../database/models/userNotificationSetting";
+import { formatDate } from "../utils/dateFormat";
 
 interface Payload {
   title: string;
@@ -169,7 +170,11 @@ export const sendNotificationService = async (payload: Payload) => {
   };
 };
 
-export const sendMandiNotificationToFarmers = async (senderId, referenceId) => {
+export const sendMandiNotificationToFarmers = async (
+  senderId,
+  mandiPriceData,
+  mandiDetail
+) => {
   const farmers = await Farmer.findAll({
     where: { status: REGISTRATION_STATUS.APPROVED },
     include: [
@@ -197,11 +202,13 @@ export const sendMandiNotificationToFarmers = async (senderId, referenceId) => {
 
   if (Array.isArray(userIds) && userIds.length > 0) {
     await sendNotificationService({
-      title: "New Mandi Price data is added.",
-      description: "New Mandi Price data is added",
+      title: `New Mandi Price Data Added for ${mandiDetail.mandiName}, ${mandiDetail.city.name}`,
+      description: `New mandi price data for ${mandiDetail.mandiName} in ${
+        mandiDetail.city.name
+      } has been added for ${formatDate(mandiPriceData.date)}.`,
       senderId,
       referenceType: NotificationType.MANDI_PRICE,
-      referenceId,
+      referenceId: mandiPriceData.id,
       receiverIds: userIds,
     });
   }
@@ -234,9 +241,8 @@ export const sendNotificationForColdStorage = async (senderId, referenceId) => {
     });
 
     await sendNotificationService({
-      title: "New Cold Storage is added.",
-      description:
-        "A new Cold Storage has been registered, please verify details.",
+      title: `New Cold Storage Registered - ${coldStorage.name}`,
+      description: `A new cold storage named "${coldStorage.name}" has been registered. Please review and verify its details.`,
       senderId,
       referenceType: NotificationType.COLD_STORAGE,
       referenceId,
@@ -266,8 +272,8 @@ export const sendNotificationToMatchingBuyers = async (
   if (userIds.length === 0) return;
 
   await sendNotificationService({
-    title: "Matching Sell Request is added.",
-    description: "Matching Sell Request is added.",
+    title: "New Matching Sell Request Available.",
+    description: `A new sell request (ID: ${sellRequest.requestId}) matching your buy request has been posted. Details: ${sellRequest.quantity} ${sellRequest.unit} of ${sellRequest.potatoVariety} potatoes (Type: ${sellRequest.potatoType}).`,
     senderId,
     referenceType: NotificationType.SELL,
     referenceId,
@@ -297,8 +303,8 @@ export const sendNotificationToMatchingSellers = async (
   if (userIds.length === 0) return;
 
   await sendNotificationService({
-    title: "Matching Buy Request is added.",
-    description: "Matching Buy Request is added.",
+    title: "New Matching Buy Request Available.",
+    description: `A new buy request (ID: ${buyRequest.requestId}) matching your selling items has been posted. Details: ${buyRequest.quantity} ${buyRequest.unit} of ${buyRequest.potatoVariety} potatoes (Type: ${buyRequest.potatoType}).`,
     senderId,
     referenceType: NotificationType.BUY,
     referenceId,
