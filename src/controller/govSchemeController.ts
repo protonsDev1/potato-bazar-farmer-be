@@ -15,7 +15,7 @@ export const createGovScheme = async (req, res) => {
     const result = await createGovSchemeService(req.body);
 
     await sendNotificationService({
-      title: "New Government Scheme added",
+      title: "New Government Scheme is added in Potato Bazaar",
       description: `A new government scheme "${result.data.title}" has been added. Check it out now!`,
       senderId: id,
       referenceType: NotificationType.GOV_SCHEME,

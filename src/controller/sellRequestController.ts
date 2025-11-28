@@ -30,8 +30,8 @@ export const createSellRequest = async (req, res) => {
     });
 
     await sendNotificationService({
-      title: "Sell Request",
-      description: "New Sell Request has been created.",
+      title: `New Sell Request Created - ${sellRequest.potatoType} (${sellRequest.potatoVariety})`,
+      description: `A new sell request (ID: ${sellRequest.requestId}) has been created for ${sellRequest.quantity} ${sellRequest.unit} of ${sellRequest.potatoVariety} potatoes.`,
       senderId: req.user.id,
       receiverId: superAdmin.id,
       referenceType: NotificationType.SELL,
@@ -161,8 +161,8 @@ export const updateSellRequestStatus = async (req, res) => {
 
     const description =
       status == SELL_REQUEST_STATUS.APPROVED
-        ? `Your Sell Request is ${status}`
-        : updatedRequest.reason;
+        ? `Your sell request (ID: ${updatedRequest.requestId}) has been approved. Our team will now proceed with the next steps.`
+        : `Your sell request (ID: ${updatedRequest.requestId}) has been rejected. Reason: ${updatedRequest.reason}.`;
 
     await sendNotificationService({
       title: `Your Sell Request is ${status}`,

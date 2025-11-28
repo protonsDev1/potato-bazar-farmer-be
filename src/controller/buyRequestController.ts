@@ -15,6 +15,7 @@ import {
   sendNotificationService,
   sendNotificationToMatchingSellers,
 } from "../services/notificationService";
+import { formatDate } from "../utils/dateFormat";
 
 export const createBuyRequest = async (req, res) => {
   try {
@@ -30,8 +31,8 @@ export const createBuyRequest = async (req, res) => {
     });
 
     await sendNotificationService({
-      title: "Buy Request",
-      description: "New Buy Request has been created.",
+      title: `New Buy Request Created - ${buyRequest.potatoType} (${buyRequest.potatoVariety})`,
+      description: `A new buy request (ID: ${buyRequest.requestId}) has been created for ${buyRequest.quantity} ${buyRequest.unit} of ${buyRequest.potatoVariety} potatoes.`,
       senderId: req.user.id,
       receiverId: superAdmin.id,
       referenceType: NotificationType.BUY,
@@ -161,8 +162,8 @@ export const updateBuyRequestStatus = async (req, res) => {
 
     const description =
       status == BUY_REQUEST_STATUS.APPROVED
-        ? `Your Buy Request is ${status}`
-        : updatedRequest.reason;
+        ? `Your buy request (ID: ${updatedRequest.requestId}) has been approved. Our team will now proceed with arranging the required supply.`
+        : `Your buy request (ID: ${updatedRequest.requestId}) has been rejected. Reason: ${updatedRequest.reason}.`
 
     await sendNotificationService({
       title: `Your Buy Request is ${status}`,

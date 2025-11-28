@@ -11,6 +11,7 @@ import {
   updateRequirementService,
 } from "../services/csRequirementService";
 import { sendNotificationService } from "../services/notificationService";
+import { formatDate } from "../utils/dateFormat";
 
 export const getRequirements = async (req, res) => {
   try {
@@ -71,8 +72,14 @@ export const createRequirementWithInterests = async (req, res) => {
     });
 
     await sendNotificationService({
-      title: "Cold Storage Requirement",
-      description: "New Cold Storage Requirement has been created.",
+      title: "New Cold Storage Requirement Created",
+      description: `A new cold storage requirement (ID: ${
+        requirement.requirementUid
+      }) has been created for ${requirement.quantity} ${
+        requirement.unit || ""
+      } of ${requirement.commodityType}. Required From: ${formatDate(
+        requirement.requiredFromDate
+      )}. Please review and verify the details.`,
       senderId: req.user.id,
       receiverId: superAdmin.id,
       referenceType: NotificationType.COLD_STORAGE_REQUIREMENT,
@@ -197,8 +204,8 @@ export const updateCSRequirementStatus = async (req, res) => {
 
     const description =
       status == CS_REQUIREMENT_STATUS.APPROVED
-        ? `Your Cold Storage Requirement is ${status}`
-        : updatedRequirement.reason;
+        ? `Your cold storage requirement (ID: ${updatedRequirement.requirementUid}) has been approved. Our team will proceed with the next steps.`
+        : `Your cold storage requirement (ID: ${updatedRequirement.requirementUid}) was rejected. Reason: ${reason}.`;
 
     await sendNotificationService({
       title: `Your Cold Storage Requirement is ${status}`,
