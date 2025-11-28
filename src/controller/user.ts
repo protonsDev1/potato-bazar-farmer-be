@@ -952,11 +952,6 @@ export const deleteMobileUserByAdmin = async (req, res) => {
         .status(400)
         .json({ success: false, message: "User not found." });
 
-    if (userDetail.isDeleted)
-      return res
-        .status(400)
-        .json({ success: false, message: "User is already deleted." });
-
     if (
       userDetail.role !== USER_ROLES.USER ||
       (userDetail.hasStartedUsingMobile === false &&
@@ -967,8 +962,7 @@ export const deleteMobileUserByAdmin = async (req, res) => {
         message: "Only Mobile user can be deleted here.",
       });
 
-    // await User.destroy({ where: { id: userId } });
-    await User.update({ isDeleted: true }, { where: { id: userId } });
+    await User.destroy({ where: { id: userId } });
 
     return res
       .status(200)
