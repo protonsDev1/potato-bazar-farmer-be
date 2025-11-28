@@ -877,10 +877,10 @@ export const updateRegistrationStatus = async (
         [USER_TYPE.TRADER]: "Trader",
       };
 
-      let description = `Your ${UserTypeKeyMap[userType]} is ${status}`;
+      let description = `Your ${UserTypeKeyMap[userType]} is ${status}. Our team will now proceed with the next steps.`;
 
       if (reason && reason.trim() !== "") {
-        description = reason;
+        description = `Your ${UserTypeKeyMap[userType]} is ${status}. Reason: ${reason}`;
       }
 
       if (
@@ -1976,8 +1976,8 @@ export const updatePbVerificationService = async (
 
   const description =
     user.pbVerificationStatus == PB_VERIFICATION_STATUS.APPROVED
-      ? `Your PB Verification Request is ${pbVerificationStatus}`
-      : user.reason;
+      ? `Your PB Verification Request is ${pbVerificationStatus}. Our team will now proceed with the next steps.`
+      : `Your PB Verification Request is ${pbVerificationStatus}. Reason: ${user.reason}`;
 
   await sendNotificationService({
     title: `Your PB Verification Request is ${pbVerificationStatus}`,
@@ -2090,8 +2090,9 @@ export const requestPbVerificationService = async (userId) => {
   });
 
   await sendNotificationService({
-    title: "PB Verification Request",
-    description: "New PB Verification Request has been created.",
+    title: "PB Verification Request Received",
+    description:
+      "A PB verification request has been created and is awaiting your review.",
     senderId: userId,
     receiverId: superAdmin.id,
     referenceType: NotificationType.USER_PB_VERIFICATION,

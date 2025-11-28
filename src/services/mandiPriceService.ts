@@ -674,9 +674,13 @@ export const getTopMandiPricesService = async (page = 1, limit = 10) => {
       uniquePrices.length > 0 ? uniquePrices[0].date : null;
   }
 
+  const filteredMandis = rows.filter(
+  (mandi) => mandi.dataValues.mandiPrices?.length > 0
+);
+
   return {
-    total: count,
-    mandis: rows,
+    total: filteredMandis.length,
+    mandis: filteredMandis,
     currentPage: page,
     totalPages: Math.ceil(count / limit),
   };

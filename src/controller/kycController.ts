@@ -18,9 +18,16 @@ export const upsertKyc = async (req, res) => {
       where: { role: USER_ROLES.SUPER_ADMIN },
     });
 
+    const displayName =
+      (result.kyc.user.firstName &&
+        result.kyc.user.lastName &&
+        `${result.kyc.user.firstName} ${result.kyc.user.lastName}`) ||
+      result.kyc.user.name ||
+      "the user";
+
     await sendNotificationService({
-      title: "KYC Request",
-      description: "New KYC Request has been created.",
+      title: "New KYC Request Submitted",
+      description: `A new KYC request has been submitted by ${displayName}. Please review and verify the details.`,
       senderId: userId,
       receiverId: superAdmin.id,
       referenceType: NotificationType.KYC,
@@ -47,8 +54,10 @@ export const approveOrRejectKyc = async (req, res) => {
     const { id: adminId } = req.user;
 
     const description = isVerified
-      ? `Your KYC Request is approved`
-      : (updated.reason as string);
+      ? "You may now proceed with all platform features that require KYC verification."
+      : `We could not approve your KYC request. Reason: ${
+          updated.reason as string
+        }`;
 
     await sendNotificationService({
       title: `Your KYC Request is ${updated.status}`,

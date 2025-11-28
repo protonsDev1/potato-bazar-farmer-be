@@ -753,7 +753,7 @@ export const updateDirectoryStatusService = async (payload) => {
       if (directory.userId) {
         const title = `Your Directory is ${status}`;
         const description =
-          status === "rejected" ? reason : `Your directory has been ${status}.`;
+          status === "rejected" ?`Your directory has been ${status}. Reason: ${reason}` : `Your directory has been ${status}. Our team will now proceed with the next steps.`;
 
         await sendNotificationService({
           title,
