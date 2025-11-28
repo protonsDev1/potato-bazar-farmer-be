@@ -225,6 +225,7 @@ export const getRequirementByIdService = async (
     isLiked: !!likedRecord,
     viewCount,
     likeCount,
+    isOwner: requirement.createdBy === userId,
   };
 };
 
