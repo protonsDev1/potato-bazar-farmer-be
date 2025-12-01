@@ -37,11 +37,21 @@ export const createMandiPrice = async (req, res) => {
       ],
     });
 
-    await sendMandiNotificationToFarmers(
-      userId,
-      response.data?.mandiPrice,
-      mandiDetail
-    );
+    const mandiPriceDate = response.data.mandiPrice.date;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    mandiPriceDate.setHours(0, 0, 0, 0);
+
+    const isPastOrToday = mandiPriceDate <= today;
+
+    if (isPastOrToday) {
+      await sendMandiNotificationToFarmers(
+        userId,
+        response.data?.mandiPrice,
+        mandiDetail
+      );
+    }
 
     return res.status(201).json({
       success: true,
