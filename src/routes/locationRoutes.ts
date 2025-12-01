@@ -5,9 +5,13 @@ import {
   listStates,
   updateCityImage,
 } from "../controller/locationController";
-import { superAdminMiddleware } from "../utils/userAuth";
+import {
+  checkPermissionMiddleware,
+  superAdminMiddleware,
+} from "../utils/userAuth";
 import { createValidator } from "express-joi-validation";
 import { cityImageSchema } from "../validation/locationValidation";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -17,7 +21,7 @@ router.get("/cities", listCities);
 router.get("/districts", listDistricts);
 router.put(
   "/cities/:id/image",
-  superAdminMiddleware,
+  checkPermissionMiddleware(PERMISSIONS.MANDI_MANAGEMENT),
   validator.body(cityImageSchema),
   updateCityImage
 );
