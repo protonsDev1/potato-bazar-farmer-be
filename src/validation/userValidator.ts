@@ -83,6 +83,7 @@ export const otpVerifySchema = Joi.object({
   otp: Joi.string().required().length(6),
   hasStartedUsingMobile: Joi.boolean().optional().allow(null),
   playerId: Joi.string().optional().allow(null),
+  playerIdForWeb: Joi.string().optional().allow(null),
 });
 
 export const createUserSchema = Joi.object({

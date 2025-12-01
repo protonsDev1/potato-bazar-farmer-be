@@ -34,6 +34,7 @@ export const createSubAdminService = async (payload: CreateSubAdminPayload) => {
     name,
     email,
     password,
+    mobile,
     role: USER_ROLES.SUB_ADMIN,
   });
 

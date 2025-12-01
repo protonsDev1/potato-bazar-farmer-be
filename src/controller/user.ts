@@ -342,7 +342,14 @@ export const createUserWithoutOtpVerification = async (req, res) => {
 
 export const verifyOtp = async (req, res) => {
   try {
-    const { mobile, email, otp, hasStartedUsingMobile, playerId } = req.body;
+    const {
+      mobile,
+      email,
+      otp,
+      hasStartedUsingMobile,
+      playerId,
+      playerIdForWeb,
+    } = req.body;
 
     const isValid = await verifyOtpFromDB(mobile, otp, email);
     if (!isValid) {
@@ -370,6 +377,7 @@ export const verifyOtp = async (req, res) => {
         await existingUser.update({
           hasStartedUsingMobile: true,
           playerId,
+          playerIdForWeb,
           isDeleted: false,
         });
       } else if (existingUser.isDeleted) {
