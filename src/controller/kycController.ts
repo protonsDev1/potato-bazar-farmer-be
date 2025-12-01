@@ -19,7 +19,7 @@ export const upsertKyc = async (req, res) => {
     });
 
     const displayName =
-      (result.kyc.user.firstName &&
+      (result.kyc && result.kyc.user && result.kyc.user.firstName &&
         result.kyc.user.lastName &&
         `${result.kyc.user.firstName} ${result.kyc.user.lastName}`) ||
       result.kyc.user.name ||

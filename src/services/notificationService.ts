@@ -105,7 +105,7 @@ export const sendNotificationService = async (payload: Payload) => {
 
   const users = await User.findAll({
     where: { id: { [Op.in]: userIds }, isDeleted: false, isActive: true },
-    attributes: ["id", "playerId"],
+    attributes: ["id", "playerId", "playerIdForWeb"],
     raw: false,
   });
 
@@ -135,12 +135,12 @@ export const sendNotificationService = async (payload: Payload) => {
     const userId = user.id;
     const playerId = user.playerId;
     const playerIdForWeb = user.playerIdForWeb;
-    if (!playerId || !playerIdForWeb) continue;
+    if (!playerId && !playerIdForWeb) continue;
 
     // If this notification type has NO mapping then always push
     if (field === null) {
-      playerIdsToSend.push(playerId);
-      playerIdsToSend.push(playerIdForWeb);
+      if (playerId) playerIdsToSend.push(playerId);
+      if (playerIdForWeb) playerIdsToSend.push(playerIdForWeb);
       continue;
     }
 
@@ -156,8 +156,8 @@ export const sendNotificationService = async (payload: Payload) => {
     }
 
     if (allowed) {
-      playerIdsToSend.push(playerId);
-      playerIdsToSend.push(playerIdForWeb);
+      if (playerId) playerIdsToSend.push(playerId);
+      if (playerIdForWeb) playerIdsToSend.push(playerIdForWeb);
     }
   }
 
