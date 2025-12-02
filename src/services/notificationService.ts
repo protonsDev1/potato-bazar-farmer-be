@@ -51,6 +51,8 @@ export const sendNotificationService = async (payload: Payload) => {
             { isUserOnBoardedOnMobile: true },
             { hasStartedUsingMobile: true },
           ],
+          isDeleted: false,
+          isActive: true,
         },
         attributes: ["id"],
         raw: true,
@@ -68,6 +70,8 @@ export const sendNotificationService = async (payload: Payload) => {
             { hasStartedUsingMobile: true },
             { userType: { [Op.overlap]: audience.userTypes } },
           ],
+          isDeleted: false,
+          isActive: true,
         },
         attributes: ["id"],
         raw: true,
@@ -100,8 +104,8 @@ export const sendNotificationService = async (payload: Payload) => {
   const field = notificationTypeToField(referenceType);
 
   const users = await User.findAll({
-    where: { id: { [Op.in]: userIds } },
-    attributes: ["id", "playerId"],
+    where: { id: { [Op.in]: userIds }, isDeleted: false, isActive: true },
+    attributes: ["id", "playerId", "playerIdForWeb"],
     raw: false,
   });
 
@@ -130,11 +134,13 @@ export const sendNotificationService = async (payload: Payload) => {
   for (const user of users) {
     const userId = user.id;
     const playerId = user.playerId;
-    if (!playerId) continue;
+    const playerIdForWeb = user.playerIdForWeb;
+    if (!playerId && !playerIdForWeb) continue;
 
     // If this notification type has NO mapping then always push
     if (field === null) {
-      playerIdsToSend.push(playerId);
+      if (playerId) playerIdsToSend.push(playerId);
+      if (playerIdForWeb) playerIdsToSend.push(playerIdForWeb);
       continue;
     }
 
@@ -149,7 +155,10 @@ export const sendNotificationService = async (payload: Payload) => {
       allowed = !!userSetting?.[field];
     }
 
-    if (allowed) playerIdsToSend.push(playerId);
+    if (allowed) {
+      if (playerId) playerIdsToSend.push(playerId);
+      if (playerIdForWeb) playerIdsToSend.push(playerIdForWeb);
+    }
   }
 
   if (playerIdsToSend.length > 0) {
@@ -191,6 +200,8 @@ export const sendMandiNotificationToFarmers = async (
               hasStartedUsingMobile: true,
             },
           ],
+          isDeleted: false,
+          isActive: true,
         },
       },
     ],
@@ -230,6 +241,8 @@ export const sendNotificationForColdStorage = async (senderId, referenceId) => {
               hasStartedUsingMobile: true,
             },
           ],
+          isDeleted: false,
+          isActive: true,
         },
       },
     ],

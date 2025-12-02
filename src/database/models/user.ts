@@ -80,6 +80,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare createdAt: CreationOptional<Date>;
   declare passwordUpdatedAt: CreationOptional<Date>;
   declare playerId: string | null;
+  declare playerIdForWeb: string | null;
   declare updatedAt: CreationOptional<Date>;
   declare isDeleted: boolean;
 
@@ -217,6 +218,10 @@ User.init(
       allowNull: true,
     },
     playerId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    playerIdForWeb: {
       type: DataTypes.STRING,
       allowNull: true,
     },
