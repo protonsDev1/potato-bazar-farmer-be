@@ -500,7 +500,7 @@ export const UserLoginOnMobile = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const counts = await getDashboardCounts();
+    const counts = await getDashboardCounts(req.user);
     return res.status(200).json({ message: "Success", data: counts });
   } catch (err: any) {
     return res

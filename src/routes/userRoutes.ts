@@ -75,6 +75,7 @@ import {
 } from "../controller/user";
 import {
   adminMiddleware,
+  adminOrSubAdminMiddleware,
   authMiddleware,
   checkPermissionMiddleware,
   checkWebPermissionMiddleware,
@@ -134,7 +135,7 @@ router.post(
   sendExportOtps
 );
 
-router.get("/get-dash-stats", adminMiddleware, getDashboardStats);
+router.get("/get-dash-stats", adminOrSubAdminMiddleware, getDashboardStats);
 
 router.put(
   "/registration-types",
