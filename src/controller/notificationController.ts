@@ -7,7 +7,12 @@ import { sendNotificationService } from "../services/notificationService";
 import UserNotificationSetting from "../database/models/userNotificationSetting";
 import User from "../database/models/user";
 import Broadcast from "../database/models/broadcast";
-import { differenceInMonths, format, formatDistanceToNow } from "date-fns";
+import {
+  differenceInMonths,
+  differenceInSeconds,
+  format,
+  formatDistanceToNow,
+} from "date-fns";
 
 export const broadCastNotification = async (req, res) => {
   try {
@@ -164,14 +169,23 @@ export const myNotificationList = async (req, res) => {
 
     const notifications = rows.map((u) => {
       const createdAt = new Date(u.createdAt);
+      const now = new Date();
 
-      const monthsDiff = differenceInMonths(new Date(), createdAt);
+      const monthsDiff = differenceInMonths(now, createdAt);
+      const secondsDiff = differenceInSeconds(now, createdAt);
 
       let formattedTime;
 
-      if (monthsDiff < 1) {
-        formattedTime = formatDistanceToNow(createdAt, { addSuffix: true });
+      if (secondsDiff < 60) {
+        // less than 1 minute
+        formattedTime = "just now";
+      } else if (monthsDiff < 1) {
+        // within same month → use timeAgo but remove "about"
+        formattedTime = formatDistanceToNow(createdAt, { addSuffix: true })
+          .replace("about ", "") // remove "about "
+          .replace("less than a minute", "1 minute"); // just in case
       } else {
+        // older than 1 month → format date normally
         formattedTime = format(createdAt, "dd MMM yyyy, hh:mm a");
       }
 

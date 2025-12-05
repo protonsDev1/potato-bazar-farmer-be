@@ -17,6 +17,7 @@ export const soilTypeSchema = Joi.object({
 export const potatoVarietySchema = Joi.object({
   name: Joi.string().required(),
   position: Joi.number().optional(),
+  image: Joi.string().uri().optional(),
   isActive: Joi.boolean().optional(),
 });
 
@@ -57,7 +58,6 @@ export const biggestChallengeInSellingSchema = Joi.object({
   position: Joi.number().optional(),
   isActive: Joi.boolean().optional(),
 });
-
 
 export const adminColdStorageSchema = Joi.object({
   name: Joi.string().required(),
