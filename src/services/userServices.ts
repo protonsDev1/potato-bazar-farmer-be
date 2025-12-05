@@ -151,34 +151,66 @@ const getDateRange = () => {
   return { oneWeekAgo, oneMonthAgo };
 };
 
-export const getDashboardCounts = async () => {
+export const getDashboardCounts = async (user) => {
   const { oneWeekAgo, oneMonthAgo } = getDateRange();
 
+  const getSubAdminWebPermSet = async (user) => {
+    if (!user || user.role !== USER_ROLES.SUB_ADMIN_WEB) return new Set();
+    const perms = await SubAdminWebPermission.findAll({
+      where: { userId: user.id },
+      attributes: ["module", "action"],
+    });
+    // represent as "module:action" strings for quick lookups
+    return new Set(perms.map((p) => `${p.module}:${p.action}`));
+  };
+
+  const isAdmin = user && user.role === USER_ROLES.ADMIN;
+  const isSubAdminWeb = user && user.role === USER_ROLES.SUB_ADMIN_WEB;
+  const subAdminWebPermSet = isSubAdminWeb
+    ? await getSubAdminWebPermSet(user)
+    : new Set();
+
+  // hasWebPerm treats `all` for module as full access for that module,
+  // and admin always returns true
+  const hasWebPerm = (module, action) => {
+    if (isAdmin) return true;
+    if (!isSubAdminWeb) return true; // non-subadmin (e.g., normal admin) may have full view — change if needed
+    if (subAdminWebPermSet.has(`${module}:all`)) return true;
+    return subAdminWebPermSet.has(`${module}:${action}`);
+  };
+
+  // permission booleans for modules (based on "view" action)
+  const agentAllowed = hasWebPerm("agent", "view");
+  const farmerAllowed = hasWebPerm("farmer", "view");
+  const coldStorageAllowed = hasWebPerm("coldStorage", "view");
+  const traderAllowed = hasWebPerm("trader", "view");
+
+  // If you prefer to restrict non-admin roles entirely, set `return false` for non-admins.
+  // Now run counts conditionally
+
   const [totalAgents, agentsLastWeek, agentsLastMonth] = await Promise.all([
-    Agent.count({
-      // where: { isDeleted: false }
-    }),
-    Agent.count({
-      where: {
-        // isDeleted: false,
-        createdAt: { [Op.gte]: oneWeekAgo },
-      },
-    }),
-    Agent.count({
-      where: {
-        // isDeleted: false,
-        createdAt: { [Op.gte]: oneMonthAgo },
-      },
-    }),
+    agentAllowed ? Agent.count({}) : Promise.resolve(null),
+    agentAllowed
+      ? Agent.count({ where: { createdAt: { [Op.gte]: oneWeekAgo } } })
+      : Promise.resolve(null),
+    agentAllowed
+      ? Agent.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } })
+      : Promise.resolve(null),
   ]);
 
-  const [agentUsers, adminUsers] = await Promise.all([
-    User.findAll({ where: { role: "agent" }, attributes: ["id"] }),
-    User.findAll({ where: { role: "admin" }, attributes: ["id"] }),
-  ]);
-  const agentIds = agentUsers.map((u) => u.id);
-  const adminIds = adminUsers.map((u) => u.id);
+  // fetch agent/admin user ids only when needed by other queries
+  let agentIds: number[] = [];
+  let adminIds: number[] = [];
+  if (farmerAllowed || coldStorageAllowed || traderAllowed) {
+    const [agentUsers, adminUsers] = await Promise.all([
+      User.findAll({ where: { role: "agent" }, attributes: ["id"] }),
+      User.findAll({ where: { role: "admin" }, attributes: ["id"] }),
+    ]);
+    agentIds = agentUsers.map((u) => u.id);
+    adminIds = adminUsers.map((u) => u.id);
+  }
 
+  // Farmers
   const [
     totalFarmers,
     farmersLastWeek,
@@ -187,33 +219,36 @@ export const getDashboardCounts = async () => {
     farmersSelfOnboarded,
     farmersByAdmins,
   ] = await Promise.all([
-    Farmer.count(),
-    Farmer.count({
-      where: { createdAt: { [Op.gte]: oneWeekAgo } },
-    }),
-    Farmer.count({
-      where: { createdAt: { [Op.gte]: oneMonthAgo } },
-    }),
-    Farmer.count({
-      where: { onBoardedBy: { [Op.in]: agentIds } },
-    }),
-    Farmer.count({
-      where: {
-        [Op.and]: [
-          { onBoardedBy: { [Op.not]: null } },
-          Sequelize.where(
-            Sequelize.col("onBoardedBy"),
-            "=",
-            Sequelize.col("userId")
-          ),
-        ],
-      },
-    }),
-    Farmer.count({
-      where: { onBoardedBy: { [Op.in]: adminIds } },
-    }), // <-- NEW
+    farmerAllowed ? Farmer.count() : Promise.resolve(null),
+    farmerAllowed
+      ? Farmer.count({ where: { createdAt: { [Op.gte]: oneWeekAgo } } })
+      : Promise.resolve(null),
+    farmerAllowed
+      ? Farmer.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } })
+      : Promise.resolve(null),
+    farmerAllowed
+      ? Farmer.count({ where: { onBoardedBy: { [Op.in]: agentIds } } })
+      : Promise.resolve(null),
+    farmerAllowed
+      ? Farmer.count({
+          where: {
+            [Op.and]: [
+              { onBoardedBy: { [Op.not]: null } },
+              Sequelize.where(
+                Sequelize.col("onBoardedBy"),
+                "=",
+                Sequelize.col("userId")
+              ),
+            ],
+          },
+        })
+      : Promise.resolve(null),
+    farmerAllowed
+      ? Farmer.count({ where: { onBoardedBy: { [Op.in]: adminIds } } })
+      : Promise.resolve(null),
   ]);
 
+  // Cold storages
   const [
     totalColdStorages,
     coldStoragesLastWeek,
@@ -222,33 +257,36 @@ export const getDashboardCounts = async () => {
     coldStoragesSelfOnboarded,
     coldStoragesByAdmins,
   ] = await Promise.all([
-    ColdStorage.count(),
-    ColdStorage.count({
-      where: { createdAt: { [Op.gte]: oneWeekAgo } },
-    }),
-    ColdStorage.count({
-      where: { createdAt: { [Op.gte]: oneMonthAgo } },
-    }),
-    ColdStorage.count({
-      where: { onBoardedBy: { [Op.in]: agentIds } },
-    }),
-    ColdStorage.count({
-      where: {
-        [Op.and]: [
-          { onBoardedBy: { [Op.not]: null } },
-          Sequelize.where(
-            Sequelize.col("onBoardedBy"),
-            "=",
-            Sequelize.col("userId")
-          ),
-        ],
-      },
-    }),
-    ColdStorage.count({
-      where: { onBoardedBy: { [Op.in]: adminIds } },
-    }), // <-- NEW
+    coldStorageAllowed ? ColdStorage.count() : Promise.resolve(null),
+    coldStorageAllowed
+      ? ColdStorage.count({ where: { createdAt: { [Op.gte]: oneWeekAgo } } })
+      : Promise.resolve(null),
+    coldStorageAllowed
+      ? ColdStorage.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } })
+      : Promise.resolve(null),
+    coldStorageAllowed
+      ? ColdStorage.count({ where: { onBoardedBy: { [Op.in]: agentIds } } })
+      : Promise.resolve(null),
+    coldStorageAllowed
+      ? ColdStorage.count({
+          where: {
+            [Op.and]: [
+              { onBoardedBy: { [Op.not]: null } },
+              Sequelize.where(
+                Sequelize.col("onBoardedBy"),
+                "=",
+                Sequelize.col("userId")
+              ),
+            ],
+          },
+        })
+      : Promise.resolve(null),
+    coldStorageAllowed
+      ? ColdStorage.count({ where: { onBoardedBy: { [Op.in]: adminIds } } })
+      : Promise.resolve(null),
   ]);
 
+  // Traders
   const [
     totalTraders,
     tradersLastWeek,
@@ -257,107 +295,122 @@ export const getDashboardCounts = async () => {
     tradersSelfOnboarded,
     tradersByAdmins,
   ] = await Promise.all([
-    Trader.count(),
-    Trader.count({
-      where: { createdAt: { [Op.gte]: oneWeekAgo } },
-    }),
-    Trader.count({
-      where: { createdAt: { [Op.gte]: oneMonthAgo } },
-    }),
-    Trader.count({
-      where: { onBoardedBy: { [Op.in]: agentIds } },
-    }),
-    Trader.count({
-      where: {
-        [Op.and]: [
-          { onBoardedBy: { [Op.not]: null } },
-          Sequelize.where(
-            Sequelize.col("onBoardedBy"),
-            "=",
-            Sequelize.col("userId")
-          ),
-        ],
-      },
-    }),
-    Trader.count({
-      where: { onBoardedBy: { [Op.in]: adminIds } },
-    }), // <-- NEW
+    traderAllowed ? Trader.count() : Promise.resolve(null),
+    traderAllowed
+      ? Trader.count({ where: { createdAt: { [Op.gte]: oneWeekAgo } } })
+      : Promise.resolve(null),
+    traderAllowed
+      ? Trader.count({ where: { createdAt: { [Op.gte]: oneMonthAgo } } })
+      : Promise.resolve(null),
+    traderAllowed
+      ? Trader.count({ where: { onBoardedBy: { [Op.in]: agentIds } } })
+      : Promise.resolve(null),
+    traderAllowed
+      ? Trader.count({
+          where: {
+            [Op.and]: [
+              { onBoardedBy: { [Op.not]: null } },
+              Sequelize.where(
+                Sequelize.col("onBoardedBy"),
+                "=",
+                Sequelize.col("userId")
+              ),
+            ],
+          },
+        })
+      : Promise.resolve(null),
+    traderAllowed
+      ? Trader.count({ where: { onBoardedBy: { [Op.in]: adminIds } } })
+      : Promise.resolve(null),
   ]);
 
-  const calcPercent = (count: number, total: number) =>
+  const calcPercent = (count, total) =>
     total > 0 ? Math.round((count / total) * 100) : 0;
 
-  const farmerAgentPercent = calcPercent(farmersByAgents, totalFarmers);
-  const selfOnboardedFarmerPercent = calcPercent(
-    farmersSelfOnboarded,
-    totalFarmers
-  );
-  const farmerAdminPercent = calcPercent(farmersByAdmins, totalFarmers);
+  const farmerAgentPercent = farmerAllowed
+    ? calcPercent(farmersByAgents || 0, totalFarmers || 0)
+    : 0;
+  const selfOnboardedFarmerPercent = farmerAllowed
+    ? calcPercent(farmersSelfOnboarded || 0, totalFarmers || 0)
+    : 0;
+  const farmerAdminPercent = farmerAllowed
+    ? calcPercent(farmersByAdmins || 0, totalFarmers || 0)
+    : 0;
 
-  const coldStorageAgentPercent = calcPercent(
-    coldStoragesByAgents,
-    totalColdStorages
-  );
-  const selfOnboardedColdStoragePercent = calcPercent(
-    coldStoragesSelfOnboarded,
-    totalColdStorages
-  );
-  const coldStorageAdminPercent = calcPercent(
-    coldStoragesByAdmins,
-    totalColdStorages
-  );
+  const coldStorageAgentPercent = coldStorageAllowed
+    ? calcPercent(coldStoragesByAgents || 0, totalColdStorages || 0)
+    : 0;
+  const selfOnboardedColdStoragePercent = coldStorageAllowed
+    ? calcPercent(coldStoragesSelfOnboarded || 0, totalColdStorages || 0)
+    : 0;
+  const coldStorageAdminPercent = coldStorageAllowed
+    ? calcPercent(coldStoragesByAdmins || 0, totalColdStorages || 0)
+    : 0;
 
-  const traderAgentPercent = calcPercent(tradersByAgents, totalTraders);
-  const selfOnboardedTraderPercent = calcPercent(
-    tradersSelfOnboarded,
-    totalTraders
-  );
-  const traderAdminPercent = calcPercent(tradersByAdmins, totalTraders);
+  const traderAgentPercent = traderAllowed
+    ? calcPercent(tradersByAgents || 0, totalTraders || 0)
+    : 0;
+  const selfOnboardedTraderPercent = traderAllowed
+    ? calcPercent(tradersSelfOnboarded || 0, totalTraders || 0)
+    : 0;
+  const traderAdminPercent = traderAllowed
+    ? calcPercent(tradersByAdmins || 0, totalTraders || 0)
+    : 0;
 
   return {
     agents: {
+      allowed: agentAllowed,
       total: totalAgents,
       lastWeek: agentsLastWeek,
       lastMonth: agentsLastMonth,
     },
     farmers: {
+      allowed: farmerAllowed,
       total: totalFarmers,
       lastWeek: farmersLastWeek,
       lastMonth: farmersLastMonth,
       byAgents: farmersByAgents,
       selfOnboarded: farmersSelfOnboarded,
       byAdmins: farmersByAdmins,
-      onboardingRatio: {
-        agentOnboarded: `${farmersByAgents} (${farmerAgentPercent}%)`,
-        selfOnboarded: `${farmersSelfOnboarded} (${selfOnboardedFarmerPercent}%)`,
-        adminOnboarded: `${farmersByAdmins} (${farmerAdminPercent}%)`,
-      },
+      onboardingRatio: farmerAllowed
+        ? {
+            agentOnboarded: `${farmersByAgents} (${farmerAgentPercent}%)`,
+            selfOnboarded: `${farmersSelfOnboarded} (${selfOnboardedFarmerPercent}%)`,
+            adminOnboarded: `${farmersByAdmins} (${farmerAdminPercent}%)`,
+          }
+        : null,
     },
     coldStorages: {
+      allowed: coldStorageAllowed,
       total: totalColdStorages,
       lastWeek: coldStoragesLastWeek,
       lastMonth: coldStoragesLastMonth,
       byAgents: coldStoragesByAgents,
       selfOnboarded: coldStoragesSelfOnboarded,
       byAdmins: coldStoragesByAdmins,
-      onboardingRatio: {
-        agentOnboarded: `${coldStoragesByAgents} (${coldStorageAgentPercent}%)`,
-        selfOnboarded: `${coldStoragesSelfOnboarded} (${selfOnboardedColdStoragePercent}%)`,
-        adminOnboarded: `${coldStoragesByAdmins} (${coldStorageAdminPercent}%)`,
-      },
+      onboardingRatio: coldStorageAllowed
+        ? {
+            agentOnboarded: `${coldStoragesByAgents} (${coldStorageAgentPercent}%)`,
+            selfOnboarded: `${coldStoragesSelfOnboarded} (${selfOnboardedColdStoragePercent}%)`,
+            adminOnboarded: `${coldStoragesByAdmins} (${coldStorageAdminPercent}%)`,
+          }
+        : null,
     },
     traders: {
+      allowed: traderAllowed,
       total: totalTraders,
       lastWeek: tradersLastWeek,
       lastMonth: tradersLastMonth,
       byAgents: tradersByAgents,
       selfOnboarded: tradersSelfOnboarded,
       byAdmins: tradersByAdmins,
-      onboardingRatio: {
-        agentOnboarded: `${tradersByAgents} (${traderAgentPercent}%)`,
-        selfOnboarded: `${tradersSelfOnboarded} (${selfOnboardedTraderPercent}%)`,
-        adminOnboarded: `${tradersByAdmins} (${traderAdminPercent}%)`,
-      },
+      onboardingRatio: traderAllowed
+        ? {
+            agentOnboarded: `${tradersByAgents} (${traderAgentPercent}%)`,
+            selfOnboarded: `${tradersSelfOnboarded} (${selfOnboardedTraderPercent}%)`,
+            adminOnboarded: `${tradersByAdmins} (${traderAdminPercent}%)`,
+          }
+        : null,
     },
   };
 };
