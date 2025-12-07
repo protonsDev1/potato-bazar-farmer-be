@@ -13,6 +13,7 @@ export const onboardDirectorySchema = Joi.object({
   website: Joi.string().max(255).uri().optional().allow(null, ""),
   city: Joi.string().max(255).optional().allow(null, ""),
   state: Joi.string().max(255).optional().allow(null, ""),
+  isGlobal: Joi.boolean().optional().default(false),
   pinCode: Joi.string().max(10).optional().allow(null, ""),
   location: Joi.string().max(255).optional().allow(null, ""),
 
@@ -80,6 +81,7 @@ export const updateDirectorySchema = Joi.object({
   website: Joi.string().max(255).uri().optional().allow(null, ""),
   city: Joi.string().max(255).optional().allow(null, ""),
   state: Joi.string().max(255).optional().allow(null, ""),
+  isGlobal: Joi.boolean().optional(),
   pinCode: Joi.string().max(10).optional().allow(null, ""),
   location: Joi.string().max(255).optional().allow(null, ""),
 

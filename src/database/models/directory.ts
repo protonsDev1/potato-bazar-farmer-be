@@ -28,6 +28,7 @@ class Directory extends Model<
   declare website: string | null;
   declare city: string | null;
   declare state: string | null;
+  declare isGlobal: CreationOptional<boolean>;
   declare pinCode: string | null;
   declare location: string | null;
 
@@ -78,6 +79,7 @@ Directory.init(
     website: DataTypes.STRING,
     city: DataTypes.STRING,
     state: DataTypes.STRING,
+    isGlobal: { type: DataTypes.BOOLEAN, defaultValue: false },
     pinCode: DataTypes.STRING,
     location: DataTypes.STRING,
 
