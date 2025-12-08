@@ -7,7 +7,7 @@ import {
   LANGUAGE_CONFIG,
   LangKey,
   translateText,
-  generateSpeech,
+  generateSpeech, // still imported (not removed)
 } from "./translation";
 
 /* -------------------- AWS S3 CONFIG -------------------- */
@@ -42,10 +42,6 @@ async function uploadAudioToS3(buffer: Buffer, key: string): Promise<string> {
 
 const MAX_BYTES = 4800;
 
-/**
- * Take a prefix of `text` such that its UTF-8 byte length <= maxBytes.
- * Returns [chunk, rest].
- */
 function takeBytes(text: string, maxBytes: number): [string, string] {
   if (!text) return ["", ""];
 
@@ -60,16 +56,9 @@ function takeBytes(text: string, maxBytes: number): [string, string] {
     i++;
   }
 
-  const rest = text.slice(i);
-  return [acc, rest];
+  return [acc, text.slice(i)];
 }
 
-/**
- * Build multiple chunks for TTS:
- *   - First chunk: Category + Date + Title + first part of description
- *   - Subsequent chunks: only continuation of description
- * All chunks respect MAX_BYTES limit.
- */
 function buildSpeechChunks(content: {
   category: string;
   dateText: string;
@@ -92,9 +81,7 @@ function buildSpeechChunks(content: {
   const headerBytes = Buffer.byteLength(headerText, "utf8");
   let remainingDesc = content.description || "";
 
-  // First chunk (header + part of description)
   if (headerBytes >= MAX_BYTES) {
-    // Extreme case: header itself is too big; just trim header
     const [shortHeader] = takeBytes(headerText, MAX_BYTES);
     chunks.push(shortHeader.trim());
     return chunks;
@@ -105,15 +92,12 @@ function buildSpeechChunks(content: {
   remainingDesc = rest;
 
   const firstChunkText = (headerText + firstDescChunk).trim();
-  if (firstChunkText.length > 0) {
-    chunks.push(firstChunkText);
-  }
+  if (firstChunkText.length > 0) chunks.push(firstChunkText);
 
-  // Remaining chunks: only description continuation, MAX_BYTES each
   while (remainingDesc && remainingDesc.length > 0) {
     const [part, restDesc] = takeBytes(remainingDesc, MAX_BYTES);
     const trimmed = part.trim();
-    if (trimmed.length === 0) break;
+    if (!trimmed) break;
 
     chunks.push(trimmed);
     remainingDesc = restDesc;
@@ -171,9 +155,10 @@ export async function generateNewsTranslationsAndAudio(news: News) {
   }
 
   /* -------------------------------------------------------
-   * 2) AUDIO GENERATION WITH CHUNKING
-   *    - multiple parts per language if needed
+   * 2) AUDIO GENERATION (COMMENTED OUT — DISABLED)
    * -----------------------------------------------------*/
+
+  /*
   for (const langKey of supportedLangs) {
     const config = LANGUAGE_CONFIG[langKey];
     const content = localizedContent[langKey];
@@ -212,7 +197,6 @@ export async function generateNewsTranslationsAndAudio(news: News) {
 
         // 🔑 Unique key using UUID (with fallback)
         const uniqueId =
-          // @ts-ignore
           (crypto.randomUUID && crypto.randomUUID()) ||
           `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -231,7 +215,6 @@ export async function generateNewsTranslationsAndAudio(news: News) {
           err?.message || err
         );
       } finally {
-        // delete local temp file
         try {
           await fs.unlink(localFilePath);
           console.log(
@@ -245,16 +228,17 @@ export async function generateNewsTranslationsAndAudio(news: News) {
       }
     }
   }
+  */
 
   /* -------------------------------------------------------
    * 3) SAVE TO DATABASE
    * -----------------------------------------------------*/
   news.localizedContent = localizedContent;
-  // @ts-ignore - audioUrls is JSONB in model
-  news.audioUrls = audioUrls;
+
+  // @ts-ignore
+  news.audioUrls = audioUrls; // will be empty, since TTS disabled
 
   await news.save();
 
-  console.log(`[News ${news.id}] Localization + chunked audio completed`);
-} 
-
+  console.log(`[News ${news.id}] Localization completed (TTS disabled)`);
+}
