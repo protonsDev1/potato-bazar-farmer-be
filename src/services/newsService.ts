@@ -174,6 +174,14 @@ export const updateNewsService = async (id, payload) => {
     };
   }
   await news.update(payload);
+  try {
+    await generateNewsTranslationsAndAudio(news);
+  } catch (err: any) {
+    console.error(
+      `[News ${news.id}] Failed to regenerate translations/audio on update:`,
+      err?.message || err
+    );
+  }
   return {
     success: true,
     statusCode: 200,
