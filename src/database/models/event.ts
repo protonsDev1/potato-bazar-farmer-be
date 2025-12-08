@@ -33,6 +33,16 @@ class Event extends Model<
   declare website: string;
   declare contactUrl: string;
   declare isFeatured: boolean;
+  declare localizedContent: Record<
+    string,
+    {
+      title: string;
+      description: string;
+      category: string;
+      location: string;
+      dateText: object;
+    }
+  > | null;
   declare banner?: Banner;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -120,6 +130,10 @@ Event.init(
     isFeatured: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,

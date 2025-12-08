@@ -42,6 +42,15 @@ class KnowledgeHub extends Model<
   declare isPanIndia: boolean;
   declare stateId: number;
   declare districtId: number;
+  declare localizedContent: Record<
+    string,
+    {
+      title: string;
+      description: string;
+      category: string;
+      dateText: object;
+    }
+  > | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -120,6 +129,10 @@ KnowledgeHub.init(
       },
       onDelete: "CASCADE",
       onUpdate: "CASCADE",
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,
