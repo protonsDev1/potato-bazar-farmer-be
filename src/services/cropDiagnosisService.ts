@@ -1,6 +1,6 @@
 import Brand from "../database/models/Brand";
 import CropDiagnosis from "../database/models/cropDiagnosis";
-import { Op, Sequelize,literal } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import Product from "../database/models/Product";
 import Endorsement from "../database/models/Endorsement";
 
@@ -85,7 +85,7 @@ export const createEndorsementService = async (payload: any) => {
     image,
     notes,
     sort_order,
-    isComman
+    isComman,
   } = payload;
 
   // ✅ Find or create Brand
@@ -124,7 +124,7 @@ export const createEndorsementService = async (payload: any) => {
     image,
     notes,
     sort_order,
-    isComman
+    isComman,
   });
 
   return {
@@ -138,34 +138,60 @@ export const createEndorsementService = async (payload: any) => {
 export const getEndorsementsService = async ({
   page,
   limit,
-  disease
+  disease,
+  search,
 }: {
   page: number;
   limit: number;
   disease?: string | null;
+  search?: string | null;
 }) => {
   const offset = (page - 1) * limit;
 
   let where: any = {};
 
+  const andConditions: any[] = [];
+
   if (disease) {
     const formattedDisease = disease.toLowerCase().trim();
 
-    where = {
+    andConditions.push({
       [Op.or]: [
-        // ✅ Always return common endorsements
         { isComman: true },
-
-        // ✅ Disease match condition
         Sequelize.literal(`
           EXISTS (
             SELECT 1
             FROM unnest("disease") AS d(val)
             WHERE LOWER(d.val) LIKE '%${formattedDisease}%'
           )
-        `)
-      ]
+        `),
+      ],
+    });
+  }
+
+  if (search) {
+    const q = search.toLowerCase().trim();
+
+    const searchConditions = {
+      [Op.or]: [
+        { title: { [Op.iLike]: `%${q}%` } },
+        { "$Brand.name$": { [Op.iLike]: `%${q}%` } },
+        { "$Product.name$": { [Op.iLike]: `%${q}%` } },
+
+        Sequelize.literal(`
+          EXISTS (
+            SELECT 1
+            FROM unnest("disease") AS d(val)
+            WHERE LOWER(d.val) LIKE '%${q}%'
+          )
+        `),
+      ],
     };
+    andConditions.push(searchConditions);
+  }
+
+  if (andConditions.length > 0) {
+    where = { [Op.and]: andConditions };
   }
 
   const { rows, count } = await Endorsement.findAndCountAll({
@@ -173,10 +199,7 @@ export const getEndorsementsService = async ({
     limit: Number(limit),
     offset,
     order: [["createdAt", "DESC"]],
-    include: [
-      { model: Brand },
-      { model: Product },
-    ],
+    include: [{ model: Brand }, { model: Product }],
   });
 
   return {
