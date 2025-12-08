@@ -1,8 +1,24 @@
 import { Op } from "sequelize";
 import GovernmentScheme from "../database/models/govScheme";
+import { generateTranslationsForRecord } from "../utils/translation";
 
 export const createGovSchemeService = async (payload) => {
   const scheme = await GovernmentScheme.create(payload);
+
+  try {
+    await generateTranslationsForRecord(scheme, {
+      recordId: scheme.id,
+      recordType: "GovScheme",
+      fields: ["title", "description", "category", "governmentType"],
+      dateFields: [{ key: "startDate" }, { key: "endDate" }],
+    });
+  } catch (err: any) {
+    console.error(
+      `[GovScheme ${scheme.id}] Translation error:`,
+      err?.message || err
+    );
+  }
+
   return {
     success: true,
     statusCode: 201,
@@ -105,6 +121,21 @@ export const updateGovSchemeService = async (id, payload) => {
   }
 
   await scheme.update(payload);
+
+  try {
+    await generateTranslationsForRecord(scheme, {
+      recordId: scheme.id,
+      recordType: "GovScheme",
+      fields: ["title", "description", "category", "governmentType"],
+      dateFields: [{ key: "startDate" }, { key: "endDate" }],
+    });
+  } catch (err: any) {
+    console.error(
+      `[GovScheme ${scheme.id}] Translation error on update:`,
+      err?.message || err
+    );
+  }
+
   return {
     success: true,
     statusCode: 200,

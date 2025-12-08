@@ -8,14 +8,14 @@ import { generateNewsTranslationsAndAudio } from "../utils/newsLocalizationServi
 
 export const createNewsService = async (payload) => {
   const news = await News.create(payload);
-  //  try {
-  //   await generateNewsTranslationsAndAudio(news);
-  // } catch (err: any) {
-  //   console.error(
-  //     `[News ${news.id}] Failed to generate translations/audio:`,
-  //     err?.message || err
-  //   );
-  // }
+   try {
+    await generateNewsTranslationsAndAudio(news);
+  } catch (err: any) {
+    console.error(
+      `[News ${news.id}] Failed to generate translations/audio:`,
+      err?.message || err
+    );
+  }
   return {
     success: true,
     statusCode: 201,
@@ -174,6 +174,14 @@ export const updateNewsService = async (id, payload) => {
     };
   }
   await news.update(payload);
+  try {
+    await generateNewsTranslationsAndAudio(news);
+  } catch (err: any) {
+    console.error(
+      `[News ${news.id}] Failed to regenerate translations/audio on update:`,
+      err?.message || err
+    );
+  }
   return {
     success: true,
     statusCode: 200,
