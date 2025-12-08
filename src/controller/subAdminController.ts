@@ -41,9 +41,9 @@ export const createSubAdmin = async (req, res) => {
 
     return res
       .status(result.statusCode)
-      .json({ success: true, message: result.message, data: result.data });
+      .json({ success: result.success, message: result.message, data: result.data });
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 
@@ -59,7 +59,7 @@ export const listSubAdmins = async (req, res) => {
 
     return res
       .status(result.statusCode)
-      .json({ success: true, message: result.message, data: result.data });
+      .json({ success: result.success, message: result.message, data: result.data });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
@@ -70,7 +70,7 @@ export const updateSubAdmin = async (req, res) => {
     const result = await updateSubAdminService(req.params.id, req.body);
     return res
       .status(result.statusCode)
-      .json({ success: true, message: result.message, data: result.data });
+      .json({ success: result.success, message: result.message, data: result.data });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
@@ -104,7 +104,7 @@ export const deleteSubAdmin = async (req, res) => {
     const result = await deleteSubAdminService(req.params.id);
     return res
       .status(result.statusCode)
-      .json({ success: true, message: result.message });
+      .json({ success: result.success, message: result.message });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
