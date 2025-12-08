@@ -47,13 +47,11 @@ export const getCropDiagnosisById = async (req, res) => {
   }
 };
 
-
-
 export const createEndorsement = async (req, res) => {
   try {
     const payload = {
       ...req.body,
-      createdBy: req.user?.id, 
+      createdBy: req.user?.id,
     };
 
     const result = await createEndorsementService(payload);
@@ -69,17 +67,17 @@ export const getEndorsements = async (req, res) => {
   try {
     console.log("Received query params:", req.query);
 
-    const { page = 1, limit = 10, disease } = req.query;
+    const { page = 1, limit = 10, disease, search } = req.query;
 
     const params = {
       page: Number(page),
       limit: Number(limit),
-      disease: disease ? String(disease).trim().toLowerCase() : null
+      disease: disease ? String(disease).trim().toLowerCase() : null,
+      search,
     };
 
     const result = await getEndorsementsService(params);
     return res.status(result.statusCode).json(result);
-
   } catch (error: any) {
     console.error("Error in getEndorsements controller:", error);
     return res.status(500).json({
@@ -88,7 +86,6 @@ export const getEndorsements = async (req, res) => {
     });
   }
 };
-
 
 export const updateEndorsement = async (req, res) => {
   try {
@@ -121,5 +118,3 @@ export const deleteEndorsement = async (req, res) => {
     });
   }
 };
-
-
