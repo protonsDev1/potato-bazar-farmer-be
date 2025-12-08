@@ -46,6 +46,16 @@ class GovernmentScheme extends Model<
   declare contactUrl: string | null;
   declare websiteUrl: string | null;
   declare isActive: CreationOptional<boolean>;
+  declare localizedContent: Record<
+    string,
+    {
+      title: string;
+      description: string;
+      category: string;
+      governmentType: string;
+      dateText: object;
+    }
+  > | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -112,6 +122,10 @@ GovernmentScheme.init(
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,

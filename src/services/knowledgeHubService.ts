@@ -4,9 +4,25 @@ import State from "../database/models/state";
 import District from "../database/models/district";
 import KnowledgeHub from "../database/models/knowledgeHub";
 import KnowledgeHubView from "../database/models/knowledgeHubView";
+import { generateTranslationsForRecord } from "../utils/translation";
 
 export const createKnowledgeHubService = async (payload) => {
   const knowledgeHub = await KnowledgeHub.create(payload);
+
+  try {
+    await generateTranslationsForRecord(knowledgeHub, {
+      recordId: knowledgeHub.id,
+      recordType: "KnowledgeHub",
+      fields: ["title", "description", "category"],
+      dateFields: [{ key: "createdAt" }],
+    });
+  } catch (err: any) {
+    console.error(
+      `[KnowledgeHub ${knowledgeHub.id}] Translation error:`,
+      err?.message || err
+    );
+  }
+
   return {
     success: true,
     statusCode: 201,
@@ -163,6 +179,21 @@ export const updateKnowledgeHubService = async (id, payload) => {
     };
   }
   await knowledgeHub.update(payload);
+
+  try {
+    await generateTranslationsForRecord(knowledgeHub, {
+      recordId: knowledgeHub.id,
+      recordType: "KnowledgeHub",
+      fields: ["title", "description", "category"],
+      dateFields: [{ key: "createdAt" }],
+    });
+  } catch (err: any) {
+    console.error(
+      `[KnowledgeHub ${knowledgeHub.id}] Translation error on update:`,
+      err?.message || err
+    );
+  }
+
   return {
     success: true,
     statusCode: 200,

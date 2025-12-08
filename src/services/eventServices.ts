@@ -6,6 +6,7 @@ import EventRequest, {
 } from "../database/models/eventRequest";
 import User, { USER_ROLES } from "../database/models/user";
 import Banner from "../database/models/banner";
+import { generateTranslationsForRecord } from "../utils/translation";
 
 export const addEvent = async (eventData) => {
   const { startDate, endDate, startTime, endTime, banner } = eventData;
@@ -27,6 +28,20 @@ export const addEvent = async (eventData) => {
       ...banner,
       eventId: event.id,
     });
+  }
+
+  try {
+    await generateTranslationsForRecord(event, {
+      recordId: event.id,
+      recordType: "Event",
+      fields: ["title", "description", "category", "location"],
+      dateFields: [{ key: "startDate" }, { key: "endDate" }],
+    });
+  } catch (err: any) {
+    console.error(
+      `[Event ${event.id}] Translation error:`,
+      err?.message || err
+    );
   }
 
   return {
@@ -413,6 +428,20 @@ export const updateEventService = async (eventId, payload) => {
   const updatedEvent = await Event.findByPk(eventId, {
     include: [{ model: Banner, as: "banner" }],
   });
+
+  try {
+    await generateTranslationsForRecord(updatedEvent, {
+      recordId: updatedEvent.id,
+      recordType: "Event",
+      fields: ["title", "description", "category", "location"],
+      dateFields: [{ key: "startDate" }, { key: "endDate" }],
+    });
+  } catch (err: any) {
+    console.error(
+      `[Event ${updatedEvent.id}] Translation error on update:`,
+      err?.message || err
+    );
+  }
 
   return {
     success: true,
