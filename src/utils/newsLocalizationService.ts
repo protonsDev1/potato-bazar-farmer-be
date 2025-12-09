@@ -108,16 +108,170 @@ function buildSpeechChunks(content: {
 
 /* -------------------- MAIN FUNCTION -------------------- */
 
+// export async function generateNewsTranslationsAndAudio(news: News) {
+//   const supportedLangs: LangKey[] = ["en", "hi", "gu", "pa", "mr", "bn"];
+
+//   const localizedContent: any = {};
+//   const audioUrls: Record<string, string[]> = {};
+
+//   const baseTitle = news.title;
+//   const baseDescription = news.description;
+//   const baseCategory = news.category;
+
+//   const baseDate = news.createdAt || new Date();
+//   const baseDateText = baseDate.toLocaleDateString("en-IN", {
+//     day: "numeric",
+//     month: "long",
+//     year: "numeric",
+//   });
+
+//   /* -------------------------------------------------------
+//    * 1) FULL TRANSLATION (NO TRUNCATION)
+//    * -----------------------------------------------------*/
+//   for (const langKey of supportedLangs) {
+//     const config = LANGUAGE_CONFIG[langKey];
+
+//     let title = baseTitle;
+//     let description = baseDescription;
+//     let category = baseCategory;
+//     let dateText = baseDateText;
+
+//     if (langKey !== "en") {
+//       console.log(`[News ${news.id}] Translating to ${config.label}...`);
+//       [title, description, category, dateText] = await Promise.all([
+//         translateText(baseTitle, config.translateTarget),
+//         translateText(baseDescription, config.translateTarget),
+//         translateText(baseCategory, config.translateTarget),
+//         translateText(baseDateText, config.translateTarget),
+//       ]);
+//     }
+
+//     localizedContent[langKey] = {
+//       title,
+//       description,
+//       category,
+//       dateText,
+//     };
+//   }
+
+//   /* -------------------------------------------------------
+//    * 2) AUDIO GENERATION (COMMENTED OUT — DISABLED)
+//    * -----------------------------------------------------*/
+
+//   /*
+//   for (const langKey of supportedLangs) {
+//     const config = LANGUAGE_CONFIG[langKey];
+//     const content = localizedContent[langKey];
+//     if (!config || !content) continue;
+
+//     const chunks = buildSpeechChunks({
+//       category: content.category,
+//       dateText: content.dateText,
+//       title: content.title,
+//       description: content.description,
+//     });
+
+//     console.log(
+//       `[News ${news.id}] ${langKey} → ${chunks.length} audio chunk(s)`
+//     );
+
+//     audioUrls[langKey] = [];
+
+//     for (let index = 0; index < chunks.length; index++) {
+//       const speechText = chunks[index];
+//       const partNumber = index + 1;
+
+//       const localFilePath = path.join(
+//         process.cwd(),
+//         "tmp",
+//         "news-audio",
+//         `${news.id}-${langKey}-part${partNumber}.mp3`
+//       );
+
+//       try {
+//         // Generate locally
+//         await generateSpeech(speechText, localFilePath, config.ttsLanguageCode);
+
+//         // Read buffer
+//         const audioBuffer = await fs.readFile(localFilePath);
+
+//         // 🔑 Unique key using UUID (with fallback)
+//         const uniqueId =
+//           (crypto.randomUUID && crypto.randomUUID()) ||
+//           `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+//         const s3Key = `news/audio/${news.id}/${langKey}-part${partNumber}-${uniqueId}.mp3`;
+
+//         // Upload to S3
+//         const audioUrl = await uploadAudioToS3(audioBuffer, s3Key);
+//         audioUrls[langKey].push(audioUrl);
+
+//         console.log(
+//           `[News ${news.id}] Audio uploaded (${langKey}, part ${partNumber}) → ${audioUrl}`
+//         );
+//       } catch (err: any) {
+//         console.error(
+//           `[News ${news.id}] Audio failed for ${config.label} (part ${partNumber}):`,
+//           err?.message || err
+//         );
+//       } finally {
+//         try {
+//           await fs.unlink(localFilePath);
+//           console.log(
+//             `[News ${news.id}] Local file deleted: ${localFilePath}`
+//           );
+//         } catch (err) {
+//           console.warn(
+//             `[News ${news.id}] Failed to delete local file: ${localFilePath}`
+//           );
+//         }
+//       }
+//     }
+//   }
+//   */
+
+//   /* -------------------------------------------------------
+//    * 3) SAVE TO DATABASE
+//    * -----------------------------------------------------*/
+//   news.localizedContent = localizedContent;
+
+//   // @ts-ignore
+//   news.audioUrls = audioUrls; // will be empty, since TTS disabled
+
+//   await news.save();
+
+//   console.log(`[News ${news.id}] Localization completed (TTS disabled)`);
+// }
+
 export async function generateNewsTranslationsAndAudio(news: News) {
   const supportedLangs: LangKey[] = ["en", "hi", "gu", "pa", "mr", "bn"];
 
   const localizedContent: any = {};
-  const audioUrls: Record<string, string[]> = {};
 
-  const baseTitle = news.title;
-  const baseDescription = news.description;
-  const baseCategory = news.category;
+  // Fields that should be translated (if present)
+  const fieldsToTranslate = [
+    "title",
+    "description",
+    "category",
+    "introduction",
+    "keyNumbers",
+    "changesThisWeek",
+    "supplyAnalysis",
+    "demandSignals",
+    "regionalSnapshot",
+    "policyRisks",
+    "faqs",
+  ];
 
+  // Pick only fields that exist on the record
+  const baseValues: Record<string, any> = {};
+  for (const f of fieldsToTranslate) {
+    if (news[f] !== undefined && news[f] !== null) {
+      baseValues[f] = news[f];
+    }
+  }
+
+  // Base dateText
   const baseDate = news.createdAt || new Date();
   const baseDateText = baseDate.toLocaleDateString("en-IN", {
     day: "numeric",
@@ -126,119 +280,130 @@ export async function generateNewsTranslationsAndAudio(news: News) {
   });
 
   /* -------------------------------------------------------
-   * 1) FULL TRANSLATION (NO TRUNCATION)
-   * -----------------------------------------------------*/
+   * TRANSLATION
+   * ----------------------------------------------------- */
   for (const langKey of supportedLangs) {
     const config = LANGUAGE_CONFIG[langKey];
 
-    let title = baseTitle;
-    let description = baseDescription;
-    let category = baseCategory;
-    let dateText = baseDateText;
-
-    if (langKey !== "en") {
-      console.log(`[News ${news.id}] Translating to ${config.label}...`);
-      [title, description, category, dateText] = await Promise.all([
-        translateText(baseTitle, config.translateTarget),
-        translateText(baseDescription, config.translateTarget),
-        translateText(baseCategory, config.translateTarget),
-        translateText(baseDateText, config.translateTarget),
-      ]);
+    // Copy English as-is (do not translate)
+    if (langKey === "en") {
+      localizedContent[langKey] = {
+        ...baseValues,
+        dateText: baseDateText,
+      };
+      continue;
     }
 
-    localizedContent[langKey] = {
-      title,
-      description,
-      category,
-      dateText,
-    };
-  }
+    console.log(`[News ${news.id}] Translating into ${config.label}...`);
 
-  /* -------------------------------------------------------
-   * 2) AUDIO GENERATION (COMMENTED OUT — DISABLED)
-   * -----------------------------------------------------*/
+    const translated: Record<string, any> = {};
 
-  /*
-  for (const langKey of supportedLangs) {
-    const config = LANGUAGE_CONFIG[langKey];
-    const content = localizedContent[langKey];
-    if (!config || !content) continue;
-
-    const chunks = buildSpeechChunks({
-      category: content.category,
-      dateText: content.dateText,
-      title: content.title,
-      description: content.description,
-    });
-
-    console.log(
-      `[News ${news.id}] ${langKey} → ${chunks.length} audio chunk(s)`
-    );
-
-    audioUrls[langKey] = [];
-
-    for (let index = 0; index < chunks.length; index++) {
-      const speechText = chunks[index];
-      const partNumber = index + 1;
-
-      const localFilePath = path.join(
-        process.cwd(),
-        "tmp",
-        "news-audio",
-        `${news.id}-${langKey}-part${partNumber}.mp3`
+    try {
+      /* -------------------------------------------------------
+       * 1) Translate scalar string fields (exclude faqs & keyNumbers)
+       * ----------------------------------------------------- */
+      const scalarFields = Object.keys(baseValues).filter(
+        (f) =>
+          f !== "faqs" &&
+          f !== "keyNumbers" &&
+          typeof baseValues[f] === "string"
       );
 
-      try {
-        // Generate locally
-        await generateSpeech(speechText, localFilePath, config.ttsLanguageCode);
+      const scalarPromises = scalarFields.map((f) =>
+        translateText(baseValues[f], config.translateTarget).catch(
+          () => baseValues[f]
+        )
+      );
 
-        // Read buffer
-        const audioBuffer = await fs.readFile(localFilePath);
+      const scalarResults = await Promise.all(scalarPromises);
+      scalarFields.forEach((f, i) => {
+        translated[f] = scalarResults[i];
+      });
 
-        // 🔑 Unique key using UUID (with fallback)
-        const uniqueId =
-          (crypto.randomUUID && crypto.randomUUID()) ||
-          `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      /* -------------------------------------------------------
+       * 2) Translate FAQ array
+       * ----------------------------------------------------- */
+      if (Array.isArray(baseValues["faqs"])) {
+        const faqs = baseValues["faqs"];
 
-        const s3Key = `news/audio/${news.id}/${langKey}-part${partNumber}-${uniqueId}.mp3`;
+        const translatedFaqs = await Promise.all(
+          faqs.map(async (faq) => {
+            const q = faq.question || "";
+            const a = faq.answer || "";
 
-        // Upload to S3
-        const audioUrl = await uploadAudioToS3(audioBuffer, s3Key);
-        audioUrls[langKey].push(audioUrl);
+            const [translatedQ, translatedA] = await Promise.all([
+              translateText(q, config.translateTarget).catch(() => q),
+              translateText(a, config.translateTarget).catch(() => a),
+            ]);
 
-        console.log(
-          `[News ${news.id}] Audio uploaded (${langKey}, part ${partNumber}) → ${audioUrl}`
+            return {
+              ...faq, // keep any extra keys (id, order, etc.)
+              question: translatedQ,
+              answer: translatedA,
+            };
+          })
         );
-      } catch (err: any) {
-        console.error(
-          `[News ${news.id}] Audio failed for ${config.label} (part ${partNumber}):`,
-          err?.message || err
-        );
-      } finally {
-        try {
-          await fs.unlink(localFilePath);
-          console.log(
-            `[News ${news.id}] Local file deleted: ${localFilePath}`
-          );
-        } catch (err) {
-          console.warn(
-            `[News ${news.id}] Failed to delete local file: ${localFilePath}`
-          );
-        }
+
+        translated["faqs"] = translatedFaqs;
       }
+
+      /* -------------------------------------------------------
+       * 3) Translate keyNumbers object (if present)
+       *    keep keys unchanged, translate values
+       * ----------------------------------------------------- */
+      if (
+        baseValues["keyNumbers"] &&
+        typeof baseValues["keyNumbers"] === "object"
+      ) {
+        const pairs = Object.entries(baseValues["keyNumbers"]); // [ [k,v], ... ]
+
+        const translatedPairs = await Promise.all(
+          pairs.map(async ([k, v]) => {
+            const translatedVal = await translateText(
+              String(v || ""),
+              config.translateTarget
+            ).catch(() => v);
+            return [k, translatedVal];
+          })
+        );
+
+        const keyNumbersTranslated: Record<string, string> = {};
+        translatedPairs.forEach(([k, v]) => {
+          keyNumbersTranslated[String(k)] = String(v);
+        });
+
+        translated["keyNumbers"] = keyNumbersTranslated;
+      }
+
+      /* -------------------------------------------------------
+       * 4) Translate date text
+       * ----------------------------------------------------- */
+      const transDateText = await translateText(
+        baseDateText,
+        config.translateTarget
+      ).catch(() => baseDateText);
+
+      localizedContent[langKey] = {
+        ...translated,
+        dateText: transDateText,
+      };
+    } catch (err) {
+      console.error(
+        `[News ${news.id}] Translation failed for ${langKey}:`,
+        err?.message || err
+      );
+
+      // fallback → use English values
+      localizedContent[langKey] = {
+        ...baseValues,
+        dateText: baseDateText,
+      };
     }
   }
-  */
 
-  /* -------------------------------------------------------
-   * 3) SAVE TO DATABASE
-   * -----------------------------------------------------*/
   news.localizedContent = localizedContent;
-
-  // @ts-ignore
-  news.audioUrls = audioUrls; // will be empty, since TTS disabled
 
   await news.save();
 
-  console.log(`[News ${news.id}] Localization completed (TTS disabled)`);
+  console.log(`[News ${news.id}] Localization completed`);
 }
