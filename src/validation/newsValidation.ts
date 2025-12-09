@@ -49,18 +49,21 @@ export const updateNewsSchema = Joi.object({
   isFeatured: Joi.boolean().optional(),
   stateId: Joi.number().optional().allow(null),
   districtId: Joi.number().optional().allow(null),
-  source: Joi.string().trim().optional(),
+  source: Joi.string().trim().optional().allow(null, ""),
   ytVideos: Joi.array().items(Joi.string()).optional(),
   isPanIndia: Joi.boolean().optional(),
 
   //  AI optional fields
-  introduction: Joi.string().trim().optional(),
-  keyNumbers: Joi.object().pattern(Joi.string(), Joi.any()).optional(),
-  changesThisWeek: Joi.string().trim().optional(),
-  supplyAnalysis: Joi.string().trim().optional(),
-  demandSignals: Joi.string().trim().optional(),
-  regionalSnapshot: Joi.string().trim().optional(),
-  policyRisks: Joi.string().trim().optional(),
+  introduction: Joi.string().trim().optional().allow(null, ""),
+  keyNumbers: Joi.object()
+    .pattern(Joi.string(), Joi.any())
+    .optional()
+    .allow(null),
+  changesThisWeek: Joi.string().trim().optional().allow(null, ""),
+  supplyAnalysis: Joi.string().trim().optional().allow(null, ""),
+  demandSignals: Joi.string().trim().optional().allow(null, ""),
+  regionalSnapshot: Joi.string().trim().optional().allow(null, ""),
+  policyRisks: Joi.string().trim().optional().allow(null, ""),
   faqs: Joi.array()
     .items(
       Joi.object({
@@ -68,6 +71,7 @@ export const updateNewsSchema = Joi.object({
         answer: Joi.string().trim().required(),
       })
     )
-    .optional(),
-  references: Joi.array().items(Joi.string().uri()).optional(),
+    .optional()
+    .allow(null),
+  references: Joi.array().items(Joi.string().uri()).optional().allow(null),
 });
