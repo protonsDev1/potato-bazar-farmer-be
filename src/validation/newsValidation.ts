@@ -52,4 +52,22 @@ export const updateNewsSchema = Joi.object({
   source: Joi.string().trim().optional(),
   ytVideos: Joi.array().items(Joi.string()).optional(),
   isPanIndia: Joi.boolean().optional(),
+
+  //  AI optional fields
+  introduction: Joi.string().trim().optional(),
+  keyNumbers: Joi.object().pattern(Joi.string(), Joi.any()).optional(),
+  changesThisWeek: Joi.string().trim().optional(),
+  supplyAnalysis: Joi.string().trim().optional(),
+  demandSignals: Joi.string().trim().optional(),
+  regionalSnapshot: Joi.string().trim().optional(),
+  policyRisks: Joi.string().trim().optional(),
+  faqs: Joi.array()
+    .items(
+      Joi.object({
+        question: Joi.string().trim().required(),
+        answer: Joi.string().trim().required(),
+      })
+    )
+    .optional(),
+  references: Joi.array().items(Joi.string().uri()).optional(),
 });
