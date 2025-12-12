@@ -139,7 +139,7 @@ export const getAllMandiByCity = async (req, res) => {
 
 export const getAllMandi = async (req, res) => {
   try {
-    let { search, cityId, stateId, page = 1, perPage: limit = 10 } = req.query;
+    let { search, cityId, stateId, page = 1, perPage: limit = 10, isTopMandi } = req.query;
 
     page = Number(page);
     limit = Number(limit);
@@ -154,6 +154,11 @@ export const getAllMandi = async (req, res) => {
 
     if (cityId) {
       whereCondition.cityId = cityId;
+    }
+
+    if (isTopMandi)
+    {
+      whereCondition.isTopMandi = isTopMandi === "true"
     }
 
     const { count, rows } = await MandiList.findAndCountAll({

@@ -13,7 +13,7 @@ import { col, fn, Op, Sequelize } from "sequelize";
 import { formatDistanceToNow } from "date-fns";
 import bcrypt from "bcrypt";
 import Trader from "../database/models/trader/trader";
-import { formatDate } from "../utils/dateFormat";
+import { convertISTDateRangeToUTC, formatDate } from "../utils/dateFormat";
 import AgentOnboardedUser, {
   USER_TYPE,
 } from "../database/models/agentOnboardedUsers";
@@ -1079,6 +1079,10 @@ export const getMobileUsers = async ({
   pbVerificationStatus,
   userType,
   isDeleted,
+  startDate,
+  endDate,
+  state,
+  district,
 }) => {
   try {
     const offset = (page - 1) * limit;
@@ -1164,6 +1168,27 @@ export const getMobileUsers = async ({
     if (pbVerificationStatus && pbVerificationStatus !== "all") {
       whereCondition[Op.and].push({
         pbVerificationStatus,
+      });
+    }
+
+    if (startDate && endDate) {
+      const { startUTC, endUTC } = convertISTDateRangeToUTC(startDate, endDate);
+      whereCondition[Op.and].push({
+        createdAt: {
+          [Op.between]: [new Date(startUTC), new Date(endUTC)],
+        },
+      });
+    }
+
+    if (state) {
+      whereCondition[Op.and].push({
+        state,
+      });
+    }
+
+    if (district) {
+      whereCondition[Op.and].push({
+        district,
       });
     }
 
