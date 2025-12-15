@@ -781,6 +781,10 @@ export const retrieveMobileUsers = async (req, res) => {
       pbVerificationStatus,
       userType,
       isDeleted,
+      startDate,
+      endDate,
+      state,
+      district,
     } = req.query;
 
     const response = await getMobileUsers({
@@ -793,6 +797,10 @@ export const retrieveMobileUsers = async (req, res) => {
       pbVerificationStatus,
       userType,
       isDeleted,
+      startDate,
+      endDate,
+      state,
+      district,
     });
 
     if (!response.success)
