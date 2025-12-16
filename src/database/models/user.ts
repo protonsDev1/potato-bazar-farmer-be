@@ -44,6 +44,12 @@ export enum USER_REGISTRATION_TYPES {
   OTHER = "other",
 }
 
+export enum USER_DEVICE_TYPE {
+  ANDROID = 'android',
+  IOS = 'ios',
+  WEB = 'web',
+}
+
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare id: number;
   declare name: string;
@@ -83,6 +89,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare playerIdForWeb: string | null;
   declare updatedAt: CreationOptional<Date>;
   declare isDeleted: boolean;
+  declare deviceType: string;
 
   async validatePassword(password: string): Promise<boolean> {
     return bcrypt.compare(password, this.password_hash);
@@ -229,6 +236,10 @@ User.init(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    deviceType: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    }
   },
   {
     sequelize,
