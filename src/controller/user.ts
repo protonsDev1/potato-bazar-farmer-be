@@ -35,7 +35,7 @@ import {
 } from "../services/userServices";
 import jwt from "jsonwebtoken";
 import { createOtp, verifyOtpFromDB } from "../services/otpServices";
-import User, { USER_ROLES } from "../database/models/user";
+import User, { USER_DEVICE_TYPE, USER_ROLES } from "../database/models/user";
 import SubAdminWebPermission from "../database/models/subAdminWebPermission";
 import {
   buildPermissionsResponse,
@@ -57,6 +57,7 @@ import {
 } from "../services/mandiAgentService";
 import MandiAgent from "../database/models/mandiAgent";
 import KycDocument from "../database/models/kycDocuments";
+import { hasValue } from "../utils/parseQuery";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -324,7 +325,7 @@ export const createUserWithoutOtpVerification = async (req, res) => {
       });
     }
 
-    const createUser = await registerInitialUser(mobile, false, null);
+    const createUser = await registerInitialUser(mobile, false, null, null);
 
     return res.status(200).json({
       success: true,
@@ -349,7 +350,19 @@ export const verifyOtp = async (req, res) => {
       hasStartedUsingMobile,
       playerId,
       playerIdForWeb,
+      deviceType,
     } = req.body;
+
+    if (
+      hasValue(deviceType) &&
+      !Object.values(USER_DEVICE_TYPE).includes(deviceType)
+    )
+      return res.status(400).json({
+        success: false,
+        message: `Allowed device types: ${Object.values(USER_DEVICE_TYPE).join(
+          ", "
+        )}`,
+      });
 
     const isValid = await verifyOtpFromDB(mobile, otp, email);
     if (!isValid) {
@@ -379,6 +392,7 @@ export const verifyOtp = async (req, res) => {
           playerId,
           playerIdForWeb,
           isDeleted: false,
+          deviceType,
         });
       } else if (existingUser.isDeleted) {
         return res.status(403).json({
@@ -401,7 +415,8 @@ export const verifyOtp = async (req, res) => {
     const createUser = await registerInitialUser(
       mobile,
       hasStartedUsingMobile,
-      playerId
+      playerId,
+      deviceType
     );
 
     return res.status(200).json({
@@ -785,6 +800,7 @@ export const retrieveMobileUsers = async (req, res) => {
       endDate,
       state,
       district,
+      deviceType,
     } = req.query;
 
     const response = await getMobileUsers({
@@ -801,6 +817,7 @@ export const retrieveMobileUsers = async (req, res) => {
       endDate,
       state,
       district,
+      deviceType,
     });
 
     if (!response.success)

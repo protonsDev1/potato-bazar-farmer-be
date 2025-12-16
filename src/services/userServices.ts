@@ -470,7 +470,8 @@ export const getRegistrationTypes = async (mobile) => {
 export const registerInitialUser = async (
   mobile,
   hasStartedUsingMobile,
-  playerId
+  playerId,
+  deviceType
 ) => {
   return await User.create({
     name: "Guest",
@@ -479,6 +480,7 @@ export const registerInitialUser = async (
     otpVerified: true,
     hasStartedUsingMobile: !!hasStartedUsingMobile,
     playerId,
+    deviceType,
   });
 };
 
@@ -1083,6 +1085,7 @@ export const getMobileUsers = async ({
   endDate,
   state,
   district,
+  deviceType,
 }) => {
   try {
     const offset = (page - 1) * limit;
@@ -1189,6 +1192,12 @@ export const getMobileUsers = async ({
     if (district) {
       whereCondition[Op.and].push({
         district,
+      });
+    }
+
+    if (deviceType) {
+      whereCondition[Op.and].push({
+        deviceType,
       });
     }
 
