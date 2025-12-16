@@ -3,6 +3,7 @@ import ExcelJS from "exceljs";
 import UserRegistration from "../database/models/userRegistration";
 import { createOtp, verifyOtpFromDB } from "../services/otpServices";
 import { Op } from "sequelize";
+import AppVersions from "../database/models/appVersion";
 
 export const sendOtp = async (req, res) => {
   try {
@@ -232,3 +233,88 @@ export const deleteUserRegistration = async (req, res) => {
       });
   }
 };
+export const upsertAppVersion = async (req, res) => {
+  try {
+    const { deviceType, version, versionCode } = req.body;
+
+
+    const existingVersion = await AppVersions.findOne({
+      where: { deviceType },
+    });
+
+    if (existingVersion) {
+      await existingVersion.update({
+        version,
+        versionCode,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: `${deviceType} app version updated successfully`,
+        data: existingVersion,
+      });
+    }
+
+    const newVersion = await AppVersions.create({
+      deviceType,
+      version,
+      versionCode,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: `${deviceType} app version created successfully`,
+      data: newVersion,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to add/update app version",
+    });
+  }
+};
+export const matchAppVersion = async (req, res) => {
+  try {
+
+    const { deviceType, version, versionCode } = req.query;
+    if (!deviceType || !version || !versionCode) {
+      return res.status(400).json({
+        success: false,
+        message: "deviceType, version and versionCode are required",
+      });
+    }
+
+    if (!["android", "ios"].includes(deviceType)) {
+      return res.status(400).json({
+        success: false,
+        message: "deviceType must be android or ios",
+      });
+    }
+
+
+    const appVersion = await AppVersions.findOne({
+      where: {
+        deviceType,
+        version,
+        versionCode: Number(versionCode),
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        deviceType,
+        version,
+        versionCode: Number(versionCode),
+        isForceUpdate: !!appVersion,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to match app version",
+    });
+  }
+};
+
+
