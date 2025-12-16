@@ -292,23 +292,31 @@ export const matchAppVersion = async (req, res) => {
     }
 
 
-    const appVersion = await AppVersions.findOne({
-      where: {
-        deviceType,
-        version,
-        versionCode: Number(versionCode),
-      },
-    });
+   const appVersion = await AppVersions.findOne({
+  where: {
+    deviceType,
+    version,
+    versionCode: Number(versionCode),
+  },
+});
 
-    return res.status(200).json({
-      success: true,
-      data: {
-        deviceType,
-        version,
-        versionCode: Number(versionCode),
-        isForceUpdate: !!appVersion,
-      },
-    });
+let isForceUpdate: boolean;
+
+if (appVersion) {
+  isForceUpdate = true;
+} else {
+  isForceUpdate = false;
+}
+
+return res.status(200).json({
+  success: true,
+  data: {
+    deviceType,
+    version,
+    versionCode: Number(versionCode),
+    isForceUpdate,
+  },
+});
   } catch (err) {
     return res.status(500).json({
       success: false,
