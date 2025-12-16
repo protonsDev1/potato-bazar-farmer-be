@@ -303,9 +303,9 @@ export const matchAppVersion = async (req, res) => {
 let isForceUpdate: boolean;
 
 if (appVersion) {
-  isForceUpdate = true;
-} else {
   isForceUpdate = false;
+} else {
+  isForceUpdate = true;
 }
 
 return res.status(200).json({
