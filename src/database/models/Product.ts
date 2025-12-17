@@ -6,6 +6,13 @@ class Product extends Model {
   declare id: number;
   declare name: string;
   declare brand_id: number;
+  declare localizedContent: Record<
+    string,
+    {
+      name: string;
+      dateText: object;
+    }
+  > | null;
 }
 
 Product.init(
@@ -22,6 +29,10 @@ Product.init(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
   },
   {

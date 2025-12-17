@@ -521,9 +521,11 @@ export const updateMandiPriceService = async (
     };
   });
 
+  const updatedMandiPrice = await MandiPrice.findByPk(mandiPriceId);
+
   try {
-    await generateTranslationsForRecord(mandiPrice, {
-      recordId: mandiPrice.id,
+    await generateTranslationsForRecord(updatedMandiPrice, {
+      recordId: updatedMandiPrice.id,
       recordType: "mandiPrice",
       fields: ["variety", "category"],
       dateFields: [{ key: "createdAt" }, { key: "date" }],
