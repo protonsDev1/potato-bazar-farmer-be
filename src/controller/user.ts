@@ -58,6 +58,8 @@ import {
 import MandiAgent from "../database/models/mandiAgent";
 import KycDocument from "../database/models/kycDocuments";
 import { hasValue } from "../utils/parseQuery";
+import UserSession from "../database/models/userSession";
+import { createOrUpdateSession } from "../utils/userAuth";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -121,6 +123,8 @@ export const login = async (req, res) => {
       JWT_SECRET,
       { expiresIn: "24h" } // Token expires in 1 day
     );
+
+    await createOrUpdateSession({ userId: user.id, token });
 
     let permissions = null;
     if (user.role === USER_ROLES.SUB_ADMIN_WEB) {
@@ -241,6 +245,8 @@ export const agentLogin = async (req, res) => {
     const token = jwt.sign({ id: agent.user.id }, JWT_SECRET, {
       expiresIn: "24h",
     });
+
+    await createOrUpdateSession({ userId: agent.user.id, token });
 
     const agentResponse = {
       id: agent.id,
@@ -403,6 +409,9 @@ export const verifyOtp = async (req, res) => {
       }
 
       const token = jwt.sign({ id: existingUser.id }, JWT_SECRET);
+
+      await createOrUpdateSession({ userId: existingUser.id, token });
+
       return res.status(200).json({
         success: true,
         message: "OTP verified. User already exists.",
@@ -499,6 +508,11 @@ export const UserLoginOnMobile = async (req, res) => {
         .json({ success: false, message: userOnboardedOnMobile.error });
 
     const token = jwt.sign({ id: userOnboardedOnMobile.data.id }, JWT_SECRET);
+
+    await createOrUpdateSession({
+      userId: userOnboardedOnMobile.data.id,
+      token,
+    });
 
     return res.status(200).json({
       success: true,
@@ -1427,6 +1441,30 @@ export const globalSearchController = async (req, res) => {
     });
   } catch (err) {
     console.error("Global Search Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+
+    await UserSession.update(
+      { token: null },
+      {
+        where: { userId: userId },
+      }
+    );
+
+    return res.json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("Logout Error:", error);
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",

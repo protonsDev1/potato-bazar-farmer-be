@@ -72,6 +72,7 @@ import {
   globalSearchController,
   toggleMobileUserActive,
   createUserWithoutOtpVerification,
+  logout,
 } from "../controller/user";
 import {
   adminMiddleware,
@@ -328,5 +329,7 @@ router.put(
   validator.body(updateMobileUserStatusSchema),
   toggleMobileUserActive
 );
+
+router.post("/logout", authMiddleware, logout);
 
 export default router;
