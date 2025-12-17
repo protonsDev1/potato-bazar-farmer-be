@@ -4,6 +4,7 @@ import MandiList from "../database/models/mandiList";
 import State from "../database/models/state";
 import { hasValue } from "../utils/parseQuery";
 import MandiPrice from "../database/models/mandiPrice";
+import { generateTranslationsForRecord } from "../utils/translation";
 
 export const addMandi = async (req, res) => {
   try {
@@ -20,13 +21,27 @@ export const addMandi = async (req, res) => {
           "Another mandi with the same name already exists in this city.",
       });
 
-    await MandiList.create({
+    const mandiList = await MandiList.create({
       cityId,
       mandiName,
       address,
       isTopMandi,
       position,
     });
+
+    try {
+      await generateTranslationsForRecord(mandiList, {
+        recordId: mandiList.id,
+        recordType: "mandiList",
+        fields: ["mandiName", "address"],
+        dateFields: [{ key: "createdAt" }],
+      });
+    } catch (err: any) {
+      console.error(
+        `[mandiList ${mandiList.id}] Translation error on update:`,
+        err?.message || err
+      );
+    }
 
     return res
       .status(201)
@@ -139,7 +154,14 @@ export const getAllMandiByCity = async (req, res) => {
 
 export const getAllMandi = async (req, res) => {
   try {
-    let { search, cityId, stateId, page = 1, perPage: limit = 10, isTopMandi } = req.query;
+    let {
+      search,
+      cityId,
+      stateId,
+      page = 1,
+      perPage: limit = 10,
+      isTopMandi,
+    } = req.query;
 
     page = Number(page);
     limit = Number(limit);
@@ -156,9 +178,8 @@ export const getAllMandi = async (req, res) => {
       whereCondition.cityId = cityId;
     }
 
-    if (isTopMandi)
-    {
-      whereCondition.isTopMandi = isTopMandi === "true"
+    if (isTopMandi) {
+      whereCondition.isTopMandi = isTopMandi === "true";
     }
 
     const { count, rows } = await MandiList.findAndCountAll({
@@ -249,6 +270,22 @@ export const updateMandi = async (req, res) => {
     }
 
     await MandiList.update(updateFields, { where: { id } });
+
+    const updatedMandi = await MandiList.findByPk(id);
+
+    try {
+      await generateTranslationsForRecord(updatedMandi, {
+        recordId: updatedMandi.id,
+        recordType: "mandiList",
+        fields: ["mandiName", "address"],
+        dateFields: [{ key: "createdAt" }],
+      });
+    } catch (err: any) {
+      console.error(
+        `[mandiList ${updatedMandi.id}] Translation error on update:`,
+        err?.message || err
+      );
+    }
 
     return res.status(200).json({
       success: true,

@@ -3,6 +3,7 @@ import CropDiagnosis from "../database/models/cropDiagnosis";
 import { Op, Sequelize } from "sequelize";
 import Product from "../database/models/Product";
 import Endorsement from "../database/models/Endorsement";
+import { generateTranslationsForRecord } from "../utils/translation";
 
 export const createCropDiagnosisService = async (payload: any) => {
   const diagnosis = await CropDiagnosis.create(payload);
@@ -88,6 +89,9 @@ export const createEndorsementService = async (payload: any) => {
     isComman,
   } = payload;
 
+  let isNewBrand = false;
+  let isNewProduct = false;
+
   // ✅ Find or create Brand
   let brand = await Brand.findOne({ where: { name: brandName } });
 
@@ -95,6 +99,7 @@ export const createEndorsementService = async (payload: any) => {
     brand = await Brand.create({
       name: brandName,
     });
+    isNewBrand = true;
   }
 
   // ✅ Find or create Product under Brand
@@ -107,6 +112,7 @@ export const createEndorsementService = async (payload: any) => {
       name: productName,
       brand_id: brand.id,
     });
+    isNewProduct = true;
   }
 
   // ✅ Create Endorsement (ID auto-generated)
@@ -126,6 +132,40 @@ export const createEndorsementService = async (payload: any) => {
     sort_order,
     isComman,
   });
+
+  try {
+    if (isNewBrand)
+      await generateTranslationsForRecord(brand, {
+        recordId: brand.id,
+        recordType: "brand",
+        fields: ["name"],
+        dateFields: [{ key: "createdAt" }],
+      });
+
+    if (isNewProduct)
+      await generateTranslationsForRecord(product, {
+        recordId: product.id,
+        recordType: "product",
+        fields: ["name"],
+        dateFields: [{ key: "createdAt" }],
+      });
+
+    await generateTranslationsForRecord(endorsement, {
+      recordId: endorsement.id,
+      recordType: "endorsement",
+      fields: ["title", "headline", "disease"],
+      dateFields: [
+        { key: "createdAt" },
+        { key: "start_at" },
+        { key: "end_at" },
+      ],
+    });
+  } catch (err: any) {
+    console.error(
+      `[endorsement ${endorsement.id}] Translation error on update:`,
+      err?.message || err
+    );
+  }
 
   return {
     success: true,
@@ -225,33 +265,77 @@ export const updateEndorsementService = async (id: number, payload: any) => {
       message: "Endorsement not found",
     };
   }
+  let isNewBrand = false;
+  let isNewProduct = false;
 
+  let brand, product;
   // If brand & product updated
   if (payload.brandName) {
-    let brand = await Brand.findOne({ where: { name: payload.brandName } });
-    if (!brand) brand = await Brand.create({ name: payload.brandName });
+    brand = await Brand.findOne({ where: { name: payload.brandName } });
+    if (!brand) {
+      brand = await Brand.create({ name: payload.brandName });
+      isNewBrand = true;
+    }
     payload.brand_id = brand.id;
   }
 
   if (payload.productName) {
-    let product = await Product.findOne({
+    product = await Product.findOne({
       where: { name: payload.productName, brand_id: payload.brand_id },
     });
-    if (!product)
+    if (!product) {
       product = await Product.create({
         name: payload.productName,
         brand_id: payload.brand_id,
       });
+      isNewProduct = true;
+    }
     payload.product_id = product.id;
   }
 
   await endorsement.update(payload);
 
+  const updatedEndorsement = await Endorsement.findByPk(id);
+
+  try {
+    if (isNewBrand)
+      await generateTranslationsForRecord(brand, {
+        recordId: brand.id,
+        recordType: "brand",
+        fields: ["name"],
+        dateFields: [{ key: "createdAt" }],
+      });
+
+    if (isNewProduct)
+      await generateTranslationsForRecord(product, {
+        recordId: product.id,
+        recordType: "product",
+        fields: ["name"],
+        dateFields: [{ key: "createdAt" }],
+      });
+
+    await generateTranslationsForRecord(updatedEndorsement, {
+      recordId: updatedEndorsement.id,
+      recordType: "endorsement",
+      fields: ["title", "headline", "disease"],
+      dateFields: [
+        { key: "createdAt" },
+        { key: "start_at" },
+        { key: "end_at" },
+      ],
+    });
+  } catch (err: any) {
+    console.error(
+      `[endorsement ${updatedEndorsement.id}] Translation error on update:`,
+      err?.message || err
+    );
+  }
+
   return {
     success: true,
     statusCode: 200,
     message: "Endorsement updated successfully",
-    data: endorsement,
+    data: updatedEndorsement,
   };
 };
 
