@@ -21,6 +21,15 @@ class MandiList extends Model<
   declare isDeleted: boolean;
   declare isTopMandi: boolean;
   declare position: number;
+  declare localizedContent: Record<
+    string,
+    {
+      mandiName: string;
+      address: string;
+      dateText: object;
+    }
+  > | null;
+
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
   declare city?: City;
@@ -69,6 +78,10 @@ MandiList.init(
     },
     position: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
       allowNull: true,
     },
     createdAt: {
