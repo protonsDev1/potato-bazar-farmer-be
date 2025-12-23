@@ -38,4 +38,8 @@ export const matchAppVersionSchema = Joi.object({
       "number.base": "versionCode must be a number",
       "number.integer": "versionCode must be an integer",
     }),
+    isForceUpdateEnabled: Joi.boolean().optional().messages({
+      "any.required": "isForceUpdateEnabled is required",
+      "boolean.base": "isForceUpdateEnabled must be a boolean",
+    }),
 })
