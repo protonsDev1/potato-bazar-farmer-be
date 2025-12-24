@@ -235,7 +235,7 @@ export const deleteUserRegistration = async (req, res) => {
 };
 export const upsertAppVersion = async (req, res) => {
   try {
-    const { deviceType, version, versionCode } = req.body;
+    const { deviceType, version, versionCode, isForceUpdateEnabled } = req.body;
 
 
     const existingVersion = await AppVersions.findOne({
@@ -246,6 +246,7 @@ export const upsertAppVersion = async (req, res) => {
       await existingVersion.update({
         version,
         versionCode,
+        isForceUpdateEnabled
       });
 
       return res.status(200).json({
@@ -259,6 +260,7 @@ export const upsertAppVersion = async (req, res) => {
       deviceType,
       version,
       versionCode,
+      isForceUpdateEnabled
     });
 
     return res.status(201).json({
@@ -275,8 +277,9 @@ export const upsertAppVersion = async (req, res) => {
 };
 export const matchAppVersion = async (req, res) => {
   try {
-
     const { deviceType, version, versionCode } = req.query;
+
+    // 1️⃣ Validation
     if (!deviceType || !version || !versionCode) {
       return res.status(400).json({
         success: false,
@@ -291,33 +294,42 @@ export const matchAppVersion = async (req, res) => {
       });
     }
 
+    const parsedVersionCode = Number(versionCode);
+    if (Number.isNaN(parsedVersionCode)) {
+      return res.status(400).json({
+        success: false,
+        message: "versionCode must be a number",
+      });
+    }
 
-   const appVersion = await AppVersions.findOne({
-  where: {
-    deviceType,
-    version,
-    versionCode: Number(versionCode),
-  },
-});
+    // 2️⃣ Fetch app version
+    const appVersion = await AppVersions.findOne({
+      where: {
+        deviceType,
+        version,
+        versionCode: parsedVersionCode,
+      },
+    });
 
-let isForceUpdate: boolean;
+    // 3️⃣ Force update logic
+    // - Version not found → force update
+    // - Version found & isForceUpdateEnabled = true → force update
+    // - Version found & isForceUpdateEnabled = false → no force update
+    const isForceUpdate =
+      !appVersion || appVersion.isForceUpdateEnabled === true;
 
-if (appVersion) {
-  isForceUpdate = false;
-} else {
-  isForceUpdate = true;
-}
-
-return res.status(200).json({
-  success: true,
-  data: {
-    deviceType,
-    version,
-    versionCode: Number(versionCode),
-    isForceUpdate,
-  },
-});
+    // 4️⃣ Response
+    return res.status(200).json({
+      success: true,
+      data: {
+        deviceType,
+        version,
+        versionCode: parsedVersionCode,
+        isForceUpdate,
+      },
+    });
   } catch (err) {
+    console.error("[matchAppVersion]", err);
     return res.status(500).json({
       success: false,
       message: err.message || "Failed to match app version",
