@@ -4,6 +4,13 @@ import sequelize from "./db";
 class Brand extends Model {
   declare id: number;
   declare name: string;
+  declare localizedContent: Record<
+    string,
+    {
+      name: string;
+      dateText: object;
+    }
+  > | null;
 }
 
 Brand.init(
@@ -17,6 +24,10 @@ Brand.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
   },
   {

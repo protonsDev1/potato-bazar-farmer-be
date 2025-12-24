@@ -8,6 +8,7 @@ import MandiAllotedToMandiAgent from "../database/models/mandiAllotedToMandiAgen
 import MandiAgent from "../database/models/mandiAgent";
 import { calculateArrivalStatus } from "../utils/calculateArrivalStatus";
 import State from "../database/models/state";
+import { generateTranslationsForRecord } from "../utils/translation";
 
 interface MandiPriceResponse {
   success: boolean;
@@ -63,7 +64,7 @@ export const addMandiPriceService = async (
         "Mandi Agent do not have an access to add price for the given mandi.",
     };
 
-  return await sequelize.transaction(async (t) => {
+  const result = await sequelize.transaction(async (t) => {
     const mandiPrice = await MandiPrice.create(
       {
         mandiId,
@@ -98,6 +99,24 @@ export const addMandiPriceService = async (
       },
     };
   });
+
+  try {
+    await generateTranslationsForRecord(result.data.mandiPrice, {
+      recordId: result.data.mandiPrice.id,
+      recordType: "mandiPrice",
+      fields: ["variety", "category"],
+      dateFields: [{ key: "createdAt" }, { key: "date" }],
+    });
+  } catch (err: any) {
+    console.error(
+      `[MandiPrice ${result.data.mandiPrice.id}] Translation error:`,
+      err?.message || err
+    );
+  }
+
+  return {
+    ...result,
+  };
 };
 
 export const getAllMandiPricesService = async (
@@ -358,6 +377,7 @@ export const getAllMandiPricesByMandiId = async (filters, mandiId) => {
         date: item.date,
         variety: item.variety,
         category: item.category,
+        localizedContent: item.localizedContent,
         arrivalStatus: item.arrivalStatus,
         totalArrivalBags: item.totalArrivalBags,
         normalMandiArrivalBags: item.normalMandiArrivalBags,
@@ -500,6 +520,22 @@ export const updateMandiPriceService = async (
       gradeWisePricing: updatedMandiGradePriceRows,
     };
   });
+
+  const updatedMandiPrice = await MandiPrice.findByPk(mandiPriceId);
+
+  try {
+    await generateTranslationsForRecord(updatedMandiPrice, {
+      recordId: updatedMandiPrice.id,
+      recordType: "mandiPrice",
+      fields: ["variety", "category"],
+      dateFields: [{ key: "createdAt" }, { key: "date" }],
+    });
+  } catch (err: any) {
+    console.error(
+      `[MandiPrice ${mandiPrice.id}] Translation error:`,
+      err?.message || err
+    );
+  }
 
   return {
     success: true,
@@ -675,8 +711,8 @@ export const getTopMandiPricesService = async (page = 1, limit = 10) => {
   }
 
   const filteredMandis = rows.filter(
-  (mandi) => mandi.dataValues.mandiPrices?.length > 0
-);
+    (mandi) => mandi.dataValues.mandiPrices?.length > 0
+  );
 
   return {
     total: filteredMandis.length,

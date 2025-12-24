@@ -17,6 +17,7 @@ class AppVersions extends Model<
   declare versionCode: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare isForceUpdateEnabled: CreationOptional<boolean>;
 }
 
 AppVersions.init(
@@ -53,6 +54,11 @@ AppVersions.init(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    isForceUpdateEnabled:{
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    }
   },
   {
     sequelize,

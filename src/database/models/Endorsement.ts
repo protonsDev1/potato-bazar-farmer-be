@@ -7,7 +7,7 @@ class Endorsement extends Model {
   declare id: number;
   declare title: string;
   declare headline: string;
-  declare disease:  string[];
+  declare disease: string[];
   declare brand_id: number;
   declare product_id: number;
   declare cta_text?: string;
@@ -19,6 +19,15 @@ class Endorsement extends Model {
   declare notes?: string;
   declare sort_order?: number;
   declare isComman?: boolean;
+  declare localizedContent: Record<
+    string,
+    {
+      title: string;
+      headline: string;
+      disease: string[];
+      dateText: object;
+    }
+  > | null;
 }
 
 Endorsement.init(
@@ -51,6 +60,10 @@ Endorsement.init(
     notes: { type: DataTypes.TEXT },
     sort_order: { type: DataTypes.INTEGER, defaultValue: 0 },
     isComman: { type: DataTypes.BOOLEAN, defaultValue: false },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
   },
   {
     sequelize,

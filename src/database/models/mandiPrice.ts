@@ -34,6 +34,14 @@ class MandiPrice extends Model<
   declare lastUpdatedByMandiAgentUserId: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare localizedContent: Record<
+    string,
+    {
+      variety: string;
+      category: string;
+      dateText: object;
+    }
+  > | null;
 
   // Associations
   declare grades?: MandiGradePrice[];
@@ -109,6 +117,10 @@ MandiPrice.init(
       },
       onDelete: "CASCADE",
       onUpdate: "CASCADE",
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,
