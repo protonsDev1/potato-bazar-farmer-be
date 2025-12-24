@@ -279,7 +279,6 @@ export const matchAppVersion = async (req, res) => {
   try {
     const { deviceType, version, versionCode } = req.query;
 
-    // 1️⃣ Validation
     if (!deviceType || !version || !versionCode) {
       return res.status(400).json({
         success: false,
@@ -294,42 +293,52 @@ export const matchAppVersion = async (req, res) => {
       });
     }
 
-    const parsedVersionCode = Number(versionCode);
-    if (Number.isNaN(parsedVersionCode)) {
-      return res.status(400).json({
-        success: false,
-        message: "versionCode must be a number",
-      });
-    }
-
-    // 2️⃣ Fetch app version
     const appVersion = await AppVersions.findOne({
       where: {
         deviceType,
         version,
-        versionCode: parsedVersionCode,
+        versionCode: Number(versionCode),
       },
     });
 
-    // 3️⃣ Force update logic
-    // - Version not found → force update
-    // - Version found & isForceUpdateEnabled = true → force update
-    // - Version found & isForceUpdateEnabled = false → no force update
-    const isForceUpdate =
-      !appVersion || appVersion.isForceUpdateEnabled === true;
+    const forceEnableCheck = await AppVersions.findOne({
+      where: {
+        deviceType,
+      },
+    });
 
-    // 4️⃣ Response
+    let isForceUpdate: boolean;
+
+    if (forceEnableCheck && forceEnableCheck.isForceUpdateEnabled === false) {
+      isForceUpdate = false;
+      return res.status(200).json({
+      success: true,
+      data: {
+        deviceType,
+        version,
+        versionCode: Number(versionCode),
+        isForceUpdate,
+      },
+    });
+
+    }
+
+    if (appVersion) {
+      isForceUpdate = false;
+    } else {
+      isForceUpdate = true;
+    }
+
     return res.status(200).json({
       success: true,
       data: {
         deviceType,
         version,
-        versionCode: parsedVersionCode,
+        versionCode: Number(versionCode),
         isForceUpdate,
       },
     });
   } catch (err) {
-    console.error("[matchAppVersion]", err);
     return res.status(500).json({
       success: false,
       message: err.message || "Failed to match app version",
