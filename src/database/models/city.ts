@@ -20,6 +20,12 @@ class City extends Model<InferAttributes<City>, InferCreationAttributes<City>> {
   declare state?: NonAttribute<State>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare localizedContent: Record<
+    string,
+    {
+      name: string;
+    }
+  > | null;
 }
 
 City.init(
@@ -50,6 +56,10 @@ City.init(
       type: DataTypes.INTEGER,
       allowNull: true,
       unique: true,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,

@@ -18,6 +18,13 @@ class AdvertisementService extends Model<
   declare isActive: boolean;
   declare position: number;
   declare isDeleted: boolean;
+  declare localizedContent: Record<
+    string,
+    {
+      name: string;
+      subName: string;
+    }
+  > | null;
 }
 
 AdvertisementService.init(
@@ -36,6 +43,10 @@ AdvertisementService.init(
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
   },
   {
