@@ -7,6 +7,7 @@ import {
 } from "../../../services/adminServices/crudOperationService";
 
 import AdvertisementService from "../../../database/models/adminModels/mobile/advertisementService";
+import { generateTranslationsForRecord } from "../../../utils/translation";
 
 export const addAdvertisementService = async (req, res) => {
   try {
@@ -18,6 +19,17 @@ export const addAdvertisementService = async (req, res) => {
       return res.status(409).json({
         message: "Advertisement Service with this name already exists.",
       });
+    }
+
+    try {
+      await generateTranslationsForRecord(response.data, {
+        recordId: response.data.id,
+        recordType: "advertisementService",
+        fields: ["name", "subName"],
+        dateFields: [{ key: "createdAt" }],
+      });
+    } catch (error) {
+      console.error("Error in translating advertisement services", error);
     }
 
     if (response?.success) {
@@ -95,6 +107,17 @@ export const updateAdvertisementService = async (req, res) => {
       return res.status(404).json({
         message: response?.error || "Advertisement Service record not found.",
       });
+    }
+
+    try {
+      await generateTranslationsForRecord(response.data, {
+        recordId: response.data.id,
+        recordType: "advertisementService",
+        fields: ["name", "subName"],
+        dateFields: [{ key: "createdAt" }],
+      });
+    } catch (error) {
+      console.error("Error in translating advertisement services", error);
     }
 
     return res.status(200).json({

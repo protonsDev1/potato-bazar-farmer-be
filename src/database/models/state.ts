@@ -16,6 +16,12 @@ class State extends Model<
   declare position?: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare localizedContent: Record<
+    string,
+    {
+      name: string;
+    }
+  > | null;
 }
 
 State.init(
@@ -28,6 +34,10 @@ State.init(
     },
     position: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
       allowNull: true,
     },
     createdAt: {

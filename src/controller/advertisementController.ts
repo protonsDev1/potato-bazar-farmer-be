@@ -4,6 +4,7 @@ import Advertisement, {
   ADVERTISEMENT_STATUS,
 } from "../database/models/advertisement";
 import User from "../database/models/user";
+import { generateTranslationsForRecord } from "../utils/translation";
 
 export const createAdvertisementRequest = async (req, res) => {
   try {
@@ -33,6 +34,21 @@ export const createAdvertisementRequest = async (req, res) => {
           description,
         });
       }
+    }
+
+    try {
+      for (const id of serviceIds) {
+        const service = await AdvertisementService.findByPk(id);
+        if (!service.localizedContent)
+          await generateTranslationsForRecord(service, {
+            recordId: service.id,
+            recordType: "advertisementService",
+            fields: ["name", "subName"],
+            dateFields: [{ key: "createdAt" }],
+          });
+      }
+    } catch (error) {
+      console.error("Error in translating advertisement requests.", error);
     }
 
     return res.status(201).json({
@@ -141,7 +157,7 @@ export const updateAdvertisementStatus = async (req, res) => {
       { status: ADVERTISEMENT_STATUS.CLOSE },
       { where: { id } }
     );
-
+    
     return res.status(200).json({
       success: true,
       message: "Advertisement Request status updated successfully.",

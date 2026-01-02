@@ -22,6 +22,12 @@ class District extends Model<
   declare state?: NonAttribute<State>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare localizedContent: Record<
+    string,
+    {
+      name: string;
+    }
+  > | null;
 }
 
 District.init(
@@ -40,6 +46,10 @@ District.init(
       allowNull: true,
       references: { model: "states", key: "id" },
       onDelete: "CASCADE",
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,
