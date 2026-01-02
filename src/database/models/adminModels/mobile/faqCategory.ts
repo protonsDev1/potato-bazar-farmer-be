@@ -17,6 +17,12 @@ class FaqCategory extends Model<
   declare isActive: boolean;
   declare position: number;
   declare isDeleted: boolean;
+  declare localizedContent: Record<
+    string,
+    {
+      name: string;
+    }
+  > | null;
 }
 
 FaqCategory.init(
@@ -34,6 +40,10 @@ FaqCategory.init(
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
   },
   {

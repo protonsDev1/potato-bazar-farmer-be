@@ -6,6 +6,7 @@ import {
   deleteRecord,
   getActiveRecords,
 } from "../../../services/adminServices/crudOperationService";
+import { generateTranslationsForRecord } from "../../../utils/translation";
 
 export const addDirectoryCategory = async (req, res) => {
   try {
@@ -24,6 +25,19 @@ export const addDirectoryCategory = async (req, res) => {
         message: "New Directory Category added successfully.",
         data: response.data,
       });
+    }
+
+    try {
+      await generateTranslationsForRecord(response.data, {
+        recordId: response.data.id,
+        recordType: "DirectoryCategory",
+        fields: ["name"],
+      });
+    } catch (err: any) {
+      console.error(
+        `[Directory Category ${response.data.id}] Translation error:`,
+        err?.message || err
+      );
     }
 
     return res
@@ -94,6 +108,19 @@ export const updateDirectoryCategory = async (req, res) => {
       return res.status(404).json({
         message: response?.error || "Directory Category not found.",
       });
+    }
+
+    try {
+      await generateTranslationsForRecord(response.data, {
+        recordId: response.data.id,
+        recordType: "DirectoryCategory",
+        fields: ["name"],
+      });
+    } catch (err: any) {
+      console.error(
+        `[Directory Category ${response.data.id}] Translation error:`,
+        err?.message || err
+      );
     }
 
     return res.status(200).json({

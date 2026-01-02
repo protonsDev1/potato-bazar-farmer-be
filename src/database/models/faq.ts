@@ -14,6 +14,13 @@ class Faq extends Model<InferAttributes<Faq>, InferCreationAttributes<Faq>> {
   declare categoryId: number;
   declare question: string;
   declare answer: string;
+  declare localizedContent: Record<
+    string,
+    {
+      question: string;
+      answer: string;
+    }
+  > | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -41,6 +48,10 @@ Faq.init(
     answer: {
       type: DataTypes.TEXT,
       allowNull: false,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,

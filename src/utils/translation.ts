@@ -36,6 +36,7 @@ type GenerateOpts = {
   recordType: string; // e.g. "KnowledgeHub"
   fields: string[]; // list of field names to translate e.g. ["title","description","category"]
   dateFields?: { key: string; format?: (d: Date) => string }[]; // optional date fields -> produce dateText translations
+  arrayFields?: string[];
 };
 
 //
@@ -159,6 +160,12 @@ export async function generateTranslationsForRecord(
     }
   }
 
+  const baseArrayValues: Record<string, string[]> = {};
+  for (const f of opts.arrayFields ?? []) {
+    const val = modelInstance[f];
+    baseArrayValues[f] = Array.isArray(val) ? val : [];
+  }
+
   for (const langKey of supportedLangs) {
     const config = LANGUAGE_CONFIG[langKey];
     let translations: Record<string, string> = {};
@@ -166,6 +173,19 @@ export async function generateTranslationsForRecord(
     for (const f of opts.fields) {
       translations[f] = baseValues[f];
     }
+
+    const arrayTranslations: Record<string, string[]> = {};
+    for (const f of opts.arrayFields ?? []) {
+      arrayTranslations[f] = baseArrayValues[f];
+    }
+
+    const arrayFieldKeys = opts.arrayFields ?? [];
+
+    const arrayTranslatePromises = arrayFieldKeys.flatMap((field) =>
+      baseArrayValues[field].map((val) =>
+        translateText(val || "", config.translateTarget).catch(() => val)
+      )
+    );
 
     let dateTranslations: Record<string, string> = {};
     for (const df of opts.dateFields ?? []) {
@@ -182,6 +202,7 @@ export async function generateTranslationsForRecord(
           ...Object.values(baseDateTexts).map((d) =>
             translateText(d || "", config.translateTarget)
           ),
+          ...arrayTranslatePromises,
         ];
 
         const translatedResults = await Promise.all(translatePromises);
@@ -197,6 +218,19 @@ export async function generateTranslationsForRecord(
             translatedResults[opts.fields.length + i] ||
             dateTranslations[dateFieldKeys[i]];
         }
+
+        let cursor = opts.fields.length + Object.keys(baseDateTexts).length;
+
+        for (const field of opts.arrayFields ?? []) {
+          const originalArr = baseArrayValues[field];
+          const translatedArr: string[] = [];
+
+          for (let i = 0; i < originalArr.length; i++) {
+            translatedArr.push(translatedResults[cursor++] || originalArr[i]);
+          }
+
+          arrayTranslations[field] = translatedArr;
+        }
       } catch (err: any) {
         console.error(
           `[${opts.recordType} ${opts.recordId}] translation failed for ${langKey}:`,
@@ -208,6 +242,7 @@ export async function generateTranslationsForRecord(
 
     localizedContent[langKey] = {
       ...translations,
+      ...arrayTranslations,
       ...(Object.keys(dateTranslations).length
         ? { dateText: dateTranslations }
         : {}),

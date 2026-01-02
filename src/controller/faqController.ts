@@ -2,16 +2,27 @@ import { Op } from "sequelize";
 
 import Faq from "../database/models/faq";
 import FaqCategory from "../database/models/adminModels/mobile/faqCategory";
+import { generateTranslationsForRecord } from "../utils/translation";
 
 export const createFaq = async (req, res) => {
   try {
     const { categoryId, question, answer } = req.body;
 
-    await Faq.create({
+    const faq = await Faq.create({
       categoryId,
       question,
       answer,
     });
+
+    try {
+      await generateTranslationsForRecord(faq, {
+        recordId: faq.id,
+        recordType: "FAQ",
+        fields: ["question", "answer"],
+      });
+    } catch (err: any) {
+      console.error(`[FAQ ${faq.id}] Translation error:`, err?.message || err);
+    }
 
     return res.status(201).json({
       success: true,
@@ -92,6 +103,19 @@ export const updateFaq = async (req, res) => {
         success: false,
         message: "Faq not found.",
       });
+    }
+
+    try {
+      await generateTranslationsForRecord(updatedFaq, {
+        recordId: updatedFaq.id,
+        recordType: "FAQ",
+        fields: ["question", "answer"],
+      });
+    } catch (err: any) {
+      console.error(
+        `[FAQ ${updatedFaq.id}] Translation error:`,
+        err?.message || err
+      );
     }
 
     return res.status(200).json({

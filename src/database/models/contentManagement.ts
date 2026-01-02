@@ -14,6 +14,13 @@ class ContentManagement extends Model<
   declare id: CreationOptional<number>;
   declare title: string;
   declare description: Text;
+  declare localizedContent: Record<
+    string,
+    {
+      title: string;
+      description: string;
+    }
+  > | null;
   declare updatedAt?: Date;
   declare createdAt?: Date;
 }
@@ -32,6 +39,10 @@ ContentManagement.init(
     },
     description: {
       type: DataTypes.TEXT,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
   },
   {
