@@ -6,6 +6,7 @@ import {
   getActiveRecords,
 } from "../../../services/adminServices/crudOperationService";
 import FaqCategory from "../../../database/models/adminModels/mobile/faqCategory";
+import { generateTranslationsForRecord } from "../../../utils/translation";
 
 export const addFaqCategory = async (req, res) => {
   try {
@@ -24,6 +25,19 @@ export const addFaqCategory = async (req, res) => {
         message: "Faq category added successfully.",
         data: response.data,
       });
+    }
+
+    try {
+      await generateTranslationsForRecord(response.data, {
+        recordId: response.data.id,
+        recordType: "FAQCategory",
+        fields: ["name"],
+      });
+    } catch (err: any) {
+      console.error(
+        `[FAQ Category ${response.data.id}] Translation error:`,
+        err?.message || err
+      );
     }
 
     return res.status(400).json({ message: "Failed to add Faq category." });
@@ -89,6 +103,19 @@ export const updateFaqCategory = async (req, res) => {
       return res.status(404).json({
         message: response?.error || "Faq category record not found.",
       });
+    }
+
+    try {
+      await generateTranslationsForRecord(response.data, {
+        recordId: response.data.id,
+        recordType: "FAQCategory",
+        fields: ["name"],
+      });
+    } catch (err: any) {
+      console.error(
+        `[FAQ Category ${response.data.id}] Translation error:`,
+        err?.message || err
+      );
     }
 
     return res.status(200).json({

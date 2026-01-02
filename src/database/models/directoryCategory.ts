@@ -18,6 +18,12 @@ class DirectoryCategory extends Model<
   declare isActive: boolean;
   declare position: number | null;
   declare isDeleted: boolean;
+  declare localizedContent: Record<
+    string,
+    {
+      name: string;
+    }
+  > | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -32,6 +38,10 @@ DirectoryCategory.init(
     isDeleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    localizedContent: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,

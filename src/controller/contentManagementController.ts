@@ -1,9 +1,23 @@
 import ContentManagement from "../database/models/contentManagement";
 import { createOrUpdateContentService } from "../services/createOrUpdateContentService";
+import { generateTranslationsForRecord } from "../utils/translation";
 
 export const createOrUpdateContent = async (req, res) => {
   try {
     const content = await createOrUpdateContentService(req.body);
+
+    try {
+      await generateTranslationsForRecord(content.data, {
+        recordId: content.data.id,
+        recordType: "ContentManagement",
+        fields: ["title", "description"],
+      });
+    } catch (err: any) {
+      console.error(
+        `[Content Management ${content.data.id}] Translation error:`,
+        err?.message || err
+      );
+    }
 
     return res.status(content.statusCode).json({
       success: true,
