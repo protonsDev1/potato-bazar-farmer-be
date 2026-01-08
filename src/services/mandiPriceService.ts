@@ -107,6 +107,36 @@ export const addMandiPriceService = async (
       fields: ["variety", "category"],
       dateFields: [{ key: "createdAt" }, { key: "date" }],
     });
+
+    const mandi = await MandiList.findOne({
+      where: { id: mandiId },
+      include: [
+        {
+          model: City,
+          as: "city",
+          include: [
+            {
+              model: State,
+              as: "state",
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!mandi.city.localizedContent)
+      await generateTranslationsForRecord(mandi.city, {
+        recordId: mandi.city.id,
+        recordType: "city",
+        fields: ["name"],
+      });
+
+    if (!mandi.city.state.localizedContent)
+      await generateTranslationsForRecord(mandi.city.state, {
+        recordId: mandi.city.state.id,
+        recordType: "state",
+        fields: ["name"],
+      });
   } catch (err: any) {
     console.error(
       `[MandiPrice ${result.data.mandiPrice.id}] Translation error:`,
@@ -530,6 +560,36 @@ export const updateMandiPriceService = async (
       fields: ["variety", "category"],
       dateFields: [{ key: "createdAt" }, { key: "date" }],
     });
+
+    const mandi = await MandiList.findOne({
+      where: { id: payload.mandiId },
+      include: [
+        {
+          model: City,
+          as: "city",
+          include: [
+            {
+              model: State,
+              as: "state",
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!mandi.city.localizedContent)
+      await generateTranslationsForRecord(mandi.city, {
+        recordId: mandi.city.id,
+        recordType: "city",
+        fields: ["name"],
+      });
+
+    if (!mandi.city.state.localizedContent)
+      await generateTranslationsForRecord(mandi.city.state, {
+        recordId: mandi.city.state.id,
+        recordType: "state",
+        fields: ["name"],
+      });
   } catch (err: any) {
     console.error(
       `[MandiPrice ${mandiPrice.id}] Translation error:`,
@@ -638,6 +698,7 @@ export const listCitiesWithMandis = async () => {
     cityId: city.id,
     cityName: city.name,
     cityImage: city.image,
+    localizedContent: city.localizedContent,
   }));
 
   return {

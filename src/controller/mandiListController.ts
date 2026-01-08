@@ -36,6 +36,36 @@ export const addMandi = async (req, res) => {
         fields: ["mandiName", "address"],
         dateFields: [{ key: "createdAt" }],
       });
+
+      const mandi = await MandiList.findOne({
+        where: { id: mandiList.id },
+        include: [
+          {
+            model: City,
+            as: "city",
+            include: [
+              {
+                model: State,
+                as: "state",
+              },
+            ],
+          },
+        ],
+      });
+
+      if (!mandi.city.localizedContent)
+        await generateTranslationsForRecord(mandi.city, {
+          recordId: mandi.city.id,
+          recordType: "city",
+          fields: ["name"],
+        });
+
+      if (!mandi.city.state.localizedContent)
+        await generateTranslationsForRecord(mandi.city.state, {
+          recordId: mandi.city.state.id,
+          recordType: "state",
+          fields: ["name"],
+        });
     } catch (err: any) {
       console.error(
         `[mandiList ${mandiList.id}] Translation error on update:`,
@@ -271,7 +301,21 @@ export const updateMandi = async (req, res) => {
 
     await MandiList.update(updateFields, { where: { id } });
 
-    const updatedMandi = await MandiList.findByPk(id);
+    const updatedMandi = await MandiList.findOne({
+      where: { id },
+      include: [
+        {
+          model: City,
+          as: "city",
+          include: [
+            {
+              model: State,
+              as: "state",
+            },
+          ],
+        },
+      ],
+    });
 
     try {
       await generateTranslationsForRecord(updatedMandi, {
@@ -280,6 +324,20 @@ export const updateMandi = async (req, res) => {
         fields: ["mandiName", "address"],
         dateFields: [{ key: "createdAt" }],
       });
+
+      if (!updatedMandi.city.localizedContent)
+        await generateTranslationsForRecord(updatedMandi.city, {
+          recordId: updatedMandi.city.id,
+          recordType: "city",
+          fields: ["name"],
+        });
+
+      if (!updatedMandi.city.state.localizedContent)
+        await generateTranslationsForRecord(updatedMandi.city.state, {
+          recordId: updatedMandi.city.state.id,
+          recordType: "state",
+          fields: ["name"],
+        });
     } catch (err: any) {
       console.error(
         `[mandiList ${updatedMandi.id}] Translation error on update:`,

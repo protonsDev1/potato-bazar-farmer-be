@@ -6,7 +6,7 @@ import sequelize from "../database/models/db";
 export const listStates = async (req, res) => {
   try {
     const states = await State.findAll({
-      attributes: ["id", "name"],
+      attributes: ["id", "name", "localizedContent"],
       order: [["name", "ASC"]],
     });
 
@@ -30,7 +30,14 @@ export const listCities = async (req, res) => {
 
     const cities = await City.findAll({
       where: whereClause,
-      attributes: ["id", "name", "image", "position", "stateId"],
+      attributes: [
+        "id",
+        "name",
+        "image",
+        "position",
+        "stateId",
+        "localizedContent",
+      ],
       order: [
         [sequelize.literal('"position" IS NULL'), "ASC"],
         ["position", "ASC"],
@@ -76,10 +83,10 @@ export const listDistricts = async (req, res) => {
         {
           model: State,
           as: "state",
-          attributes: ["id", "name"],
+          attributes: ["id", "name", "localizedContent"],
         },
       ],
-      attributes: ["id", "name"],
+      attributes: ["id", "name", "localizedContent"],
       order: [["name", "ASC"]],
     });
 

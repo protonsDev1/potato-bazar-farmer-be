@@ -261,6 +261,8 @@ export async function generateNewsTranslationsAndAudio(news: News) {
     "regionalSnapshot",
     "policyRisks",
     "faqs",
+    "source",
+    "tags",
   ];
 
   // Pick only fields that exist on the record
@@ -305,6 +307,7 @@ export async function generateNewsTranslationsAndAudio(news: News) {
       const scalarFields = Object.keys(baseValues).filter(
         (f) =>
           f !== "faqs" &&
+          f !== "tags" &&
           f !== "keyNumbers" &&
           typeof baseValues[f] === "string"
       );
@@ -345,6 +348,18 @@ export async function generateNewsTranslationsAndAudio(news: News) {
         );
 
         translated["faqs"] = translatedFaqs;
+      }
+
+      if (Array.isArray(baseValues["tags"])) {
+        const tags = baseValues["tags"];
+
+        const translatedTags = await Promise.all(
+          tags.map((tag: string) =>
+            translateText(tag, config.translateTarget).catch(() => tag)
+          )
+        );
+
+        translated["tags"] = translatedTags;
       }
 
       /* -------------------------------------------------------

@@ -8,6 +8,7 @@ import {
 } from "../../../services/adminServices/crudOperationService";
 import DirectoryCategory from "../../../database/models/directoryCategory";
 import DirectorySubCategory from "../../../database/models/directorySubCategory";
+import { generateTranslationsForRecord } from "../../../utils/translation";
 
 export const addDirectorySubCategory = async (req, res) => {
   try {
@@ -26,6 +27,19 @@ export const addDirectorySubCategory = async (req, res) => {
         message: "New Directory Sub Category added successfully.",
         data: response.data,
       });
+    }
+
+    try {
+      await generateTranslationsForRecord(response.data, {
+        recordId: response.data.id,
+        recordType: "DirectorySubCategory",
+        fields: ["name"],
+      });
+    } catch (err: any) {
+      console.error(
+        `[Directory Sub Category ${response.data.id}] Translation error:`,
+        err?.message || err
+      );
     }
 
     return res
@@ -138,7 +152,7 @@ export const updateDirectorySubCategory = async (req, res) => {
 
     // const oldName = subCategory.name;
 
-    await subCategory.update(data);
+    const updatedRecord = await subCategory.update(data);
 
     // if (data.name && data.name !== oldName) {
     //   const category = await DirectoryCategory.findByPk(
@@ -158,9 +172,22 @@ export const updateDirectorySubCategory = async (req, res) => {
     //   }
     // }
 
+    try {
+      await generateTranslationsForRecord(updatedRecord, {
+        recordId: updatedRecord.id,
+        recordType: "DirectorySubCategory",
+        fields: ["name"],
+      });
+    } catch (err: any) {
+      console.error(
+        `[Directory Sub Category ${updatedRecord.id}] Translation error:`,
+        err?.message || err
+      );
+    }
+
     return res.status(200).json({
       message: "Directory Sub Category updated successfully.",
-      data: subCategory,
+      data: updatedRecord,
     });
   } catch (error) {
     return res.status(500).json({

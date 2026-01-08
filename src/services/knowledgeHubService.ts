@@ -13,7 +13,8 @@ export const createKnowledgeHubService = async (payload) => {
     await generateTranslationsForRecord(knowledgeHub, {
       recordId: knowledgeHub.id,
       recordType: "KnowledgeHub",
-      fields: ["title", "description", "category"],
+      fields: ["title", "description", "category", "source"],
+      arrayFields: ["tags"],
       dateFields: [{ key: "createdAt" }],
     });
   } catch (err: any) {
@@ -184,7 +185,8 @@ export const updateKnowledgeHubService = async (id, payload) => {
     await generateTranslationsForRecord(knowledgeHub, {
       recordId: knowledgeHub.id,
       recordType: "KnowledgeHub",
-      fields: ["title", "description", "category"],
+      fields: ["title", "description", "category", "source"],
+      arrayFields: ["tags"],
       dateFields: [{ key: "createdAt" }],
     });
   } catch (err: any) {
