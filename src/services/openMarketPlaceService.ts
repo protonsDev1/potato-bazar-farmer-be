@@ -16,7 +16,9 @@ export const getOpenMarketPlacesService = async (
   page,
   limit,
   filters,
-  category
+  category,
+  subCategory,
+  listingType
 ) => {
   const offset = (page - 1) * limit;
 
@@ -24,8 +26,11 @@ export const getOpenMarketPlacesService = async (
 
   const whereCondition: any = {};
 
-  if (userId) {
+  if (listingType === "own") {
     whereCondition.createdBy = userId;
+  } else if (listingType === "others") {
+    whereCondition.status = OPEN_MARKET_STATUS.APPROVED;
+    whereCondition.isActive = true;
   }
 
   if (Array.isArray(categories) && categories.length > 0) {
@@ -64,9 +69,19 @@ export const getOpenMarketPlacesService = async (
     whereCondition.locationOrCity = location;
   }
 
-  if(category)
-  {
-    whereCondition.category= category;
+  if (category) {
+    whereCondition.category = category;
+  }
+
+  if (subCategory) {
+    whereCondition[Op.or] = [
+      {
+        machineryCategory: subCategory,
+      },
+      {
+        serviceCategory: subCategory,
+      },
+    ];
   }
 
   const totalOpenMarketPlaces = await OpenMarketPlace.count();
@@ -99,5 +114,32 @@ export const getOpenMarketPlacesService = async (
     total: count,
     totalPages: Math.ceil(count / limit),
     openMarketPlaces: rows,
+  };
+};
+
+export const updateOpenMarketPlaceService = async (
+  recordId,
+  userId,
+  payload
+) => {
+  const record = await OpenMarketPlace.findOne({
+    where: {
+      id: recordId,
+      createdBy: userId,
+    },
+  });
+
+  if (!record)
+    return {
+      success: false,
+      error: "Open Market Place record not found.",
+      statusCode: 404,
+    };
+
+  await record.update(payload);
+
+  return {
+    success: true,
+    data: record,
   };
 };

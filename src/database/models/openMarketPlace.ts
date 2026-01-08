@@ -78,6 +78,7 @@ class OpenMarketPlace extends Model<
   declare attachments: string[];
   declare status: string;
   declare createdBy: User;
+  declare isActive: boolean;
 }
 
 OpenMarketPlace.init(
@@ -280,6 +281,10 @@ OpenMarketPlace.init(
       },
       onUpdate: "CASCADE",
       onDelete: "SET NULL",
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   },
   {
