@@ -7,6 +7,8 @@ import {
   deleteOpenMarketPlace,
   getOpenMarketPlaceById,
   getOpenMarketPlacesListing,
+  likeOrDislikeOpenMarketPlace,
+  updateOpenMarketPlace,
   updateStatusForOpenMarketPlace,
 } from "../controller/openMarketPlaceController";
 import {
@@ -23,6 +25,7 @@ router.post(
   validator.body(createOpenMarketSchema),
   createOpenMarketPlace
 );
+router.post("/toggle-like/:id", authMiddleware, likeOrDislikeOpenMarketPlace);
 router.get("/", authMiddleware, getOpenMarketPlacesListing);
 router.get("/:id", authMiddleware, getOpenMarketPlaceById);
 router.put(
@@ -30,6 +33,11 @@ router.put(
   checkPermissionMiddleware(PERMISSIONS.OPEN_MARKET_PLACE),
   validator.body(updateStatusSchema),
   updateStatusForOpenMarketPlace
+);
+router.put(
+  "/:id",
+  checkPermissionMiddleware(PERMISSIONS.OPEN_MARKET_PLACE),
+  updateOpenMarketPlace
 );
 router.delete("/:id", authMiddleware, deleteOpenMarketPlace);
 
