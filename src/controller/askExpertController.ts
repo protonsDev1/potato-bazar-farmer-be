@@ -37,6 +37,14 @@ export const getAllQueries = async (req, res) => {
 
     const whereCondition: any = {};
 
+    const totalQueries = await AskExpert.count();
+    const totalOpenQueries = await AskExpert.count({
+      where: { status: QUERY_STATUS.OPEN },
+    });
+    const totalCloseQueries = await AskExpert.count({
+      where: { status: QUERY_STATUS.CLOSE },
+    });
+
     if (status) whereCondition.status = status;
 
     const { rows, count } = await AskExpert.findAndCountAll({
@@ -57,6 +65,11 @@ export const getAllQueries = async (req, res) => {
       success: true,
       message: "All queries fetched successfully.",
       data: {
+        dashStats: {
+          totalQueries,
+          totalOpenQueries,
+          totalCloseQueries,
+        },
         queries: rows,
         currentPage: page,
         total: count,

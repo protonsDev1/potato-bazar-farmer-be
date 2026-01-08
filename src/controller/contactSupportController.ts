@@ -54,6 +54,14 @@ export const getContactSupportList = async (req, res) => {
       ];
     }
 
+    const totalQueries = await ContactSupport.count();
+    const totalOpenQueries = await ContactSupport.count({
+      where: { status: CONTACT_SUPPORT_STATUS.OPEN },
+    });
+    const totalCloseQueries = await ContactSupport.count({
+      where: { status: CONTACT_SUPPORT_STATUS.CLOSE },
+    });
+
     const { count, rows } = await ContactSupport.findAndCountAll({
       where: whereCondition,
       include: [
@@ -72,6 +80,11 @@ export const getContactSupportList = async (req, res) => {
       success: true,
       message: "Contact support list fetched successfully.",
       data: {
+        dashStats: {
+          totalQueries,
+          totalOpenQueries,
+          totalCloseQueries,
+        },
         currentPage: page,
         total: count,
         totalPages: Math.ceil(count / limit),
