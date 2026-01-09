@@ -1,5 +1,7 @@
 import LikeOpenMarketPlace from "../database/models/likeOpenMarket";
-import OpenMarketPlace from "../database/models/openMarketPlace";
+import OpenMarketPlace, {
+  OPEN_MARKET_STATUS,
+} from "../database/models/openMarketPlace";
 import {
   createOpenMarketPlaceService,
   getOpenMarketPlacesService,
@@ -30,7 +32,13 @@ export const createOpenMarketPlace = async (req, res) => {
 
 export const getOpenMarketPlacesListing = async (req, res) => {
   try {
-    const { page = 1, perPage = 10, category, subCategory, listingType = "all" } = req.query;
+    const {
+      page = 1,
+      perPage = 10,
+      category,
+      subCategory,
+      listingType = "all",
+    } = req.query;
     const { id: userId } = req.user;
 
     const filters = parseFilters(req.query);
@@ -83,7 +91,7 @@ export const getOpenMarketPlaceById = async (req, res) => {
 
 export const updateStatusForOpenMarketPlace = async (req, res) => {
   try {
-    const { status, id } = req.body;
+    const { status, id, reason } = req.body;
 
     const response = await OpenMarketPlace.findByPk(id);
     if (!response)
@@ -92,7 +100,9 @@ export const updateStatusForOpenMarketPlace = async (req, res) => {
         message: "Open Market Place record not found.",
       });
 
-    await OpenMarketPlace.update({ status }, { where: { id } });
+    if (status === OPEN_MARKET_STATUS.REJECTED) {
+      await OpenMarketPlace.update({ status, reason }, { where: { id } });
+    } else await OpenMarketPlace.update({ status }, { where: { id } });
 
     return res.status(200).json({
       success: true,

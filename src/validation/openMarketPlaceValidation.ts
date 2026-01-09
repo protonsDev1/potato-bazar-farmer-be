@@ -68,4 +68,11 @@ export const updateStatusSchema = Joi.object({
   status: Joi.string()
     .valid(...Object.values(OPEN_MARKET_STATUS))
     .required(),
+  reason: Joi.when("status", {
+    is: OPEN_MARKET_STATUS.REJECTED,
+    then: Joi.string().required().messages({
+      "any.required": "reason is required when rejecting open market place",
+    }),
+    otherwise: Joi.string().optional().allow(null, ""),
+  }),
 });
