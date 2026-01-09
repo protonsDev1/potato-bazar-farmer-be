@@ -103,7 +103,7 @@ export const getJobById = async (req, res) => {
       include: [
         {
           model: User,
-          as: "creator",
+          as: "user",
           attributes: ["id", "name", "email", "mobile", "role"],
         },
       ],
