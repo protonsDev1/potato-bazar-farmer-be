@@ -79,6 +79,7 @@ class OpenMarketPlace extends Model<
   declare status: string;
   declare createdBy: User;
   declare isActive: boolean;
+  declare reason: string;
 }
 
 OpenMarketPlace.init(
@@ -285,6 +286,10 @@ OpenMarketPlace.init(
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    reason: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

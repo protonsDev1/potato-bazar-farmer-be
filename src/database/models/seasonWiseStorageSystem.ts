@@ -15,6 +15,8 @@ class SeasonWiseBookingSystem extends Model<
   declare id: CreationOptional<number>;
   declare coldStorageId: number;
   declare season: string | null;
+  declare monthTo: string | null;
+  declare monthFrom: string | null;
   declare quantityInKg: number | null;
 }
 
@@ -28,6 +30,14 @@ SeasonWiseBookingSystem.init(
       onDelete: "CASCADE",
     },
     season: { type: DataTypes.STRING, allowNull: true },
+    monthTo: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    monthFrom: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     quantityInKg: { type: DataTypes.DECIMAL, allowNull: true },
   },
   {
