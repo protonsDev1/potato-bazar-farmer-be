@@ -72,6 +72,7 @@ import directorySubCategoryRoutes from "./src/routes/adminRoutes/directory/direc
 import notificationRoutes from "./src/routes/notificationRoutes";
 import knowledgeHubRoutes from "./src/routes/knowledgeHubRoutes";
 import openMarketPlaceRoutes from "./src/routes/openMarketPlaceRoutes";
+import jobRoutes from "./src/routes/jobRoutes";
 
 const cors = require("cors");
 
@@ -156,6 +157,7 @@ app.use("/api/directories", directoryRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/knowledge_hubs", knowledgeHubRoutes);
 app.use("/api/open_market_places", openMarketPlaceRoutes);
+app.use("/api/jobs", jobRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
