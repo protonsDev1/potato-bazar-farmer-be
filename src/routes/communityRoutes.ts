@@ -21,10 +21,10 @@ router.post("/", authMiddleware, validator.body(createCommunityPostValidation), 
 router.get("/", authMiddleware, getApprovedPosts);
 
 // ADMIN
-router.get("/admin", adminMiddleware, getAllForAdmin);
+router.get("/admin", authMiddleware, getAllForAdmin);
 router.put(
   "/admin/:id",
-  adminMiddleware,
+  authMiddleware,
   validator.body(approveRejectValidation),
   approveRejectPost
 );
