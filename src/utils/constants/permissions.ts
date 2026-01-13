@@ -21,7 +21,8 @@ export const PERMISSIONS = {
   PROMOTIONAL_BANNERS: "promotional_banners",
   BROADCAST: "broadcast",
   OPEN_MARKET_PLACE: "open_market_place",
-  JOBS: "jobs"
+  JOBS: "jobs",
+  COMMUNITY: "community"
 } as const;
 
 export type PermissionType = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
