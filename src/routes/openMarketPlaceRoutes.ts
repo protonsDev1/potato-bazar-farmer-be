@@ -13,6 +13,7 @@ import {
 } from "../controller/openMarketPlaceController";
 import {
   createOpenMarketSchema,
+  updateOpenMarketSchema,
   updateStatusSchema,
 } from "../validation/openMarketPlaceValidation";
 
@@ -37,6 +38,7 @@ router.put(
 router.put(
   "/:id",
   checkPermissionMiddleware(PERMISSIONS.OPEN_MARKET_PLACE),
+  validator.body(updateOpenMarketSchema),
   updateOpenMarketPlace
 );
 router.delete("/:id", authMiddleware, deleteOpenMarketPlace);

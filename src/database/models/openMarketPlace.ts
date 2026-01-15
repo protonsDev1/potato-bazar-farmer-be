@@ -272,6 +272,7 @@ OpenMarketPlace.init(
     },
     status: {
       type: DataTypes.STRING,
+      defaultValue: OPEN_MARKET_STATUS.PENDING,
     },
     createdBy: {
       type: DataTypes.INTEGER,
