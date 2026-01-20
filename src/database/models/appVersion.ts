@@ -39,9 +39,10 @@ AppVersions.init(
     },
 
     versionCode: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+
 
     createdAt: {
       type: DataTypes.DATE,
@@ -54,7 +55,7 @@ AppVersions.init(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    isForceUpdateEnabled:{
+    isForceUpdateEnabled: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,

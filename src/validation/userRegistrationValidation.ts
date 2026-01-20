@@ -30,7 +30,6 @@ export const matchAppVersionSchema = Joi.object({
     }),
 
   versionCode: Joi.number()
-    .integer()
     .positive()
     .required()
     .messages({
