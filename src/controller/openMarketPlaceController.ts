@@ -161,7 +161,7 @@ export const likeOrDislikeOpenMarketPlace = async (req, res) => {
       await LikeOpenMarketPlace.destroy({ where: { userId, marketId } });
       return res.status(200).json({
         succces: true,
-        message: "Open Market Place disliked successfully!",
+        message: "Open Market Place un-liked successfully!",
       });
     } else {
       await LikeOpenMarketPlace.create({ userId, marketId });
