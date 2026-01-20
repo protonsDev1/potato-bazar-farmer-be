@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import CommunityPost from "../database/models/communityPost";
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import CommentCommunity from "../database/models/commentCommunity";
 import LikeCommunity from "../database/models/likeCommunity";
-import User from "../database/models/user";
+import User, { USER_ROLES } from "../database/models/user";
 
 export const createPost = async (req, res) => {
   try {
@@ -32,22 +32,26 @@ export const getApprovedPosts = async (req, res) => {
 
   const posts = await CommunityPost.findAll({
     where: whereCondition,
-    include: [
-      {
-        model: CommentCommunity,
-        as: "comments",
-        include: [
-          {
-            model: User,
-            as: "user",
-          },
+    attributes: {
+      include: [
+        [
+          Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM "likeCommunities" AS likes
+            WHERE likes."communityId" = "CommunityPost"."id"
+          )`),
+          "likeCount",
         ],
-      },
-      {
-        model: LikeCommunity,
-        as: "likes",
-      },
-    ],
+        [
+          Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM "commentCommunities" AS comments
+            WHERE comments."communityId" = "CommunityPost"."id"
+          )`),
+          "commentCount",
+        ],
+      ],
+    },
     order: [["createdAt", "DESC"]],
   });
 
@@ -81,22 +85,26 @@ export const getAllForAdmin = async (
 
     const { rows, count } = await CommunityPost.findAndCountAll({
       where,
-      include: [
-        {
-          model: CommentCommunity,
-          as: "comments",
-          include: [
-            {
-              model: User,
-              as: "user",
-            },
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM "likeCommunities" AS likes
+            WHERE likes."communityId" = "CommunityPost"."id"
+          )`),
+            "likeCount",
           ],
-        },
-        {
-          model: LikeCommunity,
-          as: "likes",
-        },
-      ],
+          [
+            Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM "commentCommunities" AS comments
+            WHERE comments."communityId" = "CommunityPost"."id"
+          )`),
+            "commentCount",
+          ],
+        ],
+      },
       order: [["createdAt", "DESC"]],
       limit,
       offset,
@@ -115,6 +123,7 @@ export const getAllForAdmin = async (
     res.status(500).json({ message: "Failed to load posts" });
   }
 };
+
 export const approveRejectPost = async (
   req: Request,
   res: Response,
@@ -139,6 +148,21 @@ export const approveRejectPost = async (
 
 export const getCommunityPostById = async (req, res) => {
   try {
+    const isValidCommunityPost = await CommunityPost.findByPk(req.params.id);
+
+    if (!isValidCommunityPost)
+      return res.status(404).json({
+        success: false,
+        message: "Community Post record not found.",
+      });
+
+    const countOfComments = await CommentCommunity.count({
+      where: { communityId: req.params.id },
+    });
+    const countOfLikes = await LikeCommunity.count({
+      where: { communityId: req.params.id },
+    });
+
     const communityPost = await CommunityPost.findOne({
       where: {
         id: req.params.id,
@@ -146,12 +170,22 @@ export const getCommunityPostById = async (req, res) => {
 
       include: [
         {
+          model: User,
+          as: "user",
+          attributes: {
+            exclude: ["password_hash", "playerId", "playerIdForWeb"],
+          },
+        },
+        {
           model: CommentCommunity,
           as: "comments",
           include: [
             {
               model: User,
               as: "user",
+              attributes: {
+                exclude: ["password_hash", "playerId", "playerIdForWeb"],
+              },
             },
           ],
         },
@@ -165,7 +199,7 @@ export const getCommunityPostById = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Community post detail page retrieved successfully.",
-      data: communityPost,
+      data: { communityPost, countOfComments, countOfLikes },
     });
   } catch (error) {
     console.error(error, "Error in fetching community post detail page.");
@@ -184,10 +218,10 @@ export const likeOrDislikeCommunityPost = async (req, res) => {
     const isValidCommunityPost = await CommunityPost.findByPk(communityId);
 
     if (!isValidCommunityPost)
-      return {
+      return res.status(404).json({
         success: false,
-        error: "Community Post not found!",
-      };
+        message: "Community Post record not found.",
+      });
 
     const isExistingCommunityPostLiked = await LikeCommunity.findOne({
       where: { userId, communityId },
@@ -246,10 +280,10 @@ export const postCommentInCommunityPost = async (req, res) => {
     const isValidCommunityPost = await CommunityPost.findByPk(communityId);
 
     if (!isValidCommunityPost)
-      return {
+      return res.status(404).json({
         success: false,
         error: "Community Post not found!",
-      };
+      });
 
     await CommentCommunity.create({ userId, communityId, comment });
     return res.status(200).json({
@@ -260,6 +294,76 @@ export const postCommentInCommunityPost = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Error in posting comment in Community Post.",
+    });
+  }
+};
+
+export const deleteCommentOnPost = async (req, res) => {
+  try {
+    const { id: commentId } = req.params;
+    const { id: userId, role } = req.user;
+
+    const isValidCommentId = await CommentCommunity.findByPk(commentId);
+
+    if (!isValidCommentId)
+      return res.status(404).json({
+        success: false,
+        message: "Comment id not found!",
+      });
+
+    if (role === USER_ROLES.USER && userId !== isValidCommentId.userId)
+      return res.status(401).json({
+        success: false,
+        message:
+          "Only Super Admin, Sub Admin and user who made comment are authorized to delete it.",
+      });
+
+    await CommentCommunity.destroy({
+      where: {
+        id: commentId,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Comment deleted successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error in deleting comment in Community Post.",
+    });
+  }
+};
+
+export const getAllComments = async (req, res) => {
+  try {
+    const communityId = Number(req.params.id);
+    const isValidCommunityPost = await CommunityPost.findByPk(communityId);
+
+    if (!isValidCommunityPost)
+      return res.status(404).json({
+        success: false,
+        error: "Community Post not found!",
+      });
+
+    const comments = await CommentCommunity.findAll({
+      where: {
+        communityId,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "All Comments fetched for the given post successfully.",
+      data: comments,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message ||
+        "Error in retrieving all comments in given Community Post.",
     });
   }
 };

@@ -15,6 +15,8 @@ import {
   likeOrDislikeCommunityPost,
   deleteCommunityPost,
   postCommentInCommunityPost,
+  deleteCommentOnPost,
+  getAllComments,
 } from "../controller/communityController";
 import {
   createCommunityPostValidation,
@@ -24,13 +26,13 @@ import {
 const router = express.Router();
 const validator = createValidator({});
 
-// USER
 router.post(
   "/",
   authMiddleware,
   validator.body(createCommunityPostValidation),
   createPost,
 );
+
 router.post("/toggle-like/:id", authMiddleware, likeOrDislikeCommunityPost);
 router.post("/comment/:id", authMiddleware, postCommentInCommunityPost);
 router.get("/", authMiddleware, getApprovedPosts);
@@ -41,13 +43,19 @@ router.get(
   checkPermissionMiddleware(PERMISSIONS.COMMUNITY),
   getAllForAdmin,
 );
-router.get("/:id", authMiddleware, getCommunityPostById);
+
+router.get("/comments/:id", authMiddleware, getAllComments);
+
+router.delete("/comment/:id", authMiddleware, deleteCommentOnPost);
+
 router.put(
   "/admin/:id",
   checkPermissionMiddleware(PERMISSIONS.COMMUNITY),
   validator.body(approveRejectValidation),
   approveRejectPost,
 );
+
+router.get("/:id", authMiddleware, getCommunityPostById);
 router.delete("/:id", authMiddleware, deleteCommunityPost);
 
 export default router;
