@@ -379,6 +379,8 @@ export async function onboardColdStorage(payload: any) {
             {
               coldStorageId: coldStorage.id,
               season: system.season,
+              monthTo: system.monthTo,
+              monthFrom: system.monthFrom,
               quantityInKg: system.quantityInKg,
             },
             { transaction: t }
@@ -725,7 +727,7 @@ export const retrieveColdStorageProfile = async (
         where: { coldStorageId },
       }),
       SeasonWiseBookingSystem.findAll({
-        attributes: ["season", "quantityInKg"],
+        attributes: ["season", "monthTo", "monthFrom", "quantityInKg"],
         where: { coldStorageId },
       }),
       SlabWiseDiscount.findAll({
@@ -1480,7 +1482,9 @@ export const addColdStoragesToWorksheet = async (coldStorages, worksheet) => {
         storageBookingSystems.map((s) => s.bookingSystem).join(", ") || "",
       seasonWiseBookingSystems:
         seasonWiseBookingSystems
-          .map((s) => `${s.season}: ${s.quantityInKg}kg`)
+          .map(
+            (s) => `${s.season} (${s.monthTo}-${s.monthFrom}) : ${s.quantityInKg}kg`
+          )
           .join(" | ") || "",
       slabWiseDiscounts:
         slabWiseDiscounts

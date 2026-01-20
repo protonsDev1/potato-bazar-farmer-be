@@ -71,6 +71,10 @@ import directoryCategoryRoutes from "./src/routes/adminRoutes/directory/director
 import directorySubCategoryRoutes from "./src/routes/adminRoutes/directory/directorySubCategoryRoutes";
 import notificationRoutes from "./src/routes/notificationRoutes";
 import knowledgeHubRoutes from "./src/routes/knowledgeHubRoutes";
+import openMarketPlaceRoutes from "./src/routes/openMarketPlaceRoutes";
+import jobRoutes from "./src/routes/jobRoutes";
+import communityRoutes from "./src/routes/communityRoutes";
+import transportServiceRoutes from "./src/routes/transportServiceRoutes";
 
 const cors = require("cors");
 
@@ -154,6 +158,10 @@ app.use("/api/directory_sub_categories", directorySubCategoryRoutes);
 app.use("/api/directories", directoryRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/knowledge_hubs", knowledgeHubRoutes);
+app.use("/api/open_market_places", openMarketPlaceRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/community_posts", communityRoutes);
+app.use("/api/transport_services", transportServiceRoutes);
 
 const PORT = 8000;
 const startServer = async () => {

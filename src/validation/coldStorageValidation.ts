@@ -288,6 +288,8 @@ export const coldStorageSchema = Joi.object({
       Joi.object({
         season: Joi.string().max(255).required(),
         quantityInKg: Joi.number().min(0).max(1000000000).required(),
+        monthTo: Joi.string().optional().allow(null, ""),
+        monthFrom: Joi.string().optional().allow(null, ""),
       })
     )
     .optional(),
@@ -621,6 +623,8 @@ export const updateColdStorageSchema = Joi.object({
       Joi.object({
         season: Joi.string().max(255).required(),
         quantityInKg: Joi.number().min(0).max(1000000000).required(),
+        monthTo: Joi.string().optional().allow(null, ""),
+        monthFrom: Joi.string().optional().allow(null, ""),
       })
     )
     .optional(),
