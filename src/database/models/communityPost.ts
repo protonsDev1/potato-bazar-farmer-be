@@ -7,6 +7,7 @@ import {
 } from "sequelize";
 
 import sequelize from "./db";
+import User from "./user";
 
 class CommunityPost extends Model<
   InferAttributes<CommunityPost>,
@@ -86,5 +87,16 @@ CommunityPost.init(
     timestamps: true
   }
 );
+
+User.hasMany(CommunityPost, {
+  foreignKey: "userId",
+  as: "userPosts",
+});
+
+CommunityPost.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
 
 export default CommunityPost;

@@ -44,12 +44,6 @@ CommentCommunity.init(
     modelName: "CommentCommunity",
     tableName: "commentCommunities",
     timestamps: true,
-    indexes: [
-      {
-        unique: true,
-        fields: ["userId", "communityId"],
-      },
-    ],
   }
 );
 
