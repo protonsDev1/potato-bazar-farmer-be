@@ -1,32 +1,53 @@
 import express from "express";
 import { createValidator } from "express-joi-validation";
-import { adminMiddleware, authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
+import {
+  adminMiddleware,
+  authMiddleware,
+  checkPermissionMiddleware,
+} from "../utils/userAuth";
 import { PERMISSIONS } from "../utils/constants/permissions";
 import {
   createPost,
   getApprovedPosts,
   getAllForAdmin,
-  approveRejectPost
+  approveRejectPost,
+  getCommunityPostById,
+  likeOrDislikeCommunityPost,
+  deleteCommunityPost,
+  postCommentInCommunityPost,
 } from "../controller/communityController";
 import {
   createCommunityPostValidation,
-  approveRejectValidation
+  approveRejectValidation,
 } from "../validation/communityValidation";
 
 const router = express.Router();
 const validator = createValidator({});
 
 // USER
-router.post("/", authMiddleware, validator.body(createCommunityPostValidation), createPost);
+router.post(
+  "/",
+  authMiddleware,
+  validator.body(createCommunityPostValidation),
+  createPost,
+);
+router.post("/toggle-like/:id", authMiddleware, likeOrDislikeCommunityPost);
+router.post("/comment/:id", authMiddleware, postCommentInCommunityPost);
 router.get("/", authMiddleware, getApprovedPosts);
 
 // ADMIN
-router.get("/admin", authMiddleware, getAllForAdmin);
+router.get(
+  "/admin",
+  checkPermissionMiddleware(PERMISSIONS.COMMUNITY),
+  getAllForAdmin,
+);
+router.get("/:id", authMiddleware, getCommunityPostById);
 router.put(
   "/admin/:id",
-  authMiddleware,
+  checkPermissionMiddleware(PERMISSIONS.COMMUNITY),
   validator.body(approveRejectValidation),
-  approveRejectPost
+  approveRejectPost,
 );
+router.delete("/:id", authMiddleware, deleteCommunityPost);
 
 export default router;
