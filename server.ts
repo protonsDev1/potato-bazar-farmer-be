@@ -75,6 +75,7 @@ import openMarketPlaceRoutes from "./src/routes/openMarketPlaceRoutes";
 import jobRoutes from "./src/routes/jobRoutes";
 import communityRoutes from "./src/routes/communityRoutes";
 import transportServiceRoutes from "./src/routes/transportServiceRoutes";
+import transportRequirementRoutes from "./src/routes/transportRequirementRoutes";
 
 const cors = require("cors");
 
@@ -162,6 +163,7 @@ app.use("/api/open_market_places", openMarketPlaceRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/community_posts", communityRoutes);
 app.use("/api/transport_services", transportServiceRoutes);
+app.use("/api/transport_requirements", transportRequirementRoutes);
 
 const PORT = 8000;
 const startServer = async () => {

@@ -1,7 +1,9 @@
 import { Op, Sequelize } from "sequelize";
-import TransportService, {
-  TRANSPORT_SERVICE_STATUS,
-} from "../database/models/transportService";
+import { TRANSPORT_SERVICE_STATUS } from "../database/models/transportRequirement";
+import TransportService from "../database/models/transportService";
+import User, { USER_ROLES } from "../database/models/user";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export const createTransport = async (payload) => {
   const transportService = await TransportService.create(payload);
@@ -70,6 +72,24 @@ export const updateTransport = async (recordId, userId, payload) => {
       error: "Transport Service record not found.",
       statusCode: 404,
     };
+
+  if (record.status === TRANSPORT_SERVICE_STATUS.REJECTED) {
+    payload.status = TRANSPORT_SERVICE_STATUS.PENDING;
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Transport Service updated.",
+      description:
+        "A Rejected transport service has been moved to pending, please check it.",
+      senderId: userId,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.TRANSPORT_SERVICES,
+      referenceId: recordId,
+    });
+  }
 
   await record.update(payload);
 

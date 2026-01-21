@@ -6,58 +6,88 @@ import {
   Model,
 } from "sequelize";
 import sequelize from "./db";
-import { TRANSPORT_SERVICE_STATUS } from "./transportRequirement";
+import User from "./user";
 
-class TransportService extends Model<
-  InferAttributes<TransportService>,
-  InferCreationAttributes<TransportService>
+export enum TRANSPORT_SERVICE_STATUS {
+  APPROVED = "approved",
+  PENDING = "pending",
+  REJECTED = "rejected",
+}
+
+class TransportRequirement extends Model<
+  InferAttributes<TransportRequirement>,
+  InferCreationAttributes<TransportRequirement>
 > {
   declare id: CreationOptional<number>;
-  declare transporterType: string;
+  declare requirementUid: string;
+  declare pickLocationOrCity: string | null;
+  declare pickDistrict: string | null;
+  declare pickState: string | null;
+  declare dropLocationOrCity: string | null;
+  declare dropDistrict: string | null;
+  declare dropState: string | null;
+  declare quantityUnit: string | null;
+  declare quantity: number | null;
+  declare packaging: string | null;
   declare vehicleTypeRequired: string[];
-  declare noOfVehicles: number;
-  declare routeCoverage: string[];
-  declare rateType: string;
+  declare preferredPickUpDate: string | null;
+  declare rateExpectation: string | null;
   declare additionalRequired: string[];
-  declare documents: string[];
   declare ownerOrCompanyName: string | null;
   declare phoneNumber: string | null;
   declare whatsappNumber: string | null;
   declare alternatePhoneNumber: string | null;
   declare isActive: boolean;
   declare createdBy: number;
-  declare pbVerified: boolean;
-  declare isAvailable: boolean;
   declare status: string;
   declare reason: string | null;
 }
 
-TransportService.init(
+TransportRequirement.init(
   {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    transporterType: {
+    requirementUid: { type: DataTypes.STRING, allowNull: true, unique: true },
+    pickLocationOrCity: {
+      type: DataTypes.STRING,
+    },
+    pickDistrict: {
+      type: DataTypes.STRING,
+    },
+    pickState: {
+      type: DataTypes.STRING,
+    },
+    dropLocationOrCity: {
+      type: DataTypes.STRING,
+    },
+    dropDistrict: {
+      type: DataTypes.STRING,
+    },
+    dropState: {
+      type: DataTypes.STRING,
+    },
+    quantityUnit: {
+      type: DataTypes.STRING,
+    },
+    quantity: {
+      type: DataTypes.NUMBER,
+    },
+    packaging: {
       type: DataTypes.STRING,
     },
     vehicleTypeRequired: {
       type: DataTypes.ARRAY(DataTypes.STRING),
     },
-    noOfVehicles: {
-      type: DataTypes.NUMBER,
+    preferredPickUpDate: {
+      type: DataTypes.DATEONLY,
     },
-    routeCoverage: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-    },
-    rateType: {
+    rateExpectation: {
       type: DataTypes.STRING,
     },
     additionalRequired: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-    },
-    documents: {
       type: DataTypes.ARRAY(DataTypes.STRING),
     },
     ownerOrCompanyName: {
@@ -71,14 +101,6 @@ TransportService.init(
     },
     alternatePhoneNumber: {
       type: DataTypes.STRING,
-    },
-    pbVerified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    isAvailable: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
     },
     isActive: {
       type: DataTypes.BOOLEAN,
@@ -101,10 +123,16 @@ TransportService.init(
   },
   {
     sequelize,
-    modelName: "TransportService",
-    tableName: "transportServices",
+    modelName: "TransportRequirement",
+    tableName: "transportRequirements",
     timestamps: true,
   },
 );
 
-export default TransportService;
+// Associations
+TransportRequirement.belongsTo(User, {
+  foreignKey: "createdBy",
+  as: "creator",
+});
+
+export default TransportRequirement;
