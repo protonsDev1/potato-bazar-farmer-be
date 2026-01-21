@@ -19,6 +19,7 @@ export const getJobsService = async (
     salaryMin?: string;
     salaryMax?: string;
     isFavourite?: string;
+    search?: string;
   },
   sortBy: string = "latest"
 ) => {
@@ -26,6 +27,16 @@ export const getJobsService = async (
 
   const where: any = {};
   const userWhere: any = {};
+
+  if (filters.search && filters.search.trim() !== "") {
+    const searchTerm = `%${filters.search.trim()}%`;
+
+    where[Op.or] = [
+      { title: { [Op.iLike]: searchTerm } },
+      { companyName: { [Op.iLike]: searchTerm } },
+      { category: { [Op.iLike]: searchTerm } },
+    ];
+  }
 
   if (!userId) {
     listingType = "all"; // force all for non-auth users

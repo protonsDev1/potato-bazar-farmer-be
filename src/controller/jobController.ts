@@ -27,6 +27,7 @@ export const getJobs = async (req, res) => {
       salaryMax,
       isFavourite,
       sortBy = "latest",
+      search,
     } = req.query;
 
     const userId = req.user ? req.user.id : null;
@@ -45,6 +46,7 @@ export const getJobs = async (req, res) => {
         salaryMin,
         salaryMax,
         isFavourite,
+        search,
       },
       sortBy
     );
