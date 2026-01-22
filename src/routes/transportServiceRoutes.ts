@@ -4,6 +4,7 @@ import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
 import { PERMISSIONS } from "../utils/constants/permissions";
 
 import {
+  availabilitySchema,
   createTransportServiceSchema,
   updateStatusSchema,
   updateTransportServiceSchema,
@@ -16,6 +17,7 @@ import {
   likeOrDislikeTransportService,
   updateStatusForTransportService,
   updateTransportService,
+  updateTransportServiceAvailability,
 } from "../controller/transportController";
 
 const router = express.Router();
@@ -25,7 +27,7 @@ router.post(
   "/",
   authMiddleware,
   validator.body(createTransportServiceSchema),
-  createTransportService
+  createTransportService,
 );
 router.post("/toggle-like/:id", authMiddleware, likeOrDislikeTransportService);
 router.get("/", authMiddleware, getTransportServiceListing);
@@ -34,14 +36,21 @@ router.put(
   "/status",
   checkPermissionMiddleware(PERMISSIONS.TRANSPORT_SERVICE),
   validator.body(updateStatusSchema),
-  updateStatusForTransportService
+  updateStatusForTransportService,
 );
 router.put(
   "/:id",
-  checkPermissionMiddleware(PERMISSIONS.TRANSPORT_SERVICE),
+  authMiddleware,
   validator.body(updateTransportServiceSchema),
-  updateTransportService
+  updateTransportService,
 );
 router.delete("/:id", authMiddleware, deleteTransportService);
+
+router.patch(
+  "/:transportId/availability",
+  authMiddleware,
+  validator.body(availabilitySchema),
+  updateTransportServiceAvailability,
+);
 
 export default router;

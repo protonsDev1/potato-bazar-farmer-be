@@ -32,6 +32,15 @@ export const getApprovedPosts = async (req, res) => {
 
   const posts = await CommunityPost.findAll({
     where: whereCondition,
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: {
+          exclude: ["password_hash", "playerId", "playerIdForWeb"],
+        },
+      },
+    ],
     attributes: {
       include: [
         [
@@ -85,6 +94,15 @@ export const getAllForAdmin = async (
 
     const { rows, count } = await CommunityPost.findAndCountAll({
       where,
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: {
+            exclude: ["password_hash", "playerId", "playerIdForWeb"],
+          },
+        },
+      ],
       attributes: {
         include: [
           [
