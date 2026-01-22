@@ -49,7 +49,7 @@ export const createTransportService = async (req, res) => {
 
 export const getTransportServiceListing = async (req, res) => {
   try {
-    const { page = 1, perPage = 10, listingType = "all" } = req.query;
+    const { page = 1, perPage = 10, listingType = "all", status } = req.query;
 
     const { id: userId } = req.user;
 
@@ -58,6 +58,7 @@ export const getTransportServiceListing = async (req, res) => {
       page,
       perPage,
       listingType,
+      status
     );
 
     return res.status(200).json({
