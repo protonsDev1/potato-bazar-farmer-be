@@ -13,7 +13,7 @@ export const createTransport = async (payload) => {
   };
 };
 
-export const getTransportService = async (userId, page, limit, listingType) => {
+export const getTransportService = async (userId, page, limit, listingType, status) => {
   const offset = (page - 1) * limit;
 
   const whereCondition: any = {};
@@ -24,6 +24,11 @@ export const getTransportService = async (userId, page, limit, listingType) => {
     whereCondition.status = TRANSPORT_SERVICE_STATUS.APPROVED;
     whereCondition.isActive = true;
   }
+
+   if(status)
+   {
+    whereCondition.status= status;
+   }
 
   const totalTransportServices = await TransportService.count();
   const totalApprovedTransportServices = await TransportService.count({
