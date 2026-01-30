@@ -18,7 +18,8 @@ export const getOpenMarketPlacesService = async (
   filters,
   category,
   subCategory,
-  listingType
+  listingType,
+  search,
 ) => {
   const offset = (page - 1) * limit;
 
@@ -41,7 +42,7 @@ export const getOpenMarketPlacesService = async (
     if (validCategories.length) {
       whereCondition.category = Sequelize.where(
         Sequelize.fn("LOWER", Sequelize.col("category")),
-        { [Op.in]: validCategories }
+        { [Op.in]: validCategories },
       );
     }
   }
@@ -55,11 +56,11 @@ export const getOpenMarketPlacesService = async (
       whereCondition[Op.or] = [
         Sequelize.where(
           Sequelize.fn("LOWER", Sequelize.col("machineryCategory")),
-          { [Op.in]: validSubCategories }
+          { [Op.in]: validSubCategories },
         ),
         Sequelize.where(
           Sequelize.fn("LOWER", Sequelize.col("serviceCategory")),
-          { [Op.in]: validSubCategories }
+          { [Op.in]: validSubCategories },
         ),
       ];
     }
@@ -95,6 +96,16 @@ export const getOpenMarketPlacesService = async (
     where: { status: OPEN_MARKET_STATUS.PENDING },
   });
 
+  if (search && search.trim() !== "") {
+    const searchTerm = `%${search.trim()}%`;
+
+    whereCondition[Op.or] = [
+      { machineryCategory: { [Op.iLike]: searchTerm } },
+      { expectedPrice: { [Op.iLike]: searchTerm } },
+      { brandName: { [Op.iLike]: searchTerm } },
+    ];
+  }
+
   const { rows, count } = await OpenMarketPlace.findAndCountAll({
     where: whereCondition,
     limit,
@@ -120,7 +131,7 @@ export const getOpenMarketPlacesService = async (
 export const updateOpenMarketPlaceService = async (
   recordId,
   userId,
-  payload
+  payload,
 ) => {
   const record = await OpenMarketPlace.findOne({
     where: {

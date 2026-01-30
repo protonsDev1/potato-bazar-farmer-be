@@ -38,6 +38,7 @@ export const getOpenMarketPlacesListing = async (req, res) => {
       category,
       subCategory,
       listingType = "all",
+      search
     } = req.query;
     const { id: userId } = req.user;
 
@@ -50,7 +51,8 @@ export const getOpenMarketPlacesListing = async (req, res) => {
       filters,
       category,
       subCategory,
-      listingType
+      listingType,
+      search
     );
 
     return res.status(200).json({
