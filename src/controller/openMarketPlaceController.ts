@@ -38,7 +38,8 @@ export const getOpenMarketPlacesListing = async (req, res) => {
       category,
       subCategory,
       listingType = "all",
-      search
+      isFavourite,
+      search,
     } = req.query;
     const { id: userId } = req.user;
 
@@ -52,7 +53,8 @@ export const getOpenMarketPlacesListing = async (req, res) => {
       category,
       subCategory,
       listingType,
-      search
+      isFavourite,
+      search,
     );
 
     return res.status(200).json({
@@ -70,17 +72,40 @@ export const getOpenMarketPlacesListing = async (req, res) => {
 
 export const getOpenMarketPlaceById = async (req, res) => {
   try {
-    const response = await OpenMarketPlace.findByPk(req.params.id);
-    if (!response)
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    const place = await OpenMarketPlace.findByPk(id);
+
+    if (!place) {
       return res.status(404).json({
         success: false,
         message: "Open Market Place record not found.",
       });
+    }
+
+    const [likeCount, likedRecord] = await Promise.all([
+      LikeOpenMarketPlace.count({
+        where: { marketId: place.id },
+      }),
+      userId
+        ? LikeOpenMarketPlace.findOne({
+            where: {
+              userId,
+              marketId: place.id,
+            },
+          })
+        : null,
+    ]);
 
     return res.status(200).json({
       success: true,
       message: "Retrieved open market place detail page successfully.",
-      data: response,
+      data: {
+        ...place.toJSON(),
+        isLiked: !!likedRecord,
+        likeCount,
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -188,7 +213,7 @@ export const updateOpenMarketPlace = async (req, res) => {
     const updatedRecord = await updateOpenMarketPlaceService(
       Number(id),
       userId,
-      req.body
+      req.body,
     );
 
     if (!updatedRecord.success) {

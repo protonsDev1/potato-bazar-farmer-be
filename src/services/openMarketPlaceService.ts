@@ -2,6 +2,7 @@ import { Op, Sequelize } from "sequelize";
 import OpenMarketPlace, {
   OPEN_MARKET_STATUS,
 } from "../database/models/openMarketPlace";
+import LikeOpenMarketPlace from "../database/models/likeOpenMarket";
 
 export const createOpenMarketPlaceService = async (payload) => {
   const openMarketPlace = await OpenMarketPlace.create(payload);
@@ -19,6 +20,7 @@ export const getOpenMarketPlacesService = async (
   category,
   subCategory,
   listingType,
+  isFavourite,
   search,
 ) => {
   const offset = (page - 1) * limit;
@@ -106,6 +108,34 @@ export const getOpenMarketPlacesService = async (
     ];
   }
 
+  let favouritePlaceIds: number[] = [];
+
+  if (isFavourite === "true" && userId) {
+    const likedPlaces = await LikeOpenMarketPlace.findAll({
+      where: { userId },
+      attributes: ["marketId"],
+    });
+
+    favouritePlaceIds = likedPlaces.map((l) => l.marketId);
+
+    if (favouritePlaceIds.length === 0) {
+      return {
+        dashStats: {
+          totalOpenMarketPlaces,
+          totalApprovedOpenMarketPlaces,
+          totalPendingOpenMarketPlaces,
+          totalRejectedOpenMarketPlaces,
+        },
+        currentPage: page,
+        total: 0,
+        totalPages: 0,
+        openMarketPlaces: [],
+      };
+    }
+
+    whereCondition.id = { [Op.in]: favouritePlaceIds };
+  }
+
   const { rows, count } = await OpenMarketPlace.findAndCountAll({
     where: whereCondition,
     limit,
@@ -113,6 +143,30 @@ export const getOpenMarketPlacesService = async (
     distinct: true,
     order: [["createdAt", "DESC"]],
   });
+
+  const placesWithLikeData = await Promise.all(
+    rows.map(async (place) => {
+      const [likeCount, likedRecord] = await Promise.all([
+        LikeOpenMarketPlace.count({
+          where: { marketId: place.id },
+        }),
+        userId
+          ? LikeOpenMarketPlace.findOne({
+              where: {
+                userId,
+                marketId: place.id,
+              },
+            })
+          : null,
+      ]);
+
+      return {
+        ...place.toJSON(),
+        isLiked: !!likedRecord,
+        likeCount,
+      };
+    }),
+  );
 
   return {
     dashStats: {
@@ -124,7 +178,7 @@ export const getOpenMarketPlacesService = async (
     currentPage: page,
     total: count,
     totalPages: Math.ceil(count / limit),
-    openMarketPlaces: rows,
+    openMarketPlaces: placesWithLikeData,
   };
 };
 
