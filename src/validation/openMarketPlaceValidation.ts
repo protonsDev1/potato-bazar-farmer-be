@@ -121,6 +121,7 @@ export const updateOpenMarketSchema = Joi.object({
     .pattern(/^[6-9]\d{9}$/)
     .allow(null, ""),
   attachments: Joi.array().items(Joi.string()).optional(),
+  isActive: Joi.boolean().optional().allow(null),
 });
 
 export const updateStatusSchema = Joi.object({
