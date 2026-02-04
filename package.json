@@ -21,7 +21,8 @@
     "add-entityId:agent": "ts-node src/scripts/addEntityIdForOldUserData.ts",
     "seed:mobile": "ts-node src/scripts/mobileSeed.ts",
     "seed:directory": "ts-node src/scripts/seedDirecoryData.ts",
-    "seed:directory-plan": "ts-node src/scripts/seedDirectoryPlans.ts"
+    "seed:directory-plan": "ts-node src/scripts/seedDirectoryPlans.ts",
+    "seed:reprocess-news": "ts-node src/scripts/reprocessNewsImages.ts"
   },
   "author": "",
   "license": "ISC",
