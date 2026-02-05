@@ -22,7 +22,7 @@
     "seed:mobile": "ts-node src/scripts/mobileSeed.ts",
     "seed:directory": "ts-node src/scripts/seedDirecoryData.ts",
     "seed:directory-plan": "ts-node src/scripts/seedDirectoryPlans.ts",
-    "seed:reprocess-news": "ts-node src/scripts/reprocessNewsImages.ts"
+    "seed:reprocess-images": "ts-node src/scripts/reprocessImages.ts"
   },
   "author": "",
   "license": "ISC",
