@@ -5,6 +5,7 @@ import District from "../database/models/district";
 import KnowledgeHub from "../database/models/knowledgeHub";
 import KnowledgeHubView from "../database/models/knowledgeHubView";
 import { generateTranslationsForRecord } from "../utils/translation";
+import { getThumbnailUrl } from "../utils/commonCode";
 
 export const createKnowledgeHubService = async (payload) => {
   const knowledgeHub = await KnowledgeHub.create(payload);
@@ -20,7 +21,7 @@ export const createKnowledgeHubService = async (payload) => {
   } catch (err: any) {
     console.error(
       `[KnowledgeHub ${knowledgeHub.id}] Translation error:`,
-      err?.message || err
+      err?.message || err,
     );
   }
 
@@ -83,8 +84,16 @@ export const listKnowledgeHubService = async ({
       const views = await KnowledgeHubView.count({
         where: { knowledgeHubId: hub.id },
       });
-      return { ...hub.toJSON(), views };
-    })
+      const json = hub.toJSON();
+
+      const thumbnailUrls = (json.images || []).map(getThumbnailUrl);
+
+      return {
+        ...json,
+        views,
+        thumbnailUrls,
+      };
+    }),
   );
 
   return {
@@ -101,7 +110,7 @@ export const listKnowledgeHubService = async ({
 };
 
 export const getKnowledgeHubsByIdService = async (id, user) => {
-  const knowledgeHubs = await KnowledgeHub.findOne({
+  const knowledgeHub = await KnowledgeHub.findOne({
     where: { id },
     include: [
       {
@@ -117,7 +126,7 @@ export const getKnowledgeHubsByIdService = async (id, user) => {
     ],
   });
 
-  if (!knowledgeHubs) {
+  if (!knowledgeHub) {
     return {
       success: false,
       statusCode: 404,
@@ -136,12 +145,15 @@ export const getKnowledgeHubsByIdService = async (id, user) => {
     where: { knowledgeHubId: id },
   });
 
+  const knowledgeHubJson = knowledgeHub.toJSON();
+  const thumbnailUrls = (knowledgeHubJson.images || []).map(getThumbnailUrl);
+
   const relatedKnowledgeHubs = await KnowledgeHub.findAll({
     where: {
-      id: { [Op.ne]: knowledgeHubs.id },
+      id: { [Op.ne]: knowledgeHub.id },
       [Op.or]: [
-        { category: knowledgeHubs.category },
-        { tags: { [Op.overlap]: knowledgeHubs?.tags } },
+        { category: knowledgeHub.category },
+        { tags: { [Op.overlap]: knowledgeHub?.tags } },
       ],
     },
     include: [
@@ -159,13 +171,21 @@ export const getKnowledgeHubsByIdService = async (id, user) => {
     limit: 5,
   });
 
+  const relatedKnowledgeHubsWithThumbs = relatedKnowledgeHubs.map((item) => {
+    const json = item.toJSON();
+    return {
+      ...json,
+      thumbnailUrls: (json.images || []).map(getThumbnailUrl),
+    };
+  });
+
   return {
     success: true,
     statusCode: 200,
     message: "Knowledge Hubs fetched successfully",
     data: {
-      news: { ...knowledgeHubs.toJSON(), views: viewCount },
-      relatedKnowledgeHubs,
+      news: { ...knowledgeHub.toJSON(), views: viewCount, thumbnailUrls },
+      relatedKnowledgeHubsWithThumbs,
     },
   };
 };
@@ -192,7 +212,7 @@ export const updateKnowledgeHubService = async (id, payload) => {
   } catch (err: any) {
     console.error(
       `[KnowledgeHub ${knowledgeHub.id}] Translation error on update:`,
-      err?.message || err
+      err?.message || err,
     );
   }
 
