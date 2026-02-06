@@ -82,12 +82,14 @@ export const listNewsService = async ({
       const views = await NewsView.count({ where: { newsId: news.id } });
       const json = news.toJSON();
 
-      const thumbnailUrls = (json.images || []).map(getThumbnailUrl);
+      const originalImages = json.images || [];
+      const compressedImages = originalImages.map(getThumbnailUrl);
 
       return {
         ...json,
         views,
-        thumbnailUrls,
+        images: compressedImages,
+        originalImages,
       };
     }),
   );
@@ -163,13 +165,17 @@ export const getNewsByIdService = async (id, user) => {
   });
 
   const newsJson = news.toJSON();
-  const thumbnailUrls = (newsJson.images || []).map(getThumbnailUrl);
+  const originalImages = newsJson.images || [];
+  const compressedImages = originalImages.map(getThumbnailUrl);
 
-  const relatedNewsWithThumbs = relatedNews.map((item) => {
+  const relatedNewsWithImages = relatedNews.map((item) => {
     const json = item.toJSON();
+    const originals = json.images || [];
+
     return {
       ...json,
-      thumbnailUrls: (json.images || []).map(getThumbnailUrl),
+      images: originals.map(getThumbnailUrl),
+      originalImages: originals,
     };
   });
 
@@ -178,8 +184,13 @@ export const getNewsByIdService = async (id, user) => {
     statusCode: 200,
     message: "News fetched successfully",
     data: {
-      news: { ...news.toJSON(), views: viewCount, thumbnailUrls },
-      relatedNews: relatedNewsWithThumbs,
+      news: {
+        ...newsJson,
+        images: compressedImages,
+        originalImages,
+        views: viewCount,
+      },
+      relatedNews: relatedNewsWithImages,
     },
   };
 };

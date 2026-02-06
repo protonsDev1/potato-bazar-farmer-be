@@ -86,12 +86,14 @@ export const listKnowledgeHubService = async ({
       });
       const json = hub.toJSON();
 
-      const thumbnailUrls = (json.images || []).map(getThumbnailUrl);
+      const originalImages = json.images || [];
+      const compressedImages = originalImages.map(getThumbnailUrl);
 
       return {
         ...json,
         views,
-        thumbnailUrls,
+        images: compressedImages,
+        originalImages,
       };
     }),
   );
@@ -146,7 +148,8 @@ export const getKnowledgeHubsByIdService = async (id, user) => {
   });
 
   const knowledgeHubJson = knowledgeHub.toJSON();
-  const thumbnailUrls = (knowledgeHubJson.images || []).map(getThumbnailUrl);
+  const originalImages = knowledgeHubJson.images || [];
+  const compressedImages = originalImages.map(getThumbnailUrl);
 
   const relatedKnowledgeHubs = await KnowledgeHub.findAll({
     where: {
@@ -171,11 +174,14 @@ export const getKnowledgeHubsByIdService = async (id, user) => {
     limit: 5,
   });
 
-  const relatedKnowledgeHubsWithThumbs = relatedKnowledgeHubs.map((item) => {
+  const relatedKnowledgeHubsWithImages = relatedKnowledgeHubs.map((item) => {
     const json = item.toJSON();
+    const originals = json.images || [];
+
     return {
       ...json,
-      thumbnailUrls: (json.images || []).map(getThumbnailUrl),
+      images: originals.map(getThumbnailUrl),
+      originalImages: originals,
     };
   });
 
@@ -184,8 +190,12 @@ export const getKnowledgeHubsByIdService = async (id, user) => {
     statusCode: 200,
     message: "Knowledge Hubs fetched successfully",
     data: {
-      news: { ...knowledgeHub.toJSON(), views: viewCount, thumbnailUrls },
-      relatedKnowledgeHubsWithThumbs,
+      news: {
+        ...knowledgeHubJson,
+        images: compressedImages,
+        originalImages,
+      },
+      relatedKnowledgeHubs: relatedKnowledgeHubsWithImages,
     },
   };
 };
