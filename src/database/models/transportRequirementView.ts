@@ -54,7 +54,7 @@ TransportRequirement.hasMany(TransportRequirementView, {
 
 TransportRequirementView.belongsTo(TransportRequirement, {
   foreignKey: "requirementId",
-  as: "coldStorageRequirement",
+  as: "transportRequirement",
 });
 
 export default TransportRequirementView;

@@ -2,6 +2,7 @@ import LikeTransportService from "../database/models/likeTransportService";
 import { NotificationType } from "../database/models/notification";
 import { TRANSPORT_SERVICE_STATUS } from "../database/models/transportRequirement";
 import TransportService from "../database/models/transportService";
+import TransportServiceView from "../database/models/transportServiceView";
 import User, { USER_ROLES } from "../database/models/user";
 import { sendNotificationService } from "../services/notificationService";
 
@@ -49,7 +50,14 @@ export const createTransportService = async (req, res) => {
 
 export const getTransportServiceListing = async (req, res) => {
   try {
-    const { page = 1, perPage = 10, listingType = "all", status } = req.query;
+    const {
+      page = 1,
+      perPage = 10,
+      listingType = "all",
+      status,
+      search,
+      isFavourite,
+    } = req.query;
 
     const { id: userId } = req.user;
 
@@ -58,7 +66,9 @@ export const getTransportServiceListing = async (req, res) => {
       page,
       perPage,
       listingType,
-      status
+      status,
+      isFavourite,
+      search,
     );
 
     return res.status(200).json({
@@ -76,17 +86,47 @@ export const getTransportServiceListing = async (req, res) => {
 
 export const getTransportServiceById = async (req, res) => {
   try {
-    const response = await TransportService.findByPk(req.params.id);
-    if (!response)
+    const { id } = req.params;
+    const { id: userId, role } = req.user;
+
+    const service = await TransportService.findByPk(id);
+
+    if (!service) {
       return res.status(404).json({
         success: false,
         message: "Transport Service record not found.",
       });
+    }
+
+    if (role === USER_ROLES.USER) {
+      await TransportServiceView.findOrCreate({
+        where: { userId, serviceId: id },
+        defaults: { userId, serviceId: id },
+      });
+    }
+
+    const [viewCount, likeCount, likedRecord] = await Promise.all([
+      TransportServiceView.count({
+        where: { serviceId: id },
+      }),
+      LikeTransportService.count({
+        where: { serviceId: id },
+      }),
+      LikeTransportService.findOne({
+        where: { serviceId: id, userId },
+      }),
+    ]);
 
     return res.status(200).json({
       success: true,
       message: "Retrieved Transport Service detail page successfully.",
-      data: response,
+      data: {
+        ...service.toJSON(),
+        viewCount,
+        likeCount,
+        isLiked: !!likedRecord,
+        isOwner: service.createdBy === userId,
+      },
     });
   } catch (error) {
     return res.status(500).json({
