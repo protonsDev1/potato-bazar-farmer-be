@@ -25,6 +25,7 @@ export const getTransportRequirements = async (req, res) => {
       isFavourite,
       status,
       sortBy,
+      search,
     } = req.query;
     const userId = req.user.id;
 
@@ -40,6 +41,7 @@ export const getTransportRequirements = async (req, res) => {
         status,
       },
       String(sortBy || ""),
+      search,
     );
 
     return res.status(200).json({

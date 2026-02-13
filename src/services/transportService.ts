@@ -4,6 +4,8 @@ import TransportService from "../database/models/transportService";
 import User, { USER_ROLES } from "../database/models/user";
 import { sendNotificationService } from "./notificationService";
 import { NotificationType } from "../database/models/notification";
+import LikeTransportService from "../database/models/likeTransportService";
+import TransportServiceView from "../database/models/transportServiceView";
 
 export const createTransport = async (payload) => {
   const transportService = await TransportService.create(payload);
@@ -13,7 +15,15 @@ export const createTransport = async (payload) => {
   };
 };
 
-export const getTransportService = async (userId, page, limit, listingType, status) => {
+export const getTransportService = async (
+  userId,
+  page,
+  limit,
+  listingType,
+  status,
+  isFavourite,
+  search,
+) => {
   const offset = (page - 1) * limit;
 
   const whereCondition: any = {};
@@ -25,10 +35,9 @@ export const getTransportService = async (userId, page, limit, listingType, stat
     whereCondition.isActive = true;
   }
 
-   if(status)
-   {
-    whereCondition.status= status;
-   }
+  if (status) {
+    whereCondition.status = status;
+  }
 
   const totalTransportServices = await TransportService.count();
   const totalApprovedTransportServices = await TransportService.count({
@@ -41,6 +50,40 @@ export const getTransportService = async (userId, page, limit, listingType, stat
     where: { status: TRANSPORT_SERVICE_STATUS.PENDING },
   });
 
+  if (search && search.trim() !== "") {
+    const searchTerm = `%${search.trim()}%`;
+
+    whereCondition[Op.or] = [{ transporterType: { [Op.iLike]: searchTerm } }];
+
+    if (!isNaN(Number(search))) {
+      whereCondition[Op.or].push({
+        noOfVehicles: Number(search),
+      });
+    }
+  }
+
+  let favouriteIds: number[] = [];
+
+  if (isFavourite === "true") {
+    const likedRecords = await LikeTransportService.findAll({
+      where: { userId },
+      attributes: ["serviceId"],
+    });
+
+    favouriteIds = likedRecords.map((like) => like.serviceId);
+
+    if (favouriteIds.length === 0) {
+      return {
+        currentPage: page,
+        total: 0,
+        totalPages: 0,
+        transportServices: [],
+      };
+    }
+
+    whereCondition.id = { [Op.in]: favouriteIds };
+  }
+
   const { rows, count } = await TransportService.findAndCountAll({
     where: whereCondition,
     limit,
@@ -48,6 +91,29 @@ export const getTransportService = async (userId, page, limit, listingType, stat
     distinct: true,
     order: [["createdAt", "DESC"]],
   });
+
+  const enrichedRows = await Promise.all(
+    rows.map(async (service) => {
+      const [viewCount, likeCount, likedRecord] = await Promise.all([
+        TransportServiceView.count({
+          where: { serviceId: service.id },
+        }),
+        LikeTransportService.count({
+          where: { serviceId: service.id },
+        }),
+        LikeTransportService.findOne({
+          where: { serviceId: service.id, userId },
+        }),
+      ]);
+
+      return {
+        ...service.toJSON(),
+        viewCount,
+        likeCount,
+        isLiked: !!likedRecord,
+      };
+    }),
+  );
 
   return {
     dashStats: {
@@ -59,7 +125,7 @@ export const getTransportService = async (userId, page, limit, listingType, stat
     currentPage: page,
     total: count,
     totalPages: Math.ceil(count / limit),
-    transportServices: rows,
+    transportServices: enrichedRows,
   };
 };
 

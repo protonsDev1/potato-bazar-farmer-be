@@ -24,6 +24,7 @@ export const getTransportRequirementsService = async (
     status?: string;
   },
   sortBy: string = "",
+  search: string = "",
 ) => {
   const offset = (page - 1) * limit;
 
@@ -46,6 +47,22 @@ export const getTransportRequirementsService = async (
 
   if (filters.status && filters.status.toLowerCase() !== "all") {
     whereCondition.status = { [Op.iLike]: filters.status };
+  }
+
+  if (search && search.trim() !== "") {
+    const searchTerm = `%${search.trim()}%`;
+
+    whereCondition[Op.or] = [
+      { requirementUid: { [Op.iLike]: searchTerm } },
+      { pickDistrict: { [Op.iLike]: searchTerm } },
+      { dropDistrict: { [Op.iLike]: searchTerm } },
+    ];
+
+    if (!isNaN(Number(search))) {
+      whereCondition[Op.or].push({
+        quantity: Number(search),
+      });
+    }
   }
 
   const userInclude: any = {

@@ -8,18 +8,16 @@ import {
 import sequelize from "./db";
 import TransportService from "./transportService";
 
-class LikeTransportService extends Model<
-  InferAttributes<LikeTransportService>,
-  InferCreationAttributes<LikeTransportService>
+class TransportServiceView extends Model<
+  InferAttributes<TransportServiceView>,
+  InferCreationAttributes<TransportServiceView>
 > {
   declare id: CreationOptional<number>;
   declare serviceId: number;
   declare userId: number;
-  declare createdAt: CreationOptional<Date>;
-  declare updatedAt: CreationOptional<Date>;
 }
 
-LikeTransportService.init(
+TransportServiceView.init(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     serviceId: {
@@ -34,31 +32,29 @@ LikeTransportService.init(
       onDelete: "CASCADE",
       allowNull: false,
     },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
   },
   {
     sequelize,
-    modelName: "LikeTransportService",
-    tableName: "likeTransportServices",
+    modelName: "TransportServiceView",
+    tableName: "transportServiceViews",
     timestamps: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ["userId", "serviceId"],
+      },
+    ],
   },
 );
 
-TransportService.hasMany(LikeTransportService, {
+TransportService.hasMany(TransportServiceView, {
   foreignKey: "serviceId",
-  as: "likes",
+  as: "views",
 });
 
-LikeTransportService.belongsTo(TransportService, {
+TransportServiceView.belongsTo(TransportService, {
   foreignKey: "serviceId",
   as: "transportService",
 });
 
-export default LikeTransportService;
+export default TransportServiceView;
