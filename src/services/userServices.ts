@@ -47,6 +47,7 @@ import AskExpert, { QUERY_STATUS } from "../database/models/askExpert";
 import KnowledgeHub, {
   KNOWLEDGE_HUB_STATUS,
 } from "../database/models/knowledgeHub";
+import Wallet from "../database/models/wallet";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -1115,7 +1116,7 @@ export const getMobileUsers = async ({
           String(t)
             .split(",")
             .map((s) => s.trim())
-            .filter(Boolean)
+            .filter(Boolean),
         );
       } else if (typeof userType === "string") {
         // comma separated "a,b"
@@ -1160,7 +1161,7 @@ export const getMobileUsers = async ({
           fn(
             "COALESCE",
             col("User.pbVerificationRequestedAt"),
-            col("User.createdAt")
+            col("User.createdAt"),
           ),
           "DESC",
         ],
@@ -1202,6 +1203,7 @@ export const getMobileUsers = async ({
     }
 
     const include = [] as any;
+
     if (kycStatus && kycStatus !== "all") {
       include.push({
         model: KycDocument,
@@ -1212,6 +1214,13 @@ export const getMobileUsers = async ({
     } else {
       include.push({ model: KycDocument, as: "kycDocument", required: false });
     }
+
+    // Wallet Include
+    include.push({
+      model: Wallet,
+      as: "wallet",
+      required: false, // left join (user without wallet also allowed)
+    });
 
     const { count, rows: users } = await User.findAndCountAll({
       where: whereCondition,

@@ -7,6 +7,7 @@ import {
 } from "sequelize";
 import sequelize from "./db";
 import { TRANSPORT_SERVICE_STATUS } from "./transportRequirement";
+import User from "./user";
 
 class TransportService extends Model<
   InferAttributes<TransportService>,
@@ -106,5 +107,10 @@ TransportService.init(
     timestamps: true,
   },
 );
+
+TransportService.belongsTo(User, {
+  foreignKey: "createdBy",
+  as: "creator",
+});
 
 export default TransportService;

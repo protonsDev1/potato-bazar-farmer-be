@@ -76,6 +76,7 @@ import jobRoutes from "./src/routes/jobRoutes";
 import communityRoutes from "./src/routes/communityRoutes";
 import transportServiceRoutes from "./src/routes/transportServiceRoutes";
 import transportRequirementRoutes from "./src/routes/transportRequirementRoutes";
+import walletRoutes from "./src/routes/walletRoutes";
 
 const cors = require("cors");
 
@@ -104,7 +105,7 @@ app.use("/api/admin/trader_variety", adminTraderVarietyRoutes);
 app.use("/api/admin/market_coverage", adminMarketCoverageRoutes);
 app.use(
   "/api/admin/challenge_in_selling",
-  adminBiggestChallengeInSellingRoutes
+  adminBiggestChallengeInSellingRoutes,
 );
 app.use("/api/admin/storage_type", adminStorageTypeRoutes);
 app.use("/api/admin/usage_type", adminUsageTypeRoutes);
@@ -164,6 +165,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/community_posts", communityRoutes);
 app.use("/api/transport_services", transportServiceRoutes);
 app.use("/api/transport_requirements", transportRequirementRoutes);
+app.use("/api/wallets", walletRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
