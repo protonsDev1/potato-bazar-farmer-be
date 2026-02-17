@@ -164,10 +164,21 @@ export const fetchAdminTransactions = async (
       {
         model: User,
         as: "creator",
-        attributes: ["id", "name", "role"],
+        attributes: ["id", "name", "role", "email", "mobile"],
         where: {
           role: [USER_ROLES.SUPER_ADMIN, USER_ROLES.SUB_ADMIN],
         },
+      },
+      {
+        model: Wallet,
+        as: "wallet",
+        attributes: ["id", "balance"],
+        include: [
+          {
+            model: User,
+            as: "user",
+          },
+        ],
       },
     ],
     order: [["createdAt", "DESC"]],
