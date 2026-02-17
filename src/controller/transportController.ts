@@ -89,7 +89,24 @@ export const getTransportServiceById = async (req, res) => {
     const { id } = req.params;
     const { id: userId, role } = req.user;
 
-    const service = await TransportService.findByPk(id);
+    const service = await TransportService.findOne({
+      where: { id },
+      include: [
+        {
+          model: User,
+          as: "creator",
+          attributes: [
+            "id",
+            "name",
+            "role",
+            "email",
+            "mobile",
+            "pbVerified",
+            "profilePicture",
+          ],
+        },
+      ],
+    });
 
     if (!service) {
       return res.status(404).json({
