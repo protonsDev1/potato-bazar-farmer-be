@@ -18,8 +18,11 @@ export const getTransportRequirementsService = async (
   limit: number,
   listingType: "own" | "others" | "all" = "own",
   filters: {
-    district?: string;
     pbVerified?: string;
+    packaging?: string;
+    pickDistrict?: string;
+    dropDistrict?: string;
+    vehicleType?: string;
     isFavourite?: string;
     status?: string;
   },
@@ -41,8 +44,22 @@ export const getTransportRequirementsService = async (
     userWhere.isDeleted = false;
   }
 
-  if (filters.district && filters.district.toLowerCase() !== "all") {
-    whereCondition.district = { [Op.iLike]: filters.district };
+  if (filters.packaging && filters.packaging.toLowerCase() !== "all") {
+    whereCondition.packaging = { [Op.iLike]: filters.packaging };
+  }
+
+  if (filters.pickDistrict && filters.pickDistrict.toLowerCase() !== "all") {
+    whereCondition.pickDistrict = { [Op.iLike]: filters.pickDistrict };
+  }
+
+  if (filters.dropDistrict && filters.dropDistrict.toLowerCase() !== "all") {
+    whereCondition.dropDistrict = { [Op.iLike]: filters.dropDistrict };
+  }
+
+  if (filters.vehicleType) {
+    whereCondition.vehicleTypeRequired = {
+      [Op.contains]: [filters.vehicleType],
+    };
   }
 
   if (filters.status && filters.status.toLowerCase() !== "all") {

@@ -19,7 +19,7 @@ export const adminWalletSchema = Joi.object({
     "any.required": "Amount is required",
   }),
 
-  description: Joi.string().trim().optional().messages({
+  description: Joi.string().trim().optional().allow(null, "").messages({
     "string.base": "Description must be a string",
     "any.required": "Description is required",
   }),
