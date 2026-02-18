@@ -20,8 +20,11 @@ export const getTransportRequirements = async (req, res) => {
       page = 1,
       perPage = 10,
       listingType,
-      district,
       pbVerified,
+      packaging,
+      pickDistrict,
+      dropDistrict,
+      vehicleType,
       isFavourite,
       status,
       sortBy,
@@ -35,8 +38,11 @@ export const getTransportRequirements = async (req, res) => {
       Number(perPage),
       listingType,
       {
-        district,
         pbVerified,
+        packaging,
+        pickDistrict,
+        dropDistrict,
+        vehicleType,
         isFavourite,
         status,
       },
@@ -136,7 +142,7 @@ export const getRequirementById = async (req, res) => {
 export const updateRequirement = async (req, res) => {
   try {
     const result = await updateRequirementService(
-      req.params.requirementId,
+      Number(req.params.id),
       req.user,
       req.body,
     );

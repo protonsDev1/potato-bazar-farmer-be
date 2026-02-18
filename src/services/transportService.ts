@@ -20,12 +20,18 @@ export const getTransportService = async (
   page,
   limit,
   listingType,
+  pbVerified,
   status,
+  transporterType,
+  rateType,
+  vehicleType,
+  routeCoverage,
   isFavourite,
   search,
 ) => {
   const offset = (page - 1) * limit;
 
+  const userWhere: any = {};
   const whereCondition: any = {};
 
   if (listingType === "own") {
@@ -33,10 +39,55 @@ export const getTransportService = async (
   } else if (listingType === "others") {
     whereCondition.status = TRANSPORT_SERVICE_STATUS.APPROVED;
     whereCondition.isActive = true;
+    userWhere.isActive = true;
+    userWhere.isDeleted = false;
+  }
+
+  const userInclude: any = {
+    model: User,
+    as: "creator",
+    attributes: [
+      "id",
+      "name",
+      "role",
+      "email",
+      "mobile",
+      "pbVerified",
+      "isActive",
+      "isDeleted",
+      "createdAt",
+      "updatedAt",
+    ],
+    where: userWhere,
+  };
+
+  if (pbVerified && pbVerified.toLowerCase() !== "all") {
+    userInclude.where = { pbVerified: pbVerified === "true" };
+    userInclude.required = true;
   }
 
   if (status) {
     whereCondition.status = status;
+  }
+
+  if (transporterType) {
+    whereCondition.transporterType = transporterType;
+  }
+
+  if (rateType) {
+    whereCondition.rateType = rateType;
+  }
+
+  if (vehicleType) {
+    whereCondition.vehicleTypeRequired = {
+      [Op.contains]: [vehicleType],
+    };
+  }
+
+  if (routeCoverage) {
+    whereCondition.routeCoverage = {
+      [Op.contains]: [routeCoverage],
+    };
   }
 
   const totalTransportServices = await TransportService.count();
@@ -53,7 +104,10 @@ export const getTransportService = async (
   if (search && search.trim() !== "") {
     const searchTerm = `%${search.trim()}%`;
 
-    whereCondition[Op.or] = [{ transporterType: { [Op.iLike]: searchTerm } }];
+    whereCondition[Op.or] = [
+      { transporterType: { [Op.iLike]: searchTerm } },
+      { ownerOrCompanyName: { [Op.iLike]: searchTerm } },
+    ];
 
     if (!isNaN(Number(search))) {
       whereCondition[Op.or].push({
@@ -86,6 +140,7 @@ export const getTransportService = async (
 
   const { rows, count } = await TransportService.findAndCountAll({
     where: whereCondition,
+    include: [userInclude],
     limit,
     offset,
     distinct: true,
