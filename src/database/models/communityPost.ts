@@ -3,7 +3,7 @@ import {
   DataTypes,
   InferAttributes,
   InferCreationAttributes,
-  CreationOptional
+  CreationOptional,
 } from "sequelize";
 
 import sequelize from "./db";
@@ -19,6 +19,7 @@ class CommunityPost extends Model<
   declare title: string;
   declare description: string;
   declare images: string[] | null;
+  declare tags: string[] | null;
   declare status: "pending" | "approved" | "rejected";
   declare adminRemark: string | null;
   declare createdAt: CreationOptional<Date>;
@@ -30,62 +31,67 @@ CommunityPost.init(
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
-      primaryKey: true
+      primaryKey: true,
     },
 
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
 
     category: {
       type: DataTypes.ENUM("market", "farming", "industry"),
-      allowNull: false
+      allowNull: false,
     },
 
     title: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true,
     },
 
     description: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
+    },
+
+    tags: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
     },
 
     images: {
       type: DataTypes.JSON,
-      allowNull: true
+      allowNull: true,
     },
 
     status: {
       type: DataTypes.ENUM("pending", "approved", "rejected"),
-      defaultValue: "pending"
+      defaultValue: "pending",
     },
 
     adminRemark: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
     },
 
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW
+      defaultValue: DataTypes.NOW,
     },
 
     updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW
-    }
+      defaultValue: DataTypes.NOW,
+    },
   },
   {
     sequelize,
     tableName: "community_posts",
     modelName: "CommunityPost",
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
 User.hasMany(CommunityPost, {
@@ -97,6 +103,5 @@ CommunityPost.belongsTo(User, {
   foreignKey: "userId",
   as: "user",
 });
-
 
 export default CommunityPost;

@@ -19,52 +19,89 @@ export const createPost = async (req, res) => {
 };
 
 export const getApprovedPosts = async (req, res) => {
-  const { listingType } = req.query;
-  const { id: userId } = req.user;
+  try {
+    const { listingType, page = 1, limit = 10, search, category } = req.query;
 
-  const whereCondition: any = {};
+    const { id: userId } = req.user;
 
-  if (listingType === "own") {
-    whereCondition.userId = userId;
-  } else if (listingType === "others") {
-    whereCondition.status = "approved";
-  }
+    const offset = (Number(page) - 1) * Number(limit);
 
-  const posts = await CommunityPost.findAll({
-    where: whereCondition,
-    include: [
-      {
-        model: User,
-        as: "user",
-        attributes: {
-          exclude: ["password_hash", "playerId", "playerIdForWeb"],
+    const whereCondition: any = {};
+
+    // listing filter
+    if (listingType === "own") {
+      whereCondition.userId = userId;
+    } else if (listingType === "others") {
+      whereCondition.status = "approved";
+    }
+
+    // category filter
+    if (category) {
+      whereCondition.category = category;
+    }
+
+    // search filter
+    if (search && search.trim() !== "") {
+      const searchTerm = `%${search.trim()}%`;
+
+      whereCondition[Op.or] = [
+        {
+          tags: {
+            [Op.overlap]: [search.trim()], //   search in tags
+          },
         },
-      },
-    ],
-    attributes: {
-      include: [
-        [
-          Sequelize.literal(`(
-            SELECT COUNT(*)
-            FROM "likeCommunities" AS likes
-            WHERE likes."communityId" = "CommunityPost"."id"
-          )`),
-          "likeCount",
-        ],
-        [
-          Sequelize.literal(`(
-            SELECT COUNT(*)
-            FROM "commentCommunities" AS comments
-            WHERE comments."communityId" = "CommunityPost"."id"
-          )`),
-          "commentCount",
-        ],
-      ],
-    },
-    order: [["createdAt", "DESC"]],
-  });
+      ];
+    }
 
-  res.json(posts);
+    const { rows, count } = await CommunityPost.findAndCountAll({
+      where: whereCondition,
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: {
+            exclude: ["password_hash", "playerId", "playerIdForWeb"],
+          },
+        },
+      ],
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM "likeCommunities" AS likes
+              WHERE likes."communityId" = "CommunityPost"."id"
+            )`),
+            "likeCount",
+          ],
+          [
+            Sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM "commentCommunities" AS comments
+              WHERE comments."communityId" = "CommunityPost"."id"
+            )`),
+            "commentCount",
+          ],
+        ],
+      },
+      order: [["createdAt", "DESC"]],
+      limit: Number(limit),
+      offset,
+      distinct: true,
+    });
+
+    return res.json({
+      currentPage: Number(page),
+      total: count,
+      totalPages: Math.ceil(count / Number(limit)),
+      posts: rows,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch posts",
+      error: error.message,
+    });
+  }
 };
 
 export const getAllForAdmin = async (
