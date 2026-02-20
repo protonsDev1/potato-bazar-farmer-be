@@ -20,6 +20,7 @@ export const getJobs = async (req, res) => {
       listingType = "own",
       category,
       type,
+      state,
       district,
       educationLevel,
       experienceRequired,
@@ -40,6 +41,7 @@ export const getJobs = async (req, res) => {
       {
         category,
         type,
+        state,
         district,
         educationLevel,
         experienceRequired,

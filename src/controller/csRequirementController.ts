@@ -21,6 +21,7 @@ export const getRequirements = async (req, res) => {
       listingType,
       commodityType,
       verified,
+      state,
       district,
       pbVerified,
       isFavourite,
@@ -34,8 +35,16 @@ export const getRequirements = async (req, res) => {
       Number(page),
       Number(perPage),
       listingType,
-      { commodityType, verified, district, pbVerified, isFavourite, status },
-      String(sortBy || "")
+      {
+        commodityType,
+        verified,
+        state,
+        district,
+        pbVerified,
+        isFavourite,
+        status,
+      },
+      String(sortBy || ""),
     );
 
     return res.status(200).json({
@@ -78,7 +87,7 @@ export const createRequirementWithInterests = async (req, res) => {
       }) has been created for ${requirement.quantity} ${
         requirement.unit || ""
       } of ${requirement.commodityType}. Required From: ${formatDate(
-        requirement.requiredFromDate
+        requirement.requiredFromDate,
       )}. Please review and verify the details.`,
       senderId: req.user.id,
       receiverId: superAdmin.id,
@@ -104,7 +113,7 @@ export const getRequirementById = async (req, res) => {
     const result = await getRequirementByIdService(
       req.params.id,
       req.user.id,
-      req.user.role
+      req.user.role,
     );
 
     if (!result) {
@@ -133,7 +142,7 @@ export const updateRequirement = async (req, res) => {
     const result = await updateRequirementService(
       req.params.id,
       req.user,
-      req.body
+      req.body,
     );
 
     if (!result.success) {
@@ -193,7 +202,7 @@ export const updateCSRequirementStatus = async (req, res) => {
     const updatedRequirement = await updateCSRequirementStatusService(
       requirementId,
       status,
-      reason
+      reason,
     );
 
     if (!updatedRequirement) {

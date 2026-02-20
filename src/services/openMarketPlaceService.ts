@@ -19,6 +19,8 @@ export const getOpenMarketPlacesService = async (
   filters,
   category,
   subCategory,
+  state,
+  district,
   listingType,
   isFavourite,
   search,
@@ -70,6 +72,14 @@ export const getOpenMarketPlacesService = async (
 
   if (location) {
     whereCondition.locationOrCity = location;
+  }
+
+  if (state) {
+    whereCondition.state = state;
+  }
+
+  if (district) {
+    whereCondition.district = district;
   }
 
   if (category) {
