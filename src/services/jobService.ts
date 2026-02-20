@@ -13,6 +13,7 @@ export const getJobsService = async (
   filters: {
     category?: string;
     type?: string;
+    state?: string;
     district?: string;
     educationLevel?: string;
     experienceRequired?: string;
@@ -21,7 +22,7 @@ export const getJobsService = async (
     isFavourite?: string;
     search?: string;
   },
-  sortBy: string = "latest"
+  sortBy: string = "latest",
 ) => {
   const offset = (page - 1) * limit;
 
@@ -58,6 +59,10 @@ export const getJobsService = async (
 
   if (filters.type && filters.type !== "all") {
     where.type = { [Op.iLike]: filters.type };
+  }
+
+  if (filters.state && filters.state !== "all") {
+    where.state = { [Op.iLike]: filters.state };
   }
 
   if (filters.district && filters.district !== "all") {
@@ -140,7 +145,7 @@ export const getJobsService = async (
         isLiked: !!likedRecord,
         likeCount,
       };
-    })
+    }),
   );
 
   return {
@@ -185,7 +190,7 @@ export const updateJobService = async (id, user, data) => {
   const hasPermission = await canUpdateResource(
     user,
     job.userId,
-    PERMISSIONS.JOBS
+    PERMISSIONS.JOBS,
   );
 
   if (!hasPermission) {

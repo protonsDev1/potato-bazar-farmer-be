@@ -21,12 +21,13 @@ export const getRequirementsService = async (
   filters: {
     commodityType?: string;
     verified?: string;
+    state?: string;
     district?: string;
     pbVerified?: string;
     isFavourite?: string;
     status?: string;
   },
-  sortBy: string = ""
+  sortBy: string = "",
 ) => {
   const offset = (page - 1) * limit;
 
@@ -49,6 +50,10 @@ export const getRequirementsService = async (
 
   if (filters.verified) {
     whereCondition.verified = filters.verified === "true";
+  }
+
+  if (filters.state && filters.state.toLowerCase() !== "all") {
+    whereCondition.state = { [Op.iLike]: filters.state };
   }
 
   if (filters.district && filters.district.toLowerCase() !== "all") {
@@ -146,7 +151,7 @@ export const getRequirementsService = async (
         likeCount,
         viewCount,
       };
-    })
+    }),
   );
 
   return {
@@ -174,7 +179,7 @@ export const createRequirementAndInterests = async (data) => {
 export const getRequirementByIdService = async (
   id: number,
   userId: number,
-  role: string
+  role: string,
 ) => {
   const requirement = await ColdStorageRequirement.findOne({
     where: { id },
@@ -232,7 +237,7 @@ export const getRequirementByIdService = async (
 export const updateRequirementService = async (
   id: number,
   user: User,
-  data: any
+  data: any,
 ) => {
   const requirement = await ColdStorageRequirement.findByPk(id);
 
@@ -247,7 +252,7 @@ export const updateRequirementService = async (
   const hasAccess = await canUpdateResource(
     user,
     requirement.createdBy,
-    PERMISSIONS.COLD_STORAGE
+    PERMISSIONS.COLD_STORAGE,
   );
 
   if (!hasAccess) {
@@ -335,11 +340,10 @@ export const deleteRequirementService = async (id: number, userId: number) => {
 
 export const likeOrDislikeRequirementService = async (
   userId,
-  requirementId
+  requirementId,
 ) => {
-  const isValidColdStorageRequirement = await ColdStorageRequirement.findByPk(
-    requirementId
-  );
+  const isValidColdStorageRequirement =
+    await ColdStorageRequirement.findByPk(requirementId);
 
   if (!isValidColdStorageRequirement)
     return {
@@ -350,7 +354,7 @@ export const likeOrDislikeRequirementService = async (
   const isExistingColdStorageRequirementLiked = await LikeCSRequirement.findOne(
     {
       where: { userId, requirementId },
-    }
+    },
   );
 
   if (isExistingColdStorageRequirementLiked) {
@@ -371,7 +375,7 @@ export const likeOrDislikeRequirementService = async (
 export const updateCSRequirementStatusService = async (
   requirementId,
   status,
-  reason
+  reason,
 ) => {
   const requirement = await ColdStorageRequirement.findByPk(requirementId);
 

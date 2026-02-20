@@ -15,7 +15,7 @@ export const createGovSchemeService = async (payload) => {
   } catch (err: any) {
     console.error(
       `[GovScheme ${scheme.id}] Translation error:`,
-      err?.message || err
+      err?.message || err,
     );
   }
 
@@ -33,6 +33,7 @@ export const listGovSchemesService = async ({
   limit,
   governmentType,
   category,
+  state,
   isActive,
 }) => {
   const whereClause: any = {};
@@ -51,6 +52,10 @@ export const listGovSchemesService = async ({
 
   if (category) {
     whereClause.category = category;
+  }
+
+  if (state) {
+    whereClause.state = state;
   }
 
   if (isActive === "true") {
@@ -132,7 +137,7 @@ export const updateGovSchemeService = async (id, payload) => {
   } catch (err: any) {
     console.error(
       `[GovScheme ${scheme.id}] Translation error on update:`,
-      err?.message || err
+      err?.message || err,
     );
   }
 

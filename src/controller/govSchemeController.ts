@@ -37,6 +37,7 @@ export const listGovSchemes = async (req, res) => {
       perPage = 10,
       governmentType,
       category,
+      state,
       isActive,
     } = req.query;
 
@@ -46,6 +47,7 @@ export const listGovSchemes = async (req, res) => {
       limit: Number(perPage),
       governmentType,
       category,
+      state,
       isActive,
     });
 

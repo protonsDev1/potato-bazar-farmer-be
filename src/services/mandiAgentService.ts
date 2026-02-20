@@ -17,7 +17,7 @@ interface MandiAgentResponse {
 }
 
 export const addMandiAgent = async (
-  mandiAgentData
+  mandiAgentData,
 ): Promise<MandiAgentResponse> => {
   const {
     firstName,
@@ -116,7 +116,7 @@ export const addMandiAgent = async (
         pinCode,
         role: USER_ROLES.MANDI_AGENT,
       },
-      { transaction: t }
+      { transaction: t },
     );
 
     const mandiAgentDetail = await MandiAgent.create(
@@ -125,7 +125,7 @@ export const addMandiAgent = async (
         licenseNumber,
         remarks,
       },
-      { transaction: t }
+      { transaction: t },
     );
 
     if (Array.isArray(mandiIds)) {
@@ -135,7 +135,7 @@ export const addMandiAgent = async (
             mandiAgentId: mandiAgentDetail.id,
             mandiId: id,
           },
-          { transaction: t }
+          { transaction: t },
         );
       }
     }
@@ -153,11 +153,15 @@ export const addMandiAgent = async (
 export const getAllMandiAgents = async (
   search?: string,
   page = 1,
-  limit = 10
+  limit = 10,
+  state?: string,
+  district?: string,
 ) => {
   const offset = (page - 1) * limit;
 
   const whereCondition: any = {};
+
+  const userWhere: any = {};
 
   if (search?.trim()) {
     const searchTerm = `%${search.trim()}%`;
@@ -168,6 +172,15 @@ export const getAllMandiAgents = async (
       { "$user.state$": { [Op.iLike]: searchTerm } },
     ];
   }
+
+  if (state) {
+    userWhere.state = state;
+  }
+
+  if (district) {
+    userWhere.district = district;
+  }
+
   const { count, rows } = await MandiAgent.findAndCountAll({
     where: whereCondition,
     include: [
@@ -184,15 +197,18 @@ export const getAllMandiAgents = async (
           "email",
           "pinCode",
           "createdAt",
-          "updatedAt"
+          "updatedAt",
         ],
         as: "user",
-        required: false,
+        where: Object.keys(userWhere).length ? userWhere : undefined,
+        required: Object.keys(userWhere).length > 0,
+        // required: false,
       },
     ],
-    limit,
+    limit: Number(limit),
     offset,
     order: [["createdAt", "DESC"]],
+    distinct: true,
   });
 
   const enrichedResults = rows.map((entry) => {
@@ -259,7 +275,7 @@ export const getProfileOverview = async (mandiAgentId) => {
 
 export const updateMandiAgentService = async (
   mandiAgentId,
-  updateFields
+  updateFields,
 ): Promise<MandiAgentResponse> => {
   const {
     licenseNumber,
@@ -439,7 +455,7 @@ export const updateMandiAgentService = async (
 
       updatedAllotedMandis = await MandiAllotedToMandiAgent.bulkCreate(
         newRows,
-        { transaction: t }
+        { transaction: t },
       );
     }
 
@@ -458,7 +474,7 @@ export const updateMandiAgentService = async (
 };
 
 export const deleteMandiAgentService = async (
-  mandiAgentId
+  mandiAgentId,
 ): Promise<MandiAgentResponse> => {
   const mandiUser = await MandiAgent.findOne({
     where: { id: mandiAgentId },
@@ -481,7 +497,7 @@ export const deleteMandiAgentService = async (
 
 export const updateOwnMandiAgentService = async (
   userId: number,
-  updateFields: any
+  updateFields: any,
 ) => {
   const {
     licenseNumber,
