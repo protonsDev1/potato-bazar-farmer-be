@@ -4,6 +4,8 @@ import User, { USER_ROLES } from "../database/models/user";
 import { canUpdateResource } from "../utils/commonCode";
 import { PERMISSIONS } from "../utils/constants/permissions";
 import LikeJob from "../database/models/likeJob";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export const getJobsService = async (
   userId: number,
@@ -199,6 +201,25 @@ export const updateJobService = async (id, user, data) => {
       statusCode: 403,
       message: "You are not allowed to update this job",
     };
+  }
+
+  if (job.status === JOB_STATUS.REJECTED) {
+    data.status = JOB_STATUS.PENDING;
+
+      // Notify Super Admin
+        const superAdmin = await User.findOne({
+          where: { role: USER_ROLES.SUPER_ADMIN },
+        });
+    
+        await sendNotificationService({
+          title: "Job Updated",
+          description: `A job "${job.title}" has been updated. Please review.`,
+          senderId: user.id,
+          receiverId: superAdmin.id,
+          referenceType: NotificationType.JOB,
+          referenceId: job.id,
+        });
+
   }
 
   await job.update(data);

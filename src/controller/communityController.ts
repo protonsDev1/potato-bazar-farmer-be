@@ -4,6 +4,10 @@ import { Op, Sequelize } from "sequelize";
 import CommentCommunity from "../database/models/commentCommunity";
 import LikeCommunity from "../database/models/likeCommunity";
 import User, { USER_ROLES } from "../database/models/user";
+import { PERMISSIONS } from "../utils/constants/permissions";
+import { canUpdateResource } from "../utils/commonCode";
+import { sendNotificationService } from "../services/notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export const createPost = async (req, res) => {
   try {
@@ -12,15 +16,92 @@ export const createPost = async (req, res) => {
       ...req.body,
     });
 
-    res.status(201).json({ message: "Post submitted for approval", post });
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: `New Community Post Created.`,
+      description: `A new community post has been created. Please review and verify its details.`,
+      senderId: req.user.id,
+      referenceType: NotificationType.COMMUNITY_POSTS,
+      referenceId: post.id,
+      receiverId: superAdmin.id,
+    });
+
+    return res
+      .status(201)
+      .json({ success: true, message: "Post submitted for approval", post });
   } catch (err) {
-    res.status(500).json({ message: "Failed to create post", error: err });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to create post", error: err });
+  }
+};
+
+export const updatePost = async (req, res) => {
+  try {
+    const post = await CommunityPost.findByPk(req.params.id);
+
+    if (!post) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Post not found" });
+    }
+
+    const hasPermission = await canUpdateResource(
+      req.user,
+      post.userId,
+      PERMISSIONS.COMMUNITY,
+    );
+
+    if (!hasPermission) {
+      return res.status(403).json({
+        success: false,
+        statusCode: 403,
+        message: "You are not allowed to update this post",
+      });
+    }
+
+    if (post.status === "rejected") {
+      req.body.status = "pending";
+
+      const superAdmin = await User.findOne({
+        where: { role: USER_ROLES.SUPER_ADMIN },
+      });
+
+      await sendNotificationService({
+        title: `Community Post Updated.`,
+        description: `A community post has been updated. Please review and verify its details.`,
+        senderId: req.user.id,
+        referenceType: NotificationType.COMMUNITY_POSTS,
+        referenceId: post.id,
+        receiverId: superAdmin.id,
+      });
+    }
+
+    await post.update(req.body);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Post updated successfully", post });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to update post", error: err });
   }
 };
 
 export const getApprovedPosts = async (req, res) => {
   try {
-    const { listingType, page = 1, limit = 10, search, category } = req.query;
+    const {
+      listingType,
+      page = 1,
+      limit = 10,
+      search,
+      category,
+      isFavourite,
+    } = req.query;
 
     const { id: userId } = req.user;
 
@@ -53,6 +134,29 @@ export const getApprovedPosts = async (req, res) => {
       ];
     }
 
+    let favouritePostIds: number[] = [];
+
+    if (isFavourite === "true" && userId) {
+      const likedPosts = await LikeCommunity.findAll({
+        where: { userId },
+        attributes: ["communityId"],
+      });
+
+      favouritePostIds = likedPosts.map((l) => l.communityId);
+
+      if (favouritePostIds.length === 0) {
+        return res.status(200).json({
+          success: true,
+          currentPage: Number(page),
+          total: 0,
+          totalPages: 0,
+          posts: [],
+        });
+      }
+
+      whereCondition.id = { [Op.in]: favouritePostIds };
+    }
+
     const { rows, count } = await CommunityPost.findAndCountAll({
       where: whereCondition,
       include: [
@@ -82,6 +186,18 @@ export const getApprovedPosts = async (req, res) => {
             )`),
             "commentCount",
           ],
+          [
+            Sequelize.literal(`(
+        SELECT CASE 
+          WHEN COUNT(*) > 0 THEN true 
+          ELSE false 
+        END
+        FROM "likeCommunities" AS likes
+        WHERE likes."communityId" = "CommunityPost"."id"
+        AND likes."userId" = ${userId}
+      )`),
+            "isLiked",
+          ],
         ],
       },
       order: [["createdAt", "DESC"]],
@@ -90,7 +206,8 @@ export const getApprovedPosts = async (req, res) => {
       distinct: true,
     });
 
-    return res.json({
+    return res.status(200).json({
+      success: true,
       currentPage: Number(page),
       total: count,
       totalPages: Math.ceil(count / Number(limit)),
@@ -98,6 +215,7 @@ export const getApprovedPosts = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({
+      success: false,
       message: "Failed to fetch posts",
       error: error.message,
     });
@@ -165,7 +283,8 @@ export const getAllForAdmin = async (
       offset,
     });
 
-    res.json({
+    res.status(200).json({
+      success: true,
       data: rows,
       pagination: {
         total: count,
@@ -175,19 +294,16 @@ export const getAllForAdmin = async (
       },
     });
   } catch (err) {
-    res.status(500).json({ message: "Failed to load posts" });
+    res.status(500).json({ success: false, message: "Failed to load posts" });
   }
 };
 
-export const approveRejectPost = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const approveRejectPost = async (req, res) => {
   try {
     const post = await CommunityPost.findByPk(req.params.id);
 
     if (!post) {
-      res.status(404).json({ message: "Post not found" });
+      res.status(404).json({ success: false, message: "Post not found" });
       return;
     }
 
@@ -195,14 +311,29 @@ export const approveRejectPost = async (
     post.adminRemark = req.body.adminRemark;
     await post.save();
 
-    res.json({ message: "Updated", post });
+    await sendNotificationService({
+      title: `Your Community Post is ${post.status}`,
+      description:
+        post.status === "approved"
+          ? "Your community post has been approved!"
+          : `Your community post was rejected. Reason: ${post.adminRemark}`,
+      senderId: req.user.id,
+      receiverId: post.userId,
+      referenceType: NotificationType.COMMUNITY_POSTS,
+      referenceId: post.id,
+    });
+
+    return res.status(200).json({ success: true, message: `Post is ${post.status} successfully`, post });
   } catch (err) {
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error in approving/rejecting post:", err);
+    return res.status(500).json({ success: false, message: err.message || "Failed to update post status" });
   }
 };
 
 export const getCommunityPostById = async (req, res) => {
   try {
+    const { id: userId } = req.user;
+
     const isValidCommunityPost = await CommunityPost.findByPk(req.params.id);
 
     if (!isValidCommunityPost)
@@ -221,6 +352,23 @@ export const getCommunityPostById = async (req, res) => {
     const communityPost = await CommunityPost.findOne({
       where: {
         id: req.params.id,
+      },
+
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+          SELECT CASE 
+            WHEN COUNT(*) > 0 THEN true 
+            ELSE false 
+          END
+          FROM "likeCommunities" AS likes
+          WHERE likes."communityId" = "CommunityPost"."id"
+          AND likes."userId" = ${userId}
+        )`),
+            "isLiked",
+          ],
+        ],
       },
 
       include: [
@@ -305,11 +453,19 @@ export const likeOrDislikeCommunityPost = async (req, res) => {
 
 export const deleteCommunityPost = async (req, res) => {
   try {
+    const { role, id: userId } = req.user;
     const record = await CommunityPost.findByPk(req.params.id);
     if (!record)
       return res.status(404).json({
         success: false,
         message: "Community Post record not found.",
+      });
+
+    if (role === USER_ROLES.USER && userId !== record.userId)
+      return res.status(401).json({
+        success: false,
+        message:
+          "Only Super Admin, Sub Admin and user who made comment are authorized to delete it.",
       });
 
     await record.destroy();
