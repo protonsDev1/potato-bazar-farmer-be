@@ -3,9 +3,25 @@ import OpenMarketPlace, {
   OPEN_MARKET_STATUS,
 } from "../database/models/openMarketPlace";
 import LikeOpenMarketPlace from "../database/models/likeOpenMarket";
+import User, { USER_ROLES } from "../database/models/user";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export const createOpenMarketPlaceService = async (payload) => {
   const openMarketPlace = await OpenMarketPlace.create(payload);
+
+  const superAdmin = await User.findOne({
+    where: { role: USER_ROLES.SUPER_ADMIN },
+  });
+
+  await sendNotificationService({
+    title: `New Open Market Place Created.`,
+    description: `A new open market place has been created. Please review and verify its details.`,
+    senderId: payload.createdBy,
+    referenceType: NotificationType.OPEN_MARKET_PLACES,
+    referenceId: openMarketPlace.id,
+    receiverId: superAdmin.id,
+  });
 
   return {
     data: openMarketPlace,
@@ -210,6 +226,23 @@ export const updateOpenMarketPlaceService = async (
       error: "Open Market Place record not found.",
       statusCode: 404,
     };
+
+  if (record.status === OPEN_MARKET_STATUS.REJECTED) {
+    payload.status = OPEN_MARKET_STATUS.PENDING;
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: `Open Market Place Updated.`,
+      description: `An open market place has been updated. Please review and verify its details.`,
+      senderId: payload.createdBy,
+      referenceType: NotificationType.OPEN_MARKET_PLACES,
+      referenceId: record.id,
+      receiverId: superAdmin.id,
+    });
+  }
 
   await record.update(payload);
 

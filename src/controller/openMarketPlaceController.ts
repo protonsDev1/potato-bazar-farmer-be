@@ -1,7 +1,10 @@
+import job from "../database/models/job";
 import LikeOpenMarketPlace from "../database/models/likeOpenMarket";
+import { NotificationType } from "../database/models/notification";
 import OpenMarketPlace, {
   OPEN_MARKET_STATUS,
 } from "../database/models/openMarketPlace";
+import { sendNotificationService } from "../services/notificationService";
 import {
   createOpenMarketPlaceService,
   getOpenMarketPlacesService,
@@ -134,6 +137,19 @@ export const updateStatusForOpenMarketPlace = async (req, res) => {
     if (status === OPEN_MARKET_STATUS.REJECTED) {
       await OpenMarketPlace.update({ status, reason }, { where: { id } });
     } else await OpenMarketPlace.update({ status }, { where: { id } });
+
+     await sendNotificationService({
+          title: `Your Open Market Place is ${status}`,
+          description:
+            status === OPEN_MARKET_STATUS.APPROVED
+              ? "Your open market place has been approved!"
+              : `Your open market place was rejected. Reason: ${reason}`,
+          senderId: req.user.id,
+          receiverId: Number(response.createdBy),
+          referenceType: NotificationType.OPEN_MARKET_PLACES,
+          referenceId: response.id,
+        });
+
 
     return res.status(200).json({
       success: true,

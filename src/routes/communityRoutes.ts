@@ -17,10 +17,12 @@ import {
   postCommentInCommunityPost,
   deleteCommentOnPost,
   getAllComments,
+  updatePost,
 } from "../controller/communityController";
 import {
   createCommunityPostValidation,
   approveRejectValidation,
+  updateCommunityPostValidation,
 } from "../validation/communityValidation";
 
 const router = express.Router();
@@ -53,6 +55,13 @@ router.put(
   checkPermissionMiddleware(PERMISSIONS.COMMUNITY),
   validator.body(approveRejectValidation),
   approveRejectPost,
+);
+
+router.put(
+  "/:id",
+  authMiddleware,
+  validator.body(updateCommunityPostValidation),
+  updatePost,
 );
 
 router.get("/:id", authMiddleware, getCommunityPostById);
