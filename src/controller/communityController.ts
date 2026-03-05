@@ -8,6 +8,7 @@ import { PERMISSIONS } from "../utils/constants/permissions";
 import { canUpdateResource } from "../utils/commonCode";
 import { sendNotificationService } from "../services/notificationService";
 import { NotificationType } from "../database/models/notification";
+import ReportOnCommunityPost from "../database/models/ReportOnCommunityPost";
 
 export const createPost = async (req, res) => {
   try {
@@ -323,10 +324,17 @@ export const approveRejectPost = async (req, res) => {
       referenceId: post.id,
     });
 
-    return res.status(200).json({ success: true, message: `Post is ${post.status} successfully`, post });
+    return res.status(200).json({
+      success: true,
+      message: `Post is ${post.status} successfully`,
+      post,
+    });
   } catch (err) {
     console.error("Error in approving/rejecting post:", err);
-    return res.status(500).json({ success: false, message: err.message || "Failed to update post status" });
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to update post status",
+    });
   }
 };
 
@@ -575,6 +583,131 @@ export const getAllComments = async (req, res) => {
       message:
         error.message ||
         "Error in retrieving all comments in given Community Post.",
+    });
+  }
+};
+
+export const reportOnPost = async (req, res) => {
+  try {
+    const { id: userId } = req.user;
+    const communityId = Number(req.params.postId);
+    const { reason } = req.body;
+
+    const isValidCommunityPost = await CommunityPost.findByPk(communityId);
+
+    if (!isValidCommunityPost)
+      return res.status(404).json({
+        success: false,
+        message: "Community Post not found!",
+      });
+
+    if (userId === isValidCommunityPost.userId) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot report your own post.",
+      });
+    }
+
+    await ReportOnCommunityPost.create({
+      userId,
+      postId: communityId,
+      reason,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Community Post reported successfully!",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error in reporting the given Community Post.",
+    });
+  }
+};
+
+export const getAllReportsForPost = async (req, res) => {
+  try {
+    const { status, search, page = 1, perPage: limit = 10 } = req.query;
+
+    const offset = (Number(page) - 1) * Number(limit);
+
+    const whereCondition: any = {};
+
+    if (status) {
+      whereCondition.status = status;
+    }
+
+    if (search) {
+      whereCondition[Op.or] = [
+        { "$user.name$": { [Op.iLike]: `%${search}%` } },
+        { "$post.title$": { [Op.iLike]: `%${search}%` } },
+      ];
+    }
+
+    const { count, rows } = await ReportOnCommunityPost.findAndCountAll({
+      where: whereCondition,
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name", "email", "mobile"],
+        },
+        {
+          model: CommunityPost,
+          as: "post",
+        },
+      ],
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "All reports fetched successfully.",
+      currentPage: Number(page),
+      total: count,
+      totalPages: Math.ceil(count / Number(limit)),
+      data: rows,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message ||
+        "Error in retrieving all reports for the given Community Post.",
+    });
+  }
+};
+
+export const updateReportStatus = async (req, res) => {
+  try {
+    const { id: reportId } = req.params;
+    const { status } = req.body;
+
+    const report = await ReportOnCommunityPost.findByPk(reportId);
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: "Report not found!",
+      });
+    }
+
+    report.status = status;
+    await report.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Report status updated successfully!",
+      data: report,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message:
+        error.message || "Error in updating the status of the given report.",
     });
   }
 };
