@@ -18,11 +18,16 @@ import {
   deleteCommentOnPost,
   getAllComments,
   updatePost,
+  reportOnPost,
+  getAllReportsForPost,
+  updateReportStatus,
 } from "../controller/communityController";
 import {
   createCommunityPostValidation,
   approveRejectValidation,
   updateCommunityPostValidation,
+  reportOnPostValidation,
+  updateStatusofReportValidation,
 } from "../validation/communityValidation";
 
 const router = express.Router();
@@ -36,6 +41,12 @@ router.post(
 );
 
 router.post("/toggle-like/:id", authMiddleware, likeOrDislikeCommunityPost);
+router.post(
+  "/report/:postId",
+  authMiddleware,
+  validator.body(reportOnPostValidation),
+  reportOnPost,
+);
 router.post("/comment/:id", authMiddleware, postCommentInCommunityPost);
 router.get("/", authMiddleware, getApprovedPosts);
 
@@ -48,6 +59,8 @@ router.get(
 
 router.get("/comments/:id", authMiddleware, getAllComments);
 
+router.get("/reports", checkPermissionMiddleware(PERMISSIONS.COMMUNITY), getAllReportsForPost);
+
 router.delete("/comment/:id", authMiddleware, deleteCommentOnPost);
 
 router.put(
@@ -55,6 +68,13 @@ router.put(
   checkPermissionMiddleware(PERMISSIONS.COMMUNITY),
   validator.body(approveRejectValidation),
   approveRejectPost,
+);
+
+router.put(
+  "/admin/report/:id",
+  checkPermissionMiddleware(PERMISSIONS.COMMUNITY),
+  validator.body(updateStatusofReportValidation),
+  updateReportStatus,
 );
 
 router.put(
