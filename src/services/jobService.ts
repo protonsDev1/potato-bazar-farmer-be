@@ -6,6 +6,7 @@ import { PERMISSIONS } from "../utils/constants/permissions";
 import LikeJob from "../database/models/likeJob";
 import { sendNotificationService } from "./notificationService";
 import { NotificationType } from "../database/models/notification";
+import SubAdminPermission from "../database/models/subAdminPermission";
 
 export const getJobsService = async (
   userId: number,
@@ -206,20 +207,19 @@ export const updateJobService = async (id, user, data) => {
   if (job.status === JOB_STATUS.REJECTED) {
     data.status = JOB_STATUS.PENDING;
 
-      // Notify Super Admin
-        const superAdmin = await User.findOne({
-          where: { role: USER_ROLES.SUPER_ADMIN },
-        });
-    
-        await sendNotificationService({
-          title: "Job Updated",
-          description: `A job "${job.title}" has been updated. Please review.`,
-          senderId: user.id,
-          receiverId: superAdmin.id,
-          referenceType: NotificationType.JOB,
-          referenceId: job.id,
-        });
+    // Notify Super Admin
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
 
+    await sendNotificationService({
+      title: "Job Updated",
+      description: `A job "${job.title}" has been updated. Please review.`,
+      senderId: user.id,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.JOB,
+      referenceId: job.id,
+    });
   }
 
   await job.update(data);
@@ -232,7 +232,7 @@ export const updateJobService = async (id, user, data) => {
   };
 };
 
-export const deleteJobService = async (id, userId) => {
+export const deleteJobService = async (id, userId, role) => {
   const job = await Job.findByPk(id);
 
   if (!job) {
@@ -243,7 +243,25 @@ export const deleteJobService = async (id, userId) => {
     };
   }
 
-  if (job.userId !== userId) {
+  if (role === USER_ROLES.SUB_ADMIN) {
+    const hasPermission = await SubAdminPermission.findOne({
+      where: {
+        userId,
+        permission: { [Op.in]: [PERMISSIONS.JOBS] },
+      },
+
+    });
+
+    if (!hasPermission) {
+      return {
+        success: false,
+        statusCode: 403,
+        message: "You cannot delete this job",
+      };
+    }
+  }
+
+  else if (role !== USER_ROLES.SUPER_ADMIN && job.userId !== userId) {
     return {
       success: false,
       statusCode: 403,
