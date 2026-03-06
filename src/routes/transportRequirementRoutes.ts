@@ -9,6 +9,7 @@ import {
   getTransportRequirements,
   likeOrDislikeTransportRequirement,
   updateRequirement,
+  updateTransportRequirementStatus,
 } from "../controller/transportRequirementController";
 import {
   createTransportRequirementSchema,
@@ -49,7 +50,7 @@ router.put(
   "/update_status/:requirementId",
   checkPermissionMiddleware(PERMISSIONS.TRANSPORT_SERVICE),
   validator.body(updateStatusSchema),
-  updateRequirement,
+  updateTransportRequirementStatus,
 );
 
 export default router;
