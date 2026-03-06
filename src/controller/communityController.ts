@@ -407,10 +407,12 @@ export const getCommunityPostById = async (req, res) => {
       ],
     });
 
+    const isOwner = communityPost.userId === userId;
+
     return res.status(200).json({
       success: true,
       message: "Community post detail page retrieved successfully.",
-      data: { communityPost, countOfComments, countOfLikes },
+      data: { communityPost, countOfComments, countOfLikes, isOwner },
     });
   } catch (error) {
     console.error(error, "Error in fetching community post detail page.");
