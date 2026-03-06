@@ -50,7 +50,7 @@ export const getJobs = async (req, res) => {
         isFavourite,
         search,
       },
-      sortBy
+      sortBy,
     );
 
     return res.status(200).json({
@@ -154,7 +154,11 @@ export const updateJob = async (req, res) => {
 
 export const deleteJob = async (req, res) => {
   try {
-    const result = await deleteJobService(req.params.id, req.user.id);
+    const result = await deleteJobService(
+      req.params.id,
+      req.user.id,
+      req.user.role,
+    );
     res.status(result.statusCode).json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
