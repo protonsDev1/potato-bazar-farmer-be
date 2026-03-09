@@ -37,6 +37,7 @@ export const getOpenMarketPlacesService = async (
   subCategory,
   state,
   district,
+  status,
   listingType,
   isFavourite,
   search,
@@ -96,6 +97,10 @@ export const getOpenMarketPlacesService = async (
 
   if (district) {
     whereCondition.district = district;
+  }
+
+  if(status) {
+    whereCondition.status = status;
   }
 
   if (category) {
