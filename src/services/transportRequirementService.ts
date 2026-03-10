@@ -20,8 +20,8 @@ export const getTransportRequirementsService = async (
   filters: {
     pbVerified?: string;
     packaging?: string;
-    pickDistrict?: string;
-    dropDistrict?: string;
+    pickState?: string;
+    dropState?: string;
     vehicleType?: string;
     isFavourite?: string;
     status?: string;
@@ -48,12 +48,12 @@ export const getTransportRequirementsService = async (
     whereCondition.packaging = { [Op.iLike]: filters.packaging };
   }
 
-  if (filters.pickDistrict && filters.pickDistrict.toLowerCase() !== "all") {
-    whereCondition.pickDistrict = { [Op.iLike]: filters.pickDistrict };
+  if (filters.pickState && filters.pickState.toLowerCase() !== "all") {
+    whereCondition.pickState = { [Op.iLike]: filters.pickState };
   }
 
-  if (filters.dropDistrict && filters.dropDistrict.toLowerCase() !== "all") {
-    whereCondition.dropDistrict = { [Op.iLike]: filters.dropDistrict };
+  if (filters.dropState && filters.dropState.toLowerCase() !== "all") {
+    whereCondition.dropState = { [Op.iLike]: filters.dropState };
   }
 
   if (filters.vehicleType) {
@@ -71,8 +71,8 @@ export const getTransportRequirementsService = async (
 
     whereCondition[Op.or] = [
       { requirementUid: { [Op.iLike]: searchTerm } },
-      { pickDistrict: { [Op.iLike]: searchTerm } },
-      { dropDistrict: { [Op.iLike]: searchTerm } },
+      { pickState: { [Op.iLike]: searchTerm } },
+      { dropState: { [Op.iLike]: searchTerm } },
     ];
 
     if (!isNaN(Number(search))) {
