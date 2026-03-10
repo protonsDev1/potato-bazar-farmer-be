@@ -99,6 +99,8 @@ export const getApprovedPosts = async (req, res) => {
       listingType,
       page = 1,
       limit = 10,
+      state,
+      district,
       search,
       category,
       isFavourite,
@@ -120,6 +122,16 @@ export const getApprovedPosts = async (req, res) => {
     // category filter
     if (category) {
       whereCondition.category = category;
+    }
+
+    const userWhereCondition: any = {};
+
+    if (state) {
+      userWhereCondition.state = state;
+    }
+
+    if (district) {
+      userWhereCondition.district = district;
     }
 
     // search filter
@@ -164,6 +176,9 @@ export const getApprovedPosts = async (req, res) => {
         {
           model: User,
           as: "user",
+          where: Object.keys(userWhereCondition).length
+            ? userWhereCondition
+            : undefined,
           attributes: {
             exclude: ["password_hash", "playerId", "playerIdForWeb"],
           },
