@@ -199,6 +199,21 @@ export const updateTransport = async (recordId, userId, payload) => {
       statusCode: 404,
     };
 
+  if (record.status === TRANSPORT_SERVICE_STATUS.APPROVED) {
+    const allowedFields = ["isActive"];
+    const invalidFields = Object.keys(payload).filter(
+      (key) => !allowedFields.includes(key),
+    );
+
+    if (invalidFields.length > 0) {
+      return {
+        success: false,
+        statusCode: 400,
+        error: `Approved Transport Services cannot be updated. Only active status can be updated.`,
+      };
+    }
+  }
+
   if (record.status === TRANSPORT_SERVICE_STATUS.REJECTED) {
     payload.status = TRANSPORT_SERVICE_STATUS.PENDING;
 
