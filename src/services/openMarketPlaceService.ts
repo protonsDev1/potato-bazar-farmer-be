@@ -99,7 +99,7 @@ export const getOpenMarketPlacesService = async (
     whereCondition.district = district;
   }
 
-  if(status) {
+  if (status) {
     whereCondition.status = status;
   }
 
@@ -231,6 +231,22 @@ export const updateOpenMarketPlaceService = async (
       error: "Open Market Place record not found.",
       statusCode: 404,
     };
+
+  if (record.status === OPEN_MARKET_STATUS.APPROVED) {
+    const allowedFields = ["isActive"];
+    const invalidFields = Object.keys(payload).filter(
+      (key) => !allowedFields.includes(key),
+    );
+
+    if (invalidFields.length > 0) {
+      return {
+        success: false,
+        statusCode: 400,
+        error:
+          "Approved Open Market Places cannot be updated. Only active status can be updated.",
+      };
+    }
+  }
 
   if (record.status === OPEN_MARKET_STATUS.REJECTED) {
     payload.status = OPEN_MARKET_STATUS.PENDING;

@@ -204,6 +204,22 @@ export const updateJobService = async (id, user, data) => {
     };
   }
 
+  // If job is approved → only active field allowed
+  if (job.status === JOB_STATUS.APPROVED) {
+    const allowedFields = ["isActive"];
+    const invalidFields = Object.keys(data).filter(
+      (key) => !allowedFields.includes(key),
+    );
+
+    if (invalidFields.length > 0) {
+      return {
+        success: false,
+        statusCode: 400,
+        message: `Approved Jobs cannot be updated. Only active status can be updated.`,
+      };
+    }
+  }
+
   if (job.status === JOB_STATUS.REJECTED) {
     data.status = JOB_STATUS.PENDING;
 
@@ -249,7 +265,6 @@ export const deleteJobService = async (id, userId, role) => {
         userId,
         permission: { [Op.in]: [PERMISSIONS.JOBS] },
       },
-
     });
 
     if (!hasPermission) {
@@ -259,9 +274,7 @@ export const deleteJobService = async (id, userId, role) => {
         message: "You cannot delete this job",
       };
     }
-  }
-
-  else if (role !== USER_ROLES.SUPER_ADMIN && job.userId !== userId) {
+  } else if (role !== USER_ROLES.SUPER_ADMIN && job.userId !== userId) {
     return {
       success: false,
       statusCode: 403,
