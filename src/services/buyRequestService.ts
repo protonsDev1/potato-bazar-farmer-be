@@ -61,7 +61,7 @@ export const createBuyRequestService = async (userId: number, data: any) => {
 
 export const listBuyRequestsService = async (
   query: any,
-  currentUserId: number
+  currentUserId: number,
 ) => {
   const {
     page = 1,
@@ -177,7 +177,7 @@ export const listBuyRequestsService = async (
 
 export const listMyBuyRequestsService = async (
   currentUserId: number,
-  query: any
+  query: any,
 ) => {
   const {
     page = 1,
@@ -262,7 +262,7 @@ export const listMyBuyRequestsService = async (
         favCount,
         viewCount,
       };
-    })
+    }),
   );
 
   return {
@@ -350,7 +350,7 @@ export const listAdminBuyRequestsService = async (query: any) => {
 export const getBuyRequestByIdService = async (
   id: number,
   currentUserId: number,
-  role: string
+  role: string,
 ) => {
   const include: any = [
     {
@@ -487,7 +487,7 @@ export const deleteBuyRequestService = async (user: any, requestId: number) => {
 export const updateBuyRequestService = async (
   user: User,
   requestId: number,
-  payload: any
+  payload: any,
 ) => {
   const request = await BuyRequest.findByPk(requestId);
 
@@ -502,7 +502,7 @@ export const updateBuyRequestService = async (
   const hasAccess = await canUpdateResource(
     user,
     request.userId,
-    PERMISSIONS.BUY_REQUESTS
+    PERMISSIONS.BUY_REQUESTS,
   );
 
   if (!hasAccess) {
@@ -514,28 +514,25 @@ export const updateBuyRequestService = async (
     };
   }
 
-  if (request.status === BUY_REQUEST_STATUS.APPROVED) {
-    if (
-      Object.keys(payload).length === 1 &&
-      payload.hasOwnProperty("isActive")
-    ) {
-      await request.update({ isActive: payload.isActive });
-      return {
-        statusCode: 200,
-        success: true,
-        message: "Sell request status updated successfully",
-        data: request,
-      };
-    }
-
+  // if (request.status === BUY_REQUEST_STATUS.APPROVED) {
+  if (Object.keys(payload).length === 1 && payload.hasOwnProperty("isActive")) {
+    await request.update({ isActive: payload.isActive });
     return {
-      statusCode: 400,
-      success: false,
-      message: "Approved buy requests cannot be modified",
+      statusCode: 200,
+      success: true,
+      message: "Sell request status updated successfully",
+      data: request,
     };
   }
 
-  if (request.status === BUY_REQUEST_STATUS.REJECTED) {
+  //   return {
+  //     statusCode: 400,
+  //     success: false,
+  //     message: "Approved buy requests cannot be modified",
+  //   };
+  // }
+
+  if (request.status !== BUY_REQUEST_STATUS.PENDING) {
     payload.status = BUY_REQUEST_STATUS.PENDING;
 
     const superAdmin = await User.findOne({
@@ -544,8 +541,7 @@ export const updateBuyRequestService = async (
 
     await sendNotificationService({
       title: "Buy Request",
-      description:
-        "A Rejected Buy Request has been moved to pending, please check it.",
+      description: "A Buy Request has been moved to pending, please check it.",
       senderId: user.id,
       receiverId: superAdmin.id,
       referenceType: NotificationType.BUY,
@@ -566,7 +562,7 @@ export const updateBuyRequestService = async (
 export const updateBuyRequestStatusService = async (
   requestId,
   status,
-  reason
+  reason,
 ) => {
   const buyRequest = await BuyRequest.findByPk(requestId);
 

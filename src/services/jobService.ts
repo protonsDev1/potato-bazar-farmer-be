@@ -204,23 +204,17 @@ export const updateJobService = async (id, user, data) => {
     };
   }
 
-  // If job is approved → only active field allowed
-  if (job.status === JOB_STATUS.APPROVED) {
-    const allowedFields = ["isActive"];
-    const invalidFields = Object.keys(data).filter(
-      (key) => !allowedFields.includes(key),
-    );
-
-    if (invalidFields.length > 0) {
-      return {
-        success: false,
-        statusCode: 400,
-        message: `Approved Jobs cannot be updated. Only active status can be updated.`,
-      };
-    }
+  if (Object.keys(data).length === 1 && data.hasOwnProperty("isActive")) {
+    await job.update({ isActive: data.isActive });
+    return {
+      statusCode: 200,
+      success: true,
+      message: "Job status updated successfully",
+      data: job,
+    };
   }
 
-  if (job.status === JOB_STATUS.REJECTED) {
+  if (job.status !== JOB_STATUS.PENDING) {
     data.status = JOB_STATUS.PENDING;
 
     // Notify Super Admin

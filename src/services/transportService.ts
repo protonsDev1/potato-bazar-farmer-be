@@ -199,22 +199,16 @@ export const updateTransport = async (recordId, userId, payload) => {
       statusCode: 404,
     };
 
-  if (record.status === TRANSPORT_SERVICE_STATUS.APPROVED) {
-    const allowedFields = ["isActive"];
-    const invalidFields = Object.keys(payload).filter(
-      (key) => !allowedFields.includes(key),
-    );
-
-    if (invalidFields.length > 0) {
-      return {
-        success: false,
-        statusCode: 400,
-        error: `Approved Transport Services cannot be updated. Only active status can be updated.`,
-      };
-    }
+  if (Object.keys(payload).length === 1 && payload.hasOwnProperty("isActive")) {
+    await record.update({ isActive: payload.isActive });
+    return {
+      statusCode: 200,
+      success: true,
+      message: "Transport Service status updated successfully",
+      data: record,
+    };
   }
-
-  if (record.status === TRANSPORT_SERVICE_STATUS.REJECTED) {
+  if (record.status !== TRANSPORT_SERVICE_STATUS.PENDING) {
     payload.status = TRANSPORT_SERVICE_STATUS.PENDING;
 
     const superAdmin = await User.findOne({
@@ -224,7 +218,7 @@ export const updateTransport = async (recordId, userId, payload) => {
     await sendNotificationService({
       title: "Transport Service updated.",
       description:
-        "A Rejected transport service has been moved to pending, please check it.",
+        "A transport service has been moved to pending, please check it.",
       senderId: userId,
       receiverId: superAdmin.id,
       referenceType: NotificationType.TRANSPORT_SERVICES,

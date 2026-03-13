@@ -64,16 +64,16 @@ export const updatePost = async (req, res) => {
       });
     }
 
-    if (post.status === "approved") {
-      return res.status(400).json({
-        success: false,
-        statusCode: 400,
-        message:
-          "Post is already approved. You cannot update an approved post.",
-      });
-    }
+    // if (post.status === "approved") {
+    //   return res.status(400).json({
+    //     success: false,
+    //     statusCode: 400,
+    //     message:
+    //       "Post is already approved. You cannot update an approved post.",
+    //   });
+    // }
 
-    if (post.status === "rejected") {
+    if (post.status !== "pending") {
       req.body.status = "pending";
 
       const superAdmin = await User.findOne({
