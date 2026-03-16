@@ -65,7 +65,7 @@ export const createSellRequestService = async (userId: number, data: any) => {
 
 export const listSellRequestsService = async (
   query: any,
-  currentUserId: number
+  currentUserId: number,
 ) => {
   const {
     page = 1,
@@ -181,7 +181,7 @@ export const listSellRequestsService = async (
 
 export const listMySellRequestsService = async (
   currentUserId: number,
-  query: any
+  query: any,
 ) => {
   const {
     page = 1,
@@ -266,7 +266,7 @@ export const listMySellRequestsService = async (
         favCount,
         viewCount,
       };
-    })
+    }),
   );
 
   return {
@@ -354,7 +354,7 @@ export const listAdminSellRequestsService = async (query: any) => {
 export const getSellRequestByIdService = async (
   id: number,
   currentUserId: number,
-  role: string
+  role: string,
 ) => {
   const include: any = [
     {
@@ -441,7 +441,7 @@ export const getSellRequestByIdService = async (
 
 export const deleteSellRequestService = async (
   user: any,
-  requestId: number
+  requestId: number,
 ) => {
   const request = await SellRequest.findByPk(requestId);
 
@@ -493,7 +493,7 @@ export const deleteSellRequestService = async (
 export const updateSellRequestService = async (
   user: User,
   requestId: number,
-  payload: any
+  payload: any,
 ) => {
   const request = await SellRequest.findByPk(requestId);
 
@@ -508,7 +508,7 @@ export const updateSellRequestService = async (
   const hasAccess = await canUpdateResource(
     user,
     request.userId,
-    PERMISSIONS.SELL_REQUESTS
+    PERMISSIONS.SELL_REQUESTS,
   );
 
   if (!hasAccess) {
@@ -520,28 +520,25 @@ export const updateSellRequestService = async (
     };
   }
 
-  if (request.status === SELL_REQUEST_STATUS.APPROVED) {
-    if (
-      Object.keys(payload).length === 1 &&
-      payload.hasOwnProperty("isActive")
-    ) {
-      await request.update({ isActive: payload.isActive });
-      return {
-        statusCode: 200,
-        success: true,
-        message: "Sell request status updated successfully",
-        data: request,
-      };
-    }
-
+  // if (request.status === SELL_REQUEST_STATUS.APPROVED) {
+  if (Object.keys(payload).length === 1 && payload.hasOwnProperty("isActive")) {
+    await request.update({ isActive: payload.isActive });
     return {
-      statusCode: 400,
-      success: false,
-      message: "Approved sell requests cannot be modified",
+      statusCode: 200,
+      success: true,
+      message: "Sell request status updated successfully",
+      data: request,
     };
   }
 
-  if (request.status === SELL_REQUEST_STATUS.REJECTED) {
+  //   return {
+  //     statusCode: 400,
+  //     success: false,
+  //     message: "Approved sell requests cannot be modified",
+  //   };
+  // }
+
+  if (request.status !== SELL_REQUEST_STATUS.PENDING) {
     payload.status = SELL_REQUEST_STATUS.PENDING;
 
     const superAdmin = await User.findOne({
@@ -550,8 +547,7 @@ export const updateSellRequestService = async (
 
     await sendNotificationService({
       title: "Sell Request",
-      description:
-        "A Rejected Sell Request has been moved to pending, please check it.",
+      description: "A Sell Request has been moved to pending, please check it.",
       senderId: user.id,
       receiverId: superAdmin.id,
       referenceType: NotificationType.SELL,
@@ -572,7 +568,7 @@ export const updateSellRequestService = async (
 export const updateSellRequestStatusService = async (
   requestId,
   status,
-  reason
+  reason,
 ) => {
   const sellRequest = await SellRequest.findByPk(requestId);
 

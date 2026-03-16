@@ -4,6 +4,7 @@ import { NotificationType } from "../database/models/notification";
 import OpenMarketPlace, {
   OPEN_MARKET_STATUS,
 } from "../database/models/openMarketPlace";
+import User from "../database/models/user";
 import { sendNotificationService } from "../services/notificationService";
 import {
   createOpenMarketPlaceService,
@@ -84,7 +85,15 @@ export const getOpenMarketPlaceById = async (req, res) => {
     const { id } = req.params;
     const userId = req.user?.id;
 
-    const place = await OpenMarketPlace.findByPk(id);
+    const place = await OpenMarketPlace.findByPk(id,  {
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name", "email", "mobile", "role"],
+        },
+      ],
+    });
 
     if (!place) {
       return res.status(404).json({

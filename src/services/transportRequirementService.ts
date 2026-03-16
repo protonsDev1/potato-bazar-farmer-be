@@ -280,25 +280,25 @@ export const updateRequirementService = async (
     };
   }
 
-  if (requirement.status === TRANSPORT_SERVICE_STATUS.APPROVED) {
-    if (Object.keys(data).length === 1 && data.hasOwnProperty("isActive")) {
-      await requirement.update({ isActive: data.isActive });
-      return {
-        statusCode: 200,
-        success: true,
-        message: "Requirement status updated successfully",
-        data: requirement,
-      };
-    }
-
+  // if (requirement.status === TRANSPORT_SERVICE_STATUS.APPROVED) {
+  if (Object.keys(data).length === 1 && data.hasOwnProperty("isActive")) {
+    await requirement.update({ isActive: data.isActive });
     return {
-      statusCode: 400,
-      success: false,
-      message: "Approved requirement cannot be modified",
+      statusCode: 200,
+      success: true,
+      message: "Requirement status updated successfully",
+      data: requirement,
     };
   }
 
-  if (requirement.status === TRANSPORT_SERVICE_STATUS.REJECTED) {
+  // return {
+  //   statusCode: 400,
+  //   success: false,
+  //   message: "Approved requirement cannot be modified",
+  // };
+  // }
+
+  if (requirement.status !== TRANSPORT_SERVICE_STATUS.PENDING) {
     data.status = TRANSPORT_SERVICE_STATUS.PENDING;
 
     const superAdmin = await User.findOne({
@@ -308,7 +308,7 @@ export const updateRequirementService = async (
     await sendNotificationService({
       title: "Transport Requirement",
       description:
-        "A Rejected Transport Requirement has been moved to pending, please check it.",
+        "A Transport Requirement has been moved to pending, please check it.",
       senderId: user.id,
       receiverId: superAdmin.id,
       referenceType: NotificationType.TRANSPORT_REQUIREMENT,
