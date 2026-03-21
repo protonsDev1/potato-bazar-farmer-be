@@ -1,7 +1,11 @@
+import job from "../database/models/job";
 import LikeOpenMarketPlace from "../database/models/likeOpenMarket";
+import { NotificationType } from "../database/models/notification";
 import OpenMarketPlace, {
   OPEN_MARKET_STATUS,
 } from "../database/models/openMarketPlace";
+import User from "../database/models/user";
+import { sendNotificationService } from "../services/notificationService";
 import {
   createOpenMarketPlaceService,
   getOpenMarketPlacesService,
@@ -37,7 +41,12 @@ export const getOpenMarketPlacesListing = async (req, res) => {
       perPage = 10,
       category,
       subCategory,
+      state,
+      district,
+      status,
       listingType = "all",
+      isFavourite,
+      search,
     } = req.query;
     const { id: userId } = req.user;
 
@@ -50,7 +59,12 @@ export const getOpenMarketPlacesListing = async (req, res) => {
       filters,
       category,
       subCategory,
-      listingType
+      state,
+      district,
+      status,
+      listingType,
+      isFavourite,
+      search,
     );
 
     return res.status(200).json({
@@ -68,17 +82,48 @@ export const getOpenMarketPlacesListing = async (req, res) => {
 
 export const getOpenMarketPlaceById = async (req, res) => {
   try {
-    const response = await OpenMarketPlace.findByPk(req.params.id);
-    if (!response)
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    const place = await OpenMarketPlace.findByPk(id,  {
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name", "email", "mobile", "role"],
+        },
+      ],
+    });
+
+    if (!place) {
       return res.status(404).json({
         success: false,
         message: "Open Market Place record not found.",
       });
+    }
+
+    const [likeCount, likedRecord] = await Promise.all([
+      LikeOpenMarketPlace.count({
+        where: { marketId: place.id },
+      }),
+      userId
+        ? LikeOpenMarketPlace.findOne({
+            where: {
+              userId,
+              marketId: place.id,
+            },
+          })
+        : null,
+    ]);
 
     return res.status(200).json({
       success: true,
       message: "Retrieved open market place detail page successfully.",
-      data: response,
+      data: {
+        ...place.toJSON(),
+        isLiked: !!likedRecord,
+        likeCount,
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -103,6 +148,19 @@ export const updateStatusForOpenMarketPlace = async (req, res) => {
     if (status === OPEN_MARKET_STATUS.REJECTED) {
       await OpenMarketPlace.update({ status, reason }, { where: { id } });
     } else await OpenMarketPlace.update({ status }, { where: { id } });
+
+     await sendNotificationService({
+          title: `Your Open Market Place is ${status}`,
+          description:
+            status === OPEN_MARKET_STATUS.APPROVED
+              ? "Your open market place has been approved!"
+              : `Your open market place was rejected. Reason: ${reason}`,
+          senderId: req.user.id,
+          receiverId: Number(response.createdBy),
+          referenceType: NotificationType.OPEN_MARKET_PLACES,
+          referenceId: response.id,
+        });
+
 
     return res.status(200).json({
       success: true,
@@ -161,7 +219,7 @@ export const likeOrDislikeOpenMarketPlace = async (req, res) => {
       await LikeOpenMarketPlace.destroy({ where: { userId, marketId } });
       return res.status(200).json({
         succces: true,
-        message: "Open Market Place disliked successfully!",
+        message: "Open Market Place un-liked successfully!",
       });
     } else {
       await LikeOpenMarketPlace.create({ userId, marketId });
@@ -186,7 +244,7 @@ export const updateOpenMarketPlace = async (req, res) => {
     const updatedRecord = await updateOpenMarketPlaceService(
       Number(id),
       userId,
-      req.body
+      req.body,
     );
 
     if (!updatedRecord.success) {

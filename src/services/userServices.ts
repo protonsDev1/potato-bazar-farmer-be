@@ -47,6 +47,14 @@ import AskExpert, { QUERY_STATUS } from "../database/models/askExpert";
 import KnowledgeHub, {
   KNOWLEDGE_HUB_STATUS,
 } from "../database/models/knowledgeHub";
+import Wallet from "../database/models/wallet";
+import OpenMarketPlace, {
+  OPEN_MARKET_STATUS,
+} from "../database/models/openMarketPlace";
+import TransportService from "../database/models/transportService";
+import { TRANSPORT_SERVICE_STATUS } from "../database/models/transportRequirement";
+import Job, { JOB_STATUS } from "../database/models/job";
+import CommunityPost from "../database/models/communityPost";
 
 export const createUserInDB = async (userModuleData: any) => {
   try {
@@ -237,7 +245,7 @@ export const getDashboardCounts = async (user) => {
               Sequelize.where(
                 Sequelize.col("onBoardedBy"),
                 "=",
-                Sequelize.col("userId")
+                Sequelize.col("userId"),
               ),
             ],
           },
@@ -275,7 +283,7 @@ export const getDashboardCounts = async (user) => {
               Sequelize.where(
                 Sequelize.col("onBoardedBy"),
                 "=",
-                Sequelize.col("userId")
+                Sequelize.col("userId"),
               ),
             ],
           },
@@ -313,7 +321,7 @@ export const getDashboardCounts = async (user) => {
               Sequelize.where(
                 Sequelize.col("onBoardedBy"),
                 "=",
-                Sequelize.col("userId")
+                Sequelize.col("userId"),
               ),
             ],
           },
@@ -471,7 +479,7 @@ export const registerInitialUser = async (
   mobile,
   hasStartedUsingMobile,
   playerId,
-  deviceType
+  deviceType,
 ) => {
   return await User.create({
     name: "Guest",
@@ -565,7 +573,7 @@ export const forgotPasswordService = async (mobile: string, email: string) => {
 
     await User.update(
       { otpVerified: false },
-      { where: { [Op.or]: orConditions } }
+      { where: { [Op.or]: orConditions } },
     );
 
     return {
@@ -580,7 +588,7 @@ export const resetPasswordService = async (
   mobile: string,
   email: string,
   password: string,
-  confirmPassword: string
+  confirmPassword: string,
 ) => {
   try {
     if (password !== confirmPassword)
@@ -614,7 +622,7 @@ export const resetPasswordService = async (
     const hashedPassword = await bcrypt.hash(password, 10);
     await User.update(
       { password_hash: hashedPassword, otpVerified: false },
-      { where: { [Op.or]: orConditions } }
+      { where: { [Op.or]: orConditions } },
     );
 
     return {
@@ -648,7 +656,7 @@ export const changePasswordService = async (
   oldPassword,
   newPassword,
   confirmNewPassword,
-  id
+  id,
 ) => {
   try {
     const userData = await findUserByPkInDB(id);
@@ -717,7 +725,7 @@ export const updateProfileService = async (data, userId, role) => {
             ...(mobile && { phone: mobile }),
             ...(location && { address: location }),
           },
-          { where: { userId } }
+          { where: { userId } },
         );
       }
     }
@@ -759,15 +767,15 @@ export const retrieveRecentRegisteredForAdmin = async () => {
           item instanceof Farmer
             ? "farmer"
             : item instanceof ColdStorage
-            ? "cold storage"
-            : "trader",
+              ? "cold storage"
+              : "trader",
         status: "complete",
-      })
+      }),
     );
 
     combined.sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
     // Take top 5
@@ -797,7 +805,7 @@ export const updateRegistrationStatus = async (
   userType: string,
   entityId: number,
   currentUser: User,
-  reason
+  reason,
 ) => {
   try {
     if (
@@ -848,14 +856,14 @@ export const updateRegistrationStatus = async (
 
     if (
       !Object.values(REGISTRATION_STATUS).includes(
-        status as REGISTRATION_STATUS
+        status as REGISTRATION_STATUS,
       )
     ) {
       return {
         success: false,
         statusCode: 400,
         error: `Invalid status. Allowed values: ${Object.values(
-          REGISTRATION_STATUS
+          REGISTRATION_STATUS,
         ).join(", ")}`,
       };
     }
@@ -954,8 +962,8 @@ export const updateRegistrationStatus = async (
           userType === USER_TYPE.COLD_STORAGE
             ? NotificationType.COLD_STORAGE
             : userType === USER_TYPE.FARMER
-            ? NotificationType.FARMER
-            : NotificationType.TRADER,
+              ? NotificationType.FARMER
+              : NotificationType.TRADER,
         referenceId: entityId,
       });
     }
@@ -1040,7 +1048,7 @@ export const getUserRole = async (userId) => {
 
 export const toggleMobileUserActiveService = async (
   userId: number,
-  isActive: boolean
+  isActive: boolean,
 ) => {
   const whereCondition: any = {
     id: userId,
@@ -1115,7 +1123,7 @@ export const getMobileUsers = async ({
           String(t)
             .split(",")
             .map((s) => s.trim())
-            .filter(Boolean)
+            .filter(Boolean),
         );
       } else if (typeof userType === "string") {
         // comma separated "a,b"
@@ -1160,7 +1168,7 @@ export const getMobileUsers = async ({
           fn(
             "COALESCE",
             col("User.pbVerificationRequestedAt"),
-            col("User.createdAt")
+            col("User.createdAt"),
           ),
           "DESC",
         ],
@@ -1202,6 +1210,7 @@ export const getMobileUsers = async ({
     }
 
     const include = [] as any;
+
     if (kycStatus && kycStatus !== "all") {
       include.push({
         model: KycDocument,
@@ -1212,6 +1221,13 @@ export const getMobileUsers = async ({
     } else {
       include.push({ model: KycDocument, as: "kycDocument", required: false });
     }
+
+    // Wallet Include
+    include.push({
+      model: Wallet,
+      as: "wallet",
+      required: false, // left join (user without wallet also allowed)
+    });
 
     const { count, rows: users } = await User.findAndCountAll({
       where: whereCondition,
@@ -1660,7 +1676,7 @@ export const getAdminDashboardStats = async (user) => {
   activities.sort(
     (a, b) =>
       (new Date(b.createdAt).getTime() || 0) -
-      (new Date(a.createdAt).getTime() || 0)
+      (new Date(a.createdAt).getTime() || 0),
   );
 
   const result: any = {
@@ -1680,7 +1696,7 @@ export const getAdminDashboardStats = async (user) => {
               (
                 (lastWeekBuyRequestStats / pendingBuyRequestStats) *
                 100
-              ).toFixed(0)
+              ).toFixed(0),
             ),
       activeBuyRequestStats,
       lastWeekActiveBuyRequestPercent:
@@ -1690,7 +1706,7 @@ export const getAdminDashboardStats = async (user) => {
               (
                 (lastWeekActiveBuyRequestStats / activeBuyRequestStats) *
                 100
-              ).toFixed(0)
+              ).toFixed(0),
             ),
     },
     sellRequestStats: {
@@ -1703,7 +1719,7 @@ export const getAdminDashboardStats = async (user) => {
               (
                 (lastWeekActiveSellRequestStats / activeSellRequestStats) *
                 100
-              ).toFixed(0)
+              ).toFixed(0),
             ),
     },
     mandiAgentStats: {
@@ -1718,7 +1734,7 @@ export const getAdminDashboardStats = async (user) => {
         totalUsersCount === 0
           ? 0
           : parseFloat(
-              ((lastMonthTotalUsersCount / totalUsersCount) * 100).toFixed(0)
+              ((lastMonthTotalUsersCount / totalUsersCount) * 100).toFixed(0),
             ),
     },
     coldStorageStats: {
@@ -1790,7 +1806,7 @@ export const createSupportTicket = async (
   userId: number,
   subject: string,
   category: string,
-  priority: string
+  priority: string,
 ) => {
   return await UserSupport.create({
     userId,
@@ -1828,7 +1844,7 @@ export const getSupportTickets = async (
   page: number,
   limit: number,
   status?: string,
-  search?: string
+  search?: string,
 ) => {
   const offset = (page - 1) * limit;
 
@@ -2003,7 +2019,7 @@ export const updatePbVerificationService = async (
   userId,
   pbVerificationStatus,
   reason,
-  id
+  id,
 ) => {
   const user = await User.findByPk(userId);
 
@@ -2245,22 +2261,22 @@ export const getPbVerificationStepStatusService = async (userId: number) => {
   steps.step2Message = step2Completed
     ? "Role information completed."
     : !step1Completed
-    ? "Complete Step 1 (basic information) to unlock role information step."
-    : "Complete your role information (farmer, cold storage or trader) before requesting PB verification.";
+      ? "Complete Step 1 (basic information) to unlock role information step."
+      : "Complete your role information (farmer, cold storage or trader) before requesting PB verification.";
 
   steps.step3Completed = step3Completed;
   steps.step3Message = step3Completed
     ? "KYC document uploaded."
     : !step2Completed
-    ? "Complete Step 2 (role information) to unlock KYC upload step."
-    : "Upload KYC document before requesting PB verification.";
+      ? "Complete Step 2 (role information) to unlock KYC upload step."
+      : "Upload KYC document before requesting PB verification.";
 
   steps.step4Completed = step4Completed;
   steps.step4Message = step4Completed
     ? "KYC verified."
     : !step3Completed
-    ? "Complete Step 3 (KYC upload) to unlock KYC verification step."
-    : "Your KYC is not verified. PB verification cannot be requested.";
+      ? "Complete Step 3 (KYC upload) to unlock KYC verification step."
+      : "Your KYC is not verified. PB verification cannot be requested.";
 
   // Can request PB verification if all gated steps are true
   const canRequestPbVerification =
@@ -2290,7 +2306,7 @@ export const updateUserMobileNumber = async (
   newMobileNumber,
   otp,
   mobile,
-  userId
+  userId,
 ) => {
   newMobileNumber = newMobileNumber.toString();
   otp = otp.toString();
@@ -2317,7 +2333,7 @@ export const updateUserMobileNumber = async (
     Trader.update({ mobileNumber: newMobileNumber }, { where: { userId } }),
     ColdStorage.update(
       { mobileNumber: newMobileNumber },
-      { where: { userId } }
+      { where: { userId } },
     ),
   ];
 
@@ -2453,6 +2469,77 @@ export const globalSearchDB = async (q: string) => {
     limit: 10,
   });
 
+  const openMarketPlaces = OpenMarketPlace.findAll({
+    where: {
+      [Op.or]: [
+        { nameOrCompanyName: { [Op.iLike]: term } },
+        { email: { [Op.iLike]: term } },
+        { phoneNumber: { [Op.iLike]: term } },
+        { state: { [Op.iLike]: term } },
+        { district: { [Op.iLike]: term } },
+        { locationOrCity: { [Op.iLike]: term } },
+        { category: { [Op.iLike]: term } },
+        { machineryCategory: { [Op.iLike]: term } },
+        { equipmentType: { [Op.iLike]: term } },
+        { brandName: { [Op.iLike]: term } },
+        { modelName: { [Op.iLike]: term } },
+        { serviceCategory: { [Op.iLike]: term } },
+        { packaging: { [Op.iLike]: term } },
+        { materialType: { [Op.iLike]: term } },
+        { description: { [Op.iLike]: term } },
+      ],
+      status: OPEN_MARKET_STATUS.APPROVED,
+      isActive: true,
+    },
+    limit: 10,
+  });
+
+  const transportServices = TransportService.findAll({
+    where: {
+      [Op.or]: [
+        { ownerOrCompanyName: { [Op.iLike]: term } },
+        { transporterType: { [Op.iLike]: term } },
+      ],
+      isAvailable: true,
+      status: TRANSPORT_SERVICE_STATUS.APPROVED,
+      isActive: true,
+    },
+    limit: 10,
+  });
+
+  const jobs = await Job.findAll({
+    where: {
+      [Op.or]: [
+        { title: { [Op.iLike]: term } },
+        { category: { [Op.iLike]: term } },
+        { type: { [Op.iLike]: term } },
+        { description: { [Op.iLike]: term } },
+        { companyName: { [Op.iLike]: term } },
+        { state: { [Op.iLike]: term } },
+        { district: { [Op.iLike]: term } },
+        { city: { [Op.iLike]: term } },
+        { pincode: { [Op.iLike]: term } },
+
+        { mobile: { [Op.iLike]: term } },
+        { alternateMobile: { [Op.iLike]: term } },
+      ],
+      status: JOB_STATUS.APPROVED,
+      isActive: true,
+    },
+    limit: 10,
+  });
+
+  const communityPosts = CommunityPost.findAll({
+    where: {
+      [Op.or]: [
+        { title: { [Op.iLike]: term } },
+        { description: { [Op.iLike]: term } },
+      ],
+      status: "approved",
+    },
+    limit: 10,
+  });
+
   return Promise.all([
     coldStorages,
     events,
@@ -2462,6 +2549,10 @@ export const globalSearchDB = async (q: string) => {
     buyRequests,
     sellRequests,
     schemes,
+    openMarketPlaces,
+    transportServices,
+    jobs,
+    communityPosts,
   ]).then(
     ([
       coldStorages,
@@ -2472,6 +2563,10 @@ export const globalSearchDB = async (q: string) => {
       buyRequests,
       sellRequests,
       schemes,
+      openMarketPlaces,
+      transportServices,
+      jobs,
+      communityPosts,
     ]) => ({
       coldStorages,
       events,
@@ -2481,6 +2576,10 @@ export const globalSearchDB = async (q: string) => {
       buyRequests,
       sellRequests,
       schemes,
-    })
+      openMarketPlaces,
+      transportServices,
+      jobs,
+      communityPosts,
+    }),
   );
 };

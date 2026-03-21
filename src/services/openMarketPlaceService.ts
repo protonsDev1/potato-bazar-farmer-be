@@ -2,9 +2,26 @@ import { Op, Sequelize } from "sequelize";
 import OpenMarketPlace, {
   OPEN_MARKET_STATUS,
 } from "../database/models/openMarketPlace";
+import LikeOpenMarketPlace from "../database/models/likeOpenMarket";
+import User, { USER_ROLES } from "../database/models/user";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
 
 export const createOpenMarketPlaceService = async (payload) => {
   const openMarketPlace = await OpenMarketPlace.create(payload);
+
+  const superAdmin = await User.findOne({
+    where: { role: USER_ROLES.SUPER_ADMIN },
+  });
+
+  await sendNotificationService({
+    title: `New Open Market Place Created.`,
+    description: `A new open market place has been created. Please review and verify its details.`,
+    senderId: payload.createdBy,
+    referenceType: NotificationType.OPEN_MARKET_PLACES,
+    referenceId: openMarketPlace.id,
+    receiverId: superAdmin.id,
+  });
 
   return {
     data: openMarketPlace,
@@ -18,7 +35,12 @@ export const getOpenMarketPlacesService = async (
   filters,
   category,
   subCategory,
-  listingType
+  state,
+  district,
+  status,
+  listingType,
+  isFavourite,
+  search,
 ) => {
   const offset = (page - 1) * limit;
 
@@ -41,7 +63,7 @@ export const getOpenMarketPlacesService = async (
     if (validCategories.length) {
       whereCondition.category = Sequelize.where(
         Sequelize.fn("LOWER", Sequelize.col("category")),
-        { [Op.in]: validCategories }
+        { [Op.in]: validCategories },
       );
     }
   }
@@ -55,11 +77,11 @@ export const getOpenMarketPlacesService = async (
       whereCondition[Op.or] = [
         Sequelize.where(
           Sequelize.fn("LOWER", Sequelize.col("machineryCategory")),
-          { [Op.in]: validSubCategories }
+          { [Op.in]: validSubCategories },
         ),
         Sequelize.where(
           Sequelize.fn("LOWER", Sequelize.col("serviceCategory")),
-          { [Op.in]: validSubCategories }
+          { [Op.in]: validSubCategories },
         ),
       ];
     }
@@ -67,6 +89,18 @@ export const getOpenMarketPlacesService = async (
 
   if (location) {
     whereCondition.locationOrCity = location;
+  }
+
+  if (state) {
+    whereCondition.state = state;
+  }
+
+  if (district) {
+    whereCondition.district = district;
+  }
+
+  if (status) {
+    whereCondition.status = status;
   }
 
   if (category) {
@@ -95,6 +129,44 @@ export const getOpenMarketPlacesService = async (
     where: { status: OPEN_MARKET_STATUS.PENDING },
   });
 
+  if (search && search.trim() !== "") {
+    const searchTerm = `%${search.trim()}%`;
+
+    whereCondition[Op.or] = [
+      { machineryCategory: { [Op.iLike]: searchTerm } },
+      { expectedPrice: { [Op.iLike]: searchTerm } },
+      { brandName: { [Op.iLike]: searchTerm } },
+    ];
+  }
+
+  let favouritePlaceIds: number[] = [];
+
+  if (isFavourite === "true" && userId) {
+    const likedPlaces = await LikeOpenMarketPlace.findAll({
+      where: { userId },
+      attributes: ["marketId"],
+    });
+
+    favouritePlaceIds = likedPlaces.map((l) => l.marketId);
+
+    if (favouritePlaceIds.length === 0) {
+      return {
+        dashStats: {
+          totalOpenMarketPlaces,
+          totalApprovedOpenMarketPlaces,
+          totalPendingOpenMarketPlaces,
+          totalRejectedOpenMarketPlaces,
+        },
+        currentPage: page,
+        total: 0,
+        totalPages: 0,
+        openMarketPlaces: [],
+      };
+    }
+
+    whereCondition.id = { [Op.in]: favouritePlaceIds };
+  }
+
   const { rows, count } = await OpenMarketPlace.findAndCountAll({
     where: whereCondition,
     limit,
@@ -102,6 +174,30 @@ export const getOpenMarketPlacesService = async (
     distinct: true,
     order: [["createdAt", "DESC"]],
   });
+
+  const placesWithLikeData = await Promise.all(
+    rows.map(async (place) => {
+      const [likeCount, likedRecord] = await Promise.all([
+        LikeOpenMarketPlace.count({
+          where: { marketId: place.id },
+        }),
+        userId
+          ? LikeOpenMarketPlace.findOne({
+              where: {
+                userId,
+                marketId: place.id,
+              },
+            })
+          : null,
+      ]);
+
+      return {
+        ...place.toJSON(),
+        isLiked: !!likedRecord,
+        likeCount,
+      };
+    }),
+  );
 
   return {
     dashStats: {
@@ -113,14 +209,14 @@ export const getOpenMarketPlacesService = async (
     currentPage: page,
     total: count,
     totalPages: Math.ceil(count / limit),
-    openMarketPlaces: rows,
+    openMarketPlaces: placesWithLikeData,
   };
 };
 
 export const updateOpenMarketPlaceService = async (
   recordId,
   userId,
-  payload
+  payload,
 ) => {
   const record = await OpenMarketPlace.findOne({
     where: {
@@ -135,6 +231,33 @@ export const updateOpenMarketPlaceService = async (
       error: "Open Market Place record not found.",
       statusCode: 404,
     };
+
+  if (Object.keys(payload).length === 1 && payload.hasOwnProperty("isActive")) {
+    await record.update({ isActive: payload.isActive });
+    return {
+      statusCode: 200,
+      success: true,
+      message: "Open Market Place status updated successfully",
+      data: record,
+    };
+  }
+
+  if (record.status !== OPEN_MARKET_STATUS.PENDING) {
+    payload.status = OPEN_MARKET_STATUS.PENDING;
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: `Open Market Place Updated.`,
+      description: `An open market place has been updated. Please review and verify its details.`,
+      senderId: payload.createdBy,
+      referenceType: NotificationType.OPEN_MARKET_PLACES,
+      referenceId: record.id,
+      receiverId: superAdmin.id,
+    });
+  }
 
   await record.update(payload);
 

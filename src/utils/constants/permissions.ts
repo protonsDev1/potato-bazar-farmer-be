@@ -24,6 +24,7 @@ export const PERMISSIONS = {
   JOBS: "jobs",
   COMMUNITY: "community",
   TRANSPORT_SERVICE: "transport_service",
+  WALLET: "wallet",
 } as const;
 
 export type PermissionType = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

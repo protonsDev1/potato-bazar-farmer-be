@@ -6,38 +6,29 @@ import {
   Model,
 } from "sequelize";
 import sequelize from "./db";
-
-export enum TRANSPORT_SERVICE_STATUS {
-  APPROVED = "approved",
-  PENDING = "pending",
-  REJECTED = "rejected",
-}
+import { TRANSPORT_SERVICE_STATUS } from "./transportRequirement";
+import User from "./user";
 
 class TransportService extends Model<
   InferAttributes<TransportService>,
   InferCreationAttributes<TransportService>
 > {
   declare id: CreationOptional<number>;
-  declare pickLocationOrCity: string | null;
-  declare pickDistrict: string | null;
-  declare pickState: string | null;
-  declare dropLocationOrCity: string | null;
-  declare dropDistrict: string | null;
-  declare dropState: string | null;
-  declare quantityUnit: string | null;
-  declare quantity: number | null;
-  declare packaging: string | null;
+  declare transporterType: string;
   declare vehicleTypeRequired: string[];
-  declare preferredPickUpDate: string | null;
-  declare rateExpectation: string | null;
+  declare noOfVehicles: number;
+  declare routeCoverage: string[];
+  declare rateType: string;
   declare additionalRequired: string[];
+  declare documents: string[];
   declare ownerOrCompanyName: string | null;
   declare phoneNumber: string | null;
   declare whatsappNumber: string | null;
   declare alternatePhoneNumber: string | null;
-  declare pbVerified: boolean;
   declare isActive: boolean;
   declare createdBy: number;
+  declare pbVerified: boolean;
+  declare isAvailable: boolean;
   declare status: string;
   declare reason: string | null;
 }
@@ -49,43 +40,25 @@ TransportService.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    pickLocationOrCity: {
-      type: DataTypes.STRING,
-    },
-    pickDistrict: {
-      type: DataTypes.STRING,
-    },
-    pickState: {
-      type: DataTypes.STRING,
-    },
-    dropLocationOrCity: {
-      type: DataTypes.STRING,
-    },
-    dropDistrict: {
-      type: DataTypes.STRING,
-    },
-    dropState: {
-      type: DataTypes.STRING,
-    },
-    quantityUnit: {
-      type: DataTypes.STRING,
-    },
-    quantity: {
-      type: DataTypes.NUMBER,
-    },
-    packaging: {
+    transporterType: {
       type: DataTypes.STRING,
     },
     vehicleTypeRequired: {
       type: DataTypes.ARRAY(DataTypes.STRING),
     },
-    preferredPickUpDate: {
-      type: DataTypes.DATEONLY,
+    noOfVehicles: {
+      type: DataTypes.NUMBER,
     },
-    rateExpectation: {
+    routeCoverage: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    rateType: {
       type: DataTypes.STRING,
     },
     additionalRequired: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+    },
+    documents: {
       type: DataTypes.ARRAY(DataTypes.STRING),
     },
     ownerOrCompanyName: {
@@ -101,6 +74,10 @@ TransportService.init(
       type: DataTypes.STRING,
     },
     pbVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    isAvailable: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
@@ -128,7 +105,12 @@ TransportService.init(
     modelName: "TransportService",
     tableName: "transportServices",
     timestamps: true,
-  }
+  },
 );
+
+TransportService.belongsTo(User, {
+  foreignKey: "createdBy",
+  as: "creator",
+});
 
 export default TransportService;

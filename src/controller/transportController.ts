@@ -1,13 +1,18 @@
 import LikeTransportService from "../database/models/likeTransportService";
-import TransportService, {
-  TRANSPORT_SERVICE_STATUS,
-} from "../database/models/transportService";
+import { NotificationType } from "../database/models/notification";
+import { TRANSPORT_SERVICE_STATUS } from "../database/models/transportRequirement";
+import TransportService from "../database/models/transportService";
+import TransportServiceView from "../database/models/transportServiceView";
+import User, { USER_ROLES } from "../database/models/user";
+import { sendNotificationService } from "../services/notificationService";
 
 import {
   createTransport,
   getTransportService,
   updateTransport,
 } from "../services/transportService";
+import { canUpdateResource } from "../utils/commonCode";
+import { PERMISSIONS } from "../utils/constants/permissions";
 
 export const createTransportService = async (req, res) => {
   try {
@@ -16,6 +21,19 @@ export const createTransportService = async (req, res) => {
     req.body.createdBy = userId;
 
     const response = await createTransport(req.body);
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: `New Transport Service Registered.`,
+      description: `A new Transport Service has been registered. Please review and verify its details.`,
+      senderId: userId,
+      referenceType: NotificationType.TRANSPORT_SERVICES,
+      referenceId: response.data.id,
+      receiverId: superAdmin.id,
+    });
 
     return res.status(201).json({
       success: true,
@@ -32,7 +50,19 @@ export const createTransportService = async (req, res) => {
 
 export const getTransportServiceListing = async (req, res) => {
   try {
-    const { page = 1, perPage = 10, listingType = "all" } = req.query;
+    const {
+      page = 1,
+      perPage = 10,
+      listingType = "all",
+      pbVerified,
+      status,
+      transporterType,
+      rateType,
+      vehicleType,
+      routeCoverage,
+      search,
+      isFavourite,
+    } = req.query;
 
     const { id: userId } = req.user;
 
@@ -40,7 +70,15 @@ export const getTransportServiceListing = async (req, res) => {
       userId,
       page,
       perPage,
-      listingType
+      listingType,
+      pbVerified,
+      status,
+      transporterType,
+      rateType,
+      vehicleType,
+      routeCoverage,
+      isFavourite,
+      search,
     );
 
     return res.status(200).json({
@@ -58,17 +96,64 @@ export const getTransportServiceListing = async (req, res) => {
 
 export const getTransportServiceById = async (req, res) => {
   try {
-    const response = await TransportService.findByPk(req.params.id);
-    if (!response)
+    const { id } = req.params;
+    const { id: userId, role } = req.user;
+
+    const service = await TransportService.findOne({
+      where: { id },
+      include: [
+        {
+          model: User,
+          as: "creator",
+          attributes: [
+            "id",
+            "name",
+            "role",
+            "email",
+            "mobile",
+            "pbVerified",
+            "profilePicture",
+          ],
+        },
+      ],
+    });
+
+    if (!service) {
       return res.status(404).json({
         success: false,
         message: "Transport Service record not found.",
       });
+    }
+
+    if (role === USER_ROLES.USER) {
+      await TransportServiceView.findOrCreate({
+        where: { userId, serviceId: id },
+        defaults: { userId, serviceId: id },
+      });
+    }
+
+    const [viewCount, likeCount, likedRecord] = await Promise.all([
+      TransportServiceView.count({
+        where: { serviceId: id },
+      }),
+      LikeTransportService.count({
+        where: { serviceId: id },
+      }),
+      LikeTransportService.findOne({
+        where: { serviceId: id, userId },
+      }),
+    ]);
 
     return res.status(200).json({
       success: true,
       message: "Retrieved Transport Service detail page successfully.",
-      data: response,
+      data: {
+        ...service.toJSON(),
+        viewCount,
+        likeCount,
+        isLiked: !!likedRecord,
+        isOwner: service.createdBy === userId,
+      },
     });
   } catch (error) {
     return res.status(500).json({
@@ -90,9 +175,28 @@ export const updateStatusForTransportService = async (req, res) => {
         message: "Transport Service record not found.",
       });
 
+    let description = "";
+
     if (status === TRANSPORT_SERVICE_STATUS.REJECTED) {
       await TransportService.update({ status, reason }, { where: { id } });
-    } else await TransportService.update({ status }, { where: { id } });
+      description = `Transport Service has been ${status}, reason: ${reason}`;
+    } else {
+      await TransportService.update({ status }, { where: { id } });
+      description = `Transport Service has been ${status}`;
+    }
+
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Transport Service status updated.",
+      description,
+      senderId: superAdmin.id,
+      receiverId: response.createdBy,
+      referenceType: NotificationType.TRANSPORT_SERVICES,
+      referenceId: response.id,
+    });
 
     return res.status(200).json({
       success: true,
@@ -185,12 +289,54 @@ export const updateTransportService = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Transport Service updated successfully.",
-      data: updatedRecord,
+      data: updatedRecord.data,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: error.message || "Error in updating Transport Service.",
     });
+  }
+};
+
+export const updateTransportServiceAvailability = async (req, res) => {
+  try {
+    const { transportId } = req.params;
+    const { isAvailable } = req.body;
+
+    const transportService = await TransportService.findByPk(transportId);
+
+    if (!transportService) {
+      return res.status(404).json({ message: "Transport Service not found" });
+    }
+
+    const hasAccess = await canUpdateResource(
+      req.user,
+      transportService.createdBy,
+      PERMISSIONS.TRANSPORT_SERVICE,
+    );
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        message:
+          "Only the owner, a super admin, or an authorized sub admin can update transport service availability.",
+      });
+    }
+
+    transportService.isAvailable = isAvailable;
+    await transportService.save();
+
+    return res.status(200).json({
+      message: "Transport Service availability updated successfully",
+      data: {
+        id: transportService.id,
+        isAvailable: transportService.isAvailable,
+      },
+    });
+  } catch (err) {
+    console.error("Update Availability Error:", err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to update availability" });
   }
 };

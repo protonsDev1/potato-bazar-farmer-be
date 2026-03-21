@@ -298,7 +298,9 @@ OpenMarketPlace.init(
     modelName: "OpenMarketPlace",
     tableName: "openMarketPlaces",
     timestamps: true,
-  }
+  },
 );
+
+OpenMarketPlace.belongsTo(User, { foreignKey: "createdBy", as: "user" });
 
 export default OpenMarketPlace;

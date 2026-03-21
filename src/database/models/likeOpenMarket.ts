@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import OpenMarketPlace from "./openMarketPlace";
 
 class LikeOpenMarketPlace extends Model<
   InferAttributes<LikeOpenMarketPlace>,
@@ -47,7 +48,17 @@ LikeOpenMarketPlace.init(
     modelName: "LikeOpenMarketPlace",
     tableName: "likeOpenMarketPlaces",
     timestamps: true,
-  }
+  },
 );
+
+OpenMarketPlace.hasMany(LikeOpenMarketPlace, {
+  foreignKey: "marketId",
+  as: "likes",
+});
+
+LikeOpenMarketPlace.belongsTo(OpenMarketPlace, {
+  foreignKey: "marketId",
+  as: "openMarketPlace",
+});
 
 export default LikeOpenMarketPlace;

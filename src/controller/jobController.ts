@@ -20,6 +20,7 @@ export const getJobs = async (req, res) => {
       listingType = "own",
       category,
       type,
+      state,
       district,
       educationLevel,
       experienceRequired,
@@ -27,6 +28,7 @@ export const getJobs = async (req, res) => {
       salaryMax,
       isFavourite,
       sortBy = "latest",
+      search,
     } = req.query;
 
     const userId = req.user ? req.user.id : null;
@@ -39,14 +41,16 @@ export const getJobs = async (req, res) => {
       {
         category,
         type,
+        state,
         district,
         educationLevel,
         experienceRequired,
         salaryMin,
         salaryMax,
         isFavourite,
+        search,
       },
-      sortBy
+      sortBy,
     );
 
     return res.status(200).json({
@@ -150,7 +154,11 @@ export const updateJob = async (req, res) => {
 
 export const deleteJob = async (req, res) => {
   try {
-    const result = await deleteJobService(req.params.id, req.user.id);
+    const result = await deleteJobService(
+      req.params.id,
+      req.user.id,
+      req.user.role,
+    );
     res.status(result.statusCode).json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });

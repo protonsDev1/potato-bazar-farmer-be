@@ -37,7 +37,7 @@ router.put(
 );
 router.put(
   "/:id",
-  checkPermissionMiddleware(PERMISSIONS.OPEN_MARKET_PLACE),
+  authMiddleware,
   validator.body(updateOpenMarketSchema),
   updateOpenMarketPlace
 );

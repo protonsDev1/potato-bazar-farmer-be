@@ -29,7 +29,7 @@ export function buildSubAdminPermissionsResponse(allowed: string[]) {
 export const canUpdateResource = async (
   user: any,
   resourceOwnerId: number,
-  requiredPermission?: string
+  requiredPermission?: string,
 ): Promise<boolean> => {
   if (!user) return false;
 
@@ -50,4 +50,20 @@ export const canUpdateResource = async (
 
   // All other roles - not allowed
   return false;
+};
+
+export const getThumbnailUrl = (imageUrl: string): string | null => {
+  try {
+    const url = new URL(imageUrl);
+
+    // inserts /thumbnails/ after uploads/<folder>/
+    url.pathname = url.pathname.replace(
+      /^\/uploads\/([^/]+)\//,
+      "/uploads/$1/thumbnails/",
+    );
+
+    return url.toString();
+  } catch {
+    return null;
+  }
 };

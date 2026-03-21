@@ -4,6 +4,9 @@ import User, { USER_ROLES } from "../database/models/user";
 import { canUpdateResource } from "../utils/commonCode";
 import { PERMISSIONS } from "../utils/constants/permissions";
 import LikeJob from "../database/models/likeJob";
+import { sendNotificationService } from "./notificationService";
+import { NotificationType } from "../database/models/notification";
+import SubAdminPermission from "../database/models/subAdminPermission";
 
 export const getJobsService = async (
   userId: number,
@@ -13,19 +16,31 @@ export const getJobsService = async (
   filters: {
     category?: string;
     type?: string;
+    state?: string;
     district?: string;
     educationLevel?: string;
     experienceRequired?: string;
     salaryMin?: string;
     salaryMax?: string;
     isFavourite?: string;
+    search?: string;
   },
-  sortBy: string = "latest"
+  sortBy: string = "latest",
 ) => {
   const offset = (page - 1) * limit;
 
   const where: any = {};
   const userWhere: any = {};
+
+  if (filters.search && filters.search.trim() !== "") {
+    const searchTerm = `%${filters.search.trim()}%`;
+
+    where[Op.or] = [
+      { title: { [Op.iLike]: searchTerm } },
+      { companyName: { [Op.iLike]: searchTerm } },
+      { category: { [Op.iLike]: searchTerm } },
+    ];
+  }
 
   if (!userId) {
     listingType = "all"; // force all for non-auth users
@@ -47,6 +62,10 @@ export const getJobsService = async (
 
   if (filters.type && filters.type !== "all") {
     where.type = { [Op.iLike]: filters.type };
+  }
+
+  if (filters.state && filters.state !== "all") {
+    where.state = { [Op.iLike]: filters.state };
   }
 
   if (filters.district && filters.district !== "all") {
@@ -129,7 +148,7 @@ export const getJobsService = async (
         isLiked: !!likedRecord,
         likeCount,
       };
-    })
+    }),
   );
 
   return {
@@ -174,7 +193,7 @@ export const updateJobService = async (id, user, data) => {
   const hasPermission = await canUpdateResource(
     user,
     job.userId,
-    PERMISSIONS.JOBS
+    PERMISSIONS.JOBS,
   );
 
   if (!hasPermission) {
@@ -183,6 +202,34 @@ export const updateJobService = async (id, user, data) => {
       statusCode: 403,
       message: "You are not allowed to update this job",
     };
+  }
+
+  if (Object.keys(data).length === 1 && data.hasOwnProperty("isActive")) {
+    await job.update({ isActive: data.isActive });
+    return {
+      statusCode: 200,
+      success: true,
+      message: "Job status updated successfully",
+      data: job,
+    };
+  }
+
+  if (job.status !== JOB_STATUS.PENDING) {
+    data.status = JOB_STATUS.PENDING;
+
+    // Notify Super Admin
+    const superAdmin = await User.findOne({
+      where: { role: USER_ROLES.SUPER_ADMIN },
+    });
+
+    await sendNotificationService({
+      title: "Job Updated",
+      description: `A job "${job.title}" has been updated. Please review.`,
+      senderId: user.id,
+      receiverId: superAdmin.id,
+      referenceType: NotificationType.JOB,
+      referenceId: job.id,
+    });
   }
 
   await job.update(data);
@@ -195,7 +242,7 @@ export const updateJobService = async (id, user, data) => {
   };
 };
 
-export const deleteJobService = async (id, userId) => {
+export const deleteJobService = async (id, userId, role) => {
   const job = await Job.findByPk(id);
 
   if (!job) {
@@ -206,7 +253,22 @@ export const deleteJobService = async (id, userId) => {
     };
   }
 
-  if (job.userId !== userId) {
+  if (role === USER_ROLES.SUB_ADMIN) {
+    const hasPermission = await SubAdminPermission.findOne({
+      where: {
+        userId,
+        permission: { [Op.in]: [PERMISSIONS.JOBS] },
+      },
+    });
+
+    if (!hasPermission) {
+      return {
+        success: false,
+        statusCode: 403,
+        message: "You cannot delete this job",
+      };
+    }
+  } else if (role !== USER_ROLES.SUPER_ADMIN && job.userId !== userId) {
     return {
       success: false,
       statusCode: 403,

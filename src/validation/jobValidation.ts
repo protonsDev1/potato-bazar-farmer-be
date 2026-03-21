@@ -27,6 +27,7 @@ export const createJobSchema = Joi.object({
   email: Joi.string().email().allow(null),
   mobile: Joi.string().allow(null),
   alternateMobile: Joi.string().allow(null),
+  whatsAppContact: Joi.boolean().optional(),
 
   document: Joi.array().items(Joi.string()).allow(null),
 });
@@ -59,6 +60,7 @@ export const updateJobSchema = Joi.object({
   alternateMobile: Joi.string().allow(null),
 
   document: Joi.array().items(Joi.string()).allow(null),
+  whatsAppContact: Joi.boolean().optional(),
 
   isActive: Joi.boolean().optional(),
 });

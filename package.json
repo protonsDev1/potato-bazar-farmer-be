@@ -21,7 +21,8 @@
     "add-entityId:agent": "ts-node src/scripts/addEntityIdForOldUserData.ts",
     "seed:mobile": "ts-node src/scripts/mobileSeed.ts",
     "seed:directory": "ts-node src/scripts/seedDirecoryData.ts",
-    "seed:directory-plan": "ts-node src/scripts/seedDirectoryPlans.ts"
+    "seed:directory-plan": "ts-node src/scripts/seedDirectoryPlans.ts",
+    "seed:reprocess-images": "ts-node src/scripts/reprocessImages.ts"
   },
   "author": "",
   "license": "ISC",
@@ -47,7 +48,8 @@
     "nodemailer": "^7.0.9",
     "nodemon": "^3.1.10",
     "pg": "^8.15.6",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

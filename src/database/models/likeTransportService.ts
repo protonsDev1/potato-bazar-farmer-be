@@ -6,6 +6,7 @@ import {
   CreationOptional,
 } from "sequelize";
 import sequelize from "./db";
+import TransportService from "./transportService";
 
 class LikeTransportService extends Model<
   InferAttributes<LikeTransportService>,
@@ -47,7 +48,17 @@ LikeTransportService.init(
     modelName: "LikeTransportService",
     tableName: "likeTransportServices",
     timestamps: true,
-  }
+  },
 );
+
+TransportService.hasMany(LikeTransportService, {
+  foreignKey: "serviceId",
+  as: "likes",
+});
+
+LikeTransportService.belongsTo(TransportService, {
+  foreignKey: "serviceId",
+  as: "transportService",
+});
 
 export default LikeTransportService;

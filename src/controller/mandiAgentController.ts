@@ -55,10 +55,15 @@ export const createMandiAgent = async (req, res) => {
 
 export const retrieveMandiAgents = async (req, res) => {
   try {
-    const { search, page, perPage: limit } = req.query;
+    const { search, page, perPage: limit, state, district } = req.query;
 
-    const response = await getAllMandiAgents(search, page, limit);
-
+    const response = await getAllMandiAgents(
+      search,
+      Number(page),
+      Number(limit),
+      state,
+      district,
+    );
     return res.status(200).json({
       success: true,
       message: "All Mandi Agents retrieved successfully.",
@@ -101,7 +106,7 @@ export const updateMandiAgent = async (req, res) => {
 
     const updatedMandiAgent = await updateMandiAgentService(
       mandiAgentId,
-      req.body
+      req.body,
     );
 
     if (!updatedMandiAgent.success)

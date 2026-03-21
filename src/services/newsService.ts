@@ -5,15 +5,16 @@ import State from "../database/models/state";
 import District from "../database/models/district";
 import NewsView from "../database/models/newsView";
 import { generateNewsTranslationsAndAudio } from "../utils/newsLocalizationService";
+import { getThumbnailUrl } from "../utils/commonCode";
 
 export const createNewsService = async (payload) => {
   const news = await News.create(payload);
-   try {
+  try {
     await generateNewsTranslationsAndAudio(news);
   } catch (err: any) {
     console.error(
       `[News ${news.id}] Failed to generate translations/audio:`,
-      err?.message || err
+      err?.message || err,
     );
   }
   return {
@@ -79,8 +80,18 @@ export const listNewsService = async ({
   const newsWithViews = await Promise.all(
     rows.map(async (news) => {
       const views = await NewsView.count({ where: { newsId: news.id } });
-      return { ...news.toJSON(), views };
-    })
+      const json = news.toJSON();
+
+      const originalImages = json.images || [];
+      const compressedImages = originalImages.map(getThumbnailUrl);
+
+      return {
+        ...json,
+        views,
+        images: compressedImages,
+        originalImages,
+      };
+    }),
   );
 
   return {
@@ -153,13 +164,33 @@ export const getNewsByIdService = async (id, user) => {
     limit: 5,
   });
 
+  const newsJson = news.toJSON();
+  const originalImages = newsJson.images || [];
+  const compressedImages = originalImages.map(getThumbnailUrl);
+
+  const relatedNewsWithImages = relatedNews.map((item) => {
+    const json = item.toJSON();
+    const originals = json.images || [];
+
+    return {
+      ...json,
+      images: originals.map(getThumbnailUrl),
+      originalImages: originals,
+    };
+  });
+
   return {
     success: true,
     statusCode: 200,
     message: "News fetched successfully",
     data: {
-      news: { ...news.toJSON(), views: viewCount },
-      relatedNews,
+      news: {
+        ...newsJson,
+        images: compressedImages,
+        originalImages,
+        views: viewCount,
+      },
+      relatedNews: relatedNewsWithImages,
     },
   };
 };
@@ -179,7 +210,7 @@ export const updateNewsService = async (id, payload) => {
   } catch (err: any) {
     console.error(
       `[News ${news.id}] Failed to regenerate translations/audio on update:`,
-      err?.message || err
+      err?.message || err,
     );
   }
   return {

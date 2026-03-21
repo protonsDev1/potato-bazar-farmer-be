@@ -1,20 +1,14 @@
 import Joi from "joi";
-import { TRANSPORT_SERVICE_STATUS } from "../database/models/transportService";
+import { TRANSPORT_SERVICE_STATUS } from "../database/models/transportRequirement";
 
 export const createTransportServiceSchema = Joi.object({
-  pickLocationOrCity: Joi.string().optional().allow(null, ""),
-  pickDistrict: Joi.string().optional().allow(null, ""),
-  pickState: Joi.string().optional().allow(null, ""),
-  dropLocationOrCity: Joi.string().optional().allow(null, ""),
-  dropDistrict: Joi.string().optional().allow(null, ""),
-  dropState: Joi.string().optional().allow(null, ""),
-  quantityUnit: Joi.string().optional().allow(null, ""),
-  quantity: Joi.number().integer().optional().allow(null),
-  packaging: Joi.string().optional().allow(null, ""),
+  transporterType: Joi.string().optional().allow(null, ""),
   vehicleTypeRequired: Joi.array().items(Joi.string()).optional(),
-  preferredPickUpDate: Joi.string().optional().allow(null, ""),
-  rateExpectation: Joi.string().optional().allow(null, ""),
+  noOfVehicles: Joi.number().optional().allow(null, ""),
+  routeCoverage: Joi.array().items(Joi.string()).optional(),
+  rateType: Joi.string().optional().allow(null, ""),
   additionalRequired: Joi.array().items(Joi.string()).optional(),
+  documents: Joi.array().items(Joi.string()).optional(),
   ownerOrCompanyName: Joi.string().optional().allow(null, ""),
   phoneNumber: Joi.string()
     .optional()
@@ -28,23 +22,16 @@ export const createTransportServiceSchema = Joi.object({
     .optional()
     .pattern(/^[6-9]\d{9}$/)
     .allow(null, ""),
-  isActive: Joi.boolean().optional().allow(null),
 });
 
 export const updateTransportServiceSchema = Joi.object({
-  pickLocationOrCity: Joi.string().optional().allow(null, ""),
-  pickDistrict: Joi.string().optional().allow(null, ""),
-  pickState: Joi.string().optional().allow(null, ""),
-  dropLocationOrCity: Joi.string().optional().allow(null, ""),
-  dropDistrict: Joi.string().optional().allow(null, ""),
-  dropState: Joi.string().optional().allow(null, ""),
-  quantityUnit: Joi.string().optional().allow(null, ""),
-  quantity: Joi.number().integer().optional().allow(null),
-  packaging: Joi.string().optional().allow(null, ""),
+  transporterType: Joi.string().optional().allow(null, ""),
   vehicleTypeRequired: Joi.array().items(Joi.string()).optional(),
-  preferredPickUpDate: Joi.string().optional().allow(null, ""),
-  rateExpectation: Joi.string().optional().allow(null, ""),
+  noOfVehicles: Joi.number().optional().allow(null, ""),
+  routeCoverage: Joi.array().items(Joi.string()).optional(),
+  rateType: Joi.string().optional().allow(null, ""),
   additionalRequired: Joi.array().items(Joi.string()).optional(),
+  documents: Joi.array().items(Joi.string()).optional(),
   ownerOrCompanyName: Joi.string().optional().allow(null, ""),
   phoneNumber: Joi.string()
     .optional()
@@ -73,4 +60,8 @@ export const updateStatusSchema = Joi.object({
     }),
     otherwise: Joi.string().optional().allow(null, ""),
   }),
+});
+
+export const availabilitySchema = Joi.object({
+  isAvailable: Joi.boolean().required(),
 });
