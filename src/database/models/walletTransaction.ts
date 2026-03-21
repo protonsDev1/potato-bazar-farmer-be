@@ -18,6 +18,9 @@ class WalletTransaction extends Model<
   declare createdBy: number;
   declare amount: number;
   declare type: "credit" | "debit";
+  declare source: string;
+  declare usageType: CreationOptional<string>;
+  declare referenceId: CreationOptional<number>;
   declare description: CreationOptional<string>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -49,6 +52,20 @@ WalletTransaction.init(
     type: {
       type: DataTypes.ENUM("credit", "debit"),
       allowNull: false,
+    },
+
+    source: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: "system",
+    },
+
+    usageType: {
+      type: DataTypes.STRING,
+    },
+
+    referenceId: {
+      type: DataTypes.INTEGER,
     },
 
     description: {

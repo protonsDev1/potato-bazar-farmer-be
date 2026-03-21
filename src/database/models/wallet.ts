@@ -20,6 +20,8 @@ class Wallet extends Model<
   declare id: CreationOptional<number>;
   declare userId: number;
   declare balance: CreationOptional<number>;
+  declare userBalance: CreationOptional<number>;
+  declare adminBalance: CreationOptional<number>;
   declare status: CreationOptional<string>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -42,6 +44,18 @@ Wallet.init(
     balance: {
       type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
+      defaultValue: 0.0,
+    },
+
+    userBalance: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: true,
+      defaultValue: 0.0,
+    },
+
+    adminBalance: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: true,
       defaultValue: 0.0,
     },
 
