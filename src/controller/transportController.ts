@@ -239,35 +239,47 @@ export const likeOrDislikeTransportService = async (req, res) => {
     const { id: userId } = req.user;
     const serviceId = Number(req.params.id);
 
-    const isValidTransportService = await TransportService.findByPk(serviceId);
-
-    if (!isValidTransportService)
-      return {
+    if (!serviceId || isNaN(serviceId)) {
+      return res.status(400).json({
         success: false,
-        error: "Transport Service not found!",
-      };
+        message: "Invalid serviceId",
+      });
+    }
 
-    const isExistingTransportServiceLiked = await LikeTransportService.findOne({
+    const transportService = await TransportService.findByPk(serviceId);
+
+    if (!transportService) {
+      return res.status(404).json({
+        success: false,
+        message: "Transport Service not found!",
+      });
+    }
+
+    const existingLike = await LikeTransportService.findOne({
       where: { userId, serviceId },
     });
 
-    if (isExistingTransportServiceLiked) {
-      await LikeTransportService.destroy({ where: { userId, serviceId } });
-      return res.status(200).json({
-        succces: true,
-        message: "Transport Service disliked successfully!",
-      });
-    } else {
-      await LikeTransportService.create({ userId, serviceId });
+    if (existingLike) {
+      await existingLike.destroy();
+
       return res.status(200).json({
         success: true,
-        message: "Transport Service liked successfully!",
+        message: "Transport Service disliked successfully!",
       });
     }
+
+    await LikeTransportService.create({ userId, serviceId });
+
+    return res.status(200).json({
+      success: true,
+      message: "Transport Service liked successfully!",
+    });
   } catch (error) {
+    console.error("LIKE ERROR:", error); // log this
+
     return res.status(500).json({
       success: false,
-      message: error.message || "Error in like or dislike Transport Service.",
+      message: error.message || "Error in like/dislike Transport Service.",
     });
   }
 };
