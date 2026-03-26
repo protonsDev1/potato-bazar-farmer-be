@@ -3,7 +3,14 @@ import sequelize from "./db";
 import User from "./user";
 import DirectorySubscriptionPlan from "./directorySubscriptionPlan";
 
-class UserDirectorySubscription extends Model {}
+class UserDirectorySubscription extends Model {
+  declare id: number;
+  declare userId: number;
+  declare planId: number;
+  declare startDate: Date;
+  declare endDate: Date;
+  declare status: string;
+}
 
 UserDirectorySubscription.init(
   {
@@ -34,9 +41,14 @@ UserDirectorySubscription.init(
   },
 );
 
-User.belongsToMany(DirectorySubscriptionPlan, {
-  through: UserDirectorySubscription,
-  foreignKey: "userId",
+DirectorySubscriptionPlan.hasMany(UserDirectorySubscription, {
+  foreignKey: "planId",
+  as: "subscriptions",
+});
+
+UserDirectorySubscription.belongsTo(DirectorySubscriptionPlan, {
+  foreignKey: "planId",
+  as: "plan",
 });
 
 export default UserDirectorySubscription;

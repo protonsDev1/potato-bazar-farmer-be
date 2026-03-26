@@ -30,9 +30,4 @@ SubscriptionPlan.init(
   },
 );
 
-SubscriptionPlan.hasMany(UserSubscription, {
-  foreignKey: "planId",
-  as: "subscriptions",
-});
-
 export default SubscriptionPlan;
