@@ -77,6 +77,9 @@ import communityRoutes from "./src/routes/communityRoutes";
 import transportServiceRoutes from "./src/routes/transportServiceRoutes";
 import transportRequirementRoutes from "./src/routes/transportRequirementRoutes";
 import walletRoutes from "./src/routes/walletRoutes";
+import directorySubscriptionRoutes from "./src/routes/directorySubscriptionRoutes";
+import bannerAdRoutes from "./src/routes/bannerAdRoutes";
+import contactUnlockRoutes from "./src/routes/contactUnlockRoutes";
 
 const cors = require("cors");
 
@@ -166,6 +169,9 @@ app.use("/api/community_posts", communityRoutes);
 app.use("/api/transport_services", transportServiceRoutes);
 app.use("/api/transport_requirements", transportRequirementRoutes);
 app.use("/api/wallets", walletRoutes);
+app.use("/api/directory_subscription", directorySubscriptionRoutes);
+app.use("/api/banner_ad", bannerAdRoutes);
+app.use("/api", contactUnlockRoutes);
 
 const PORT = 8000;
 const startServer = async () => {

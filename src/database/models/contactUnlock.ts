@@ -2,7 +2,14 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "./db";
 import User from "./user";
 
-class ContactUnlock extends Model {}
+class ContactUnlock extends Model {
+  declare id: number;
+  declare userId: number;
+  declare modulePricingId: number;
+  declare recordId: number;
+  declare price: number;
+  declare paymentSource: string;
+}
 
 ContactUnlock.init(
   {
@@ -13,12 +20,10 @@ ContactUnlock.init(
       references: { model: "users", key: "id" },
     },
 
-    ownerUserId: {
+    modulePricingId: {
       type: DataTypes.INTEGER,
-      references: { model: "users", key: "id" },
+      references: { model: "modulePricings", key: "id" },
     },
-
-    module: DataTypes.STRING,
 
     recordId: DataTypes.INTEGER,
 

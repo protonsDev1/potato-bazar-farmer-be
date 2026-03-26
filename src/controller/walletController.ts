@@ -37,20 +37,35 @@ export const adminDebitWallet = async (req, res) => {
       adminId,
     );
 
-    return res.json({ success: true, data: result });
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    return res.json(result);
   } catch (error: any) {
-    return res.status(400).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
 export const getUserBalance = async (req, res) => {
   try {
     const userId = req.user.id;
+
     const balance = await fetchUserBalance(userId);
 
-    return res.json({ success: true, data: balance });
+    return res.status(200).json({
+      success: true,
+      message: "Wallet balance fetched successfully",
+      data: balance,
+    });
   } catch (error: any) {
-    return res.status(400).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Something went wrong",
+    });
   }
 };
 

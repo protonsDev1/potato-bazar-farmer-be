@@ -3,7 +3,14 @@ import sequelize from "./db";
 import User from "./user";
 import BannerAdPlan from "./bannerAdPlan";
 
-class UserBannerAdSubscription extends Model {}
+class UserBannerAdSubscription extends Model {
+  declare id: number;
+  declare userId: number;
+  declare planId: number;
+  declare startDate: Date;
+  declare endDate: Date;
+  declare status: string;
+}
 
 UserBannerAdSubscription.init(
   {
@@ -32,5 +39,15 @@ UserBannerAdSubscription.init(
     tableName: "userBannerAdSubscriptions",
   },
 );
+
+BannerAdPlan.hasMany(UserBannerAdSubscription, {
+  foreignKey: "planId",
+  as: "bannerAdPlans",
+});
+
+UserBannerAdSubscription.belongsTo(BannerAdPlan, {
+  foreignKey: "planId",
+  as: "plan",
+});
 
 export default UserBannerAdSubscription;

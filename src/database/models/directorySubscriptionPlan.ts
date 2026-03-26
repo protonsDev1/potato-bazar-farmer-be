@@ -1,12 +1,12 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "./db";
-import UserDirectorySubscription from "./userDirectorySubscription";
 
 class DirectorySubscriptionPlan extends Model {
   declare id: number;
   declare name: string;
   declare price: number;
   declare durationInMonths: number;
+  declare isActive: boolean;
 }
 
 DirectorySubscriptionPlan.init(
@@ -15,6 +15,7 @@ DirectorySubscriptionPlan.init(
     name: DataTypes.STRING,
     price: DataTypes.DECIMAL(12, 2),
     durationInMonths: DataTypes.INTEGER,
+    isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
   },
   {
     sequelize,
@@ -22,10 +23,5 @@ DirectorySubscriptionPlan.init(
     modelName: "DirectorySubscriptionPlan",
   },
 );
-
-DirectorySubscriptionPlan.hasMany(UserDirectorySubscription, {
-  foreignKey: "planId",
-  as: "subscriptions",
-});
 
 export default DirectorySubscriptionPlan;

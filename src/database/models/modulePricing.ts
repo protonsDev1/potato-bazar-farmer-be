@@ -5,11 +5,17 @@ export enum MODULES {
   BUY = "buy",
   SELL = "sell",
   COLD_STORAGE = "cold_storage",
-  JOBS = "jobs",
+  JOB = "job",
   TRANSPORT = "transport",
+  MARKET_PLACE = "market_place",
 }
 
-class ModulePricing extends Model {}
+class ModulePricing extends Model {
+  declare id: number;
+  declare module: string;
+  declare pricePerContact: number;
+  declare isActive: boolean;
+}
 
 ModulePricing.init(
   {
@@ -22,6 +28,11 @@ ModulePricing.init(
 
     pricePerContact: {
       type: DataTypes.DECIMAL(10, 2),
+    },
+
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   },
   {
