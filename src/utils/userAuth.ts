@@ -6,6 +6,7 @@ import SubAdminPermission from "../database/models/subAdminPermission";
 import { WEB_ACTIONS } from "./constants/permissions";
 import SubAdminWebPermission from "../database/models/subAdminWebPermission";
 import { Op } from "sequelize";
+import UserSession from "../database/models/userSession";
 
 dotenv.config();
 
@@ -39,11 +40,29 @@ export const authMiddleware = async (req, res, next) => {
       });
     }
 
-     if (user.isDeleted) {
+    if (user.isDeleted) {
       return res.status(403).json({
         message: "User is deleted. Please login on mobile app to restore user.",
       });
     }
+
+    const session = await UserSession.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!session || !session.token)
+      return res.status(401).json({
+        success: false,
+        message: "You have logged out. Please login again.",
+      });
+
+    if (session.token !== token)
+      return res.status(401).json({
+        success: false,
+        message: "You are logged in on another device.",
+      });
 
     req.user = user;
     next();
@@ -75,6 +94,24 @@ export const optionalAuthMiddleware = async (req, res, next) => {
       req.user = null;
       return next();
     }
+
+    const session = await UserSession.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!session || !session.token)
+      return res.status(401).json({
+        success: false,
+        message: "You have logged out. Please login again.",
+      });
+
+    if (session.token !== token)
+      return res.status(401).json({
+        success: false,
+        message: "You are logged in on another device.",
+      });
 
     req.user = user;
     return next();
@@ -109,6 +146,24 @@ export const superAdminMiddleware = async (req, res, next) => {
         .json({ message: "Access Denied: You are not a super admin" });
     }
 
+    const session = await UserSession.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!session || !session.token)
+      return res.status(401).json({
+        success: false,
+        message: "You have logged out. Please login again.",
+      });
+
+    if (session.token !== token)
+      return res.status(401).json({
+        success: false,
+        message: "You are logged in on another device.",
+      });
+
     // Attach user to request object
     req.user = user;
     next();
@@ -142,6 +197,24 @@ export const adminMiddleware = async (req, res, next) => {
         .json({ message: "Access Denied: You are not an admin" });
     }
 
+    const session = await UserSession.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!session || !session.token)
+      return res.status(401).json({
+        success: false,
+        message: "You have logged out. Please login again.",
+      });
+
+    if (session.token !== token)
+      return res.status(401).json({
+        success: false,
+        message: "You are logged in on another device.",
+      });
+
     // Attach user to request object
     req.user = user;
     next();
@@ -173,6 +246,24 @@ export const checkPermissionMiddleware = (permissions: string | string[]) => {
           message: "User has been deactivated. Please contact the admin",
         });
       }
+
+      const session = await UserSession.findOne({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      if (!session || !session.token)
+        return res.status(401).json({
+          success: false,
+          message: "You have logged out. Please login again.",
+        });
+
+      if (session.token !== token)
+        return res.status(401).json({
+          success: false,
+          message: "You are logged in on another device.",
+        });
 
       // Attach user to request object
       req.user = user;
@@ -246,6 +337,24 @@ export const mandiAgentAndSuperAdminMiddleware = async (req, res, next) => {
           "Access Denied: You are neither a mandi agent nor a super admin.",
       });
 
+    const session = await UserSession.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!session || !session.token)
+      return res.status(401).json({
+        success: false,
+        message: "You have logged out. Please login again.",
+      });
+
+    if (session.token !== token)
+      return res.status(401).json({
+        success: false,
+        message: "You are logged in on another device.",
+      });
+
     // Attach user to request object
     req.user = user;
     next();
@@ -299,6 +408,24 @@ export const adminOrSubAdminMiddleware = async (req, res, next) => {
         .json({ message: "Access Denied: Unauthorized role" });
     }
 
+    const session = await UserSession.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!session || !session.token)
+      return res.status(401).json({
+        success: false,
+        message: "You have logged out. Please login again.",
+      });
+
+    if (session.token !== token)
+      return res.status(401).json({
+        success: false,
+        message: "You are logged in on another device.",
+      });
+
     req.user = user;
 
     next();
@@ -341,6 +468,24 @@ export const superAdminOrSubAdminMiddleware = async (req, res, next) => {
         .json({ message: "Access Denied: Unauthorized role" });
     }
 
+    const session = await UserSession.findOne({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (!session || !session.token)
+      return res.status(401).json({
+        success: false,
+        message: "You have logged out. Please login again.",
+      });
+
+    if (session.token !== token)
+      return res.status(401).json({
+        success: false,
+        message: "You are logged in on another device.",
+      });
+
     req.user = user;
 
     next();
@@ -373,6 +518,24 @@ export const checkWebPermissionMiddleware =
           message: "User has been deactivated. Please contact the admin",
         });
       }
+
+      const session = await UserSession.findOne({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      if (!session || !session.token)
+        return res.status(401).json({
+          success: false,
+          message: "You have logged out. Please login again.",
+        });
+
+      if (session.token !== token)
+        return res.status(401).json({
+          success: false,
+          message: "You are logged in on another device.",
+        });
 
       req.user = user;
 
@@ -418,4 +581,15 @@ export const runMiddleware = (req, res, middleware): Promise<void> => {
       resolve();
     });
   });
+};
+
+export const createOrUpdateSession = async ({ userId, token }) => {
+  const user = await UserSession.findOne({ where: { userId } });
+
+  if (user) await UserSession.update({ token }, { where: { userId } });
+  else
+    await UserSession.create({
+      userId,
+      token,
+    });
 };
