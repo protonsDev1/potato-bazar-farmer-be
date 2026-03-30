@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { JOB_STATUS } from "../database/models/job";
+import { EXPERIENCE_RANGE, JOB_STATUS } from "../database/models/job";
 
 export const createJobSchema = Joi.object({
   title: Joi.string().trim().required(),
@@ -9,7 +9,9 @@ export const createJobSchema = Joi.object({
 
   educationLevel: Joi.array().items(Joi.string()).allow(null),
   skillsRequired: Joi.array().items(Joi.string()).allow(null),
-  experienceRequired: Joi.number().required(),
+  experienceRequired: Joi.string()
+    .valid(...Object.values(EXPERIENCE_RANGE))
+    .required(),
 
   workplace: Joi.array().items(Joi.string()).allow(null),
   vacancies: Joi.number().allow(null),
@@ -40,7 +42,9 @@ export const updateJobSchema = Joi.object({
 
   educationLevel: Joi.array().items(Joi.string()).allow(null),
   skillsRequired: Joi.array().items(Joi.string()).allow(null),
-  experienceRequired: Joi.number().optional(),
+  experienceRequired: Joi.string()
+    .valid(...Object.values(EXPERIENCE_RANGE))
+    .optional(),
 
   workplace: Joi.array().items(Joi.string()).allow(null),
   vacancies: Joi.number().allow(null),
