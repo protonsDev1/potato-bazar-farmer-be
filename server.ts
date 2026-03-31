@@ -80,6 +80,7 @@ import walletRoutes from "./src/routes/walletRoutes";
 import directorySubscriptionRoutes from "./src/routes/directorySubscriptionRoutes";
 import bannerAdRoutes from "./src/routes/bannerAdRoutes";
 import contactUnlockRoutes from "./src/routes/contactUnlockRoutes";
+import userSubscriptionRoutes from "./src/routes/userSubscriptionRoutes";
 
 const cors = require("cors");
 
@@ -172,6 +173,7 @@ app.use("/api/wallets", walletRoutes);
 app.use("/api/directory_subscription", directorySubscriptionRoutes);
 app.use("/api/banner_ad", bannerAdRoutes);
 app.use("/api", contactUnlockRoutes);
+app.use("/api/user_subscription", userSubscriptionRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
