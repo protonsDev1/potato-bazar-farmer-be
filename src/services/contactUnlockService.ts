@@ -44,6 +44,22 @@ export const updateModulePricing = async (id, data) => {
       return { success: false, message: "Pricing not found", statusCode: 404 };
     }
 
+    if (data.module) {
+      const exists = await ModulePricing.findOne({
+        where: {
+          module: data.module,
+        },
+      });
+
+      if (exists && exists.id !== Number(id)) {
+        return {
+          success: false,
+          message: "Pricing already exists for this module",
+          statusCode: 400,
+        };
+      }
+    }
+
     await pricing.update(data);
 
     return {

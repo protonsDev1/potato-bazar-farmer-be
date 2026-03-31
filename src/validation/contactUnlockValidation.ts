@@ -10,6 +10,10 @@ export const createModulePricingSchema = Joi.object({
 });
 
 export const updateModulePricingSchema = Joi.object({
+  module: Joi.string()
+    .valid(...Object.values(MODULES))
+    .optional(),
+
   pricePerContact: Joi.number().positive().required(),
   isActive: Joi.boolean().optional(),
 });
