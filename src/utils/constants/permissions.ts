@@ -25,6 +25,7 @@ export const PERMISSIONS = {
   COMMUNITY: "community",
   TRANSPORT_SERVICE: "transport_service",
   WALLET: "wallet",
+  VIDEO_HUB: "video_hub",
 } as const;
 
 export type PermissionType = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
