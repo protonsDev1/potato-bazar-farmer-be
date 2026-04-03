@@ -3,6 +3,7 @@ import { authMiddleware } from "../utils/userAuth";
 import {
   createVideoHub,
   getAllVideoHubs,
+  getVideoHubById,
   updateVideoHub,
   deleteVideoHub,
   createVideoHubCategory,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.post("/",authMiddleware, createVideoHub);
 router.get("/", authMiddleware, getAllVideoHubs);
+router.get("/:id", authMiddleware, getVideoHubById);
 router.put("/:id", authMiddleware, updateVideoHub);
 router.delete("/:id", authMiddleware, deleteVideoHub);
 
