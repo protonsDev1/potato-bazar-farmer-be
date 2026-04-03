@@ -48,6 +48,32 @@ export const listVideoHubsService = async ({ page = 1, limit = 10, categoryId })
   };
 };
 
+export const getVideoHubByIdService = async (id) => {
+  const video = await VideoHub.findByPk(id, {
+    include: [
+      {
+        model: VideoHubCategory,
+        as: "category",
+      },
+    ],
+  });
+
+  if (!video) {
+    return {
+      success: false,
+      statusCode: 404,
+      message: "Video hub not found",
+    };
+  }
+
+  return {
+    success: true,
+    statusCode: 200,
+    message: "Video hub fetched successfully",
+    data: video,
+  };
+};
+
 export const updateVideoHubService = async (id, payload) => {
   const video = await VideoHub.findByPk(id);
   if (!video) {

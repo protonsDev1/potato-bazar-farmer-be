@@ -3,6 +3,7 @@ import { authMiddleware, checkPermissionMiddleware } from "../utils/userAuth";
 import {
   createVideoHub,
   getAllVideoHubs,
+  getVideoHubById,
   updateVideoHub,
   deleteVideoHub,
   createVideoHubCategory,
@@ -19,6 +20,8 @@ router.post(
   createVideoHub,
 );
 router.get("/", authMiddleware, getAllVideoHubs);
+router.get("/:id", authMiddleware, getVideoHubById);
+router.put("/:id", authMiddleware, updateVideoHub);
 router.put(
   "/:id",
   checkPermissionMiddleware(PERMISSIONS.VIDEO_HUB),

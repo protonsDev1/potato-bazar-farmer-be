@@ -34,6 +34,21 @@ export const getAllVideoHubs = async (req, res) => {
   }
 };
 
+export const getVideoHubById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await VideoHubService.getVideoHubByIdService(id);
+
+    return res.status(result.statusCode).json(result);
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: error.message || "Failed in retrieving Video Hub.",
+    });
+  }
+};
+
 export const updateVideoHub = async (req, res) => {
   try {
     const { id } = req.params;
