@@ -61,7 +61,7 @@ export const createOpenMarketSchema = Joi.object({
     .pattern(/^[6-9]\d{9}$/)
     .allow(null, ""),
   attachments: Joi.array().items(Joi.string()).optional(),
-  expectedHarvestPeriod: Joi.date().optional().allow(null),
+  expectedHarvestPeriod: Joi.string().optional().allow(null, ""),
   approxAcreRequirement: Joi.string().optional().allow(null, ""),
   pricePreference: Joi.string().optional().allow(null, ""),
   listingType: Joi.string().optional().allow(null, ""),
@@ -126,7 +126,7 @@ export const updateOpenMarketSchema = Joi.object({
     .allow(null, ""),
   attachments: Joi.array().items(Joi.string()).optional(),
   isActive: Joi.boolean().optional().allow(null),
-  expectedHarvestPeriod: Joi.date().optional().allow(null),
+  expectedHarvestPeriod: Joi.string().optional().allow(null, ""),
   approxAcreRequirement: Joi.string().optional().allow(null, ""),
   pricePreference: Joi.string().optional().allow(null, ""),
   listingType: Joi.string().optional().allow(null, ""),
