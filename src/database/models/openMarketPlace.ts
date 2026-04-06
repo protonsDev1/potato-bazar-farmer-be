@@ -80,7 +80,7 @@ class OpenMarketPlace extends Model<
   declare createdBy: User;
   declare isActive: boolean;
   declare reason: string;
-  declare expectedHarvestPeriod: Date | null;
+  declare expectedHarvestPeriod: string | null;
   declare approxAcreRequirement: string | null;
   declare pricePreference: string | null;
   declare listingType: string | null;
@@ -297,10 +297,9 @@ OpenMarketPlace.init(
       allowNull: true,
     },
     expectedHarvestPeriod: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING,
       allowNull: true,
     },
-
     approxAcreRequirement: {
       type: DataTypes.STRING,
       allowNull: true,
