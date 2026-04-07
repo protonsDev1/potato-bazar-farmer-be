@@ -125,11 +125,15 @@ export const createVideoHubCategoryService = async (payload) => {
 };
 
 export const listVideoHubCategoriesService = async ({ page = 1, limit = 10 }) => {
-  const offset = (Number(page) - 1) * Number(limit);
+
+  const pageNumber = Number(page) || 1;
+  const limitNumber = Number(limit) || 10;
+
+  const offset = (pageNumber - 1) * limitNumber;
 
   const { rows, count } = await VideoHubCategory.findAndCountAll({
     offset,
-    limit: Number(limit),
+    limit: limitNumber,
     order: [["createdAt", "DESC"]],
   });
 
@@ -139,8 +143,8 @@ export const listVideoHubCategoriesService = async ({ page = 1, limit = 10 }) =>
     message: "Video hub categories fetched successfully",
     data: {
       total: count,
-      page: Number(page),
-      perPage: Number(limit),
+      page: pageNumber,
+      perPage: limitNumber,
       categories: rows,
     },
   };

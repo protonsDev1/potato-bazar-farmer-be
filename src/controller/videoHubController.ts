@@ -96,7 +96,10 @@ export const createVideoHubCategory = async (req, res) => {
 
 export const getAllVideoHubCategories = async (req, res) => {
   try {
-    const { page, limit } = req.query as any;
+        console.log("QUERY PARAMS:", req.query);
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
     const result = await VideoHubService.listVideoHubCategoriesService({
       page,

@@ -14,32 +14,40 @@ import { PERMISSIONS } from "../utils/constants/permissions";
 
 const router = express.Router();
 
-router.post(
-  "/",
-  checkPermissionMiddleware(PERMISSIONS.VIDEO_HUB),
-  createVideoHub,
-);
-router.get("/", authMiddleware, getAllVideoHubs);
-router.get("/:id", authMiddleware, getVideoHubById);
-router.put("/:id", authMiddleware, updateVideoHub);
-router.put(
-  "/:id",
-  checkPermissionMiddleware(PERMISSIONS.VIDEO_HUB),
-  updateVideoHub,
-);
-router.delete("/:id", authMiddleware, deleteVideoHub);
-
 // Category Routes
 router.post(
   "/category",
   checkPermissionMiddleware(PERMISSIONS.VIDEO_HUB),
-  createVideoHubCategory,
+  createVideoHubCategory
 );
+
 router.get("/category", authMiddleware, getAllVideoHubCategories);
+
 router.delete(
   "/category/:id",
   checkPermissionMiddleware(PERMISSIONS.VIDEO_HUB),
-  deleteVideoHubCategory,
+  deleteVideoHubCategory
 );
+
+// Video Hub Routes
+router.post(
+  "/",
+  checkPermissionMiddleware(PERMISSIONS.VIDEO_HUB),
+  createVideoHub
+);
+
+router.get("/", authMiddleware, getAllVideoHubs);
+
+router.get("/:id", authMiddleware, getVideoHubById);
+
+router.put("/:id", authMiddleware, updateVideoHub);
+
+router.put(
+  "/:id",
+  checkPermissionMiddleware(PERMISSIONS.VIDEO_HUB),
+  updateVideoHub
+);
+
+router.delete("/:id", authMiddleware, deleteVideoHub);
 
 export default router;
