@@ -31,6 +31,7 @@ class TransportRequirement extends Model<
   declare packaging: string | null;
   declare vehicleTypeRequired: string[];
   declare preferredPickUpDate: string | null;
+  declare rateType: string | null;
   declare rateExpectation: string | null;
   declare additionalRequired: string[];
   declare ownerOrCompanyName: string | null;
@@ -83,6 +84,9 @@ TransportRequirement.init(
     },
     preferredPickUpDate: {
       type: DataTypes.DATEONLY,
+    },
+    rateType: {
+      type: DataTypes.STRING,
     },
     rateExpectation: {
       type: DataTypes.STRING,
