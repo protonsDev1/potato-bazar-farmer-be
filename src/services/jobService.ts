@@ -49,7 +49,7 @@ export const getJobsService = async (
   if (listingType === "own") {
     where.userId = userId;
   } else if (listingType === "others") {
-    where.userId = { [Op.ne]: userId };
+    // where.userId = { [Op.ne]: userId };
     where.status = "approved";
     where.isActive = true;
     userWhere.isActive = true;
