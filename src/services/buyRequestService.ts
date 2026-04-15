@@ -69,6 +69,7 @@ export const listBuyRequestsService = async (
     potatoType,
     potatoVariety,
     qualityGrade,
+    state,
     district,
     isVerified,
     pbVerified,
@@ -113,6 +114,10 @@ export const listBuyRequestsService = async (
 
   if (district) {
     userWhere.district = district;
+  }
+
+  if (state) {
+    userWhere.state = state;
   }
 
   if (pbVerified && pbVerified.toLowerCase() !== "all") {
@@ -186,6 +191,7 @@ export const listMyBuyRequestsService = async (
     potatoVariety,
     qualityGrade,
     district,
+    state,
   } = query;
 
   const offset = (Number(page) - 1) * Number(perPage);
@@ -207,6 +213,10 @@ export const listMyBuyRequestsService = async (
 
   if (district) {
     userWhere.district = district;
+  }
+
+  if (state) {
+    userWhere.state = state;
   }
 
   const { rows, count } = await BuyRequest.findAndCountAll({

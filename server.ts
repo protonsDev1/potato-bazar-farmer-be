@@ -77,6 +77,11 @@ import communityRoutes from "./src/routes/communityRoutes";
 import transportServiceRoutes from "./src/routes/transportServiceRoutes";
 import transportRequirementRoutes from "./src/routes/transportRequirementRoutes";
 import walletRoutes from "./src/routes/walletRoutes";
+import directorySubscriptionRoutes from "./src/routes/directorySubscriptionRoutes";
+import bannerAdRoutes from "./src/routes/bannerAdRoutes";
+import contactUnlockRoutes from "./src/routes/contactUnlockRoutes";
+import userSubscriptionRoutes from "./src/routes/userSubscriptionRoutes";
+import videoHubRoutes from "./src/routes/videoHubRoutes";
 
 const cors = require("cors");
 
@@ -166,7 +171,11 @@ app.use("/api/community_posts", communityRoutes);
 app.use("/api/transport_services", transportServiceRoutes);
 app.use("/api/transport_requirements", transportRequirementRoutes);
 app.use("/api/wallets", walletRoutes);
-
+app.use("/api/directory_subscription", directorySubscriptionRoutes);
+app.use("/api/banner_ad", bannerAdRoutes);
+app.use("/api", contactUnlockRoutes);
+app.use("/api/user_subscription", userSubscriptionRoutes);
+app.use("/api/video-hub", videoHubRoutes);
 const PORT = 8000;
 const startServer = async () => {
   try {

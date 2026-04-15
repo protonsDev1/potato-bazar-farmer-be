@@ -1,7 +1,9 @@
 import sequelize from "../database/models/db";
 import User, { USER_ROLES } from "../database/models/user";
 import Wallet from "../database/models/wallet";
-import WalletTransaction from "../database/models/walletTransaction";
+import WalletTransaction, {
+  USAGE_TYPE,
+} from "../database/models/walletTransaction";
 
 export const creditWalletByAdmin = async (
   userId: number,
@@ -21,13 +23,20 @@ export const creditWalletByAdmin = async (
       wallet = await Wallet.create(
         {
           userId,
+          userBalance: 0,
+          adminBalance: 0,
           balance: 0,
         },
         { transaction: t },
       );
     }
 
-    wallet.balance = Number(wallet.balance) + Number(amount);
+    const adminBalance = Number(wallet.adminBalance) + Number(amount);
+    const userBalance = Number(wallet.userBalance);
+
+    wallet.adminBalance = adminBalance;
+    wallet.balance = adminBalance + userBalance;
+
     await wallet.save({ transaction: t });
 
     await WalletTransaction.create(
@@ -36,6 +45,9 @@ export const creditWalletByAdmin = async (
         createdBy: adminId,
         amount,
         type: "credit",
+        source: "admin",
+        usageType: USAGE_TYPE.ADMIN_CREDIT,
+        referenceId: null,
         description,
       },
       { transaction: t },
@@ -58,22 +70,25 @@ export const debitWalletByAdmin = async (
       transaction: t,
     });
 
-    // Create wallet if not exists
     if (!wallet) {
-      wallet = await Wallet.create(
-        {
-          userId,
-          balance: 0,
-        },
-        { transaction: t },
-      );
+      return {
+        success: false,
+        message: "Wallet not found",
+      };
     }
 
-    if (Number(wallet.balance) < Number(amount)) {
-      throw new Error("Insufficient balance");
+    const adminBalance = Number(wallet.adminBalance);
+
+    if (adminBalance < Number(amount)) {
+      return {
+        success: false,
+        message: "Insufficient admin balance",
+      };
     }
 
-    wallet.balance = Number(wallet.balance) - Number(amount);
+    wallet.adminBalance = adminBalance - Number(amount);
+    wallet.balance = Number(wallet.adminBalance) + Number(wallet.userBalance);
+
     await wallet.save({ transaction: t });
 
     await WalletTransaction.create(
@@ -82,20 +97,40 @@ export const debitWalletByAdmin = async (
         createdBy: adminId,
         amount,
         type: "debit",
+        source: "admin",
+        usageType: USAGE_TYPE.ADMIN_DEBIT,
+        referenceId: null,
         description,
       },
       { transaction: t },
     );
 
-    return wallet;
+    return {
+      success: true,
+      data: wallet,
+    };
   });
 };
 
 export const fetchUserBalance = async (userId: number) => {
-  const wallet = await Wallet.findOne({ where: { userId } });
-  if (!wallet) throw new Error("Wallet not found");
+  let wallet = await Wallet.findOne({ where: { userId } });
 
-  return { balance: wallet.balance };
+  // Auto-create wallet if not exists
+  if (!wallet) {
+    wallet = await Wallet.create({
+      userId,
+      balance: 0,
+      userBalance: 0,
+      adminBalance: 0,
+      status: "active",
+    });
+  }
+
+  return {
+    balance: Number(wallet.balance),
+    userBalance: Number(wallet.userBalance),
+    adminBalance: Number(wallet.adminBalance),
+  };
 };
 
 export const fetchUserTransactions = async (

@@ -14,6 +14,13 @@ export enum JOB_STATUS {
   REJECTED = "rejected",
 }
 
+export const EXPERIENCE_RANGE = {
+  ZERO_TO_ONE: "0-1 year",
+  ONE_TO_THREE: "1-3 years",
+  THREE_TO_FIVE: "3-5 years",
+  FIVE_PLUS: "5+ years",
+};
+
 class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job>> {
   declare id: CreationOptional<number>;
   declare title: string;
@@ -23,7 +30,7 @@ class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job>> {
 
   declare educationLevel: string[] | null;
   declare skillsRequired: string[] | null;
-  declare experienceRequired: number;
+  declare experienceRequired: string;
 
   declare workplace: string[] | null;
   declare vacancies: number | null;
@@ -70,7 +77,10 @@ Job.init(
 
     educationLevel: { type: DataTypes.ARRAY(DataTypes.STRING) },
     skillsRequired: { type: DataTypes.ARRAY(DataTypes.STRING) },
-    experienceRequired: { type: DataTypes.FLOAT, allowNull: false },
+    experienceRequired: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
 
     workplace: { type: DataTypes.ARRAY(DataTypes.STRING) },
     vacancies: { type: DataTypes.INTEGER },
@@ -123,7 +133,7 @@ Job.init(
     modelName: "Job",
     tableName: "jobs",
     timestamps: true,
-  }
+  },
 );
 
 Job.belongsTo(User, { foreignKey: "userId", as: "user" });

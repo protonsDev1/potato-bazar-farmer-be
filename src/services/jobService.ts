@@ -49,7 +49,7 @@ export const getJobsService = async (
   if (listingType === "own") {
     where.userId = userId;
   } else if (listingType === "others") {
-    where.userId = { [Op.ne]: userId };
+    // where.userId = { [Op.ne]: userId };
     where.status = "approved";
     where.isActive = true;
     userWhere.isActive = true;
@@ -76,10 +76,8 @@ export const getJobsService = async (
     where.educationLevel = { [Op.contains]: [filters.educationLevel] };
   }
 
-  if (filters.experienceRequired) {
-    where.experienceRequired = {
-      [Op.gte]: Number(filters.experienceRequired),
-    };
+  if (filters.experienceRequired && filters.experienceRequired !== "all") {
+    where.experienceRequired = filters.experienceRequired;
   }
 
   if (filters.salaryMin) {

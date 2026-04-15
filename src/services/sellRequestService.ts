@@ -74,6 +74,7 @@ export const listSellRequestsService = async (
     potatoVariety,
     qualityGrade,
     district,
+    state,
     isVerified,
     pbVerified,
     userId,
@@ -117,6 +118,10 @@ export const listSellRequestsService = async (
 
   if (district) {
     userWhere.district = district;
+  }
+
+  if (state) {
+    userWhere.state = state;
   }
 
   if (pbVerified && pbVerified.toLowerCase() !== "all") {
@@ -190,6 +195,7 @@ export const listMySellRequestsService = async (
     potatoVariety,
     qualityGrade,
     district,
+    state,
   } = query;
 
   const offset = (Number(page) - 1) * Number(perPage);
@@ -211,6 +217,10 @@ export const listMySellRequestsService = async (
 
   if (district) {
     userWhere.district = district;
+  }
+
+  if (state) {
+    userWhere.state = state;
   }
 
   const { rows, count } = await SellRequest.findAndCountAll({
