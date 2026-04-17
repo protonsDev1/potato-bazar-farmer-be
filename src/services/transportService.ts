@@ -74,8 +74,14 @@ export const getTransportService = async (
     whereCondition.transporterType = transporterType;
   }
 
+  // if (rateType) {
+  //   whereCondition.rateType = rateType;
+  // }
+
   if (rateType) {
-    whereCondition.rateType = rateType;
+    whereCondition.rateType = {
+      [Op.contains]: Array.isArray(rateType) ? rateType : [rateType],
+    };
   }
 
   if (vehicleType) {

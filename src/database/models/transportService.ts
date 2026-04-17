@@ -18,7 +18,7 @@ class TransportService extends Model<
   declare vehicleTypeRequired: string[];
   declare noOfVehicles: number;
   declare routeCoverage: string[];
-  declare rateType: string;
+  declare rateType: string[];
   declare additionalRequired: string[];
   declare documents: string[];
   declare ownerOrCompanyName: string | null;
@@ -53,7 +53,7 @@ TransportService.init(
       type: DataTypes.ARRAY(DataTypes.STRING),
     },
     rateType: {
-      type: DataTypes.STRING,
+      type: DataTypes.ARRAY(DataTypes.STRING),
     },
     additionalRequired: {
       type: DataTypes.ARRAY(DataTypes.STRING),
