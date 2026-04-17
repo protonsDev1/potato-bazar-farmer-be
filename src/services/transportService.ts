@@ -46,18 +46,18 @@ export const getTransportService = async (
   const userInclude: any = {
     model: User,
     as: "creator",
-    attributes: [
-      "id",
-      "name",
-      "role",
-      "email",
-      "mobile",
-      "pbVerified",
-      "isActive",
-      "isDeleted",
-      "createdAt",
-      "updatedAt",
-    ],
+    // attributes: [
+    //   "id",
+    //   "name",
+    //   "role",
+    //   "email",
+    //   "mobile",
+    //   "pbVerified",
+    //   "isActive",
+    //   "isDeleted",
+    //   "createdAt",
+    //   "updatedAt",
+    // ],
     where: userWhere,
   };
 
