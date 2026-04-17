@@ -105,15 +105,15 @@ export const getTransportServiceById = async (req, res) => {
         {
           model: User,
           as: "creator",
-          attributes: [
-            "id",
-            "name",
-            "role",
-            "email",
-            "mobile",
-            "pbVerified",
-            "profilePicture",
-          ],
+          // attributes: [
+          //   "id",
+          //   "name",
+          //   "role",
+          //   "email",
+          //   "mobile",
+          //   "pbVerified",
+          //   "profilePicture",
+          // ],
         },
       ],
     });

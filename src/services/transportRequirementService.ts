@@ -85,18 +85,18 @@ export const getTransportRequirementsService = async (
   const userInclude: any = {
     model: User,
     as: "creator",
-    attributes: [
-      "id",
-      "name",
-      "role",
-      "email",
-      "mobile",
-      "pbVerified",
-      "isActive",
-      "isDeleted",
-      "createdAt",
-      "updatedAt",
-    ],
+    // attributes: [
+    //   "id",
+    //   "name",
+    //   "role",
+    //   "email",
+    //   "mobile",
+    //   "pbVerified",
+    //   "isActive",
+    //   "isDeleted",
+    //   "createdAt",
+    //   "updatedAt",
+    // ],
     where: userWhere,
   };
 
@@ -203,15 +203,15 @@ export const getTransportRequirementByIdService = async (
       {
         model: User,
         as: "creator",
-        attributes: [
-          "id",
-          "name",
-          "role",
-          "email",
-          "mobile",
-          "pbVerified",
-          "profilePicture",
-        ],
+        // attributes: [
+        //   "id",
+        //   "name",
+        //   "role",
+        //   "email",
+        //   "mobile",
+        //   "pbVerified",
+        //   "profilePicture",
+        // ],
       },
     ],
   });
