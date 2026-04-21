@@ -21,7 +21,7 @@ router.post(
   createVideoHubCategory
 );
 
-router.get("/category", authMiddleware, getAllVideoHubCategories);
+router.get("/category",authMiddleware, getAllVideoHubCategories);
 
 router.delete(
   "/category/:id",
@@ -36,11 +36,9 @@ router.post(
   createVideoHub
 );
 
-router.get("/", authMiddleware, getAllVideoHubs);
+router.get("/",authMiddleware, getAllVideoHubs);
 
 router.get("/:id", authMiddleware, getVideoHubById);
-
-router.put("/:id", authMiddleware, updateVideoHub);
 
 router.put(
   "/:id",
@@ -48,6 +46,10 @@ router.put(
   updateVideoHub
 );
 
-router.delete("/:id", authMiddleware, deleteVideoHub);
+router.delete(
+  "/:id",
+  checkPermissionMiddleware(PERMISSIONS.VIDEO_HUB),
+  deleteVideoHub
+);
 
 export default router;
