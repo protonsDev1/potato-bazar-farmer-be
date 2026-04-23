@@ -32,7 +32,9 @@ class Job extends Model<InferAttributes<Job>, InferCreationAttributes<Job>> {
   declare skillsRequired: string[] | null;
   declare experienceRequired: string;
 
-  declare workplace: string[] | null;
+  declare jobLocations:
+    | { stateId: number; districtIds: number[] }[]
+    | null;
   declare vacancies: number | null;
   declare salaryMin: number | null;
   declare salaryMax: number | null;
@@ -82,7 +84,7 @@ Job.init(
       allowNull: false,
     },
 
-    workplace: { type: DataTypes.ARRAY(DataTypes.STRING) },
+    jobLocations: { type: DataTypes.JSONB, allowNull: true, defaultValue: null },
     vacancies: { type: DataTypes.INTEGER },
     salaryMin: { type: DataTypes.INTEGER },
     salaryMax: { type: DataTypes.INTEGER },
