@@ -177,7 +177,7 @@ export const getJobsService = async (
  * Input:  [{ stateId: 1, districtIds: [10, 20] }]
  * Output: [{ stateId: 1, stateName: "Madhya Pradesh", districts: [{ id: 10, name: "Indore" }, { id: 20, name: "Bhopal" }] }]
  */
-const resolveJobLocations = async (
+export const resolveJobLocations = async (
   jobLocations: { stateId: number; districtIds: number[] }[] | null
 ) => {
   if (!jobLocations || !Array.isArray(jobLocations) || jobLocations.length === 0)

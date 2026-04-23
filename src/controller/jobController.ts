@@ -5,6 +5,7 @@ import {
   likeOrDislikeJobService,
   updateJobService,
   updateJobStatusService,
+  resolveJobLocations,
 } from "../services/jobService";
 import { NotificationType } from "../database/models/notification";
 import { sendNotificationService } from "../services/notificationService";
@@ -134,6 +135,7 @@ export const getJobById = async (req, res) => {
       message: "Job fetched successfully",
       data: {
         ...job.toJSON(),
+        jobLocations: await resolveJobLocations(job.jobLocations),
         likeCount,
         isLiked,
       },
