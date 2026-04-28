@@ -26,6 +26,7 @@ export const PERMISSIONS = {
   TRANSPORT_SERVICE: "transport_service",
   WALLET: "wallet",
   VIDEO_HUB: "video_hub",
+  LIVE_AUCTION: "live_auction",
 } as const;
 
 export type PermissionType = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

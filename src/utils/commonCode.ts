@@ -1,6 +1,30 @@
+import { Op } from "sequelize";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { USER_ROLES } from "../database/models/user";
+import UserSubscription, {
+  SUBSCRIPTION_STATUS,
+} from "../database/models/userSubscription";
 import { PERMISSIONS, WEB_PERMISSIONS } from "./constants/permissions";
+
+export const getActiveSubscription = async (userId: number) => {
+  const now = new Date();
+
+  return UserSubscription.findOne({
+    where: {
+      userId,
+      status: SUBSCRIPTION_STATUS.ACTIVE,
+      startDate: { [Op.lte]: now },
+      endDate: { [Op.gte]: now },
+    },
+  });
+};
+
+export const getPagination = (page = 1, perPage = 10) => {
+  const limit = Math.max(Number(perPage), 1);
+  const offset = (Math.max(Number(page), 1) - 1) * limit;
+
+  return { limit, offset, page: Number(page) };
+};
 
 export function buildPermissionsResponse(allowed: string[]) {
   const response: any = {};
