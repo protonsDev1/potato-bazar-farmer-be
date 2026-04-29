@@ -40,6 +40,31 @@ class LiveAuction extends Model<
   declare fleshColor: string | null;
 
   // 🔹 Other Info
+  declare shape: string | null;
+  declare skinColor: string | null;
+  declare tuberSize: string | null;
+  declare dryMatter: string | null;
+  declare healthCondition: string | null;
+  declare additionalComment: string | null;
+  declare storageTemperature: string | null;
+  declare brand: string | null;
+  declare generation: string | null;
+  declare treatmentStatus: string | null;
+  declare seedSourceType: string | null;
+  declare sproutingCondition: string | null;
+  declare physicalCondition: string | null;
+  declare roguingStatus: string | null;
+  declare productionMethod: string | null;
+  declare reason: string | null;
+  declare shapeType: string | null;
+  declare perTubeWeight: string | null;
+
+  declare tpod: number | null;
+  declare uc: number | null;
+
+  declare productionDate: Date | null;
+
+  declare diseaseFreeCertified: boolean;
   declare soilAdherence: string | null;
   declare firmness: string | null;
   declare sproutingStatus: string | null;
@@ -130,6 +155,35 @@ LiveAuction.init(
     sugarContent: DataTypes.STRING,
     skinSet: DataTypes.STRING,
     fleshColor: DataTypes.STRING,
+
+    shape: DataTypes.STRING,
+    skinColor: DataTypes.STRING,
+    tuberSize: DataTypes.STRING,
+    dryMatter: DataTypes.STRING,
+    healthCondition: DataTypes.STRING,
+    additionalComment: DataTypes.TEXT,
+    storageTemperature: DataTypes.STRING,
+    brand: DataTypes.STRING,
+    generation: DataTypes.STRING,
+    treatmentStatus: DataTypes.STRING,
+    seedSourceType: DataTypes.STRING,
+    sproutingCondition: DataTypes.STRING,
+    physicalCondition: DataTypes.STRING,
+    roguingStatus: DataTypes.STRING,
+    productionMethod: DataTypes.STRING,
+    reason: DataTypes.STRING,
+    shapeType: DataTypes.STRING,
+    perTubeWeight: DataTypes.STRING,
+
+    tpod: DataTypes.FLOAT,
+    uc: DataTypes.FLOAT,
+
+    productionDate: DataTypes.DATE,
+
+    diseaseFreeCertified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
 
     soilAdherence: DataTypes.STRING,
     firmness: DataTypes.STRING,
