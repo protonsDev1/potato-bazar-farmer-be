@@ -19,6 +19,31 @@ export const createLiveAuctionSchema = Joi.object({
   fleshColor: Joi.string().optional().allow(null, ""),
 
   // 🔹 Other Info
+  shape: Joi.string().optional().allow(null, ""),
+  skinColor: Joi.string().optional().allow(null, ""),
+  tuberSize: Joi.string().optional().allow(null, ""),
+  dryMatter: Joi.string().optional().allow(null, ""),
+  healthCondition: Joi.string().optional().allow(null, ""),
+  additionalComment: Joi.string().optional().allow(null, ""),
+  storageTemperature: Joi.string().optional().allow(null, ""),
+  brand: Joi.string().optional().allow(null, ""),
+  generation: Joi.string().optional().allow(null, ""),
+  treatmentStatus: Joi.string().optional().allow(null, ""),
+  seedSourceType: Joi.string().optional().allow(null, ""),
+  sproutingCondition: Joi.string().optional().allow(null, ""),
+  physicalCondition: Joi.string().optional().allow(null, ""),
+  roguingStatus: Joi.string().optional().allow(null, ""),
+  productionMethod: Joi.string().optional().allow(null, ""),
+  reason: Joi.string().optional().allow(null, ""),
+  shapeType: Joi.string().optional().allow(null, ""),
+  perTubeWeight: Joi.string().optional().allow(null),
+
+  tpod: Joi.number().optional().allow(null),
+  uc: Joi.number().optional().allow(null),
+
+  productionDate: Joi.date().optional().allow(null),
+
+  diseaseFreeCertified: Joi.boolean().optional(),
   soilAdherence: Joi.string().optional().allow(null, ""),
   firmness: Joi.string().optional().allow(null, ""),
   sproutingStatus: Joi.string().optional().allow(null, ""),
@@ -82,6 +107,31 @@ export const updateLiveAuctionSchema = Joi.object({
   fleshColor: Joi.string().optional().allow(null, ""),
 
   // 🔹 Other Info
+  shape: Joi.string().optional().allow(null, ""),
+  skinColor: Joi.string().optional().allow(null, ""),
+  tuberSize: Joi.string().optional().allow(null, ""),
+  dryMatter: Joi.string().optional().allow(null, ""),
+  healthCondition: Joi.string().optional().allow(null, ""),
+  additionalComment: Joi.string().optional().allow(null, ""),
+  storageTemperature: Joi.string().optional().allow(null, ""),
+  brand: Joi.string().optional().allow(null, ""),
+  generation: Joi.string().optional().allow(null, ""),
+  treatmentStatus: Joi.string().optional().allow(null, ""),
+  seedSourceType: Joi.string().optional().allow(null, ""),
+  sproutingCondition: Joi.string().optional().allow(null, ""),
+  physicalCondition: Joi.string().optional().allow(null, ""),
+  roguingStatus: Joi.string().optional().allow(null, ""),
+  productionMethod: Joi.string().optional().allow(null, ""),
+  reason: Joi.string().optional().allow(null, ""),
+  shapeType: Joi.string().optional().allow(null, ""),
+  perTubeWeight: Joi.string().optional().allow(null),
+
+  tpod: Joi.number().optional().allow(null),
+  uc: Joi.number().optional().allow(null),
+
+  productionDate: Joi.date().optional().allow(null),
+
+  diseaseFreeCertified: Joi.boolean().optional(),
   soilAdherence: Joi.string().optional().allow(null, ""),
   firmness: Joi.string().optional().allow(null, ""),
   sproutingStatus: Joi.string().optional().allow(null, ""),
