@@ -76,6 +76,7 @@ export const getAllLiveAuctionsForAdmin = async (req, res) => {
       state,
       district,
       type, // live | upcoming | completed
+      filterType,
     } = req.query;
 
     const result = await getAllLiveAuctionsForAdminService({
@@ -86,6 +87,7 @@ export const getAllLiveAuctionsForAdmin = async (req, res) => {
       state,
       district,
       type,
+      filterType,
     });
 
     return res.status(200).json({

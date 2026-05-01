@@ -189,6 +189,7 @@ export const getAllLiveAuctionsForAdminService = async ({
   state,
   district,
   type,
+  filterType,
 }) => {
   const offset = (page - 1) * perPage;
 
@@ -202,6 +203,17 @@ export const getAllLiveAuctionsForAdminService = async ({
   // 🔹 Location filters
   if (state) whereCondition.state = state;
   if (district) whereCondition.district = district;
+
+  if (filterType === "inspectionPending") {
+    whereCondition.inspectionBy = null;
+  }
+  if (filterType === "statusPending") {
+    whereCondition.inspectionBy = { [Op.ne]: null };
+    whereCondition.status = LIVE_AUCTION_STATUS.PENDING;
+  }
+  if (filterType === "inspectionDone") {
+    whereCondition.inspectionBy = { [Op.ne]: null };
+  }
 
   // 🔹 Search
   if (search && search.trim()) {
@@ -391,6 +403,13 @@ export const updateAuctionStatusService = async (id, payload) => {
 
   if (!auction) {
     return { error: "Auction not found", statusCode: 404 };
+  }
+
+  if (!auction.inspectionBy) {
+    return {
+      error: "Inspection must be completed before updating status",
+      statusCode: 400,
+    };
   }
 
   // Only pending can be updated
