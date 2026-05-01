@@ -10,10 +10,14 @@ import {
   updateLiveAuction,
   deleteLiveAuction,
   getAllLiveAuctionsForAdmin,
+  updateAuctionStatus,
+  submitInspectionReport,
 } from "../controller/liveAuctionController";
 
 import {
   createLiveAuctionSchema,
+  inspectionReportSchema,
+  updateAuctionStatusSchema,
   updateLiveAuctionSchema,
 } from "../validation/liveAuctionValidation";
 import { PERMISSIONS } from "../utils/constants/permissions";
@@ -56,5 +60,21 @@ router.put(
 
 // Delete
 router.delete("/:id", authMiddleware, deleteLiveAuction);
+
+// 🔹 Admin: Update Status
+router.put(
+  "/:id/status",
+  checkPermissionMiddleware(PERMISSIONS.LIVE_AUCTION),
+  validator.body(updateAuctionStatusSchema),
+  updateAuctionStatus,
+);
+
+// 🔹 Admin: Submit Inspection
+router.put(
+  "/:id/inspection",
+  checkPermissionMiddleware(PERMISSIONS.LIVE_AUCTION),
+  validator.body(inspectionReportSchema),
+  submitInspectionReport,
+);
 
 export default router;

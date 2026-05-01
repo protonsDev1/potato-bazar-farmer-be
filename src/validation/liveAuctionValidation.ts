@@ -188,3 +188,22 @@ export const updateLiveAuctionSchema = Joi.object({
 
   inspectionAddress: Joi.string().optional().allow(null, ""),
 });
+
+export const updateAuctionStatusSchema = Joi.object({
+  status: Joi.string().valid("approved", "rejected").required(),
+
+  reason: Joi.when("status", {
+    is: "rejected",
+    then: Joi.string().required(),
+    otherwise: Joi.string().optional().allow(null, ""),
+  }),
+});
+
+export const inspectionReportSchema = Joi.object({
+  inspectionReport: Joi.string().required(),
+
+  defectivePercentage: Joi.number().min(0).max(100).required(),
+
+  inspectionVideos: Joi.array().items(Joi.string().uri()).optional(),
+  inspectionImages: Joi.array().items(Joi.string().uri()).optional(),
+});

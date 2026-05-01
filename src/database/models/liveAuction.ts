@@ -104,6 +104,12 @@ class LiveAuction extends Model<
   declare status: LIVE_AUCTION_STATUS;
   declare verifiedAt: Date | null;
 
+  declare inspectionReport: string | null;
+  declare defectivePercentage: number | null;
+  declare inspectionVideos: string[] | null;
+  declare inspectionImages: string[] | null;
+  declare inspectionBy: number | null;
+
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -230,6 +236,18 @@ LiveAuction.init(
 
     verifiedAt: DataTypes.DATE,
 
+    inspectionReport: DataTypes.TEXT,
+    defectivePercentage: DataTypes.FLOAT,
+    inspectionVideos: DataTypes.ARRAY(DataTypes.STRING),
+    inspectionImages: DataTypes.ARRAY(DataTypes.STRING),
+    inspectionBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: { model: User, key: "id" },
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL",
+    },
+
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -251,5 +269,9 @@ LiveAuction.init(
 // 🔗 Associations
 LiveAuction.belongsTo(User, { foreignKey: "userId", as: "user" });
 User.hasMany(LiveAuction, { foreignKey: "userId", as: "liveAuctions" });
+LiveAuction.belongsTo(User, {
+  foreignKey: "inspectionBy",
+  as: "inspector",
+});
 
 export default LiveAuction;

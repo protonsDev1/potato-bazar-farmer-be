@@ -315,6 +315,13 @@ export const updateLiveAuctionService = async (id, userId, payload) => {
     };
   }
 
+  if (auction.status === LIVE_AUCTION_STATUS.APPROVED) {
+    return {
+      error: "Approved auctions cannot be updated",
+      statusCode: 400,
+    };
+  }
+
   // Validate date + time if provided
   if (payload.auctionDate || payload.auctionTime) {
     if (!payload.auctionDate || !payload.auctionTime) {
@@ -350,10 +357,15 @@ export const updateLiveAuctionService = async (id, userId, payload) => {
     payload.status = LIVE_AUCTION_STATUS.PENDING;
   }
 
+  if (auction.status === LIVE_AUCTION_STATUS.REJECTED) {
+    payload.status = LIVE_AUCTION_STATUS.PENDING;
+  }
+
   await auction.update(payload);
 
   return { data: auction };
 };
+
 // 🔹 Delete
 export const deleteLiveAuctionService = async (id, userId) => {
   const auction = await LiveAuction.findOne({ where: { id, userId } });
@@ -372,4 +384,52 @@ export const deleteLiveAuctionService = async (id, userId) => {
   await auction.destroy();
 
   return { success: true };
+};
+
+export const updateAuctionStatusService = async (id, payload) => {
+  const auction = await LiveAuction.findByPk(id);
+
+  if (!auction) {
+    return { error: "Auction not found", statusCode: 404 };
+  }
+
+  // Only pending can be updated
+  if (auction.status !== LIVE_AUCTION_STATUS.PENDING) {
+    return {
+      error: "Only pending auctions can be updated",
+      statusCode: 400,
+    };
+  }
+
+  if (payload.status === LIVE_AUCTION_STATUS.REJECTED) {
+    auction.reason = payload.reason;
+  }
+
+  if (payload.status === LIVE_AUCTION_STATUS.APPROVED) {
+    auction.verifiedAt = new Date();
+  }
+
+  auction.status = payload.status;
+
+  await auction.save();
+
+  return auction;
+};
+
+export const submitInspectionReportService = async (id, adminId, payload) => {
+  const auction = await LiveAuction.findByPk(id);
+
+  if (!auction) {
+    return { error: "Auction not found", statusCode: 404 };
+  }
+
+  await auction.update({
+    inspectionReport: payload.inspectionReport,
+    defectivePercentage: payload.defectivePercentage,
+    inspectionVideos: payload.inspectionVideos,
+    inspectionImages: payload.inspectionImages,
+    inspectionBy: adminId,
+  });
+
+  return auction;
 };
