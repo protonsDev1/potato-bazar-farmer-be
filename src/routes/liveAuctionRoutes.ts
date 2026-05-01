@@ -42,7 +42,6 @@ router.get("/public", authMiddleware, getPublicLiveAuctions);
 // Admin List
 router.get(
   "/admin",
-  authMiddleware,
   checkPermissionMiddleware(PERMISSIONS.LIVE_AUCTION),
   getAllLiveAuctionsForAdmin,
 );
