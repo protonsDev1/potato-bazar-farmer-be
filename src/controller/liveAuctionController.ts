@@ -1,6 +1,8 @@
 import {
   createLiveAuctionService,
   getAllLiveAuctionsForAdminService,
+  submitInspectionReportService,
+  updateAuctionStatusService,
 } from "../services/liveAuctionService";
 import {
   getMyLiveAuctionsService,
@@ -158,6 +160,55 @@ export const deleteLiveAuction = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Auction deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateAuctionStatus = async (req, res) => {
+  try {
+    const result: any = await updateAuctionStatusService(
+      req.params.id,
+      req.body,
+    );
+
+    if (result?.error) {
+      return res.status(result.statusCode).json({
+        success: false,
+        message: result.error,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Status updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const submitInspectionReport = async (req, res) => {
+  try {
+    const result: any = await submitInspectionReportService(
+      req.params.id,
+      req.user.id,
+      req.body,
+    );
+
+    if (result?.error) {
+      return res.status(result.statusCode).json({
+        success: false,
+        message: result.error,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Inspection submitted successfully",
+      data: result,
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
