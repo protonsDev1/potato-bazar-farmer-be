@@ -220,6 +220,20 @@ export const deleteTransportService = async (req, res) => {
         message: "Transport Service record not found.",
       });
 
+    const user = await User.findByPk(req.user.id);
+
+    const isAllowed =
+      record.createdBy === req.user.id ||
+      user?.role === USER_ROLES.SUPER_ADMIN ||
+      user?.role === USER_ROLES.SUB_ADMIN;
+
+    if (!isAllowed) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to delete this transport service.",
+      });
+    }
+
     await record.destroy();
 
     return res.status(200).json({
