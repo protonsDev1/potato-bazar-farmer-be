@@ -337,7 +337,14 @@ export const deleteRequirementService = async (id: number, userId: number) => {
     };
   }
 
-  if (requirement.createdBy !== userId) {
+  const user = await User.findByPk(userId);
+
+  const isAllowed =
+    requirement.createdBy === userId ||
+    user?.role === USER_ROLES.SUPER_ADMIN ||
+    user?.role === USER_ROLES.SUB_ADMIN;
+
+  if (!isAllowed) {
     return {
       success: false,
       statusCode: 403,
