@@ -21,7 +21,11 @@ export const updateCommunityPostValidation = Joi.object({
 
 export const approveRejectValidation = Joi.object({
   status: Joi.string().valid("approved", "rejected").required(),
-  adminRemark: Joi.string().optional(),
+  adminRemark: Joi.when("status", {
+    is: "rejected",
+    then: Joi.string().required(),
+    otherwise: Joi.string().optional().allow(null, ""),
+  }),
 });
 
 export const reportOnPostValidation = Joi.object({

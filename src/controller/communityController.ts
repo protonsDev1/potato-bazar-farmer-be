@@ -333,7 +333,7 @@ export const approveRejectPost = async (req, res) => {
     }
 
     post.status = req.body.status;
-    post.adminRemark = req.body.adminRemark;
+    post.adminRemark = req.body?.adminRemark;
     await post.save();
 
     await sendNotificationService({
