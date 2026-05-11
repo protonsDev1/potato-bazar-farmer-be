@@ -83,6 +83,7 @@ import contactUnlockRoutes from "./src/routes/contactUnlockRoutes";
 import userSubscriptionRoutes from "./src/routes/userSubscriptionRoutes";
 import videoHubRoutes from "./src/routes/videoHubRoutes";
 import liveAuctionRoutes from "./src/routes/liveAuctionRoutes";
+import reportRoutes from "./src/routes/reportRoutes";
 
 const cors = require("cors");
 
@@ -178,6 +179,7 @@ app.use("/api", contactUnlockRoutes);
 app.use("/api/user_subscription", userSubscriptionRoutes);
 app.use("/api/video-hub", videoHubRoutes);
 app.use("/api/live-auctions", liveAuctionRoutes);
+app.use("/api/reports", reportRoutes);
 
 const PORT = 8000;
 const startServer = async () => {
