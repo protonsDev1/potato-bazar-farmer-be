@@ -3,19 +3,19 @@ import {
   exportMobileUsersReport,
   getMobileUsersSummary,
 } from "../controller/reportController";
-import { superAdminOrSubAdminMiddleware } from "../utils/userAuth";
+import { adminOrSubAdminMiddleware } from "../utils/userAuth";
 
 const router = express.Router();
 
 router.get(
   "/mobile-users/export",
-  superAdminOrSubAdminMiddleware,
+  adminOrSubAdminMiddleware,
   exportMobileUsersReport
 );
 
 router.get(
   "/mobile-users/summary",
-  superAdminOrSubAdminMiddleware,
+  adminOrSubAdminMiddleware,
   getMobileUsersSummary
 );
 
