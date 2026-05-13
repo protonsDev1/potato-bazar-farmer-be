@@ -72,6 +72,7 @@ import {
   globalSearchController,
   toggleMobileUserActive,
   createUserWithoutOtpVerification,
+  getMySubscriptions,
 } from "../controller/user";
 import {
   adminMiddleware,
@@ -100,7 +101,7 @@ router.post(
   "/agents",
   checkWebPermissionMiddleware(WEB_MODULES.AGENT, WEB_ACTIONS.CREATE, false),
   validator.body(createAgentSchema),
-  createAgent
+  createAgent,
 );
 
 router.post("/agent-login", validator.body(agentLoginSchema), agentLogin);
@@ -109,7 +110,7 @@ router.post(
   "/send-otp",
   validator.body(otpSendSchema),
   limitOtpMiddleware,
-  sendOtp
+  sendOtp,
 );
 
 router.post("/verify-otp", validator.body(otpVerifySchema), verifyOtp);
@@ -118,21 +119,21 @@ router.post(
   "/create_user",
   authMiddleware,
   validator.body(createUserSchema),
-  createUserWithoutOtpVerification
+  createUserWithoutOtpVerification,
 );
 
 router.post(
   "/resend-otp",
   validator.body(otpSendSchema),
   limitOtpMiddleware,
-  resendOtp
+  resendOtp,
 );
 
 router.post(
   "/export/send-otps",
   validator.body(otpExportSendSchema),
   adminMiddleware,
-  sendExportOtps
+  sendExportOtps,
 );
 
 router.get("/get-dash-stats", adminOrSubAdminMiddleware, getDashboardStats);
@@ -141,7 +142,7 @@ router.put(
   "/registration-types",
   authMiddleware,
   validator.body(registrationTypesSchema),
-  updateUserRegistrationTypes
+  updateUserRegistrationTypes,
 );
 
 router.get("/user-profile", authMiddleware, getUserProfile);
@@ -150,33 +151,33 @@ router.post(
   "/forgot_password",
   validator.body(forgotPasswordSchema),
   limitOtpMiddleware,
-  forgotPassword
+  forgotPassword,
 );
 
 router.post(
   "/forgot_password/verify_otp",
   validator.body(forgotPasswordVerifyOtpSchema),
-  verifyForgotPasswordOtp
+  verifyForgotPasswordOtp,
 );
 
 router.post(
   "/reset_password",
   validator.body(resetPasswordSchema),
-  resetPassword
+  resetPassword,
 );
 
 router.put(
   "/change_password",
   authMiddleware,
   validator.body(changePasswordSchema),
-  changePassword
+  changePassword,
 );
 
 router.put(
   "/update_profile",
   authMiddleware,
   validator.body(updateProfileSchema),
-  updateProfile
+  updateProfile,
 ); // only for admin and agent
 
 router.get("/registration_types", retrieveRegistrationTypes);
@@ -184,20 +185,20 @@ router.get("/registration_types", retrieveRegistrationTypes);
 router.get(
   "/recent_registrations",
   adminMiddleware,
-  getRecentRegistrationsForAdmin
+  getRecentRegistrationsForAdmin,
 );
 
 router.put(
   "/update_status",
   authMiddleware,
   validator.body(updateRegistrationStatusSchema),
-  adminUpdateRegistrationStatus
+  adminUpdateRegistrationStatus,
 );
 
 router.post(
   "/mobile_login",
   validator.body(mobileLoginSchema),
-  UserLoginOnMobile
+  UserLoginOnMobile,
 );
 
 router.get(
@@ -206,14 +207,14 @@ router.get(
     PERMISSIONS.USER_MANAGEMENT,
     PERMISSIONS.PB_VERIFICATION,
   ]),
-  retrieveMobileUsers // mobile admin users listing
+  retrieveMobileUsers, // mobile admin users listing
 );
 
 router.put(
   "/mobile/update_profile",
   authMiddleware,
   validator.body(mobileUpdateSchema), // mobile app update profile
-  updateMobileUserProfile
+  updateMobileUserProfile,
 );
 
 router.get("/mobile/user_profile", authMiddleware, getMobileUserProfile); // mobile app user profile overview
@@ -224,26 +225,26 @@ router.get(
     PERMISSIONS.USER_MANAGEMENT,
     PERMISSIONS.PB_VERIFICATION,
   ]),
-  getMobileUserProfileByAdmin // mobile admin user profile overview
+  getMobileUserProfileByAdmin, // mobile admin user profile overview
 );
 
 router.get(
   "/mobile/get-verification-steps",
   authMiddleware,
-  getPbVerificationStepStatus
+  getPbVerificationStepStatus,
 );
 
 router.post(
   "/mobile/request-pb-verification",
   authMiddleware,
-  requestPbVerification
+  requestPbVerification,
 );
 
 router.put(
   "/mobile/user/:id/pb-verification",
   checkPermissionMiddleware(PERMISSIONS.PB_VERIFICATION),
   validator.body(mobileUserPBVerificationSchema),
-  updatePbVerification
+  updatePbVerification,
 );
 
 router.delete("/mobile/:userId", superAdminMiddleware, deleteMobileUserByAdmin); //  mobile admin delete user
@@ -251,48 +252,48 @@ router.delete("/mobile/:userId", superAdminMiddleware, deleteMobileUserByAdmin);
 router.get(
   "/admin/dash_stats",
   superAdminOrSubAdminMiddleware, // mobile admin/sub admin dashboard stats
-  retrieveAdminDashboardStats
+  retrieveAdminDashboardStats,
 );
 router.post(
   "/support",
   authMiddleware,
   validator.body(createSupportTicketSchema),
-  createTicket
+  createTicket,
 );
 
 router.post(
   "/support/reply",
   checkPermissionMiddleware(PERMISSIONS.HELP_SUPPORT),
   validator.body(replyTicketSchema),
-  replyToSupportTicket
+  replyToSupportTicket,
 );
 router.post(
   "/support/status",
   checkPermissionMiddleware(PERMISSIONS.HELP_SUPPORT),
   validator.body(updateTicketStatusSchema),
-  updateSupportTicketStatus
+  updateSupportTicketStatus,
 );
 router.get(
   "/support",
   checkPermissionMiddleware(PERMISSIONS.HELP_SUPPORT),
-  listSupportTickets
+  listSupportTickets,
 );
 router.get(
   "/support-details",
   checkPermissionMiddleware(PERMISSIONS.HELP_SUPPORT),
-  getTicketDetails
+  getTicketDetails,
 );
 router.post(
   "/verify_current_number",
   adminMiddleware,
   validator.body(verifyAndUpdateMobileNumberSchema),
-  verifyOldMobileNumberForUpdate
+  verifyOldMobileNumberForUpdate,
 );
 router.post(
   "/verify_and_update",
   adminMiddleware,
   validator.body(verifyAndUpdateMobileNumberSchema),
-  verifyNewMobileNumberBeforeUpdate
+  verifyNewMobileNumberBeforeUpdate,
 );
 
 router.get("/profile/completion", authMiddleware, getProfileCompletion);
@@ -300,7 +301,7 @@ router.get("/profile/completion", authMiddleware, getProfileCompletion);
 router.get(
   "/mobile/profile/role-info",
   authMiddleware,
-  getMobileUserRoleInformation
+  getMobileUserRoleInformation,
 );
 
 router.delete("/mobile", authMiddleware, deleteCurrentMobileUser);
@@ -311,13 +312,13 @@ router.put(
   "/mandi-agent/profile",
   authMiddleware,
   validator.body(mandiAgentUpdateSchema),
-  updateOwnMandiAgentProfile
+  updateOwnMandiAgentProfile,
 );
 
 router.post(
   "/mobile/verify_and_update",
   authMiddleware,
-  verifyAndUpdateNewNumber
+  verifyAndUpdateNewNumber,
 );
 
 router.get("/global-search", globalSearchController);
@@ -326,7 +327,9 @@ router.put(
   "/mobile/:id/active",
   checkPermissionMiddleware(PERMISSIONS.USER_MANAGEMENT),
   validator.body(updateMobileUserStatusSchema),
-  toggleMobileUserActive
+  toggleMobileUserActive,
 );
+
+router.get("/mobile/my-subscriptions", authMiddleware, getMySubscriptions);
 
 export default router;

@@ -40,6 +40,7 @@ import SubAdminWebPermission from "../database/models/subAdminWebPermission";
 import {
   buildPermissionsResponse,
   buildSubAdminPermissionsResponse,
+  getUserSubscriptions,
 } from "../utils/commonCode";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import MobileUpdateSession, {
@@ -119,7 +120,7 @@ export const login = async (req, res) => {
     const token = jwt.sign(
       { id: user.id },
       JWT_SECRET,
-      { expiresIn: "24h" } // Token expires in 1 day
+      { expiresIn: "24h" }, // Token expires in 1 day
     );
 
     let permissions = null;
@@ -360,7 +361,7 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: `Allowed device types: ${Object.values(USER_DEVICE_TYPE).join(
-          ", "
+          ", ",
         )}`,
       });
 
@@ -402,6 +403,8 @@ export const verifyOtp = async (req, res) => {
         });
       }
 
+      const subscriptions = await getUserSubscriptions(existingUser.id);
+
       const token = jwt.sign({ id: existingUser.id }, JWT_SECRET);
       return res.status(200).json({
         success: true,
@@ -409,6 +412,7 @@ export const verifyOtp = async (req, res) => {
         token,
         user: existingUser,
         registrationType,
+        subscriptions,
       });
     }
 
@@ -416,7 +420,7 @@ export const verifyOtp = async (req, res) => {
       mobile,
       hasStartedUsingMobile,
       playerId,
-      deviceType
+      deviceType,
     );
 
     return res.status(200).json({
@@ -498,12 +502,17 @@ export const UserLoginOnMobile = async (req, res) => {
         .status(400)
         .json({ success: false, message: userOnboardedOnMobile.error });
 
+    const subscriptions = await getUserSubscriptions(
+      userOnboardedOnMobile.data.id,
+    );
+
     const token = jwt.sign({ id: userOnboardedOnMobile.data.id }, JWT_SECRET);
 
     return res.status(200).json({
       success: true,
       message: "User Onboarded on mobile Successfully.",
       user: { token, ...userOnboardedOnMobile.data.toJSON() },
+      subscriptions,
     });
   } catch (error) {
     return res.status(500).json({
@@ -536,7 +545,7 @@ export const updateUserRegistrationTypes = async (req, res) => {
 
     const updatedUser = await updateRegistrationTypes(
       mobile,
-      registration_types
+      registration_types,
     );
 
     if (!updatedUser) {
@@ -600,7 +609,7 @@ export const verifyForgotPasswordOtp = async (req, res) => {
 
     await User.update(
       { otpVerified: true },
-      { where: { [Op.or]: orConditions } }
+      { where: { [Op.or]: orConditions } },
     );
 
     return res.status(200).json({ message: "Otp verified successfully." });
@@ -619,7 +628,7 @@ export const resetPassword = async (req, res) => {
       mobile,
       email,
       password,
-      confirmPassword
+      confirmPassword,
     );
 
     if (!response.success)
@@ -645,7 +654,7 @@ export const changePassword = async (req, res) => {
       oldPassword,
       newPassword,
       confirmNewPassword,
-      id
+      id,
     );
 
     if (!response.success)
@@ -739,7 +748,7 @@ export const adminUpdateRegistrationStatus = async (req, res) => {
       userType,
       userId,
       currentUser,
-      reason
+      reason,
     );
 
     if (!response.success)
@@ -886,7 +895,7 @@ export const updatePbVerification = async (req, res) => {
       req.params.id,
       req.body.pbVerificationStatus,
       req.body.reason,
-      id
+      id,
     );
 
     return res.status(result.statusCode).json(result);
@@ -1075,7 +1084,7 @@ export const createTicket = async (req, res) => {
       userId,
       subject,
       category,
-      priority
+      priority,
     );
 
     return res.status(201).json({
@@ -1137,7 +1146,7 @@ export const listSupportTickets = async (req, res) => {
       Number(page),
       Number(limit),
       status as string,
-      search as string
+      search as string,
     );
 
     return res.status(200).json({
@@ -1199,7 +1208,7 @@ export const verifyOldMobileNumberForUpdate = async (req, res) => {
         {
           currentNumberLastVerifiedAt: new Date(),
         },
-        { where: { userId: id } }
+        { where: { userId: id } },
       );
     } else {
       await MobileUpdateSession.create({
@@ -1385,7 +1394,7 @@ export const verifyAndUpdateNewNumber = async (req, res) => {
       newMobileNumber,
       otp,
       mobile,
-      userId
+      userId,
     );
 
     if (!response.success)
@@ -1430,6 +1439,23 @@ export const globalSearchController = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal Server Error",
+    });
+  }
+};
+
+export const getMySubscriptions = async (req, res) => {
+  try {
+    const subscriptions = await getUserSubscriptions(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Subscriptions fetched successfully.",
+      data: subscriptions,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch subscriptions.",
     });
   }
 };
