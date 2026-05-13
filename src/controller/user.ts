@@ -144,6 +144,9 @@ export const login = async (req, res) => {
       permissions = buildSubAdminPermissionsResponse(allowed);
     }
 
+    user.lastLogin = new Date();
+    await user.save();
+
     // Return the success response with the token
     return res.status(200).json({
       message: "Login successful",
@@ -406,6 +409,9 @@ export const verifyOtp = async (req, res) => {
       const subscriptions = await getUserSubscriptions(existingUser.id);
 
       const token = jwt.sign({ id: existingUser.id }, JWT_SECRET);
+      existingUser.lastLogin = new Date();
+      await existingUser.save();
+
       return res.status(200).json({
         success: true,
         message: "OTP verified. User already exists.",

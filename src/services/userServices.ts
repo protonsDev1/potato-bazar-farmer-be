@@ -489,6 +489,7 @@ export const registerInitialUser = async (
     hasStartedUsingMobile: !!hasStartedUsingMobile,
     playerId,
     deviceType,
+    lastLogin: new Date(),
   });
 };
 
@@ -1031,6 +1032,7 @@ export const mobileOnboardingLoginService = async (userData) => {
     pinCode,
     userType,
     isUserOnBoardedOnMobile: true,
+    lastLogin: new Date(),
   });
 
   return {

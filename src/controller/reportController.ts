@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-import { getMobileUsersReportData } from "../services/reportService";
+import { getMobileUsersReportData, getMobileUsersReportSummary } from "../services/reportService";
 
 export const exportMobileUsersReport = async (req, res) => {
   try {
@@ -26,6 +26,9 @@ export const exportMobileUsersReport = async (req, res) => {
       { header: "Device", key: "Device", width: 12 },
       { header: "Active Status", key: "Active Status", width: 15 },
       { header: "Last Login Date", key: "Last Login Date", width: 22 },
+      { header: "Has Listing", key: "isListing", width: 12 },
+      { header: "Incomplete Profile", key: "isIncompleteProfile", width: 18 },
+      { header: "No Enquiry", key: "isWithNoEnquiry", width: 12 },
     ];
 
     // Style header row
@@ -57,6 +60,9 @@ export const exportMobileUsersReport = async (req, res) => {
         "Last Login Date": row["Last Login Date"]
           ? new Date(row["Last Login Date"]).toISOString().split("T")[0]
           : "",
+        "isListing": row["isListing"] ? "Yes" : "No",
+        "isIncompleteProfile": row["isIncompleteProfile"] ? "Yes" : "No",
+        "isWithNoEnquiry": row["isWithNoEnquiry"] ? "Yes" : "No",
       });
     });
 
@@ -77,6 +83,28 @@ export const exportMobileUsersReport = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to export mobile users report",
+      error: error.message,
+    });
+  }
+};
+
+export const getMobileUsersSummary = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const summary = await getMobileUsersReportSummary(
+      startDate as string,
+      endDate as string
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: summary,
+    });
+  } catch (error) {
+    console.error("Error getting mobile users summary:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get mobile users summary",
       error: error.message,
     });
   }
