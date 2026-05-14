@@ -876,8 +876,11 @@ export const getMobileUserProfile = async (req, res) => {
     const { id } = req.user;
 
     const userDetail = await User.findOne({
-      where: id,
+      where: { id },
       include: [{ model: KycDocument, as: "kycDocument" }],
+      attributes: {
+        include: ["lastLogin", "passwordUpdatedAt"],
+      },
     });
 
     return res.status(200).json({

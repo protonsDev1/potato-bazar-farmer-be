@@ -1233,7 +1233,10 @@ export const getMobileUsers = async ({
 
     const { count, rows: users } = await User.findAndCountAll({
       where: whereCondition,
-      attributes: { exclude: ["password_hash", "playerId"] },
+      attributes: {
+        exclude: ["password_hash", "playerId"],
+        include: ["lastLogin", "passwordUpdatedAt"],
+      },
       include,
       limit,
       offset,
@@ -1924,6 +1927,9 @@ export const getUserTypeProfileDetails = async (userId) => {
   const userDetail = await User.findOne({
     where: { id: userId },
     include: [{ model: KycDocument, as: "kycDocument" }],
+    attributes: {
+      include: ["lastLogin", "passwordUpdatedAt"],
+    },
   });
 
   if (!userDetail)
