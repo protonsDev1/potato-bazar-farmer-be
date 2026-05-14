@@ -1,6 +1,96 @@
+import { Op } from "sequelize";
 import SubAdminPermission from "../database/models/subAdminPermission";
 import { USER_ROLES } from "../database/models/user";
+import UserSubscription, {
+  SUBSCRIPTION_STATUS,
+} from "../database/models/userSubscription";
 import { PERMISSIONS, WEB_PERMISSIONS } from "./constants/permissions";
+import SubscriptionPlan from "../database/models/subscriptionPlan";
+import UserDirectorySubscription from "../database/models/userDirectorySubscription";
+import DirectorySubscriptionPlan from "../database/models/directorySubscriptionPlan";
+import UserBannerAdSubscription from "../database/models/userBannerAdSubscription";
+import BannerAdPlan from "../database/models/bannerAdPlan";
+
+export const getActiveSubscription = async (userId: number) => {
+  const now = new Date();
+
+  return UserSubscription.findOne({
+    where: {
+      userId,
+      status: SUBSCRIPTION_STATUS.ACTIVE,
+      startDate: { [Op.lte]: now },
+      endDate: { [Op.gte]: now },
+    },
+  });
+};
+
+export const getUserSubscriptions = async (userId: number) => {
+  const now = new Date();
+
+  const [userSubscription, directorySubscription, bannerAdSubscription] =
+    await Promise.all([
+      UserSubscription.findOne({
+        where: {
+          userId,
+          status: "active",
+          endDate: {
+            [Op.gt]: now,
+          },
+        },
+        include: [
+          {
+            model: SubscriptionPlan,
+            as: "plan",
+          },
+        ],
+      }),
+
+      UserDirectorySubscription.findOne({
+        where: {
+          userId,
+          status: "active",
+          endDate: {
+            [Op.gt]: now,
+          },
+        },
+        include: [
+          {
+            model: DirectorySubscriptionPlan,
+            as: "plan",
+          },
+        ],
+      }),
+
+      UserBannerAdSubscription.findOne({
+        where: {
+          userId,
+          status: "active",
+          endDate: {
+            [Op.gt]: now,
+          },
+        },
+        include: [
+          {
+            model: BannerAdPlan,
+            as: "plan",
+          },
+        ],
+      }),
+    ]);
+
+  return {
+    userSubscription,
+    directorySubscription,
+    bannerAdSubscription,
+  };
+};
+
+export const getPagination = (page = 1, perPage = 10) => {
+  const limit = Math.max(Number(perPage), 1);
+  const offset = (Math.max(Number(page), 1) - 1) * limit;
+
+  return { limit, offset, page: Number(page) };
+};
 
 export function buildPermissionsResponse(allowed: string[]) {
   const response: any = {};

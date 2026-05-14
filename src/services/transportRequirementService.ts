@@ -85,18 +85,18 @@ export const getTransportRequirementsService = async (
   const userInclude: any = {
     model: User,
     as: "creator",
-    attributes: [
-      "id",
-      "name",
-      "role",
-      "email",
-      "mobile",
-      "pbVerified",
-      "isActive",
-      "isDeleted",
-      "createdAt",
-      "updatedAt",
-    ],
+    // attributes: [
+    //   "id",
+    //   "name",
+    //   "role",
+    //   "email",
+    //   "mobile",
+    //   "pbVerified",
+    //   "isActive",
+    //   "isDeleted",
+    //   "createdAt",
+    //   "updatedAt",
+    // ],
     where: userWhere,
   };
 
@@ -203,15 +203,15 @@ export const getTransportRequirementByIdService = async (
       {
         model: User,
         as: "creator",
-        attributes: [
-          "id",
-          "name",
-          "role",
-          "email",
-          "mobile",
-          "pbVerified",
-          "profilePicture",
-        ],
+        // attributes: [
+        //   "id",
+        //   "name",
+        //   "role",
+        //   "email",
+        //   "mobile",
+        //   "pbVerified",
+        //   "profilePicture",
+        // ],
       },
     ],
   });
@@ -337,7 +337,14 @@ export const deleteRequirementService = async (id: number, userId: number) => {
     };
   }
 
-  if (requirement.createdBy !== userId) {
+  const user = await User.findByPk(userId);
+
+  const isAllowed =
+    requirement.createdBy === userId ||
+    user?.role === USER_ROLES.SUPER_ADMIN ||
+    user?.role === USER_ROLES.SUB_ADMIN;
+
+  if (!isAllowed) {
     return {
       success: false,
       statusCode: 403,

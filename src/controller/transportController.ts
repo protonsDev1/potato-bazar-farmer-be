@@ -105,15 +105,15 @@ export const getTransportServiceById = async (req, res) => {
         {
           model: User,
           as: "creator",
-          attributes: [
-            "id",
-            "name",
-            "role",
-            "email",
-            "mobile",
-            "pbVerified",
-            "profilePicture",
-          ],
+          // attributes: [
+          //   "id",
+          //   "name",
+          //   "role",
+          //   "email",
+          //   "mobile",
+          //   "pbVerified",
+          //   "profilePicture",
+          // ],
         },
       ],
     });
@@ -219,6 +219,20 @@ export const deleteTransportService = async (req, res) => {
         success: false,
         message: "Transport Service record not found.",
       });
+
+    const user = await User.findByPk(req.user.id);
+
+    const isAllowed =
+      record.createdBy === req.user.id ||
+      user?.role === USER_ROLES.SUPER_ADMIN ||
+      user?.role === USER_ROLES.SUB_ADMIN;
+
+    if (!isAllowed) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not allowed to delete this transport service.",
+      });
+    }
 
     await record.destroy();
 

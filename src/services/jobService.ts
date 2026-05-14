@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, literal } from "sequelize";
 import Job, { JOB_STATUS } from "../database/models/job";
 import User, { USER_ROLES } from "../database/models/user";
 import { canUpdateResource } from "../utils/commonCode";
@@ -7,6 +7,8 @@ import LikeJob from "../database/models/likeJob";
 import { sendNotificationService } from "./notificationService";
 import { NotificationType } from "../database/models/notification";
 import SubAdminPermission from "../database/models/subAdminPermission";
+import State from "../database/models/state";
+import District from "../database/models/district";
 
 export const getJobsService = async (
   userId: number,
@@ -16,8 +18,8 @@ export const getJobsService = async (
   filters: {
     category?: string;
     type?: string;
-    state?: string;
-    district?: string;
+    stateId?: string;
+    districtId?: string;
     educationLevel?: string;
     experienceRequired?: string;
     salaryMin?: string;
@@ -64,12 +66,24 @@ export const getJobsService = async (
     where.type = { [Op.iLike]: filters.type };
   }
 
-  if (filters.state && filters.state !== "all") {
-    where.state = { [Op.iLike]: filters.state };
+  if (filters.stateId && filters.stateId !== "all") {
+    // Filter jobs where jobLocations JSON array contains an entry with this stateId
+    where[Op.and] = [
+      ...(where[Op.and] || []),
+      literal(
+        `"Job"."jobLocations"::jsonb @> '[{"stateId": ${Number(filters.stateId)}}]'`
+      ),
+    ];
   }
 
-  if (filters.district && filters.district !== "all") {
-    where.district = { [Op.iLike]: filters.district };
+  if (filters.districtId && filters.districtId !== "all") {
+    // Filter jobs where any entry in jobLocations has this districtId in its districtIds array
+    where[Op.and] = [
+      ...(where[Op.and] || []),
+      literal(
+        `EXISTS (SELECT 1 FROM jsonb_array_elements("Job"."jobLocations") AS loc WHERE loc->'districtIds' @> '${Number(filters.districtId)}')`
+      ),
+    ];
   }
 
   if (filters.educationLevel && filters.educationLevel !== "all") {
@@ -154,12 +168,61 @@ export const getJobsService = async (
     page,
     perPage: limit,
     totalPages: Math.ceil(count / limit),
-    jobs: jobsWithCounts,
+    jobs: await enrichJobsWithLocations(jobsWithCounts),
   };
 };
 
+/**
+ * Resolves jobLocations from IDs to full state/district name objects.
+ * Input:  [{ stateId: 1, districtIds: [10, 20] }]
+ * Output: [{ stateId: 1, stateName: "Madhya Pradesh", districts: [{ id: 10, name: "Indore" }, { id: 20, name: "Bhopal" }] }]
+ */
+export const resolveJobLocations = async (
+  jobLocations: { stateId: number; districtIds: number[] }[] | null
+) => {
+  if (!jobLocations || !Array.isArray(jobLocations) || jobLocations.length === 0)
+    return [];
+
+  const stateIds = [...new Set(jobLocations.map((l) => l.stateId))];
+  const allDistrictIds = [
+    ...new Set(jobLocations.flatMap((l) => l.districtIds || [])),
+  ];
+
+  const [states, districts] = await Promise.all([
+    State.findAll({ where: { id: { [Op.in]: stateIds } } }),
+    District.findAll({ where: { id: { [Op.in]: allDistrictIds } } }),
+  ]);
+
+  const stateMap = new Map(states.map((s) => [s.id, s]));
+  const districtMap = new Map(districts.map((d) => [d.id, d]));
+
+  return jobLocations.map((loc) => ({
+    stateId: loc.stateId,
+    stateName: stateMap.get(loc.stateId)?.name || null,
+    districts: (loc.districtIds || []).map((dId) => ({
+      id: dId,
+      name: districtMap.get(dId)?.name || null,
+    })),
+  }));
+};
+
+const enrichJobsWithLocations = async (jobs: any[]) => {
+  return Promise.all(
+    jobs.map(async (job) => {
+      const resolvedLocations = await resolveJobLocations(job.jobLocations);
+      return {
+        ...job,
+        jobLocations: resolvedLocations,
+      };
+    })
+  );
+};
+
 export const createJobService = async (data) => {
-  return await Job.create(data);
+  const job = await Job.create(data);
+  const plainJob = job.toJSON();
+  const resolvedLocations = await resolveJobLocations(plainJob.jobLocations);
+  return { ...plainJob, jobLocations: resolvedLocations };
 };
 
 export const getJobByIdService = async (id, userId) => {
@@ -171,8 +234,12 @@ export const getJobByIdService = async (id, userId) => {
     where: { userId, jobId: id },
   });
 
+  const plainJob = job.toJSON();
+  const resolvedLocations = await resolveJobLocations(plainJob.jobLocations);
+
   return {
-    ...job.toJSON(),
+    ...plainJob,
+    jobLocations: resolvedLocations,
     isLiked: Boolean(liked),
   };
 };

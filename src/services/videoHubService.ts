@@ -13,11 +13,20 @@ export const createVideoHubService = async (payload) => {
   };
 };
 
-export const listVideoHubsService = async ({ page = 1, limit = 10, categoryId }) => {
+export const listVideoHubsService = async ({ page = 1, limit = 10, categoryId, status, language, isFeatured }) => {
   const whereClause: any = {};
 
   if (categoryId) {
     whereClause.categoryId = categoryId;
+  }
+  if (status) {
+    whereClause.status = status;
+  }
+  if (language) {
+    whereClause.language = language;
+  }
+  if (isFeatured !== undefined) {
+    whereClause.isFeatured = isFeatured === 'true' || isFeatured === true;
   }
 
   const offset = (Number(page) - 1) * Number(limit);

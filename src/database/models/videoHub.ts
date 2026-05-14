@@ -15,8 +15,14 @@ class VideoHub extends Model<
 > {
   declare id: CreationOptional<number>;
   declare categoryId: number;
+  declare title: string | null;
   declare videoThumbnail: string;
   declare videoUrl: string;
+  declare description: string | null;
+  declare language: string;
+  declare tags: any | null;
+  declare status: "Draft" | "Published";
+  declare isFeatured: boolean;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -37,6 +43,10 @@ VideoHub.init(
       },
       onDelete: "CASCADE",
     },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     videoThumbnail: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -44,6 +54,27 @@ VideoHub.init(
     videoUrl: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    language: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "Hindi",
+    },
+    tags: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM("Draft", "Published"),
+      defaultValue: "Published",
+    },
+    isFeatured: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,

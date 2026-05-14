@@ -17,12 +17,15 @@ export const createVideoHub = async (req, res) => {
 
 export const getAllVideoHubs = async (req, res) => {
   try {
-    const { page, limit, categoryId } = req.query as any;
+    const { page, limit, categoryId, status, language, isFeatured } = req.query as any;
 
     const result = await VideoHubService.listVideoHubsService({
       page,
       limit,
       categoryId,
+      status,
+      language,
+      isFeatured,
     });
 
     return res.status(result.statusCode).json(result);

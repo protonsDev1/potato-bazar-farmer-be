@@ -46,18 +46,18 @@ export const getTransportService = async (
   const userInclude: any = {
     model: User,
     as: "creator",
-    attributes: [
-      "id",
-      "name",
-      "role",
-      "email",
-      "mobile",
-      "pbVerified",
-      "isActive",
-      "isDeleted",
-      "createdAt",
-      "updatedAt",
-    ],
+    // attributes: [
+    //   "id",
+    //   "name",
+    //   "role",
+    //   "email",
+    //   "mobile",
+    //   "pbVerified",
+    //   "isActive",
+    //   "isDeleted",
+    //   "createdAt",
+    //   "updatedAt",
+    // ],
     where: userWhere,
   };
 
@@ -74,8 +74,14 @@ export const getTransportService = async (
     whereCondition.transporterType = transporterType;
   }
 
+  // if (rateType) {
+  //   whereCondition.rateType = rateType;
+  // }
+
   if (rateType) {
-    whereCondition.rateType = rateType;
+    whereCondition.rateType = {
+      [Op.contains]: Array.isArray(rateType) ? rateType : [rateType],
+    };
   }
 
   if (vehicleType) {

@@ -13,7 +13,14 @@ export const createJobSchema = Joi.object({
     .valid(...Object.values(EXPERIENCE_RANGE))
     .required(),
 
-  workplace: Joi.array().items(Joi.string()).allow(null),
+  jobLocations: Joi.array()
+    .items(
+      Joi.object({
+        stateId: Joi.number().required(),
+        districtIds: Joi.array().items(Joi.number()).required(),
+      })
+    )
+    .allow(null),
   vacancies: Joi.number().allow(null),
   salaryMin: Joi.number().allow(null),
   salaryMax: Joi.number().allow(null),
@@ -46,7 +53,14 @@ export const updateJobSchema = Joi.object({
     .valid(...Object.values(EXPERIENCE_RANGE))
     .optional(),
 
-  workplace: Joi.array().items(Joi.string()).allow(null),
+  jobLocations: Joi.array()
+    .items(
+      Joi.object({
+        stateId: Joi.number().required(),
+        districtIds: Joi.array().items(Joi.number()).required(),
+      })
+    )
+    .allow(null),
   vacancies: Joi.number().allow(null),
   salaryMin: Joi.number().allow(null),
   salaryMax: Joi.number().allow(null),

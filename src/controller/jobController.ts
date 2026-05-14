@@ -5,6 +5,7 @@ import {
   likeOrDislikeJobService,
   updateJobService,
   updateJobStatusService,
+  resolveJobLocations,
 } from "../services/jobService";
 import { NotificationType } from "../database/models/notification";
 import { sendNotificationService } from "../services/notificationService";
@@ -20,8 +21,8 @@ export const getJobs = async (req, res) => {
       listingType = "own",
       category,
       type,
-      state,
-      district,
+      stateId,
+      districtId,
       educationLevel,
       experienceRequired,
       salaryMin,
@@ -41,8 +42,8 @@ export const getJobs = async (req, res) => {
       {
         category,
         type,
-        state,
-        district,
+        stateId,
+        districtId,
         educationLevel,
         experienceRequired,
         salaryMin,
@@ -80,14 +81,16 @@ export const createJob = async (req, res) => {
       where: { role: USER_ROLES.SUPER_ADMIN },
     });
 
-    await sendNotificationService({
-      title: "New Job Posted",
-      description: `A new job "${job.title}" has been posted. Please review.`,
-      senderId: req.user.id,
-      receiverId: superAdmin.id,
-      referenceType: NotificationType.JOB,
-      referenceId: job.id,
-    });
+    if (superAdmin) {
+      await sendNotificationService({
+        title: "New Job Posted",
+        description: `A new job "${job.title}" has been posted. Please review.`,
+        senderId: req.user.id,
+        receiverId: superAdmin.id,
+        referenceType: NotificationType.JOB,
+        referenceId: job.id,
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -132,6 +135,7 @@ export const getJobById = async (req, res) => {
       message: "Job fetched successfully",
       data: {
         ...job.toJSON(),
+        jobLocations: await resolveJobLocations(job.jobLocations),
         likeCount,
         isLiked,
       },
