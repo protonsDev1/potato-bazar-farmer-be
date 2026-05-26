@@ -8,9 +8,7 @@
     "outDir": "dist", 
     "rootDir": "",
     "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "ignoreDeprecations": "5.0",
-    "noImplicitAny": false
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*.js", 
