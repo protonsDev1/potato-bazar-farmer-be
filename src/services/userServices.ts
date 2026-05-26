@@ -1056,8 +1056,12 @@ export const toggleMobileUserActiveService = async (
     id: userId,
     // role: USER_ROLES.USER,
     [Op.and]: [
-      { isUserOnBoardedOnMobile: true },
-      { hasStartedUsingMobile: true },
+      {
+        [Op.or]: [
+          { isUserOnBoardedOnMobile: true },
+          { hasStartedUsingMobile: true },
+        ],
+      },
     ],
   };
 
@@ -1104,8 +1108,12 @@ export const getMobileUsers = async ({
     const whereCondition: any = {
       // role: USER_ROLES.USER,
       [Op.and]: [
-        { isUserOnBoardedOnMobile: true },
-        { hasStartedUsingMobile: true },
+        {
+          [Op.or]: [
+            { isUserOnBoardedOnMobile: true },
+            { hasStartedUsingMobile: true },
+          ],
+        },
       ],
     };
 
@@ -1243,6 +1251,21 @@ export const getMobileUsers = async ({
       order,
     });
 
+    const updatedUsers = users.map((u: any) => {
+      const lastLogin = u.lastLogin;
+      let isTodayActive = false;
+      if (lastLogin) {
+        const lastLoginDate = new Date(lastLogin);
+        const today = new Date();
+        isTodayActive =
+          lastLoginDate.getFullYear() === today.getFullYear() &&
+          lastLoginDate.getMonth() === today.getMonth() &&
+          lastLoginDate.getDate() === today.getDate();
+      }
+      u.setDataValue("isActive", isTodayActive);
+      return u;
+    });
+
     return {
       success: true,
       message: "Users onboarded on mobile.",
@@ -1252,7 +1275,7 @@ export const getMobileUsers = async ({
         limit,
         totalPages: Math.ceil(count / limit),
       },
-      users,
+      users: updatedUsers,
     };
   } catch (error) {
     return {
