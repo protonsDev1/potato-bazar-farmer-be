@@ -16,7 +16,7 @@ import {
   retrieveMandiPriceById,
   updateMandiPrice,
 } from "../controller/mandiPriceController";
-import { mandiAgentAndSuperAdminMiddleware } from "../utils/userAuth";
+import { mandiAgentAndSuperAdminMiddleware, optionalAuthMiddleware } from "../utils/userAuth";
 
 const router = express.Router();
 const validator = createValidator({});
@@ -55,6 +55,6 @@ router.get(
 );
 router.get("/city-list", getCitiesWithMandisController);
 
-router.get("/top", getTopMandiPrices);
+router.get("/top", optionalAuthMiddleware, getTopMandiPrices);
 
 export default router;

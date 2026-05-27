@@ -290,6 +290,12 @@ export const getTopMandiPrices = async (req, res) => {
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
 
+    // Update lastLogin if token is present
+    if (req.user) {
+      req.user.lastLogin = new Date();
+      await req.user.save();
+    }
+
     const response = await getTopMandiPricesService(pageNum, limitNum);
 
     return res.status(200).json({

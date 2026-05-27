@@ -51,12 +51,16 @@ export const exportMobileUsersReport = async (req, res) => {
         "UserType": row["UserType"] || "",
         "KYC Status": row["KYC Status"] || "",
         "Device": row["Device"] || "",
-        "Active Status":
-          row["Active Status"] === true
-            ? "Active"
-            : row["Active Status"] === false
-            ? "Inactive"
-            : "",
+        "Active Status": (() => {
+          if (!row["Last Login Date"]) return "Inactive";
+          const lastLoginDate = new Date(row["Last Login Date"]);
+          const today = new Date();
+          const isToday =
+            lastLoginDate.getFullYear() === today.getFullYear() &&
+            lastLoginDate.getMonth() === today.getMonth() &&
+            lastLoginDate.getDate() === today.getDate();
+          return isToday ? "Active" : "Inactive";
+        })(),
         "Last Login Date": row["Last Login Date"]
           ? new Date(row["Last Login Date"]).toISOString().split("T")[0]
           : "",
